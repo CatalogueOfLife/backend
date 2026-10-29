@@ -130,6 +130,20 @@
     WHERE tc.dataset_key = #{key.datasetKey} AND tc.sector_key = #{key.id}
   </select>
 
+  <!-- entities of other sectors or of none attached to usages of the sector. See SectorForeignProcessable -->
+  <select id="listForeignBySector" parameterType="map" resultMap="tcRelResultMap">
+    SELECT <include refid="SELECT"/>
+    FROM taxon_concept_rel tc
+    WHERE tc.dataset_key = #{key.datasetKey} AND tc.sector_key IS DISTINCT FROM #{key.id}
+      AND (tc.taxon_id IN (<include refid="life.catalogue.db.Common.sectorUsageIds"/>) OR tc.related_taxon_id IN (<include refid="life.catalogue.db.Common.sectorUsageIds"/>))
+  </select>
+
+  <delete id="deleteForeignBySector" parameterType="map">
+    DELETE FROM taxon_concept_rel
+    WHERE dataset_key = #{key.datasetKey} AND sector_key IS DISTINCT FROM #{key.id}
+      AND (taxon_id IN (<include refid="life.catalogue.db.Common.sectorUsageIds"/>) OR related_taxon_id IN (<include refid="life.catalogue.db.Common.sectorUsageIds"/>))
+  </delete>
+
   <delete id="deleteBySector" parameterType="map">
     DELETE FROM taxon_concept_rel
     WHERE dataset_key = #{key.datasetKey} AND sector_key=#{key.id}

@@ -6,11 +6,13 @@ import life.catalogue.api.vocab.TypeStatus;
 import life.catalogue.common.text.StringUtils;
 
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 /**
+ * A type specimen. One specimen can typify several names, e.g. a basionym and its replacement name,
+ * each with its own type status, see {@link TypifiedName}.
  * Type material should only be associated with the original name, not with a recombination.
  */
 public class TypeMaterial extends DatasetScopedEntity<String> implements VerbatimEntity, SectorScopedEntity<String>, Referenced, Remarkable {
@@ -21,10 +23,10 @@ public class TypeMaterial extends DatasetScopedEntity<String> implements Verbati
   private Integer verbatimSourceKey;
 
   /**
-   * The citation generated from the CSL data or the verbatim citation if it could not be parsed
-   * into a structured CSLData object.
+   * The names typified by this specimen, each with its own type status.
+   * Never null, but can be empty for an incomplete instance.
    */
-  private String nameId;
+  private List<TypifiedName> names = new ArrayList<>();
 
   /**
    * Material citation of the type material, i.e. type specimen.
@@ -32,12 +34,6 @@ public class TypeMaterial extends DatasetScopedEntity<String> implements Verbati
    * Type material should only be associated with the original name, not with a recombination.
    */
   private String citation;
-
-  /**
-   * The status of the type material, e.g. holotype
-   * Type status should only be associated with the original name, not with a recombination.
-   */
-  private TypeStatus status;
 
   /**
    * A referenceID pointing to the Reference table indicating the publication of the type designation.
@@ -96,9 +92,23 @@ public class TypeMaterial extends DatasetScopedEntity<String> implements Verbati
     return sb.length() > 1 ? sb.toString() : null;
   }
 
-  @JsonIgnore
-  public DSID<String> getNameKey() {
-    return DSID.of(getDatasetKey(), nameId);
+  /**
+   * Adds a link to a typified name.
+   */
+  public void addName(String nameId, TypeStatus status) {
+    names.add(new TypifiedName(nameId, status));
+  }
+
+  /**
+   * @return the link to the given name or null if this specimen does not typify it
+   */
+  public TypifiedName getName(String nameId) {
+    for (TypifiedName tn : names) {
+      if (Objects.equals(tn.getNameId(), nameId)) {
+        return tn;
+      }
+    }
+    return null;
   }
 
   public Integer getSectorKey() {
@@ -137,12 +147,12 @@ public class TypeMaterial extends DatasetScopedEntity<String> implements Verbati
     this.verbatimSourceKey = verbatimSourceKey;
   }
 
-  public String getNameId() {
-    return nameId;
+  public List<TypifiedName> getNames() {
+    return names;
   }
 
-  public void setNameId(String nameId) {
-    this.nameId = nameId;
+  public void setNames(List<TypifiedName> names) {
+    this.names = names == null ? new ArrayList<>() : names;
   }
 
   public String getCitation() {
@@ -154,14 +164,6 @@ public class TypeMaterial extends DatasetScopedEntity<String> implements Verbati
 
   public void setCitation(String citation) {
     this.citation = citation;
-  }
-
-  public TypeStatus getStatus() {
-    return status;
-  }
-
-  public void setStatus(TypeStatus status) {
-    this.status = status;
   }
 
   public String getLocality() {
@@ -304,9 +306,8 @@ public class TypeMaterial extends DatasetScopedEntity<String> implements Verbati
       sectorMode == that.sectorMode &&
       Objects.equals(verbatimKey, that.verbatimKey) &&
       Objects.equals(verbatimSourceKey, that.verbatimSourceKey) &&
-      Objects.equals(nameId, that.nameId) &&
+      Objects.equals(names, that.names) &&
       Objects.equals(citation, that.citation) &&
-      status == that.status &&
       Objects.equals(referenceId, that.referenceId) &&
       Objects.equals(link, that.link) &&
       country == that.country &&
@@ -327,6 +328,6 @@ public class TypeMaterial extends DatasetScopedEntity<String> implements Verbati
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), sectorKey, sectorMode, verbatimKey, verbatimSourceKey, nameId, citation, status, referenceId, link, country, locality, sex, institutionCode, catalogNumber, associatedSequences, host, date, collector, latitude, longitude, coordinate, altitude, remarks);
+    return Objects.hash(super.hashCode(), sectorKey, sectorMode, verbatimKey, verbatimSourceKey, names, citation, referenceId, link, country, locality, sex, institutionCode, catalogNumber, associatedSequences, host, date, collector, latitude, longitude, coordinate, altitude, remarks);
   }
 }

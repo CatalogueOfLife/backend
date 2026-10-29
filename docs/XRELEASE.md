@@ -41,6 +41,13 @@ The key innovation is a **two-phase copy**: base release → temporary project (
 - Creates `XIdProvider` for ID generation, removes existing IDs from temp dataset
 
 #### 2e. `mergeSectors()` — Sector Sync
+Merge sources are read live from their dataset partitions for the whole merge, which takes more than a day for COL.
+Before merging, the XRelease takes a **shared** `DatasetLock` on every source dataset and releases them once the merge
+is done. An import takes an **exclusive** lock on its dataset, so an import of a source waits until the merge is over -
+the `JobExecutor` parks it without occupying a worker. A source that is locked exclusively already, i.e. is being
+imported, or that has no data, e.g. after an import failed while deleting the old data, is refused: its sectors are
+skipped as failed sectors.
+
 For each sector (ordered by priority):
 1. Creates sector in temp project if missing, re-matching target taxon
 2. Runs `SectorSync` via `SyncFactory.release()` which traverses the source dataset tree:
@@ -49,7 +56,11 @@ For each sector (ordered by priority):
    - Applies editorial decisions (BLOCK, MERGE, etc.)
    - Uses `TreeMergeHandlerConfig` for incertae sedis placement and name blocking
 3. On success: copies merge decisions, records sync attempt
-4. On failure: increments `failedSyncs`, optionally throws if `failOnSyncErrors=true`
+4. On failure: records a `FailedSector`, optionally throws if `failOnSyncErrors=true`
+
+Failed sectors, refused ones included, never fail the release by themselves (apart from `failOnSyncErrors`), so they are
+reported in four places: the job `params` (`failedSectors`), `failed-sectors.tsv` in the release report, the notes of
+the release dataset and the completion email.
 
 The single `UsageMatcher` instance is shared across all sector syncs for efficiency.
 
@@ -78,9 +89,14 @@ families at a time. Names outside any family are never grouped. Within a family 
    full names are at least 92% similar (`ScientificNameSimilarity`), e.g. *Aphanizomenon holsaticum* / *holtsaticum*
    Richter.
 3. Splits each key into groups by basionym author, or combination author for names without brackets
-   (`BasionymSorter`). The most trusted original name of a group becomes its basionym; among equally trusted ones the
-   alphabetically first label, so the choice does not depend on the order the names are read in. A name by the author
-   before an "ex" (Desf. in Desf. ex F.Dietr.) joins that group as the name it is based on, chosen the same way.
+   (`BasionymSorter`). The most trusted original name of a group becomes its basionym, but a name with the
+   nomenclatural status `ORTHOGRAPHIC_VARIANT` never does as long as another original name is no variant. Among equally
+   trusted names the evidence of the data decides: a name the data gives a basionym of its own or corrects the spelling
+   of is no original name, and an unavailable name is unlikely to be one. Only then the alphabetically first label wins,
+   so the choice does not depend on the order the names are read in. The taxonomic status is deliberately no evidence:
+   an accepted name missing its brackets looks like an original name, while the true original often lives on as its
+   synonym. A name by the author before an "ex" (Desf. in Desf. ex F.Dietr.) joins that group as the name it is
+   based on, chosen the same way.
    Original names of one author in different genera stay separate groups when a single source lists them separately,
    i.e. with the same priority and not linked by synonymy or a name relation. Without that evidence they are lumped,
    since a missing bracket is the likelier explanation. A recombination joins one of those separate groups only if it
@@ -94,12 +110,18 @@ families at a time. Names outside any family are never grouped. Within a family 
    recombination to the basionym, `HOMOTYPIC` between the recombinations of a group without one, `BASED_ON` from the
    name with the "ex" author to the name it is based on. Every further original name is related to the basionym or
    based on name as well:
-   - an orthographic variant - same genus and rank, only the terminal epithet spelled differently, gender endings
-     included - gets a `SPELLING_CORRECTION` from the basionym to the variant, i.e. from the most trusted source's
-     spelling to the others. The grouper cannot know which spelling is correct, source priority decides.
-   - anything else - the same name at another rank missing its brackets, another species or subgenus, or a name of
-     another genus lumped by step 3, a misspelled genus included - gets `HOMOTYPIC` towards the basionym.
-   - duplicates, the same name and rank maybe cited with a different authorship, get no relation at all.
+   - an orthographic variant - same rank, only the terminal epithet spelled differently, gender endings included, or
+     only the genus misspelled by a single letter (*Coriphaena* / *Coryphaena hippurus*) - gets a
+     `SPELLING_CORRECTION` from the basionym to the variant, i.e. from the most trusted source's spelling to the others.
+     The grouper cannot know which spelling is correct, source priority and the evidence of step 3 decide.
+   - anything else - the same name at another rank missing its brackets, another species, or a name of another genus
+     lumped by step 3 - gets `HOMOTYPIC` towards the basionym.
+   - duplicates, the same name and rank maybe cited with a different authorship or with and without a subgenus, which
+     is not part of a species name (*Machimus erevanensis* / *Machimus (Machimus) erevanensis*), get no relation at all.
+
+   No relation is created between two names the data already relates as homotypic, directly or through a single
+   other name such as the correct spelling two misspellings both point to. It would only add a second, possibly
+   contradicting claim about the same group.
 6. Turns every usage of a less trusted source, accepted or synonym, into a synonym of the primary's accepted name,
    moving its descendants along and flagging `HOMOTYPIC_CONSOLIDATION`. A converted name identical to that accepted
    name or to one of its synonyms is deleted. Usages from a source as trusted as the primary's are kept as they are.
@@ -107,9 +129,12 @@ families at a time. Names outside any family are never grouped. Within a family 
 Issues are written once all families are done.
 
 **Misspelling consolidation** (`misspellingConsolidation`) runs in the same per family task afterwards. It walks the
-family's accepted names in alphabetical order and compares each one with the 10 before it: same rank, identical
-authorship string, full names at most one edit apart (`ModifiedDamerauLevenshtein`), code compliant name types only.
-The less trusted name becomes a synonym of the other with `MISSPELLING_CONSOLIDATION`; no relation is created. Two equally
+family's accepted bi- and trinomials in alphabetical order and compares each one with the 10 before it: same rank,
+identical authorship string, full names at most one edit apart (`ModifiedDamerauLevenshtein`), code compliant name types
+only. Uninomials are never compared - genera or families one letter apart are too often distinct names, see
+[#1363](https://github.com/CatalogueOfLife/backend/issues/1363) - and neither are virus names.
+The less trusted name becomes a synonym of the other with `MISSPELLING_CONSOLIDATION` through `convertToSynonym`, which
+moves its descendants to the correctly spelled name; no relation is created. Two equally
 trusted names from the project or from the base release are both kept, see Known Issues for merge sources. As only
 alphabetical neighbours are compared, a misspelling in the first letters is never found.
 
@@ -271,8 +296,10 @@ today stores them as `IDENTIFIER`, and all the exemption still let through were 
 like `R ogas eurinus` or `A[mpelis] rufaxilla`, 246 of them in the September 2026 COL XR. It holds
 whatever the sector's `nameTypes` say.
 
-The second applies only to sectors without their own `nameTypes` filter, and a `REVIEWED` decision
-overrides it. Viruses are exempt because the parser types every virus name `OTHER` and sets the
+The second applies unless the sector itself lists `nameTypes`, and a `REVIEWED` decision
+overrides it. Name types a sector inherits from a profile do not count: COL's "Project defaults" profile lists `other`
+for every sector, which kept the filter from ever firing until [#1636](https://github.com/CatalogueOfLife/backend/issues/1636).
+`SectorRunnable` keeps the resolved setting sources for that. Viruses are exempt because the parser types every virus name `OTHER` and sets the
 `VIRUS` code. Everything else of type `OTHER` is a string the parser could not understand, like
 `0` or `=Papilio dorylas Denis & Schiffermüller, 1775`. Creating one does harm beyond the junk name:
 a merged match below it patches the classification of the existing base usage, so TaiCOL's family
@@ -310,11 +337,70 @@ Species and below are untouched by this and keep the stricter rule that authorsh
 two same-named species in one genus are classic homonyms. See `txtree/genushomonyms/readme.md` for the
 worked scenario.
 
+#### Homonyms without authorship or classification
+
+The rules above need an authored incoming genus. Two other paths reach a genus homonym with no authorship to compare:
+a source genus without authorship, and the implicit genus `TreeBaseHandler.createImplicit` looks up for a species
+that came with nothing but its genus name (ZooBank, single paper datasets). For those:
+
+- **No guessing between homonyms.** When nothing - authorship, the shared ranks, the taxonomic group of the incoming
+  name, the name itself over its misapplications, a single accepted name among synonyms or synonyms of one accepted
+  name - told the remaining candidates apart, the matcher only falls through
+  to its tie breaks (the deepest classified candidate, then the first) for duplicates of one name: every candidate
+  has an authorship, no two of them compare DIFFERENT and none belong to disparate `TaxGroup`s. Anything else, at any
+  rank, is no match flagged as an unresolved homonym. The merge skips such a name with its subtree as
+  `AMBIGUOUS_HOMONYM`; for an implicit genus or species that means the name that needed it. Without an authorship a
+  homonym cannot be told from a duplicate, so an authorless duplicate in the project costs the source name and its
+  subtree: a duplicate in COL is bad, a false merge is worse. The tie breaks are stable: candidates are ordered by id,
+  where the order of the in-memory store used to follow a hash set and flipped the pick between releases. See
+  [#1651](https://github.com/CatalogueOfLife/backend/issues/1651).
+- **A group for the whole source.** The lowest group shared by the source dataset's `taxonomicGroupScope` serves as
+  the group of a merged name whose own classification yields none or only eukaryotes (`UsageMatcher.queryGroup`).
+  The dataset title is not used: a paper on the disease of a grass names the grass.
+- **Placement conflicts.** A source genus flagged with `Issue.PLACEMENT_CONFLICT` (below) is matched without its
+  source classification, which is cut off for its descendants too (the `marked` parent). A single project genus of
+  that name - or a group of candidates one lineage tie break picks from - takes it as a `snap`, so its species attach
+  there and nothing of the project genus is updated. Without one the genus is skipped with its subtree, counted
+  under `IgnoreReason.PLACEMENT_CONFLICT`. It is never created under the source's parents.
+
+#### Placement conflicts
+
+Literature sources regularly file a genus under the classification of the paper's subject rather than its own: a
+fungus under the plant family of its host, a parasite under its vector, a feather mite under its bird. Merged as is,
+such a genus attracts every later species of that name into the wrong kingdom.
+
+`PlacementChecker` judges the accepted genera of a source against reference checklists, by default the latest public
+COL release and IRMNG (`importer.placementReferences: [3LR, 2007]`, empty disables it). Their genera are pooled: a
+genus is flagged with `PLACEMENT_CONFLICT` on its verbatim record only if its group in the source is disparate to the
+group of *every* genus of that name in *any* reference. It stays silent whenever the evidence is thin: a source group
+of eukaryotes or none, a genus no reference holds, a reference genus without a known group, or an authored source
+genus whose authorship differs from every reference genus - a homonym the references lack.
+
+Pooling is what makes the flag trustworthy. Replayed on 500 random article datasets (1,458 accepted genera), COL
+alone flagged 4 genera, all of them real genera COL happens to lack, e.g. the fossil bovid *Duboisia* Stremme. With
+IRMNG pooled in only 1 remained, while all the misplacements reported in #1608 were still caught - *Trouessartia*
+under birds only thanks to IRMNG, as the COL base release lacks the genus. IRMNG alone would be no better than COL:
+it lacks cicada genera and the wasp *Platygaster* Latreille. A reference that cannot be resolved or has no matcher is
+left out.
+
+- Every import runs the check while it inserts the usages; missing references only weaken or skip it.
+- `PlacementCheckJob` runs it on a dataset already imported - `POST /admin/placement-check?datasetKey=` or
+  `?datasetType=ARTICLE` for all public external datasets of a type - replacing the earlier flags, recounting the
+  issues of the latest import and reindexing the genera concerned. Unchanged sources skip their reimport, so this is
+  how existing datasets get flagged.
+- `GET /dataset/placementConflict?minRatio=0.1&minConflicts=1&type=` lists the public external datasets whose latest
+  import flagged at least that share and that number of its accepted genera, highest share first. As only accepted genera are ever flagged, the
+  share is the import's `PLACEMENT_CONFLICT` issue count over its accepted `GENUS` count, both from the import
+  metrics. It is the list to send to data publishers like Plazi. Asked for `text/csv` or `text/tab-separated-values`,
+  or as `placementConflict.csv` / `.tsv`, it answers all rows unpaged with a header row.
+
+See `txtree/placementconflict/readme.md` and [#1608](https://github.com/CatalogueOfLife/backend/issues/1608).
+
 ## Known Issues / Technical Debt
 
 1. **Dead code**: `synonymizeMisspelledBinomials()` (line ~675) is never called. Despite its javadoc it does not synonymize misspellings but is a verbatim copy of `flagDuplicatesAsProvisional()`. Should be removed.
 2. **Unimplemented**: `cleanImplicitTaxa()` only logs a warning — placeholder for future work.
 3. **Typo in mapper**: `detectParentSynonyms` method name has a typo (should be `detectParentSynonyms`).
 4. **Double semicolons**: Lines 148, 239 have `;;` — cosmetic.
-5. **Misspelling ties**: in misspelling consolidation two names from the same merge source are equally trusted, yet one of them is still synonymized - the one sorting later. Two distinct species of one author one letter apart, e.g. *Aus bus* L. and *Aus cus* L., are lumped that way. The `isConsolidated()` guard on the comparison window never fires either, as `ConsolidationName.consolidatedId` is never set.
+5. **Misspelling ties**: in misspelling consolidation two names from the same merge source are equally trusted, yet one of them is still synonymized - the one sorting later. Two distinct species of one author one letter apart, e.g. *Aus bus* L. and *Aus cus* L., are lumped that way.
 6. **`newDatasetKey` dual use**: The field is temporarily reassigned to `tmpProjectKey` during `prepWork()` (line 180) and restored later (line 210). This implicit state mutation makes the code fragile and hard to follow — methods called between these lines must be aware which dataset `newDatasetKey` currently refers to.

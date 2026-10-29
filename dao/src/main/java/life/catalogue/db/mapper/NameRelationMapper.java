@@ -40,6 +40,12 @@ public interface NameRelationMapper extends Create<NameRelation>,
   List<NameRelation> listByType(@Param("key") DSID<String> key, @Param("type") NomRelType type);
 
   /**
+   * Lists the ids of all usages whose name is related by one of the given types to a name
+   * whose usages share no accepted taxon with them. Misapplied names are ignored.
+   */
+  List<String> listUsageIDsOutsideHomotypicSynonymy(@Param("datasetKey") int datasetKey, @Param("types") Set<NomRelType> types);
+
+  /**
    * Returns the list of related names of a given type for a single name on the relatedNameId side of the relation only.
    */
   List<NameRelation> listByTypeReverse(@Param("key") DSID<String> key, @Param("type") NomRelType type);
@@ -54,6 +60,11 @@ public interface NameRelationMapper extends Create<NameRelation>,
    * @param key the name id to start our from
    */
   List<String> listRelatedNameIDs(@Param("key") DSID<String> key, @Param("types") Set<NomRelType> types);
+
+  /**
+   * @return true if the dataset has any records at all
+   */
+  boolean entityExists(@Param("datasetKey") int datasetKey);
 
   boolean exists(@Param("datasetKey") int datasetKey, @Param("from") String from, @Param("to") String to, @Param("type") NomRelType type);
 

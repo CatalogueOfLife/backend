@@ -485,7 +485,7 @@ public class PgImportIT extends PgImportITBase {
       List<TypeMaterial> types = tmm.listByName(DSID.of(dataset.getKey(), "1001c"));
       assertEquals(2, types.size());
       for (TypeMaterial tm : types) {
-        assertEquals("1001c", tm.getNameId());
+        assertEquals("1001c", tm.getNames().get(0).getNameId());
         assertEquals(dataset.getKey(), tm.getDatasetKey());
         assertNull(tm.getSectorKey());
         assertNotNull(tm.getCitation());

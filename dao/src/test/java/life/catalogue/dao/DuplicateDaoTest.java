@@ -153,7 +153,8 @@ public class DuplicateDaoTest {
     assertComplete(25, dups, minSize);
 
     dups = find(MatchingMode.FUZZY, minSize, datasetKey, null, null, null, status, true, null, null, p);
-    assertComplete(4, dups, minSize);
+    // names without a basionym compare their combination authorship, see #1664
+    assertComplete(11, dups, minSize);
 
     dups = find(MatchingMode.FUZZY, minSize, datasetKey, null, null, ranks(Rank.SUBSPECIES), status, null, null, null, p);
     assertComplete(5, dups, minSize);
@@ -201,7 +202,7 @@ public class DuplicateDaoTest {
 
     dups = findNames(MatchingMode.FUZZY, minSize, datasetKey, null, ranks(Rank.SPECIES, Rank.SUBSPECIES), true, p);
     show(dups);
-    assertCompleteBareName(4, dups, minSize);
+    assertCompleteBareName(10, dups, minSize);
 
     System.out.println(watch);
   }
@@ -238,6 +239,19 @@ public class DuplicateDaoTest {
     ResultPage<Duplicate> result = dao.page(req, page);
     watch.suspend();
     return result.getResult();
+  }
+
+  @Test
+  public void csv() {
+    var req = new DuplicateDao.DuplicateRequest(EntityType.NAME_USAGE, MatchingMode.STRICT, null, 2, datasetKey, null, null, null, null, null,
+      null, null, null, null, null, null, Datasets.COL);
+    List<Object[]> rows = dao.stream(req).toList();
+    assertEquals("sourceDatasetKey", rows.get(0)[0]);
+    assertEquals("sourceDataset", rows.get(0)[1]);
+    assertTrue(rows.size() > 1);
+    for (Object[] row : rows) {
+      assertEquals(rows.get(0).length, row.length);
+    }
   }
 
   private static void assertComplete(int expectedSize, List<Duplicate> dups, int minSize) {

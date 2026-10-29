@@ -87,10 +87,11 @@
       GROUP BY x.taxon_id
     ) xver ON xver.taxon_id=u.id
     LEFT JOIN (
-      SELECT name_id, array_agg(v.issues) AS issues
+      SELECT tn.name_id, array_agg(v.issues) AS issues
       FROM type_material x JOIN verbatim v ON x.verbatim_key=v.id AND v.dataset_key=#{datasetKey}
+        JOIN type_material_name tn ON tn.dataset_key=x.dataset_key AND tn.type_material_id=x.id
       WHERE x.dataset_key=#{datasetKey} AND array_length(v.issues, 1) > 0
-      GROUP BY x.name_id
+      GROUP BY tn.name_id
     ) xtyp ON xtyp.name_id=u.name_id
     LEFT JOIN (
       SELECT name_id, array_agg(v.issues) AS issues

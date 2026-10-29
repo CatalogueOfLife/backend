@@ -147,8 +147,11 @@ public class SimpleTemplate {
       // nested objects
       String[] props = prop.split("\\.", 2);
       Object arg2 = getProperty(props[0], info, arg);
+      if (arg2 == null) {
+        return str(null, format);
+      }
       // Introspector caches the info, so we can just look it up again
-      return propertyValue(props[1], format, getInfo(arg), arg2);
+      return propertyValue(props[1], format, getInfo(arg2), arg2);
     }
     return str(getProperty(prop, info, arg), format);
   }

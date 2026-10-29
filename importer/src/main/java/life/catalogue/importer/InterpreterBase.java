@@ -19,6 +19,7 @@ import life.catalogue.parser.*;
 
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.Term;
+import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
 import java.net.URI;
@@ -47,12 +48,14 @@ public class InterpreterBase {
   
   private static final Logger LOG = LoggerFactory.getLogger(InterpreterBase.class);
   protected static final Pattern AREA_VALUE_PATTERN = Pattern.compile("[\\w\\s:.-]+", Pattern.UNICODE_CHARACTER_CLASS);
-  static final Pattern SEC_REF = Pattern.compile("^\\s*(sensu|sec\\.?|fide|auct\\.?|according to) (?!lat|str|non|nec|auct(?:orum)?)(.{3,})$", Pattern.CASE_INSENSITIVE);
+  // a sensu reference, but not a misspelling like auct. misspelling or auct. lapsus
+  static final Pattern SEC_REF = Pattern.compile("^\\s*(sensu|sec\\.?|fide|auct\\.?|according to) (?!lat|str|non|nec|auct(?:orum)?|misspel|lapsus|err(?:or)?\\b|orth\\b)(.{3,})$", Pattern.CASE_INSENSITIVE);
   protected final ImportStore store;
   protected final DatasetSettings settings;
   protected final NameInterpreter nameInterpreter;
   private final Gazetteer distributionStandard;
   protected final ReferenceFactory refFactory;
+  private final Map<NomCode, NameInterpreter> codeInterpreters = new EnumMap<>(NomCode.class);
 
   /**
    * @param settings
@@ -160,6 +163,22 @@ public class InterpreterBase {
     }
   }
 
+  /**
+   * Interprets the name of a verbatim record again as if the given code had been supplied,
+   * e.g. a code decided from the final classification of the import.
+   * @return the name interpreted again, empty if the format cannot interpret names again
+   */
+  public Optional<ParsedNameUsage> reinterpretName(String id, VerbatimRecord v, NomCode code) {
+    return Optional.empty();
+  }
+
+  /**
+   * @return the name interpreter for names without a code of their own that interprets them with the given code
+   */
+  protected NameInterpreter nameInterpreter(NomCode code) {
+    return codeInterpreters.computeIfAbsent(code, nameInterpreter::withCode);
+  }
+
   public DatasetSettings getSettings() {
     return settings;
   }
@@ -201,11 +220,13 @@ public class InterpreterBase {
 
   protected List<TaxonProperty> interpretProperty(VerbatimRecord rec, BiConsumer<TaxonProperty, VerbatimRecord> addReference,
                                                   Term property, Term value, @Nullable Term ordinal, @Nullable Term page, @Nullable Term remarks) {
-    if (rec.hasTerm(property) && rec.hasTerm(value)) {
+    // the cleaned value can be blank even if the raw one is not, e.g. a description of just <br/> or &nbsp;
+    String val = getFormattedText(rec, value);
+    if (rec.hasTerm(property) && !StringUtils.isBlank(val)) {
       var tp = new TaxonProperty();
       tp.setVerbatimKey(rec.getId());
       tp.setProperty(rec.get(property));
-      tp.setValue(getFormattedText(rec, value));
+      tp.setValue(val);
       if (page != null) {
         tp.setPage(rec.get(page));
       }

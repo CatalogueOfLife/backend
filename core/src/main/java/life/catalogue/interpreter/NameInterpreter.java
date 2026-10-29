@@ -6,6 +6,7 @@ import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.NomStatus;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.Setting;
+import life.catalogue.common.tax.AuthorAtoms;
 import life.catalogue.parser.*;
 import life.catalogue.parser.NameParser;
 
@@ -13,7 +14,9 @@ import org.gbif.dwc.terms.Term;
 import org.gbif.nameparser.api.*;
 import org.gbif.nameparser.util.RankUtils;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -27,6 +30,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import static life.catalogue.parser.SafeParser.parse;
 import static org.apache.commons.lang3.StringUtils.trimToNull;
 
@@ -37,7 +42,8 @@ import static org.apache.commons.lang3.StringUtils.trimToNull;
 public class NameInterpreter {
 
   private static final Logger LOG = LoggerFactory.getLogger(NameInterpreter.class);
-
+  private static final Pattern EPITHET_RANK_MARKER = Pattern.compile("^((?:var|f|subsp)[. ])");
+  private static final Pattern WHITESPACE = Pattern.compile("\\s+");
 
   protected final DatasetSettings settings;
   private final boolean preferAtoms;
@@ -53,6 +59,16 @@ public class NameInterpreter {
     this.settings = settings;
     preferAtoms = settings.getBoolDefault(Setting.PREFER_NAME_ATOMS, preferAtomsDefault);
     dontInferRanks = settings.isEnabled(Setting.DONT_INFER_RANKS);
+  }
+
+  /**
+   * @return a copy of this interpreter that interprets names without a code of their own with the given one,
+   *         e.g. a code decided from the classification of an import
+   */
+  public NameInterpreter withCode(NomCode code) {
+    var copy = new DatasetSettings(settings);
+    copy.put(Setting.NOMENCLATURAL_CODE, code);
+    return new NameInterpreter(copy, preferAtoms);
   }
 
   public Optional<ParsedNameUsage> interpret(SimpleName sn, IssueContainer issues) {
@@ -80,8 +96,7 @@ public class NameInterpreter {
 
     // sometimes a rank marker is given as part of the epithet
     if (vrank == null && infraspecies != null) {
-      Pattern rankMarker = Pattern.compile("^((?:var|f|subsp)[. ])");
-      var m = rankMarker.matcher(infraspecies);
+      var m = EPITHET_RANK_MARKER.matcher(infraspecies);
       if (m.find()) {
         vrank = m.group(1).trim();
         infraspecies = m.replaceFirst("").trim();
@@ -109,8 +124,12 @@ public class NameInterpreter {
     NamePart nothoVal = parse(NamePartParser.PARSER, v.get(notho)).orNull(Issue.NOTHO_INVALID, v);
     Boolean originalSpellingVal = parse(BooleanParser.PARSER, v.get(originalSpelling)).orNull(Issue.ORIGINAL_SPELLING_INVALID, v);
 
+    // a given unranked, no rank or clade says the source has no rank, not that the name has none,
+    // so it allows to infer a rank just as no rank at all
+    final boolean allowToInferRank = vrank == null || rank == Rank.UNRANKED;
+
     // now the real thing
-    var opt = interpret(vrank==null,
+    var opt = interpret(allowToInferRank,
       id, code, rank, sciname, authorship, publishedInYear,
       uninomial, genus, infraGenus, species, infraspecies, cultivar,
       v.get(combAuthors), v.get(combExAuthors), v.get(combAuthorsYear), v.get(basAuthors), v.get(basExAuthors), v.get(basAuthorsYear),
@@ -127,9 +146,20 @@ public class NameInterpreter {
    * (e.g. "subsp.", "var.", "f.", "subg.", "sect.") as opposed to the name structure alone.
    * A bi- or trinomial without any marker yields SPECIES or the vague INFRASPECIFIC_NAME, and a uninomial
    * yields UNRANKED or a suffix based suprageneric rank - none of which is a statement by the user.
+   * An infrageneric epithet in brackets after the genus with no species epithet following is a marker too:
+   * Chaetoceros (Hyalochaete) can only be a name below the genus, so it keeps the vague INFRAGENERIC_NAME, which
+   * leaves subgenus and section open but rules out the plant genus Hyalochaete that shares its canonical name.
+   * An indetermined name, flagged by the parser, states its rank by the marker standing in for the missing epithet:
+   * Xysticus sp. or Chaetoceros (Hyalochaete) spp. are species, never the genus whose canonical name they share.
    */
-  private static boolean hasExplicitRankMarker(Name n) {
+  private static boolean hasExplicitRankMarker(Name n, IssueContainer issues) {
     Rank r = n.getRank();
+    if (r != null && r.notOtherOrUnranked() && issues.contains(Issue.INDETERMINED)) {
+      return true;
+    }
+    if (r == Rank.INFRAGENERIC_NAME) {
+      return n.getGenus() != null && n.getInfragenericEpithet() != null && n.getSpecificEpithet() == null;
+    }
     return r != null && r.notOtherOrUnranked() && !r.isUncomparable()
            && (r.isInfraspecific() || r.isInfragenericStrictly());
   }
@@ -170,33 +200,37 @@ public class NameInterpreter {
       }
 
       // we can get the scientific name in various ways.
-      // we prefer already atomized names as we want to trust humans more than machines
+      // we prefer already atomized names as we want to trust humans more than machines.
+      // Both ways parse a name string together with the authorship, unless author atoms are given,
+      // which always take precedence over an authorship string
+      final String authorshipToParse = useAuthorAtoms ? null : authorship;
       ParsedNameUsage pnu;
-      boolean scinameAuthorshipParsed = false; // true once the sciname path has folded the authorship in
       if (useAtoms) {
-        pnu = new ParsedNameUsage();
+        // issues about the atoms only apply if they are used in the end
+        final IssueContainer atomIssues = IssueContainer.simple();
+        ParsedNameUsage atomPNU = new ParsedNameUsage();
         Name atom = new Name();
         atom.setRank(rank);
         atom.setCode(code);
         atom.setNotho(notho);
         atom.setOriginalSpelling(originalSpelling);
         setDefaultNameType(atom);
-        pnu.setName(atom);
+        atomPNU.setName(atom);
 
-        set(pnu, atom::setCultivarEpithet, cultivar, NamePart.INFRASPECIFIC);
-        set(pnu, atom::setInfraspecificEpithet, sanitizeEpithet(infraspecies, issues), NamePart.INFRASPECIFIC);
-        set(pnu, atom::setSpecificEpithet, sanitizeEpithet(species, issues), NamePart.SPECIFIC);
-        set(pnu, atom::setInfragenericEpithet, infraGenus, NamePart.INFRAGENERIC);
-        set(pnu, atom::setGenus, genus, NamePart.GENERIC);
-        set(pnu, atom::setUninomial, uninomial, null);
+        set(atomPNU, atom::setCultivarEpithet, cultivar, NamePart.INFRASPECIFIC);
+        set(atomPNU, atom::setInfraspecificEpithet, sanitizeEpithet(infraspecies, atomIssues), NamePart.INFRASPECIFIC);
+        set(atomPNU, atom::setSpecificEpithet, sanitizeEpithet(species, atomIssues), NamePart.SPECIFIC);
+        set(atomPNU, atom::setInfragenericEpithet, infraGenus, NamePart.INFRAGENERIC);
+        set(atomPNU, atom::setGenus, genus, NamePart.GENERIC);
+        set(atomPNU, atom::setUninomial, uninomial, NamePart.GENERIC);
 
         // misplaced uninomial in genus field
         if (!atom.isBinomial() && rank.isGenusOrSuprageneric() && atom.getGenus() != null && atom.getInfragenericEpithet() == null) {
           if (atom.getUninomial() == null) {
             atom.setUninomial(atom.getGenus());
-            issues.add(Issue.UNINOMIAL_FIELD_MISPLACED);
+            atomIssues.add(Issue.UNINOMIAL_FIELD_MISPLACED);
           } else if (!atom.getUninomial().equals(atom.getGenus())) {
-            issues.add(Issue.INCONSISTENT_NAME);
+            atomIssues.add(Issue.INCONSISTENT_NAME);
           }
           atom.setGenus(null); // ignore genus if
         }
@@ -204,64 +238,81 @@ public class NameInterpreter {
         if (rank.isInfragenericStrictly() && atom.getUninomial() != null) {
           if (atom.getInfragenericEpithet() == null) {
             atom.setInfragenericEpithet(atom.getUninomial()); // swap
-            issues.add(Issue.INFRAGENERIC_FIELD_MISPLACED);
+            atomIssues.add(Issue.INFRAGENERIC_FIELD_MISPLACED);
           } else if (!atom.getUninomial().equals(atom.getInfragenericEpithet())) {
-            issues.add(Issue.INCONSISTENT_NAME);
+            atomIssues.add(Issue.INCONSISTENT_NAME);
           }
           atom.setUninomial(null); // no uninomial for infragenerics
         }
         atom.rebuildScientificName();
 
-        // parse the reconstructed name without authorship to detect name type and potential problems
-        Optional<ParsedNameUsage> pnuFromAtom = NameParser.PARSER.parse(atom.getLabel(), rank, code, issues);
-        if (pnuFromAtom.isPresent()) {
-          final var atomPNU = pnuFromAtom.get();
-          final Name atomN = atomPNU.getName();
-
-          // the atoms only ever claim the default type (SCIENTIFIC, or OTHER for viruses).
-          // Whenever the parser classifies the reconstructed label as something else - unparsable,
-          // but also an INFORMAL name like "Scoloplos sp. 1" whose epithet is an indetermination
-          // marker - the parser wins and the atoms must not be used.
-          // See https://github.com/CatalogueOfLife/data/issues/1568
-          if (!atomN.getType().isParsable() || atomN.getType() != atom.getType()) {
-            LOG.info("Atomized name {} appears to be of type {}. Use scientific name only", atom.getLabel(), atomN.getType());
-            pnu.setName(atomN);
-          } else if (atomN.isParsed()) {
-            if (atomPNU.isDoubtful()) { // we might found brackets in the parsed genus
-              pnu.setDoubtful(true);
-              atom.setGenus(atomN.getGenus());
-              atom.rebuildScientificName();
-            }
-            // if parsed compare with original atoms
-            if (
-                !Objects.equals(atom.getUninomial(), atomN.getUninomial()) ||
-                    !Objects.equals(atom.getGenus(), atomN.getGenus()) ||
-                    !Objects.equals(atom.getInfragenericEpithet(), atomN.getInfragenericEpithet()) ||
-                    !Objects.equals(atom.getSpecificEpithet(), atomN.getSpecificEpithet()) ||
-                    !Objects.equals(atom.getInfraspecificEpithet(), atomN.getInfraspecificEpithet())
-            ) {
-              LOG.warn("Parsed and given name atoms differ: [{}] vs [{}]", atomN.getLabel(), atom.getLabel());
-              issues.add(Issue.PARSED_NAME_DIFFERS);
-            }
-          }
-        } else {
+        // parse the name rebuilt from the atoms with the authorship to detect name type and potential problems,
+        // and to parse the authorship together with the name, as for a scientific name
+        Optional<ParsedNameUsage> parsed = NameParser.PARSER.parse(atom.getLabel(), authorshipToParse, rank, code, atomIssues);
+        if (parsed.isEmpty()) {
           // only really happens for blank strings
           LOG.info("No name given for {}", id);
           return Optional.empty();
         }
+        pnu = parsed.get();
+        final Name pn = pnu.getName();
+        // the atoms only ever claim the default type (SCIENTIFIC, or OTHER for viruses).
+        // Whenever the parser classifies the reconstructed label as something else - unparsable,
+        // but also an INFORMAL name like "Scoloplos sp. 1" whose epithet is an indetermination
+        // marker - the parser wins and the atoms must not be used.
+        // See https://github.com/CatalogueOfLife/data/issues/1568
+        // The label is rebuilt from sanitised atoms, e.g. with lowercased epithets, so the verbatim scientific name
+        // is parsed instead whenever there is one: "Hibiscus sp. Carnarvon (S.van Leeuwen 5110)" given with
+        // the specificEpithet "sp. Carnarvon (S.van Leeuwen 5110)" or the hybrid formula "Acacia adsurgens x Acacia rhodophloia"
+        // given with the specificEpithet "adsurgens x rhodophloia".
+        // See https://github.com/CatalogueOfLife/backend/issues/1628
+        if (!pn.getType().isParsable() || pn.getType() != atom.getType()) {
+          if (StringUtils.isNotBlank(sciname)) {
+            LOG.info("Atomized name {} appears to be of type {}. Use scientific name {}", atom.getLabel(), pn.getType(), sciname);
+            pnu = NameParser.PARSER.parse(sciname, authorshipToParse, rank, code, issues).get();
+          } else {
+            LOG.info("Atomized name {} appears to be of type {}. Use the parsed atoms", atom.getLabel(), pn.getType());
+            issues.add(atomIssues);
+          }
+
+        } else {
+          issues.add(atomIssues);
+          if (pnu.isDoubtful()) { // we might found brackets in the parsed genus
+            atom.setGenus(pn.getGenus());
+          }
+          // if parsed compare with original atoms
+          if (pn.isParsed() && (
+              !Objects.equals(atom.getUninomial(), pn.getUninomial()) ||
+              !Objects.equals(atom.getGenus(), pn.getGenus()) ||
+              !Objects.equals(atom.getInfragenericEpithet(), pn.getInfragenericEpithet()) ||
+              !Objects.equals(atom.getSpecificEpithet(), pn.getSpecificEpithet()) ||
+              !Objects.equals(atom.getInfraspecificEpithet(), pn.getInfraspecificEpithet())
+          )) {
+            LOG.warn("Parsed and given name atoms differ: [{}] vs [{}]", pn.getLabel(), atom.getLabel());
+            issues.add(Issue.PARSED_NAME_DIFFERS);
+          }
+          // the atoms win over the parsed name, the parse gave us the authorship, notes and flags
+          pn.setUninomial(atom.getUninomial());
+          pn.setGenus(atom.getGenus());
+          pn.setInfragenericEpithet(atom.getInfragenericEpithet());
+          pn.setSpecificEpithet(atom.getSpecificEpithet());
+          pn.setInfraspecificEpithet(atom.getInfraspecificEpithet());
+          pn.setCultivarEpithet(atom.getCultivarEpithet());
+          pn.setRank(atom.getRank());
+          if (!atom.getNotho().isEmpty()) {
+            pn.setNotho(atom.getNotho());
+          }
+          // whatever the parser could not make sense of in the label is no part of the atoms
+          pn.setUnparsed(null);
+          pn.rebuildScientificName();
+        }
+        if (atomPNU.isExtinct()) {
+          pnu.setExtinct(true);
+        }
 
       } else if (StringUtils.isNotBlank(sciname)) {
         // be careful, this infers ranks from the name!
-        // one-go parse: hand the parser the name AND authorship together (unless author atoms win)
-        Name n = new Name();
-        n.setScientificName(sciname);
-        n.setRank(rank);
-        n.setCode(code);
-        if (!useAuthorAtoms) {
-          n.setAuthorship(authorship);
-          scinameAuthorshipParsed = true;
-        }
-        pnu = NameParser.PARSER.parse(n, issues).get();
+        pnu = NameParser.PARSER.parse(sciname, authorshipToParse, rank, code, issues).get();
 
       } else {
         LOG.info("No name given for {}", id);
@@ -294,7 +345,7 @@ public class NameInterpreter {
         )){
           rank = inferred;
         }
-      } else if (rank.otherOrUnranked() && hasExplicitRankMarker(pnu.getName())) {
+      } else if (rank.otherOrUnranked() && hasExplicitRankMarker(pnu.getName(), issues)) {
         // A rank marker written into the name string is the user stating the rank, not an inference from the
         // name structure - so honour it even when inference is off. Without this the marker only atomizes the
         // name and its rank is dropped, leaving e.g. a match request for "Festuca rubra subsp. pruinosa"
@@ -307,15 +358,12 @@ public class NameInterpreter {
 
 
       // +++ AUTHORSHIP +++
-      // do we have a parsed authorship given? That always takes precedence
+      // do we have a parsed authorship given? That always takes precedence.
+      // Otherwise the authorship string was parsed together with the name above
       if (useAuthorAtoms) {
         pnu.getName().setCombinationAuthorship(buildAuthorship(combAuthors, combExAuthors, combAuthorsYear));
         pnu.getName().setBasionymAuthorship(buildAuthorship(basAuthors, basExAuthors, basAuthorsYear));
         pnu.getName().rebuildAuthorship();
-      } else if (!scinameAuthorshipParsed) {
-        // atomized-name path: fold the authorship string onto the human-supplied atoms
-        // (the sciname path already parsed it together with the name above)
-        NameParser.PARSER.parseAuthorshipIntoName(pnu, authorship, issues);
       }
 
       // populate name published in through various channels and verify its a real nomenclatural date
@@ -326,11 +374,17 @@ public class NameInterpreter {
         }
       }
       if (pnu.getName().getCombinationAuthorship() != null && pnu.getName().getCombinationAuthorship().getYear() != null){
-        Integer year = InterpreterUtils.parseNomenYear(pnu.getName().getCombinationAuthorship().getYear(), issues);
+        final String authorYear = pnu.getName().getCombinationAuthorship().getYear();
+        Integer year = InterpreterUtils.parseNomenYear(authorYear, issues);
         if (year != null) {
-          if (pnu.getName().getPublishedInYear() == null) {
+          final Integer pubYear = pnu.getName().getPublishedInYear();
+          if (pubYear == null) {
             pnu.getName().setPublishedInYear(year);
-          } else if (!pnu.getName().getPublishedInYear().equals(year)) {
+          } else if (!pubYear.equals(year)
+              // a year range like 1880-1887 includes any year in it
+              && !InterpreterUtils.inYearRange(year, publishedInYear)
+              && !InterpreterUtils.inYearRange(pubYear, authorYear)
+          ) {
             issues.add(Issue.PUBLISHED_YEAR_CONFLICT);
           }
         }
@@ -342,11 +396,19 @@ public class NameInterpreter {
       pnu.getName().setLink(parse(UriParser.PARSER, link).orNull());
       pnu.getName().setRemarks(remarks);
 
-      ObjectUtils.setIfNotNull(pnu.getName()::setNotho, notho);
+      // the notho term names a single part only, so it adds to the hybrid markers found in the name
+      if (notho != null) {
+        addNotho(pnu.getName(), notho);
+      }
       ObjectUtils.setIfNotNull(pnu.getName()::setOriginalSpelling, originalSpelling);
       // applies default dataset code if we cannot find or parse any
       // Always make sure this happens BEFORE we update the canonical scientific name
       ObjectUtils.setIfNotNull(pnu.getName()::setCode, code);
+      // a code neither the record nor the dataset gave is the parser's guess, if any
+      pnu.setCodeGiven(code != null);
+      if (code == null && pnu.getName().getCode() != null) {
+        issues.add(Issue.NOMENCLATURAL_CODE_INFERRED);
+      }
 
       // name status can be explicitly given or as part of the nom notes from the authorship
       // dont store the explicit name status, it only remains as verbatim and interpreted data
@@ -362,7 +424,9 @@ public class NameInterpreter {
           issues.add(Issue.CONFLICTING_NOMENCLATURAL_STATUS);
         }
       }
-      pnu.getName().setNomStatus(ObjectUtils.coalesce(status, statusAuthorship));
+      // the parser flags a manuscript name itself, which is the weakest source
+      pnu.getName().setNomStatus(ObjectUtils.coalesce(status, statusAuthorship, pnu.getName().getNomStatus()));
+      deriveMisspellingFromRemarks(pnu.getName(), remarks, issues);
       if (nomStatus != null && (pnu.getName().getNomStatus() == null || !nomStatus.trim().equalsIgnoreCase(pnu.getName().getNomStatus().name()))) {
         // add raw status to remarks
         pnu.getName().addRemarks(nomStatus);
@@ -394,6 +458,24 @@ public class NameInterpreter {
    * @param n the name, already through interpret() so any explicit nomStatus is resolved
    * @param fromTaxonomicStatus the status the taxonomic status value implies, usually null
    */
+  /**
+   * Sources like WoRMS state a misspelling only in the remarks of a name, e.g. "misspelling - incorrect subsequent spelling".
+   * If the entire remarks are such a statement, the name gets the status ORTHOGRAPHIC_VARIANT,
+   * unless it already has a status that contradicts it. A status compatible with it, i.e. NOT_ESTABLISHED, is refined.
+   * Remarks that only mention a misspelling among other text are left alone.
+   * See https://github.com/CatalogueOfLife/backend/issues/1662
+   */
+  @VisibleForTesting
+  static void deriveMisspellingFromRemarks(Name n, @Nullable String remarks, IssueContainer issues) {
+    if (remarks == null || n.getNomStatus() == NomStatus.ORTHOGRAPHIC_VARIANT) return;
+    if (NomStatusParser.PARSER.parseOrNull(remarks) == NomStatus.ORTHOGRAPHIC_VARIANT
+        && (n.getNomStatus() == null || n.getNomStatus().isCompatible(NomStatus.ORTHOGRAPHIC_VARIANT))
+    ) {
+      n.setNomStatus(NomStatus.ORTHOGRAPHIC_VARIANT);
+      issues.add(Issue.DERIVED_NOMENCLATURAL_STATUS);
+    }
+  }
+
   public static void deriveNomStatus(Name n, @Nullable NomStatus fromTaxonomicStatus, IssueContainer issues) {
     if (n == null || fromTaxonomicStatus == null || n.getNomStatus() != null) return;
     n.setNomStatus(fromTaxonomicStatus);
@@ -402,12 +484,15 @@ public class NameInterpreter {
 
   private static Authorship buildAuthorship(String author, String ex, String year) {
     Authorship a = new Authorship();
-    a.setAuthors(parseAuthors(author));
+    AuthorAtoms.decode(parseAuthors(author), a);
     a.setExAuthors(parseAuthors(ex));
-    a.setYear(year);
+    AuthorAtoms.decodeYear(year, a);
     return a;
   }
 
+  /**
+   * @return the authors of a pipe separated list, an empty list for none as the parser has it, never null
+   */
   private static List<String> parseAuthors(String author) {
     if (author != null){
       return Arrays.stream(StringUtils.split(author, '|'))
@@ -415,7 +500,7 @@ public class NameInterpreter {
                    .filter(Objects::nonNull)
                    .collect(Collectors.toList());
     }
-    return null;
+    return new ArrayList<>();
   }
 
   private static String cleanAuthor(String author) {
@@ -438,9 +523,16 @@ public class NameInterpreter {
     if (epi.extinct) {
       pnu.setExtinct(true);
     }
-    if (epi.hybrid && pnu.getName().getNotho().isEmpty()) {
-      pnu.getName().setNotho(part);
+    // a nothospecies of a nothogenus carries markers on both parts
+    if (epi.hybrid) {
+      addNotho(pnu.getName(), part);
     }
+  }
+
+  private static void addNotho(Name n, NamePart part) {
+    var notho = EnumSet.of(part);
+    notho.addAll(n.getNotho());
+    n.setNotho(notho);
   }
 
 
@@ -452,16 +544,25 @@ public class NameInterpreter {
     return true;
   }
 
+  /**
+   * Lowercases an epithet only if it is a single word, or made one by EPITHET_ADD_HYPHEN.
+   * Several words are rather a phrase like "sp. Carnarvon (S.van Leeuwen 5110)" whose proper nouns keep their case,
+   * see https://github.com/CatalogueOfLife/backend/issues/1628
+   */
   private String sanitizeEpithet(String epithet, IssueContainer issues) {
-    if (epithet != null && !epithet.equals(epithet.toLowerCase())) {
-      issues.add(Issue.UPPERCASE_EPITHET);
-      epithet = epithet.trim().toLowerCase();
-    } else {
-      epithet = trimToNull(epithet);
+    epithet = trimToNull(epithet);
+    if (epithet == null) {
+      return null;
     }
-    if (epithet != null && settings.isEnabled(Setting.EPITHET_ADD_HYPHEN)) {
-      epithet = epithet.replaceAll("\\s+", "-");
+    if (settings.isEnabled(Setting.EPITHET_ADD_HYPHEN) && WHITESPACE.matcher(epithet).find()) {
+      epithet = WHITESPACE.matcher(epithet).replaceAll("-");
       issues.add(Issue.MULTI_WORD_EPITHET);
+    }
+    if (!epithet.equals(epithet.toLowerCase())) {
+      issues.add(Issue.UPPERCASE_EPITHET);
+      if (!WHITESPACE.matcher(epithet).find()) {
+        epithet = epithet.toLowerCase();
+      }
     }
     return epithet;
   }

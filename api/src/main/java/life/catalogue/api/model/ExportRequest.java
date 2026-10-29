@@ -21,11 +21,9 @@ public class ExportRequest {
   // output format
   private DataFormat format = DataFormat.COLDP;
   private TabularFormat tabFormat = TabularFormat.TSV;
-  private boolean excel = false;
   private boolean extended = false;
   // only relevant for simple dwc & coldp exports
-  private Boolean classification; // triggers a simple dwc tree export
-  private Boolean taxGroups;
+  private Boolean classification; // triggers a simple tree export with the classification and taxonomic group of each usage
   // workflow
   private boolean force; // this makes sure we run a new export
 
@@ -75,22 +73,6 @@ public class ExportRequest {
 
   public void setClassification(Boolean classification) {
     this.classification = classification;
-  }
-
-  public Boolean isTaxGroups() {
-    return taxGroups;
-  }
-
-  public void setTaxGroups(Boolean taxGroups) {
-    this.taxGroups = taxGroups;
-  }
-
-  public boolean isExcel() {
-    return excel;
-  }
-
-  public void setExcel(boolean excel) {
-    this.excel = excel;
   }
 
   public SimpleName getRoot() {
@@ -158,7 +140,7 @@ public class ExportRequest {
    */
   @JsonIgnore
   public boolean isTreeRequest() {
-    return Boolean.TRUE.equals(classification) || Boolean.TRUE.equals(taxGroups);
+    return Boolean.TRUE.equals(classification);
   }
 
   /**
@@ -176,7 +158,6 @@ public class ExportRequest {
     ExportRequest that = (ExportRequest) o;
     return synonyms == that.synonyms &&
       bareNames == that.bareNames &&
-      excel == that.excel &&
       extended == that.extended &&
       force == that.force &&
       Objects.equals(datasetKey, that.datasetKey) &&
@@ -185,20 +166,18 @@ public class ExportRequest {
       minRank == that.minRank &&
       format == that.format &&
       tabFormat == that.tabFormat &&
-      Objects.equals(classification, that.classification) &&
-      Objects.equals(taxGroups, that.taxGroups);
+      Objects.equals(classification, that.classification);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(datasetKey, root, synonyms, extinct, bareNames, minRank, format, tabFormat, excel, extended, classification, taxGroups, force);
+    return Objects.hash(datasetKey, root, synonyms, extinct, bareNames, minRank, format, tabFormat, extended, classification, force);
   }
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder(format + " export of " + datasetKey);
-    sb.append(" [excel=").append(excel)
-      .append(", extended=").append(extended)
+    sb.append(" [extended=").append(extended)
       .append(", synonyms=").append(synonyms)
       .append(", extinct=").append(extinct)
       .append(", bareNames=").append(bareNames);

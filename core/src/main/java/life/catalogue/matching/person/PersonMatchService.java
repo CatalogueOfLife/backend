@@ -80,7 +80,7 @@ public class PersonMatchService {
       match(comb.getExAuthors(), code, combYear, group),
       match(bas.getAuthors(), code, basYear, group),
       match(bas.getExAuthors(), code, basYear, group),
-      pa.getSanctioningAuthor() == null ? List.of() : List.of(match(pa.getSanctioningAuthor(), code, null, group)));
+      comb.getSanctioningAuthor() == null ? List.of() : List.of(match(comb.getSanctioningAuthor(), code, null, group)));
   }
 
   private List<PersonMatch> match(@Nullable List<String> authors, @Nullable NomCode code, @Nullable Integer year,

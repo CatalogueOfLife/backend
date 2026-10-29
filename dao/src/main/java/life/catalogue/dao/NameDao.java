@@ -171,9 +171,16 @@ public class NameDao extends SectorEntityDao<Name, NameMapper> {
    * Lists all relations for a given name
    */
   public List<NameRelation> relations(DSID<String> key) {
+    return relations(key, false);
+  }
+
+  /**
+   * Lists all relations of a given name, or with inverse=true all relations of other names pointing to it
+   */
+  public List<NameRelation> relations(DSID<String> key, boolean inverse) {
     try (SqlSession session = factory.openSession(false)) {
       NameRelationMapper rm = session.getMapper(NameRelationMapper.class);
-      return rm.listByName(key);
+      return inverse ? rm.listByRelatedName(key) : rm.listByName(key);
     }
   }
   

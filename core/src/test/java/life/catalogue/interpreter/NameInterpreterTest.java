@@ -2,6 +2,7 @@ package life.catalogue.interpreter;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Issue;
+import life.catalogue.api.vocab.NomStatus;
 import life.catalogue.api.vocab.Setting;
 import life.catalogue.coldp.ColdpTerm;
 
@@ -9,6 +10,7 @@ import org.gbif.dwc.terms.Term;
 import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.NamePart;
 import org.gbif.nameparser.api.NameType;
+import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
 import java.util.HashMap;
@@ -128,6 +130,32 @@ public class NameInterpreterTest {
   }
 
   /**
+   * WoRMS states misspellings only in the name remarks: https://github.com/CatalogueOfLife/backend/issues/1662
+   */
+  @Test
+  public void misspellingFromRemarks() throws Exception {
+    assertMisspelling(null, "misspelling - incorrect subsequent spelling", NomStatus.ORTHOGRAPHIC_VARIANT, true);
+    assertMisspelling(null, "misspelling", NomStatus.ORTHOGRAPHIC_VARIANT, true);
+    // a compatible status is refined
+    assertMisspelling(NomStatus.NOT_ESTABLISHED, "misspelling - incorrect original spelling", NomStatus.ORTHOGRAPHIC_VARIANT, true);
+    // a contradicting status stays
+    assertMisspelling(NomStatus.ACCEPTABLE, "misspelling", NomStatus.ACCEPTABLE, false);
+    // only remarks that are nothing but the statement count
+    assertMisspelling(null, "unaccepted", null, false);
+    assertMisspelling(null, "considered a misspelling by Smith 1990, but see Jones 2001", null, false);
+    assertMisspelling(null, null, null, false);
+  }
+
+  static void assertMisspelling(NomStatus given, String remarks, NomStatus expected, boolean derived) {
+    var n = new Name();
+    n.setNomStatus(given);
+    var v = new VerbatimRecord();
+    NameInterpreter.deriveMisspellingFromRemarks(n, remarks, v);
+    assertEquals(remarks, expected, n.getNomStatus());
+    assertEquals(remarks, derived, v.contains(Issue.DERIVED_NOMENCLATURAL_STATUS));
+  }
+
+  /**
    * https://www.checklistbank.org/dataset/281817/verbatim/29763
    * A uninomial genus whose author carries a particle: "Protosialis van der Weele, 1909".
    * It must interpret as the genus "Protosialis" with authorship "van der Weele, 1909" - the
@@ -170,6 +198,66 @@ public class NameInterpreterTest {
   }
 
   /**
+   * APNI atomises phrase names, putting the whole phrase into the specificEpithet. Once the parser rejects the atoms
+   * the verbatim scientific name is used, not the label rebuilt from atoms with a lowercased epithet.
+   * https://github.com/CatalogueOfLife/backend/issues/1628
+   */
+  @Test
+  public void rejectedAtomsUseScientificName() throws Exception {
+    VerbatimRecord v = new VerbatimRecord();
+    var n = interpret("species", "Hibiscus sp. Carnarvon (S.van Leeuwen 5110)", "WA Herbarium", null,
+      null, "Hibiscus", null, "sp. Carnarvon (S.van Leeuwen 5110)", null, v).getName();
+    assertEquals(NameType.INFORMAL, n.getType());
+    assertEquals("Hibiscus", n.getGenus());
+    assertTrue(n.getLabel(), n.getLabel().contains("Carnarvon (S.van Leeuwen 5110)"));
+    assertFalse(v.contains(Issue.UPPERCASE_EPITHET));
+
+    v = new VerbatimRecord();
+    n = interpret("species", "Caladenia sp. A", null, null,
+      null, "Caladenia", null, "sp. A", null, v).getName();
+    assertEquals(NameType.INFORMAL, n.getType());
+    assertEquals("Caladenia sp. A", n.getLabel());
+
+    // without a scientific name the case of a phrase in the atoms is kept as well
+    v = new VerbatimRecord();
+    n = interpret("species", null, null, null,
+      null, "Caladenia", null, "sp. A", null, v).getName();
+    assertEquals(NameType.INFORMAL, n.getType());
+    assertEquals("Caladenia sp. A", n.getLabel());
+    assertTrue(v.contains(Issue.UPPERCASE_EPITHET));
+
+    // a single word epithet is still lowercased
+    v = new VerbatimRecord();
+    n = interpret("species", null, null, null,
+      null, "Caladenia", null, "Alba", null, v).getName();
+    assertEquals(NameType.SCIENTIFIC, n.getType());
+    assertEquals("alba", n.getSpecificEpithet());
+    assertTrue(v.contains(Issue.UPPERCASE_EPITHET));
+  }
+
+  /**
+   * A hybrid formula in an epithet atom is no nothospecies with both epithets glued together.
+   * https://github.com/CatalogueOfLife/backend/issues/1629
+   */
+  @Test
+  public void hybridFormulaAtom() throws Exception {
+    VerbatimRecord v = new VerbatimRecord();
+    var n = interpret("species", "Acacia adsurgens x Acacia rhodophloia", "Maiden & Blakely x Acacia rhodophloia Maslin", null,
+      null, "Acacia", null, "adsurgens x rhodophloia", null, v).getName();
+    assertEquals(NameType.FORMULA, n.getType());
+    assertTrue(n.getNotho().isEmpty());
+    assertNotEquals("adsurgensrhodophloia", n.getSpecificEpithet());
+
+    // a leading sign is still the notho marker
+    v = new VerbatimRecord();
+    n = interpret("species", null, "Maiden", null,
+      null, "Acacia", null, "x rhodophloia", null, v).getName();
+    assertEquals(NameType.SCIENTIFIC, n.getType());
+    assertEquals("rhodophloia", n.getSpecificEpithet());
+    assertEquals(Set.of(NamePart.SPECIFIC), n.getNotho());
+  }
+
+  /**
    * The same trust must survive for genuinely determined names - atoms still win there.
    */
   @Test
@@ -181,6 +269,54 @@ public class NameInterpreterTest {
     assertEquals(NameType.SCIENTIFIC, n.getType());
     assertEquals("Scoloplos", n.getGenus());
     assertEquals("armiger", n.getSpecificEpithet());
+  }
+
+  /**
+   * ColDP author columns carry an anonymous work as the lone anon author or as bracketed attributed authors.
+   * https://github.com/CatalogueOfLife/backend/issues/1611
+   */
+  @Test
+  public void anonymousAuthorAtoms() throws Exception {
+    VerbatimRecord v = new VerbatimRecord();
+    var n = interpret("genus", "Aodon", null, null, "Aodon", null, null, null, null, null,
+      "Anon.", null, "1798", null, null, null,
+      null, null, "zoological", null, v).getName();
+    assertTrue(n.getCombinationAuthorship().isAnonymous());
+    assertFalse(n.getCombinationAuthorship().hasAuthors());
+    assertEquals("1798", n.getCombinationAuthorship().getYear());
+    assertEquals("Anon., 1798", n.getAuthorship());
+
+    v = new VerbatimRecord();
+    n = interpret("species", "Lycaena virgaureae", null, null, null, "Lycaena", null, "virgaureae", null, null,
+      "[Denis]|[Schiffermüller]", null, "1775", null, null, null,
+      null, null, "zoological", null, v).getName();
+    assertTrue(n.getCombinationAuthorship().isAnonymous());
+    assertEquals(List.of("Denis", "Schiffermüller"), n.getCombinationAuthorship().getAuthors());
+    assertEquals("[Denis & Schiffermüller], 1775", n.getAuthorship());
+
+    v = new VerbatimRecord();
+    n = interpret("species", "Abies parsonii", null, null, null, "Abies", null, "parsonii", null, null,
+      "Bailly", null, null, null, null, null,
+      null, null, "botanical", null, v).getName();
+    assertFalse(n.getCombinationAuthorship().isAnonymous());
+    assertEquals("Bailly", n.getAuthorship());
+  }
+
+  /**
+   * ColDP has no column for a bracketed year, the year atom keeps its square brackets
+   */
+  @Test
+  public void bracketedYearAtom() throws Exception {
+    VerbatimRecord v = new VerbatimRecord();
+    var n = interpret("species", "Toleria aegerides", null, null, null, "Toleria", null, "aegerides", null, null,
+      null, null, null, "Strand", null, "[1916]",
+      null, null, "zoological", null, v).getName();
+    assertTrue(n.getBasionymAuthorship().isBracketedYear());
+    assertEquals("1916", n.getBasionymAuthorship().getYear());
+    assertFalse(n.getCombinationAuthorship().isBracketedYear());
+    assertEquals("(Strand, [1916])", n.getAuthorship());
+    assertFalse(v.getIssues().toString(), v.contains(Issue.UNPARSABLE_YEAR));
+    assertFalse(v.getIssues().toString(), v.contains(Issue.UNLIKELY_YEAR));
   }
 
   @Test
@@ -202,8 +338,69 @@ public class NameInterpreterTest {
     assertEquals(Rank.UNRANKED, rank("Festuca rubra pruinosa"));  // -> INFRASPECIFIC_NAME
     assertEquals(Rank.UNRANKED, rank("Aeshna subarctica"));       // -> SPECIES
     assertEquals(Rank.UNRANKED, rank("Aeshna (Aeshna) subarctica"));
-    assertEquals(Rank.UNRANKED, rank("Quercus (Cerris)"));        // -> INFRAGENERIC_NAME
     assertEquals(Rank.UNRANKED, rank("Poaceae"));                 // -> FAMILY by suffix
+  }
+
+  /**
+   * An infrageneric epithet in brackets after the genus, with no species epithet following, is a name below the genus.
+   * The vague rank leaves open which one, but is no genus: Chaetoceros (Hyalochaete) is not the plant genus Hyalochaete.
+   */
+  @Test
+  public void bracketedInfragenericIsAdopted() {
+    assertEquals(Rank.INFRAGENERIC_NAME, rank("Quercus (Cerris)"));
+    assertEquals(Rank.INFRAGENERIC_NAME, rank("Aedes (Stegomyia)"));
+    // with a zoological authorship the parser knows it is a subgenus
+    assertEquals(Rank.SUBGENUS, rank("Aedes (Stegomyia) Theobald, 1901"));
+    // a given rank still wins
+    assertEquals(Rank.SUBGENUS, ib.interpret(SimpleName.sn(Rank.SUBGENUS, "Aedes (Stegomyia)"), new VerbatimRecord()).get().getName().getRank());
+  }
+
+  /**
+   * A rank column stating unranked, no rank or clade says the source has no rank, not that the name has none.
+   * Atoms given with it get the rank their structure implies, just as without any rank.
+   */
+  @Test
+  public void unrankedAtomsGetStructuralRank() {
+    var n = atoms("unranked", null, "Trifolium", "Camptoneurum", null, null, "F.Herm.");
+    assertEquals(Rank.INFRAGENERIC_NAME, n.getRank());
+    assertEquals("F.Herm.", n.getAuthorship());
+    assertEquals("Trifolium", n.getGenus());
+    assertEquals("Camptoneurum", n.getInfragenericEpithet());
+    assertNull(n.getUninomial());
+
+    assertEquals(Rank.INFRASPECIFIC_NAME, atoms("unranked", null, "Festuca", null, "rubra", "pruinosa", null).getRank());
+    assertEquals(Rank.SPECIES, atoms("unranked", null, "Festuca", null, "rubra", null, null).getRank());
+    assertEquals(Rank.INFRAGENERIC_NAME, atoms("no rank", null, "Trifolium", "Camptoneurum", null, null, null).getRank());
+    assertEquals(Rank.INFRASPECIFIC_NAME, atoms("no rank", null, "Festuca", null, "rubra", "pruinosa", null).getRank());
+    // no suffix based ranks for uninomials
+    assertEquals(Rank.UNRANKED, atoms("unranked", "Poaceae", null, null, null, null, null).getRank());
+    // a concrete rank still wins
+    assertEquals(Rank.SUBGENUS, atoms("subgenus", null, "Trifolium", "Camptoneurum", null, null, null).getRank());
+    // a rank marker in the name string as well
+    assertEquals(Rank.SUBSPECIES, interpret("unranked", "Festuca rubra subsp. pruinosa", null, new VerbatimRecord()).getName().getRank());
+
+    // unless ranks must not be inferred
+    var settings = new DatasetSettings();
+    settings.put(Setting.DONT_INFER_RANKS, true);
+    ib = new NameInterpreter(settings, true);
+    assertEquals(Rank.UNRANKED, atoms("unranked", null, "Festuca", null, "rubra", "pruinosa", null).getRank());
+  }
+
+  private Name atoms(String rank, String uninomial, String genus, String infraGenus, String species, String infraspecies, String authorship) {
+    return interpret(rank, null, authorship, null, uninomial, genus, infraGenus, species, infraspecies, null,
+      null, null, "botanical", null, new VerbatimRecord()).getName();
+  }
+
+  /**
+   * The marker of an indetermined name stands in for its missing epithet and states the rank,
+   * so Chaetoceros (Hyalochaete) spp. is a species and not the plant genus Hyalochaete.
+   */
+  @Test
+  public void indeterminedRankIsAdopted() {
+    assertEquals(Rank.SPECIES, rank("Xysticus sp."));
+    assertEquals(Rank.SPECIES, rank("Chaetoceros spp."));
+    assertEquals(Rank.SPECIES, rank("Chaetoceros (Hyalochaete) spp."));
+    assertEquals(Rank.SUBSPECIES, rank("Panthera pardus ssp."));
   }
 
   @Test
@@ -424,7 +621,7 @@ public class NameInterpreterTest {
     assertEquals("1941", n.getBasionymAuthorship().getYear());
     assertEquals("Ristorcelli", n.getBasionymAuthorship().getAuthors().get(0));
     assertEquals("Van ty", n.getBasionymAuthorship().getAuthors().get(1));
-    assertTrue(n.getBasionymAuthorship().getExAuthors().isEmpty());
+    assertFalse(n.getBasionymAuthorship().hasExAuthors());
 
     // https://github.com/CatalogueOfLife/backend/issues/788
     pnu = interpret("superfamily", "Eucnidoideae ined.", "ined.", v);
@@ -468,7 +665,8 @@ public class NameInterpreterTest {
       null, "Boyeria", null, "vinosa", null, v);
     assertNull(pnu.getTaxonomicNote());
     n = pnu.getName();
-    assertFalse(v.hasIssues());
+    // a year is citation style shared across codes and implies no code
+    assertEquals(Set.of(), v.getIssues());
 
     // explicit unranked should stay: https://github.com/CatalogueOfLife/backend/issues/1136
     pnu = interpret("no rank", "cellular organisms", null, v);
@@ -687,8 +885,8 @@ public class NameInterpreterTest {
     assertEquals("Rosicky, 1955", n.getAuthorship());
     assertEquals(List.of("Rosicky"), n.getCombinationAuthorship().getAuthors());
     assertEquals("1955", n.getCombinationAuthorship().getYear());
-    assertEquals(List.of(), n.getBasionymAuthorship().getAuthors());
-    assertEquals(List.of(), n.getBasionymAuthorship().getExAuthors());
+    assertFalse(n.getBasionymAuthorship().hasAuthors());
+    assertFalse(n.getBasionymAuthorship().hasExAuthors());
     assertNull(n.getBasionymAuthorship().getYear());
     assertFalse(v.hasIssues());
 
@@ -707,10 +905,132 @@ public class NameInterpreterTest {
     assertEquals("Desbrochers des Loges, 1881", n.getAuthorship());
     assertEquals(List.of("Desbrochers des Loges"), n.getCombinationAuthorship().getAuthors());
     assertEquals("1881", n.getCombinationAuthorship().getYear());
-    assertEquals(List.of(), n.getBasionymAuthorship().getAuthors());
-    assertEquals(List.of(), n.getBasionymAuthorship().getExAuthors());
+    assertFalse(n.getBasionymAuthorship().hasAuthors());
+    assertFalse(n.getBasionymAuthorship().hasExAuthors());
     assertNull(n.getBasionymAuthorship().getYear());
     assertFalse(v.hasIssues());
+  }
+
+  /**
+   * Author atoms with a year but no author: ColDP records with a combinationAuthorshipYear and no
+   * combinationAuthorship. Rendering them threw a NullPointerException, which fails the entire import -
+   * found for 90k ColDP records of ChecklistBank by the interpreter corpus.
+   */
+  @Test
+  public void authorAtomsWithYearOnly() throws Exception {
+    VerbatimRecord v = new VerbatimRecord();
+    var n = interpret("species", "Colobaea beckeri", "(Hendel 1902) 1902", null,
+      null, "Colobaea", null, "beckeri", null, null,
+      null, null, "1902", "Hendel", null, "1902",
+      null, null, "zoological", null, v).getName();
+    assertEquals("Colobaea beckeri", n.getScientificName());
+    assertEquals(List.of(), n.getCombinationAuthorship().getAuthors());
+    assertEquals(List.of(), n.getCombinationAuthorship().getExAuthors());
+    assertEquals("1902", n.getCombinationAuthorship().getYear());
+    assertEquals(List.of("Hendel"), n.getBasionymAuthorship().getAuthors());
+    assertEquals("(Hendel, 1902) 1902", n.getAuthorship());
+
+    // no basionym atoms at all
+    n = interpret("species", "Colobaea beckeri", null, null,
+      null, "Colobaea", null, "beckeri", null, null,
+      "Hendel", null, null, null, null, null,
+      null, null, "zoological", null, v).getName();
+    assertEquals(List.of(), n.getBasionymAuthorship().getAuthors());
+    assertEquals("Hendel", n.getAuthorship());
+  }
+
+  /**
+   * A year within a published year range is no conflict, see https://github.com/CatalogueOfLife/backend/issues/1397
+   */
+  @Test
+  public void publishedYearRange() throws Exception {
+    for (String range : new String[]{"1880-1887", "1880-87"}) {
+      VerbatimRecord v = new VerbatimRecord();
+      var n = interpret("species", "Abies alba", "Mill., 1885", range, null, null, null, null, null, v).getName();
+      assertEquals(1880, (int) n.getPublishedInYear());
+      assertFalse(range, v.contains(Issue.PUBLISHED_YEAR_CONFLICT));
+
+      v = new VerbatimRecord();
+      interpret("species", "Abies alba", "Mill., 1890", range, null, null, null, null, null, v);
+      assertTrue(range, v.contains(Issue.PUBLISHED_YEAR_CONFLICT));
+    }
+
+    VerbatimRecord v = new VerbatimRecord();
+    interpret("species", "Abies alba", "Mill., 1886", "1885", null, null, null, null, null, v);
+    assertTrue(v.contains(Issue.PUBLISHED_YEAR_CONFLICT));
+  }
+
+  /**
+   * A nothospecies of a nothogenus carries a hybrid marker on both its genus and its epithet atom, and an explicit notho
+   * term can only name one of them. Neither may drop the other, see https://github.com/CatalogueOfLife/backend/issues/1398
+   */
+  @Test
+  public void hybridGenusAndEpithetAtoms() throws Exception {
+    for (String notho : new String[]{null, "specific", "generic"}) {
+      VerbatimRecord v = new VerbatimRecord();
+      var n = interpret("species", "× Apseudathyrium × reichsteinii", null, null,
+        null, "× Apseudathyrium", null, "× reichsteinii", null, null,
+        notho, null, "botanical", null, v).getName();
+      assertEquals("Apseudathyrium", n.getGenus());
+      assertEquals("reichsteinii", n.getSpecificEpithet());
+      assertEquals(Set.of(NamePart.GENERIC, NamePart.SPECIFIC), n.getNotho());
+      assertEquals("× Apseudathyrium × reichsteinii", n.getScientificName());
+    }
+  }
+
+  /**
+   * A hybrid marker on a uninomial atom marks the generic name part as the hybrid, as it does on a genus atom.
+   */
+  @Test
+  public void hybridUninomialAtom() throws Exception {
+    VerbatimRecord v = new VerbatimRecord();
+    var n = interpret("genus", null, "P.Fourn.", null,
+      "× Agropogon", null, null, null, null, v).getName();
+    assertEquals("Agropogon", n.getUninomial());
+    assertEquals(Set.of(NamePart.GENERIC), n.getNotho());
+    assertEquals("P.Fourn.", n.getAuthorship());
+  }
+
+  /**
+   * Only an epithet made of several words is a multi word epithet that gets hyphenated.
+   */
+  @Test
+  public void singleWordEpithetIsNoMultiWordEpithet() throws Exception {
+    ib.settings.enable(Setting.EPITHET_ADD_HYPHEN);
+    VerbatimRecord v = new VerbatimRecord();
+    var n = interpret("species", null, null, null,
+      null, "Cosmopterix", null, "pulchrimella", null, v).getName();
+    assertEquals("Cosmopterix pulchrimella", n.getScientificName());
+    assertFalse(v.contains(Issue.MULTI_WORD_EPITHET));
+  }
+
+  /**
+   * An epithet atom holding nothing but an extinct dagger must not end the interpretation with an exception.
+   */
+  @Test
+  public void daggerOnlyEpithet() throws Exception {
+    VerbatimRecord v = new VerbatimRecord();
+    var pnu = interpret("species", null, null, null,
+      null, "Abies", null, "†", null, v);
+    assertTrue(pnu.isExtinct());
+    assertEquals("Abies", pnu.getName().getGenus());
+    assertNull(pnu.getName().getSpecificEpithet());
+  }
+
+  /**
+   * The authorship of an atomised name is parsed together with the name rebuilt from the atoms, like a scientific
+   * name with its authorship. Its style implies no nomenclatural code.
+   */
+  @Test
+  public void atomisedNameWithAuthorship() throws Exception {
+    VerbatimRecord v = new VerbatimRecord();
+    var n = interpret("subspecies", null, "(Huter et al.) P. D. Sell & Whitehead", null,
+      null, "Cerastium", null, "ligusticum", "granulatum", v).getName();
+    assertNull(n.getCode());
+    assertEquals("Cerastium ligusticum subsp. granulatum", n.getScientificName());
+    assertEquals("(Huter et al.) P. D. Sell & Whitehead", n.getAuthorship());
+    assertEquals(List.of("P.D.Sell", "Whitehead"), n.getCombinationAuthorship().getAuthors());
+    assertEquals(List.of("Huter", "al."), n.getBasionymAuthorship().getAuthors());
   }
 
   /**
@@ -732,5 +1052,45 @@ public class NameInterpreterTest {
     assertNull(n.getBasionymAuthorship().getYear());
 
     assertFalse(v.hasIssues());
+  }
+
+  /**
+   * A code the parser inferred is not marked as given, so the import can still decide it from the final classification.
+   * https://github.com/CatalogueOfLife/backend/issues/1624
+   */
+  @Test
+  public void inferredCode() {
+    VerbatimRecord v = new VerbatimRecord();
+    // a named hybrid is botanical
+    var pnu = interpret("species", "Abies ×borisii-regis", "Mattf.", v);
+    assertEquals(NomCode.BOTANICAL, pnu.getName().getCode());
+    assertFalse(pnu.isCodeGiven());
+    assertTrue(v.contains(Issue.NOMENCLATURAL_CODE_INFERRED));
+
+    // a code of the record is given
+    v = new VerbatimRecord();
+    pnu = interpret("subspecies", "Abies cilicica subsp. isaurica", "Coode & Cullen, 1965", null,
+      null, null, null, null, null, null,
+      null, null, "botanical", null, v);
+    assertEquals(NomCode.BOTANICAL, pnu.getName().getCode());
+    assertTrue(pnu.isCodeGiven());
+    assertFalse(v.contains(Issue.NOMENCLATURAL_CODE_INFERRED));
+
+    // no code at all is not flagged
+    v = new VerbatimRecord();
+    pnu = interpret("species", "Abies alba", "Mill.", v);
+    assertNull(pnu.getName().getCode());
+    assertFalse(v.contains(Issue.NOMENCLATURAL_CODE_INFERRED));
+
+    // so is the code of the dataset settings, also for a copy of the interpreter with another code
+    var botIb = ib.withCode(NomCode.BOTANICAL);
+    pnu = botIb.interpret("1", "subspecies", null, "Abies cilicica subsp. isaurica", "Coode & Cullen, 1965", null,
+      null, null, null, null, null, null,
+      null, null, null, null, null, null,
+      null, null, null, null,
+      null, null, null, new VerbatimRecord()).get();
+    assertEquals(NomCode.BOTANICAL, pnu.getName().getCode());
+    assertEquals("Abies cilicica subsp. isaurica Coode & Cullen, 1965", pnu.getName().getLabel());
+    assertTrue(pnu.isCodeGiven());
   }
 }

@@ -91,6 +91,20 @@
     WHERE dataset_key=#{datasetKey} AND id = tmp.uid
   </delete>
 
+  <!-- entities of other sectors or of none attached to usages of the sector. See SectorForeignProcessable -->
+  <select id="listForeignBySector" parameterType="map" resultMap="treatmentResultMap">
+    SELECT <include refid="SELECT"/>
+    FROM treatment t
+    WHERE t.dataset_key = #{key.datasetKey} AND t.sector_key IS DISTINCT FROM #{key.id}
+      AND t.id IN (<include refid="life.catalogue.db.Common.sectorUsageIds"/>)
+  </select>
+
+  <delete id="deleteForeignBySector" parameterType="map">
+    DELETE FROM treatment
+    WHERE dataset_key = #{key.datasetKey} AND sector_key IS DISTINCT FROM #{key.id}
+      AND id IN (<include refid="life.catalogue.db.Common.sectorUsageIds"/>)
+  </delete>
+
   <delete id="deleteBySector" parameterType="map">
     DELETE FROM treatment
     WHERE dataset_key = #{key.datasetKey} AND sector_key=#{key.id}

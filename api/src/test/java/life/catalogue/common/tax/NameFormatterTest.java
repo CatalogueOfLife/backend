@@ -34,6 +34,23 @@ public class NameFormatterTest {
   }
 
   @Test
+  public void graftChimaera() throws Exception {
+    Name n = new Name();
+    n.setUninomial("Crataegomespilus");
+    n.setRank(Rank.GENUS);
+    n.setGraftChimaera(true);
+    assertEquals("+ Crataegomespilus", NameFormatter.scientificName(n));
+
+    n = new Name();
+    n.setGenus("Laburnocytisus");
+    n.setSpecificEpithet("adamii");
+    n.setRank(Rank.SPECIES);
+    n.setGraftChimaera(true);
+    assertEquals("+ Laburnocytisus adamii", NameFormatter.scientificName(n));
+    assertEquals("+ <i>Laburnocytisus adamii</i>", NameFormatter.scientificNameHtml("+ Laburnocytisus adamii", Rank.SPECIES));
+  }
+
+  @Test
   public void cultivars() throws Exception {
     Name n = new Name();
     n.setGenus("Brassica");
@@ -81,6 +98,43 @@ public class NameFormatterTest {
 
     n.setUninomial("Spirulina");
     assertEquals("Spirulina", NameFormatter.canonicalName(n));
+  }
+
+  /**
+   * https://github.com/CatalogueOfLife/backend/issues/1676
+   */
+  @Test
+  public void canonicalIfDifferent() throws Exception {
+    Name n = new Name();
+    n.setGenus("Puma");
+    n.setSpecificEpithet("concolor");
+    n.setRank(Rank.SPECIES);
+    n.setCode(NomCode.ZOOLOGICAL);
+    n.rebuildScientificName();
+    assertEquals("Puma concolor", n.getScientificName());
+    assertNull(n.getCanonicalNameIfDifferent());
+
+    n.setGenus("Aleochara");
+    n.setInfragenericEpithet("Coprochara");
+    n.setSpecificEpithet("composita");
+    n.rebuildScientificName();
+    assertEquals("Aleochara (Coprochara) composita", n.getScientificName());
+    assertEquals("Aleochara composita", n.getCanonicalNameIfDifferent());
+
+    n.setSpecificEpithet(null);
+    n.setRank(Rank.SUBGENUS);
+    n.rebuildScientificName();
+    assertEquals("Coprochara", n.getCanonicalNameIfDifferent());
+
+    n = new Name();
+    n.setGenus("Poa");
+    n.setSpecificEpithet("annua");
+    n.setInfraspecificEpithet("supina");
+    n.setRank(Rank.VARIETY);
+    n.setCode(NomCode.BOTANICAL);
+    n.rebuildScientificName();
+    assertEquals("Poa annua var. supina", n.getScientificName());
+    assertEquals("Poa annua supina", n.getCanonicalNameIfDifferent());
   }
 
   @Test
@@ -137,6 +191,43 @@ public class NameFormatterTest {
     assertNull(n.getAuthorship());
     assertNull(NameFormatter.authorship(n));
     assertEquals("Acacia sp. Bigge Island (A.A. Mitchell 3436) WA Herbarium", NameFormatter.scientificName(n));
+  }
+
+  /**
+   * No synthetic rank marker in front of an unparsed rest that starts with one already, #1620
+   */
+  @Test
+  public void unparsedRankMarker() throws Exception {
+    Name n = new Name();
+    n.setGenus("Aa");
+    n.setRank(Rank.SPECIES);
+    n.setUnparsed("spp.");
+    assertEquals("Aa spp.", NameFormatter.scientificName(n));
+
+    n.setUnparsed("complex");
+    assertEquals("Aa complex", NameFormatter.scientificName(n));
+
+    // a phrase that only looks like a marker keeps it
+    n.setUnparsed("F (B.Davies 123)");
+    assertEquals("Aa sp. F (B.Davies 123)", NameFormatter.scientificName(n));
+    n.setUnparsed("fasciata");
+    assertEquals("Aa sp. fasciata", NameFormatter.scientificName(n));
+
+    n = new Name();
+    n.setGenus("Rinodina");
+    n.setSpecificEpithet("archaea");
+    n.setRank(Rank.FORM);
+    n.setUnparsed("f. aggregata");
+    assertEquals("Rinodina archaea f. aggregata", NameFormatter.scientificName(n));
+    n.setUnparsed(null);
+    assertEquals("Rinodina archaea f.", NameFormatter.scientificName(n));
+
+    n = new Name();
+    n.setGenus("Batrachospermum");
+    n.setSpecificEpithet("ludibundum");
+    n.setRank(Rank.VARIETY);
+    n.setUnparsed("var. Batrachosperma ludibonda var. pulcherrima");
+    assertEquals("Batrachospermum ludibundum var. Batrachosperma ludibonda var. pulcherrima", NameFormatter.scientificName(n));
   }
 
 }

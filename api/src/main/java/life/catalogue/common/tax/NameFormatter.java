@@ -8,10 +8,15 @@ import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 import org.gbif.nameparser.util.UnicodeUtils;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.StringUtils;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
@@ -23,26 +28,44 @@ import static org.gbif.nameparser.util.NameFormatter.appendAuthorship;
  */
 public class NameFormatter {
   public static final char HYBRID_MARKER = '×';
+  /** The plus sign before the genus of a graft-chimaera, + Crataegomespilus. */
+  public static final char GRAFT_MARKER = '+';
   private static final String NOTHO_PREFIX = "notho";
   private static final Joiner AUTHORSHIP_JOINER = Joiner.on(", ").skipNulls();
   private static final Pattern AL = Pattern.compile("^al\\.?$");
-  // an unparsed/phrase portion that itself starts with a species marker ("species 1", "sp. 3"), so
-  // the synthetic "sp." rank marker must not be prepended a second time ("Xyris sp. species 1")
-  private static final Pattern UNPARSED_SPECIES_MARKER =
-      Pattern.compile("^(?:sp|spec|species)\\b", Pattern.CASE_INSENSITIVE);
+  // an unparsed/phrase portion that itself starts with a rank marker of a species or below ("species 1", "spp.",
+  // "f. aggregata") or a species aggregate ("complex"), so the synthetic rank marker must not be prepended a second
+  // time ("Xyris sp. species 1", "Aa sp. spp.", "Rinodina archaea f. f. aggregata"), see #1620
+  private static final Pattern UNPARSED_RANK_MARKER = buildUnparsedRankMarker();
   private static Pattern RANK_MATCHER = Pattern.compile("^(.+[a-z]) ((?:notho)?(?:infra|super|sub)?(?:gx|natio|morph|klepton|lusus|strain|chemoform|(?:subsp|f\\. ?sp|[a-z]{1,4})\\.|[a-z]{3,6}var\\.?))( [a-z][^ ]*?)?( .+)?$");
   //private static Pattern RANK_MATCHER = Pattern.compile("^(.+[a-z]) ((?:notho|infra)?(?:gx|natio|morph|[a-z]{3,6}var\\.?|chemoform|f\\. ?sp\\.|strain|[a-z]{1,7}\\.))( [a-z][^ ]*?)?( .+)?$");
   // matches only uninomials or binomials without any authorship
   private static String EPITHET = "[a-z0-9ïëöüäåéèčáàæœ-]+";
   @VisibleForTesting
-  static Pattern LINNEAN_NAME_NO_AUTHOR = Pattern.compile("^(?:× )?[A-ZÆŒ]"+EPITHET           // (notho)genus
+  static Pattern LINNEAN_NAME_NO_AUTHOR = Pattern.compile("^(?:[×+] )?[A-ZÆŒ]"+EPITHET        // (notho)genus or graft-chimaera
                                                           + "(?: \\([A-ZÆŒ]"+EPITHET+"\\))?"  // infrageneric
                                                           + "(?: (?:× )?"+EPITHET             // (notho)species
                                                               +"(?: (?:× )?"+EPITHET+")?"     // (notho)subspecies
                                                           + ")?$");
 
   private NameFormatter() {
+  }
 
+  /**
+   * Markers are lowercase and case sensitive, and short ones need their dot:
+   * the phrase of "Acacia sp. F (B.Davies 123)" must not be read as a form.
+   * Only the species markers of the phrase names themselves are case insensitive ("Xyris Species 1").
+   */
+  private static Pattern buildUnparsedRankMarker() {
+    Set<String> markers = new HashSet<>(Set.of("ssp", "forma", "cultivar", "agg", "aggr", "complex", "group", "grp"));
+    for (Rank r : Rank.values()) {
+      if (r.isSpeciesOrBelow() && r.getMarker() != null) {
+        markers.add(StringUtils.removeEnd(r.getMarker(), "."));
+      }
+    }
+    String lng = markers.stream().filter(m -> m.length() > 2).map(Pattern::quote).collect(Collectors.joining("|"));
+    String shrt = markers.stream().filter(m -> m.length() <= 2).map(Pattern::quote).collect(Collectors.joining("|"));
+    return Pattern.compile("^(?:(?i:sp|spp|spec|species)\\b|(?:notho)?(?:" + lng + ")(?:\\.|\\b)|(?:notho)?(?:" + shrt + ")\\.)");
   }
 
   /**
@@ -130,8 +153,12 @@ public class NameFormatter {
   /**
    * Wraps a name in italics, but keeps any hybrid marker (×) and its surrounding spaces outside the italic tags.
    * E.g. "Ophrys × varvarae" becomes "&lt;i&gt;Ophrys&lt;/i&gt; × &lt;i&gt;varvarae&lt;/i&gt;".
+   * The leading graft-chimaera marker of "+ Crataegomespilus" is kept outside as well.
    */
   private static String inItalicsKeepHybrid(String x) {
+    if (x.length() > 2 && x.charAt(0) == GRAFT_MARKER && x.charAt(1) == ' ') {
+      return GRAFT_MARKER + " " + inItalicsKeepHybrid(x.substring(2));
+    }
     if (x.indexOf(HYBRID_MARKER) < 0) {
       return inItalics(x);
     }
@@ -165,7 +192,10 @@ public class NameFormatter {
 
     if (n.getUninomial() != null) {
       // higher rank names being just a uninomial!
-      if (n.getNotho().contains(NamePart.GENERIC)) {
+      if (n.isGraftChimaera()) {
+        sb.append(GRAFT_MARKER)
+          .append(" ");
+      } else if (n.getNotho().contains(NamePart.GENERIC)) {
         sb.append(HYBRID_MARKER)
           .append(" ");
       }
@@ -222,10 +252,12 @@ public class NameFormatter {
           if (n.getRank() != null && n.getRank().isSpeciesOrBelow()) {
             // no species epithet given, indetermined!
             if (n.getRank().isInfraspecific()) {
-              // maybe we have an infraspecific epithet? force to show the rank marker
-              appendInfraspecific(sb, n, true);
-            } else if (!unparsedLeadsWithSpeciesMarker(n)) {
-              // skip the synthetic "sp." when the unparsed portion already spells out a species
+              if (n.getInfraspecificEpithet() != null || !unparsedLeadsWithRankMarker(n)) {
+                // maybe we have an infraspecific epithet? force to show the rank marker
+                appendInfraspecific(sb, n, true);
+              }
+            } else if (!unparsedLeadsWithRankMarker(n)) {
+              // skip the synthetic "sp." when the unparsed portion already spells out a rank
               // marker ("Xyris species 1"), so it isn't doubled into "Xyris sp. species 1"
               sb.append(" ");
               sb.append(n.getRank().getMarker());
@@ -249,6 +281,7 @@ public class NameFormatter {
           if ( n.getRank() != null
             && n.getRank().isInfraspecific()
             && (NomCode.CULTIVARS != n.getRank().isRestrictedToCode() || n.getCultivarEpithet() == null)
+            && !unparsedLeadsWithRankMarker(n)
           ) {
             // no infraspecific epitheton given, but rank below species. Indetermined!
             // use ssp. for subspecies in case of indetermined names
@@ -305,10 +338,10 @@ public class NameFormatter {
     return sb;
   }
 
-  /** True when the unparsed portion already begins with a species marker (species/sp/spec), so the
-   *  synthetic indet "sp." rank marker would only duplicate it. */
-  private static boolean unparsedLeadsWithSpeciesMarker(FormattableName n) {
-    return n.getUnparsed() != null && UNPARSED_SPECIES_MARKER.matcher(n.getUnparsed().trim()).find();
+  /** True when the unparsed portion already begins with a rank marker of a species or below, so the
+   *  synthetic indet rank marker would only duplicate it. */
+  private static boolean unparsedLeadsWithRankMarker(FormattableName n) {
+    return n.getUnparsed() != null && UNPARSED_RANK_MARKER.matcher(n.getUnparsed().trim()).find();
   }
 
   private static StringBuilder appendInfraspecific(StringBuilder sb, FormattableName n, boolean forceRankMarker) {
@@ -373,7 +406,10 @@ public class NameFormatter {
   }
 
   private static StringBuilder appendGenus(StringBuilder sb, FormattableName n) {
-    if (n.getNotho().contains(NamePart.GENERIC)) {
+    if (n.isGraftChimaera()) {
+      sb.append(GRAFT_MARKER)
+        .append(" ");
+    } else if (n.getNotho().contains(NamePart.GENERIC)) {
       sb.append(HYBRID_MARKER)
         .append(" ");
     }

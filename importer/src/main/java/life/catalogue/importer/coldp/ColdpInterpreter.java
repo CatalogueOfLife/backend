@@ -19,12 +19,15 @@ import life.catalogue.matching.NameValidator;
 import life.catalogue.parser.*;
 
 import org.gbif.dwc.terms.Term;
+import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+
+import org.apache.commons.lang3.StringUtils;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
@@ -38,6 +41,7 @@ public class ColdpInterpreter extends InterpreterBase {
   private static final EnumNote<TaxonomicStatus> SYN_NOTE = new EnumNote<>(TaxonomicStatus.SYNONYM, null);
   private static final EnumNote<TaxonomicStatus> ACC_NOTE = new EnumNote<>(TaxonomicStatus.ACCEPTED, null);
   private static final Splitter COMMA_SPLITTER = Splitter.on(',').omitEmptyStrings(); // for multi value ID fields
+  private static final Splitter TRIMMED_COMMA_SPLITTER = Splitter.on(',').trimResults().omitEmptyStrings();
 
   ColdpInterpreter(DatasetSettings settings, MappingInfos metadata, ReferenceFactory refFactory, ImportStore store) {
     super(settings, refFactory, store, true);
@@ -197,9 +201,8 @@ public class ColdpInterpreter extends InterpreterBase {
   Optional<TypeMaterial> interpretTypeMaterial(VerbatimRecord rec) {
     TypeMaterial m = new TypeMaterial();
     m.setId(rec.getRaw(ColdpTerm.ID));
-    m.setNameId(rec.getRaw(ColdpTerm.nameID));
+    interpretTypifiedNames(m, rec);
     m.setCitation(rec.get(ColdpTerm.citation));
-    m.setStatus(SafeParser.parse(TypeStatusParser.PARSER, rec.get(ColdpTerm.status)).orElse(TypeStatus.OTHER, Issue.TYPE_STATUS_INVALID, rec));
     m.setCountry(SafeParser.parse(CountryParser.PARSER, rec.get(ColdpTerm.country)).orNull(Issue.COUNTRY_INVALID, rec));
     m.setLocality(rec.get(ColdpTerm.locality));
     m.setLatitude(rec.get(ColdpTerm.latitude));
@@ -221,6 +224,43 @@ public class ColdpInterpreter extends InterpreterBase {
     m.setRemarks(getRemarks(rec));
     setReference(m, rec);
     return Optional.of(m);
+  }
+
+  /**
+   * ColDP allows several comma concatenated name ids for a specimen,
+   * with a single status for all of them or a comma concatenated status per name in the same order.
+   * Whether the names exist is checked by the inserter.
+   */
+  private void interpretTypifiedNames(TypeMaterial m, VerbatimRecord rec) {
+    String raw = rec.getRaw(ColdpTerm.nameID);
+    if (StringUtils.isBlank(raw)) {
+      return;
+    }
+    final List<String> nameIDs;
+    if (store.names().exists(raw)) {
+      // a single id which might well contain a comma
+      nameIDs = List.of(raw);
+    } else {
+      nameIDs = TRIMMED_COMMA_SPLITTER.splitToStream(raw).distinct().toList();
+    }
+    String status = rec.get(ColdpTerm.status);
+    List<String> statusValues = nameIDs.size() > 1 && status != null ? Splitter.on(',').trimResults().splitToList(status) : null;
+    if (statusValues == null || statusValues.size() == 1) {
+      // a single value applies to all names
+      TypeStatus ts = parseTypeStatus(status, rec);
+      nameIDs.forEach(id -> m.addName(id, ts));
+    } else {
+      if (statusValues.size() != nameIDs.size()) {
+        rec.add(Issue.TYPE_STATUS_INVALID);
+      }
+      for (int i = 0; i < nameIDs.size(); i++) {
+        m.addName(nameIDs.get(i), i < statusValues.size() ? parseTypeStatus(statusValues.get(i), rec) : TypeStatus.OTHER);
+      }
+    }
+  }
+
+  private static TypeStatus parseTypeStatus(String status, VerbatimRecord rec) {
+    return SafeParser.parse(TypeStatusParser.PARSER, status).orElse(TypeStatus.OTHER, Issue.TYPE_STATUS_INVALID, rec);
   }
 
   List<VernacularName> interpretVernacular(VerbatimRecord rec) {
@@ -310,42 +350,56 @@ public class ColdpInterpreter extends InterpreterBase {
     return Optional.empty();
   }
 
-  Optional<NameData> interpretName(VerbatimRecord v) {
-    Term nomStatusTerm = ColdpTerm.status;
-    Term genusNameTerm = ColdpTerm.genus;
-    Term remarksTerm = ColdpTerm.remarks;
-    Term refIdTerm = ColdpTerm.referenceID;
-    Term altIdTerm = ColdpTerm.alternativeID;
-    final Term pubInYearTerm;
-    final Term pubInPageTerm;
-    final Term pubInPageLinkTerm;
-    if (ColdpTerm.NameUsage.equals(v.getType())) {
-      nomStatusTerm = ColdpTerm.nameStatus;
-      genusNameTerm = ColdpTerm.genericName;
-      remarksTerm = ColdpTerm.nameRemarks;
-      refIdTerm = ColdpTerm.nameReferenceID;
-      altIdTerm = ColdpTerm.nameAlternativeID;
-      pubInYearTerm = ColdpTerm.namePublishedInYear;
-      pubInPageTerm = ColdpTerm.namePublishedInPage;
-      pubInPageLinkTerm = ColdpTerm.namePublishedInPageLink;
-    } else {
-      pubInYearTerm = ColdpTerm.publishedInYear;
-      pubInPageTerm = ColdpTerm.publishedInPage;
-      pubInPageLinkTerm = ColdpTerm.publishedInPageLink;
-      if(v.hasTerm(ColdpTerm.genericName)) {
-        // against COolDP specs, but people do sometimes use genericName also in Name files and we dont wanna break these
-        genusNameTerm = ColdpTerm.genericName;
+  /**
+   * The terms a Name record and a NameUsage record keep their name properties in.
+   */
+  private record NameTerms(Term nomStatus, Term genusName, Term remarks, Term refId, Term altId,
+                           Term pubInYear, Term pubInPage, Term pubInPageLink) {
+    static NameTerms of(VerbatimRecord v) {
+      if (ColdpTerm.NameUsage.equals(v.getType())) {
+        return new NameTerms(ColdpTerm.nameStatus, ColdpTerm.genericName, ColdpTerm.nameRemarks, ColdpTerm.nameReferenceID,
+          ColdpTerm.nameAlternativeID, ColdpTerm.namePublishedInYear, ColdpTerm.namePublishedInPage, ColdpTerm.namePublishedInPageLink);
       }
+      // against COolDP specs, but people do sometimes use genericName also in Name files and we dont wanna break these
+      Term genusName = v.hasTerm(ColdpTerm.genericName) ? ColdpTerm.genericName : ColdpTerm.genus;
+      return new NameTerms(ColdpTerm.status, genusName, ColdpTerm.remarks, ColdpTerm.referenceID,
+        ColdpTerm.alternativeID, ColdpTerm.publishedInYear, ColdpTerm.publishedInPage, ColdpTerm.publishedInPageLink);
     }
+  }
 
-    Optional<ParsedNameUsage> optPNU = nameInterpreter.interpret(v.getRaw(ColdpTerm.ID), v.get(ColdpTerm.rank), Rank.UNRANKED,
+  /**
+   * The name of a ColDP Name or NameUsage record as the import interprets it, without the properties only ColDP knows
+   * and without the published in reference which needs the store.
+   * Also used by the interpreter corpus tools, so they see exactly what an import sees.
+   */
+  public static Optional<ParsedNameUsage> interpretName(NameInterpreter nameInterpreter, VerbatimRecord v) {
+    return interpretName(nameInterpreter, NameTerms.of(v), v);
+  }
+
+  @Override
+  public Optional<ParsedNameUsage> reinterpretName(String id, VerbatimRecord v, NomCode code) {
+    return interpretName(nameInterpreter(code), v);
+  }
+
+  private static Optional<ParsedNameUsage> interpretName(NameInterpreter nameInterpreter, NameTerms t, VerbatimRecord v) {
+    return nameInterpreter.interpret(v.getRaw(ColdpTerm.ID), v.get(ColdpTerm.rank), Rank.UNRANKED,
         v.get(ColdpTerm.scientificName), v.get(ColdpTerm.authorship),
-        v.getFirst(pubInYearTerm, ColdpTerm.namePublishedInYear, ColdpTerm.publishedInYear),
-        v.get(ColdpTerm.uninomial), v.get(genusNameTerm), v.get(ColdpTerm.infragenericEpithet), v.get(ColdpTerm.specificEpithet), v.get(ColdpTerm.infraspecificEpithet), v.get(ColdpTerm.cultivarEpithet),
+        v.getFirst(t.pubInYear, ColdpTerm.namePublishedInYear, ColdpTerm.publishedInYear),
+        v.get(ColdpTerm.uninomial), v.get(t.genusName), v.get(ColdpTerm.infragenericEpithet), v.get(ColdpTerm.specificEpithet), v.get(ColdpTerm.infraspecificEpithet), v.get(ColdpTerm.cultivarEpithet),
         ColdpTerm.combinationAuthorship, ColdpTerm.combinationExAuthorship, ColdpTerm.combinationAuthorshipYear,
         ColdpTerm.basionymAuthorship, ColdpTerm.basionymExAuthorship,ColdpTerm.basionymAuthorshipYear,
-        ColdpTerm.notho, ColdpTerm.originalSpelling, ColdpTerm.code, nomStatusTerm,
-        ColdpTerm.link, remarksTerm, altIdTerm, v);
+        ColdpTerm.notho, ColdpTerm.originalSpelling, ColdpTerm.code, t.nomStatus,
+        ColdpTerm.link, t.remarks, t.altId, v);
+  }
+
+  Optional<NameData> interpretName(VerbatimRecord v) {
+    final NameTerms t = NameTerms.of(v);
+    final Term refIdTerm = t.refId;
+    final Term pubInYearTerm = t.pubInYear;
+    final Term pubInPageTerm = t.pubInPage;
+    final Term pubInPageLinkTerm = t.pubInPageLink;
+
+    Optional<ParsedNameUsage> optPNU = interpretName(nameInterpreter, t, v);
     var opt = optPNU.map(NameData::new);
     if (opt.isPresent()) {
       NameData nd = opt.get();

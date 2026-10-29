@@ -3,6 +3,7 @@ package life.catalogue.api.model;
 import life.catalogue.api.vocab.EntityType;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.NomStatus;
+import life.catalogue.api.vocab.TaxonomicStatus;
 
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
@@ -32,6 +33,13 @@ public interface SyncSettings {
   /** A blocklist: unioned over all levels. */
   Set<NomStatus> getNameStatusExclusion();
   void setNameStatusExclusion(Set<NomStatus> nameStatusExclusion);
+
+  /**
+   * A blocklist: unioned over all levels. Usages with one of these taxonomic statuses are not synced,
+   * an excluded accepted taxon takes its synonyms along.
+   */
+  Set<TaxonomicStatus> getTaxonomicStatusExclusion();
+  void setTaxonomicStatusExclusion(Set<TaxonomicStatus> taxonomicStatusExclusion);
 
   /**
    * An optional regex. If given, only usages whose scientific name fully matches are synced.
@@ -82,6 +90,7 @@ public interface SyncSettings {
     to.setEntities(copy(from.getEntities(), EntityType.class));
     to.setNameTypes(copy(from.getNameTypes(), NameType.class));
     to.setNameStatusExclusion(copy(from.getNameStatusExclusion(), NomStatus.class));
+    to.setTaxonomicStatusExclusion(copy(from.getTaxonomicStatusExclusion(), TaxonomicStatus.class));
     to.setNameFilter(from.getNameFilter());
     to.setExtinctFilter(from.getExtinctFilter());
     to.setCopyAccordingTo(from.getCopyAccordingTo());

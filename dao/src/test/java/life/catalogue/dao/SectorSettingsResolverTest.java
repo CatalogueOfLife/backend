@@ -3,6 +3,7 @@ package life.catalogue.dao;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.EntityType;
 import life.catalogue.api.vocab.Issue;
+import life.catalogue.api.vocab.TaxonomicStatus;
 
 import org.gbif.nameparser.api.Rank;
 
@@ -109,16 +110,20 @@ public class SectorSettingsResolverTest {
     var p1 = profile(1, s -> {
       s.setIssueExclusion(EnumSet.of(Issue.DOUBTFUL_NAME));
       s.setBlockedNames(Set.of("Aus"));
+      s.setTaxonomicStatusExclusion(EnumSet.of(TaxonomicStatus.MISAPPLIED));
     });
     var p2 = profile(2, s -> s.setBlockedNames(Set.of("Bus")));
     var sec = sector(Sector.Mode.MERGE);
     sec.setIssueExclusion(EnumSet.of(Issue.UNPARSABLE_NAME));
+    sec.setTaxonomicStatusExclusion(EnumSet.of(TaxonomicStatus.PROVISIONALLY_ACCEPTED));
 
     var eff = SectorSettingsResolver.resolve(sec, List.of(p1, p2));
     assertEquals(Set.of(Issue.DOUBTFUL_NAME, Issue.UNPARSABLE_NAME), eff.getSettings().getIssueExclusion());
     assertEquals("profile:1,sector", eff.getSources().get("issueExclusion"));
     assertEquals(Set.of("Aus", "Bus"), eff.getSettings().getBlockedNames());
     assertEquals("profile:1,profile:2", eff.getSources().get("blockedNames"));
+    assertEquals(Set.of(TaxonomicStatus.MISAPPLIED, TaxonomicStatus.PROVISIONALLY_ACCEPTED), eff.getSettings().getTaxonomicStatusExclusion());
+    assertEquals("profile:1,sector", eff.getSources().get("taxonomicStatusExclusion"));
   }
 
   @Test

@@ -129,5 +129,66 @@ public class VerbatimRecordTest extends SerdeTestBase<VerbatimRecord> {
     assertEquals("Keihäsluuhauki", v.getFirst(GbifTerm.canonicalName, DwcTerm.vernacularName));
     assertTrue(v.contains(Issue.ESCAPED_CHARACTERS));
   }
-  
+
+  /**
+   * https://github.com/CatalogueOfLife/data/issues/1765
+   */
+  @Test
+  public void invisibleCharacters() throws Exception {
+    // a byte order mark in front of a genus and a soft hyphen inside an epithet
+    v = new VerbatimRecord(11, "myFile.txt", ColdpTerm.Name);
+    v.put(ColdpTerm.genus, "﻿Janbinmorpha");
+    v.put(ColdpTerm.specificEpithet, "inter­media");
+    assertEquals("Janbinmorpha", v.get(ColdpTerm.genus));
+    assertTrue(v.contains(Issue.INVISIBLE_CHARACTERS));
+    assertEquals("intermedia", v.get(ColdpTerm.specificEpithet));
+
+    // a soft hyphen in front of a capital joins a double surname
+    v.put(ColdpTerm.authorship, "(Miranda\u00ADRibeiro) Miranda-Ribeiro");
+    assertEquals("(Miranda-Ribeiro) Miranda-Ribeiro", v.get(ColdpTerm.authorship));
+  }
+
+  @Test
+  public void selfClosingTags() throws Exception {
+    v = new VerbatimRecord(11, "myFile.txt", ColdpTerm.Name);
+    v.put(ColdpTerm.authorship, "Kashani & Ajorloo <i>in<i/> Kashani, Azizi & Ajorloo, 2025");
+    assertEquals("Kashani & Ajorloo in Kashani, Azizi & Ajorloo, 2025", v.get(ColdpTerm.authorship));
+    assertTrue(v.contains(Issue.ESCAPED_CHARACTERS));
+
+    v.put(ColdpTerm.remarks, "first line<br/>second line<br />third");
+    assertEquals("first linesecond linethird", v.get(ColdpTerm.remarks));
+  }
+
+  @Test
+  public void diacriticsAreNoHomoglyphs() throws Exception {
+    v = new VerbatimRecord(11, "myFile.txt", ColdpTerm.Name);
+    // a cyrillic Es is a homoglyph, not a diacritic
+    v.put(ColdpTerm.authorship, "(Talbot, 1934) Caballero y С. & Vogelsang, 1947");
+    v.get(ColdpTerm.authorship);
+    assertTrue(v.contains(Issue.HOMOGLYPH_CHARACTERS));
+    assertFalse(v.contains(Issue.DIACRITIC_CHARACTERS));
+
+    // a middle dot is a standalone diacritic
+    v = new VerbatimRecord(11, "myFile.txt", ColdpTerm.Name);
+    v.put(ColdpTerm.authorship, "(Bychowskaja·Pawlowskaja, 1953) Khotenovsky, 1961");
+    v.get(ColdpTerm.authorship);
+    assertTrue(v.contains(Issue.DIACRITIC_CHARACTERS));
+  }
+
+  @Test
+  public void distinctLettersAreNoHomoglyphs() throws Exception {
+    // czech and turkish authors of WFO
+    for (String author : new String[]{"Kirschner & Štěpánek", "Yıld. & Kılıç", "Prodan & Țopa"}) {
+      v = new VerbatimRecord(11, "myFile.txt", ColdpTerm.Name);
+      v.put(ColdpTerm.authorship, author);
+      assertEquals(author, v.get(ColdpTerm.authorship));
+      assertFalse(author, v.contains(Issue.HOMOGLYPH_CHARACTERS));
+    }
+    // a cyrillic Te
+    v = new VerbatimRecord(11, "myFile.txt", ColdpTerm.Name);
+    v.put(ColdpTerm.authorship, "R.Т.Craig");
+    v.get(ColdpTerm.authorship);
+    assertTrue(v.contains(Issue.HOMOGLYPH_CHARACTERS));
+  }
+
 }

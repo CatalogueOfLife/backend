@@ -11,7 +11,7 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
-#### 2026-10-06 the person registry
+#### 2026-10-29 the person registry
 ```sql
 CREATE TYPE PERSONFORMCODE AS ENUM ('BOT', 'ZOO', 'ANY');
 CREATE TYPE PERSONNAMEKIND AS ENUM ('STANDARD', 'CITATION', 'FULL', 'VARIANT', 'DERIVED');
@@ -69,6 +69,234 @@ The person registry of author matching moves from files in the code into the dat
 `docs/2026-09-24-person-registry-service.md`. The tables start empty: after the deploy an admin imports the registry
 of the branch with `POST /admin/persons/import` (the zip of `core/src/test/resources/authorship/persons/`), then starts
 a first `POST /admin/persons/harvest` and reads its report against the imported state.
+
+#### 2026-10-23 new validation issues
+Six new issues flagged on import, in releases and project validation:
+duplicate accepted names (#1218), homotypic names outside the synonymy (#1158), inconsistent extinct flags (#1349),
+unusually long values (#1233), DOIs embedded in references (#1159) and ambiguous red list status (#1480).
+Run before the deploy, taxon-ws shares the db. Existing data only gets the issues once re-imported, released or validated.
+```sql
+ALTER TYPE ISSUE ADD VALUE 'DUPLICATE_ACCEPTED_NAME';
+ALTER TYPE ISSUE ADD VALUE 'HOMOTYPIC_NAME_OUTSIDE_SYNONYMY';
+ALTER TYPE ISSUE ADD VALUE 'EXTINCT_INCONSISTENT';
+ALTER TYPE ISSUE ADD VALUE 'UNUSUAL_VALUE_LENGTH';
+ALTER TYPE ISSUE ADD VALUE 'EMBEDDED_DOI';
+ALTER TYPE ISSUE ADD VALUE 'REDLIST_STATUS_AMBIGUOUS';
+```
+
+#### 2026-10-23 taxonomic status exclusion on sectors
+A new sector setting excludes usages by their taxonomic status from a sync, e.g. misapplied names:
+https://github.com/CatalogueOfLife/checklistbank/issues/1685
+Sector profiles keep it in their settings JSON and need no change. Run before the deploy, the old app ignores the column.
+```sql
+ALTER TABLE sector ADD COLUMN taxonomic_status_exclusion TAXONOMICSTATUS[] DEFAULT NULL;
+```
+
+#### 2026-10-20 nomenclatural status for misspellings
+Incorrect spellings and orthographic variants get their own status instead of the broad NOT_ESTABLISHED, so they can
+be told apart from homotypic synonyms and are never chosen as the original name of a homotypic group:
+https://github.com/CatalogueOfLife/backend/issues/1662
+Spelling corrections between names that differ in far more than their spelling are dropped on import and flagged.
+Run before the deploy, taxon-ws shares the db. Existing names only get the status once their dataset is re-imported.
+```sql
+ALTER TYPE NOMSTATUS ADD VALUE 'ORTHOGRAPHIC_VARIANT';
+ALTER TYPE ISSUE ADD VALUE 'SPELLING_CORRECTION_IMPLAUSIBLE';
+```
+
+#### 2026-10-20 graft-chimaera flag on names
+name-parser 6.0 flags a graft-chimaera (`+Crataegomespilus`) with `graftChimaera` instead of notho GENERIC, so names
+keep the `+` marker only if the flag is stored. Run before the deploy, taxon-ws shares the db. Existing graft-chimaeras
+are only flagged once their dataset is re-imported.
+```sql
+ALTER TABLE name ADD COLUMN graft_chimaera BOOLEAN DEFAULT FALSE;
+ALTER TABLE name_usage_archive ADD COLUMN n_graft_chimaera BOOLEAN DEFAULT FALSE;
+```
+
+#### 2026-10-16 empty author lists are stored as NULL
+Names wrote an empty `TEXT[]` for every author list without authors, about 16 bytes per column and row where a NULL
+costs a bit in the null bitmap. Ex authors in particular are rarely used: https://github.com/CatalogueOfLife/backend/issues/1664
+The app now writes NULL for empty lists and reads NULL and `'{}'` alike, so this can run before or after the deploy.
+Names written through the app from now on carry NULL, while releases copy their names in SQL and keep what the
+project has.
+```sql
+ALTER TABLE name
+  ALTER COLUMN basionym_authors DROP DEFAULT,
+  ALTER COLUMN basionym_ex_authors DROP DEFAULT,
+  ALTER COLUMN combination_authors DROP DEFAULT,
+  ALTER COLUMN combination_ex_authors DROP DEFAULT;
+ALTER TABLE name_usage_archive
+  ALTER COLUMN n_basionym_authors DROP DEFAULT,
+  ALTER COLUMN n_basionym_ex_authors DROP DEFAULT,
+  ALTER COLUMN n_combination_authors DROP DEFAULT,
+  ALTER COLUMN n_combination_ex_authors DROP DEFAULT;
+```
+Optional backfill, one partition at a time and off peak, as it rewrites nearly every row. A plain `VACUUM` only makes
+the space reusable for new rows, `VACUUM FULL` or `pg_repack` returns it to the OS. List the partitions with
+`SELECT inhrelid::regclass FROM pg_inherits WHERE inhparent = 'name'::regclass` and run for each:
+```sql
+UPDATE <partition> SET
+  basionym_authors = nullif(basionym_authors, '{}'),
+  basionym_ex_authors = nullif(basionym_ex_authors, '{}'),
+  combination_authors = nullif(combination_authors, '{}'),
+  combination_ex_authors = nullif(combination_ex_authors, '{}')
+WHERE basionym_authors = '{}' OR basionym_ex_authors = '{}' OR combination_authors = '{}' OR combination_ex_authors = '{}';
+```
+
+#### 2026-10-14 type material typifies several names
+A type specimen can typify several names, each with its own type status, as ColDP allows with comma concatenated
+`nameID` and `status` values: https://github.com/CatalogueOfLife/backend/issues/1645
+The name links and their status move from `type_material` into the new partitioned `type_material_name` table.
+Two steps, as the old and the new app run side by side during a deploy.
+
+**1. Before the deploy.** Creates the link table with as many hash partitions as `type_material` has and copies the
+existing links. The old app keeps writing `type_material.name_id` and never sees the new table. `name_id` loses its
+NOT NULL here, as the new app inserts type material without it until step 2 drops the column.
+The foreign keys and the name index are only added after the copy: checked per row, the millions of links take hours
+in RI trigger lookups against the partitioned `name` and `type_material`, while `ADD FOREIGN KEY` validates each
+partition with a single join. That validation holds a SHARE ROW EXCLUSIVE lock on both, which blocks writes from the
+old app for its few minutes. Postgres 17 cannot add a `NOT VALID` foreign key to a partitioned table.
+```sql
+CREATE TABLE type_material_name (
+  dataset_key INTEGER NOT NULL,
+  type_material_id TEXT NOT NULL,
+  name_id TEXT NOT NULL,
+  status TYPESTATUS,
+  PRIMARY KEY (dataset_key, type_material_id, name_id)
+) PARTITION BY HASH (dataset_key);
+DO $$
+DECLARE
+  num INTEGER := (SELECT count(*) FROM pg_inherits WHERE inhparent = 'type_material'::regclass);
+BEGIN
+  FOR i IN 0..num-1 LOOP
+    EXECUTE format('CREATE TABLE type_material_name_mod%s PARTITION OF type_material_name FOR VALUES WITH (modulus %s, remainder %s)', i, num, i);
+  END LOOP;
+END $$;
+ALTER TABLE type_material ALTER COLUMN name_id DROP NOT NULL;
+
+INSERT INTO type_material_name (dataset_key, type_material_id, name_id, status)
+SELECT dataset_key, id, name_id, status FROM type_material;
+
+CREATE INDEX ON type_material_name (dataset_key, name_id);
+ALTER TABLE type_material_name ADD FOREIGN KEY (dataset_key, type_material_id) REFERENCES type_material ON DELETE CASCADE;
+ALTER TABLE type_material_name ADD FOREIGN KEY (dataset_key, name_id) REFERENCES name DEFERRABLE INITIALLY DEFERRED;
+```
+
+**2. After the deploy**, once the old app is gone. Copies the links the old app wrote since step 1, then drops the
+old columns, which the new app neither reads nor writes. Type material the old app deleted in between takes its links
+with it through the cascade.
+```sql
+INSERT INTO type_material_name (dataset_key, type_material_id, name_id, status)
+SELECT dataset_key, id, name_id, status FROM type_material
+ON CONFLICT DO NOTHING;
+ALTER TABLE type_material DROP COLUMN name_id, DROP COLUMN status;
+```
+Existing copies of one specimen made per name are not merged; a re-import of a source that concatenates its name ids
+yields one specimen with all its names.
+
+#### 2026-10-12 placement conflict issue
+Imports flag accepted genera whose placement contradicts every genus of that name in the COL base release, e.g. a
+fungus filed under the plant family of its host, and the extended release merge no longer trusts their placement:
+https://github.com/CatalogueOfLife/backend/issues/1608
+Run before the deploy, the new app writes the value on its first import.
+```sql
+ALTER TYPE ISSUE ADD VALUE 'PLACEMENT_CONFLICT';
+```
+
+#### 2026-10-12 decision subjects carry their parent
+A decision rematch after a source changed its ids moved a block made for a stray onto the real homonym, as the UI
+never sent the subject's parent: https://github.com/CatalogueOfLife/backend/issues/1639
+New decisions copy their subject, parent name included, from the usage. This backfills the parent name and a missing
+authorship of existing decisions whose subject still resolves to a usage of the same name. Run after the deploy:
+the old app compares the parent strictly to the direct parent and would break decisions on the next re-import of a
+source that inserted a rank level.
+```sql
+UPDATE decision d SET
+  subject_parent = pn.scientific_name,
+  subject_authorship = coalesce(d.subject_authorship, n.authorship)
+FROM name_usage u
+  JOIN name n ON n.dataset_key=u.dataset_key AND n.id=u.name_id
+  JOIN name_usage p ON p.dataset_key=u.dataset_key AND p.id=u.parent_id
+  JOIN name pn ON pn.dataset_key=p.dataset_key AND pn.id=p.name_id
+WHERE u.dataset_key=d.subject_dataset_key AND u.id=d.subject_id
+  AND d.subject_parent IS NULL
+  AND lower(n.scientific_name) = lower(d.subject_name);
+```
+
+#### 2026-10-12 col may set session_replication_role
+`DatasetDao.deleteData` deletes a dataset from all partitioned tables with `session_replication_role = replica`,
+skipping the per row foreign key checks. They picked the wrong index over the dead rows of already deleted children
+and stalled the re-imports of WFO (44h) and Wikidata (2 weeks projected). Without the grant the deletes run with
+checks as before and log a warning, so it can be run before or after the deploy. Run as superuser on prod and test.
+It also lets the repartition command run without temporary superuser rights.
+```sql
+GRANT SET ON PARAMETER session_replication_role TO col;
+```
+
+#### 2026-10-12 issue for an inferred nomenclatural code
+Names whose code neither their record nor the dataset gave are flagged with a new INFO issue,
+see https://github.com/CatalogueOfLife/backend/issues/1624. Run before the deploy.
+```sql
+ALTER TYPE ISSUE ADD VALUE 'NOMENCLATURAL_CODE_INFERRED';
+```
+
+#### 2026-10-11 bracketed authorship years
+name-parser-api 5.4 flags a year given in square brackets (`Authorship.bracketedYear`), a year known only from
+evidence outside the work: "Toleria aegerides (Strand, [1916])". The year itself stays plain, the flag brings the
+brackets back in the label. Run before the deploy, like the still pending 2026-10-07 change it can go together with:
+the old app's column lists ignore the new columns, and a constant default only touches the catalog. No backfill - rows
+get the flag when their dataset is re-imported or re-synced.
+```sql
+ALTER TABLE name
+  ADD COLUMN basionym_bracketed_year BOOLEAN NOT NULL DEFAULT FALSE,
+  ADD COLUMN combination_bracketed_year BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE name_usage_archive
+  ADD COLUMN n_basionym_bracketed_year BOOLEAN NOT NULL DEFAULT FALSE,
+  ADD COLUMN n_combination_bracketed_year BOOLEAN NOT NULL DEFAULT FALSE;
+```
+
+#### 2026-10-08 exports drop excel, tax groups and truncation
+Excel exports are gone, and a classification export always comes with taxonomic groups, so `dataset_export` loses
+`excel`, `add_tax_group` and `truncated`, which only the Excel row limit ever filled. Two steps, as the old and the
+new app run side by side during a deploy.
+
+**1. Before the deploy.** The new app no longer writes the two NOT NULL flags.
+```sql
+ALTER TABLE dataset_export
+  ALTER COLUMN excel SET DEFAULT FALSE,
+  ALTER COLUMN add_tax_group SET DEFAULT FALSE;
+```
+
+**2. After the deploy, once the old app is gone.** Without the column the export lookup would hand out an Excel
+archive for a TSV request, so the remaining Excel exports are deleted. Remove the zips of the listed keys from the
+download directory first, at `<downloadDir>/<first 2 characters of key>/<key>.zip`.
+```sql
+SELECT de.key FROM dataset_export de JOIN job j ON j.key = de.key WHERE de.excel AND j.result_deleted IS NULL;
+UPDATE job SET result_deleted = now()
+WHERE result_deleted IS NULL AND key IN (SELECT key FROM dataset_export WHERE excel);
+-- also drops the index on (dataset_key, attempt, format, excel, synonyms, min_rank)
+ALTER TABLE dataset_export
+  DROP COLUMN excel,
+  DROP COLUMN add_tax_group,
+  DROP COLUMN truncated;
+CREATE INDEX ON dataset_export (dataset_key, attempt, format, synonyms, min_rank);
+```
+
+#### 2026-10-07 anonymous authorship, basionym sanctioning author
+name-parser-api 5.1 flags a name or act published anonymously (`Authorship.anonymous`) instead of keeping an `anon.`
+author string, see #1611. name-parser-api 5.2 moves the sanctioning author onto `Authorship`, so a sanctioned
+basionym keeps one too: "Merulius lacrimans (Wulfen : Fr.) Schum.". The existing `sanctioning_author` column stays
+the combination's. Run before the deploy: the old app's column lists ignore the new columns, and a constant default
+only touches the catalog. No backfill - rows get the new values when their dataset is re-imported or re-synced.
+```sql
+ALTER TABLE name
+  ADD COLUMN basionym_anonymous BOOLEAN NOT NULL DEFAULT FALSE,
+  ADD COLUMN basionym_sanctioning_author TEXT,
+  ADD COLUMN combination_anonymous BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE name_usage_archive
+  ADD COLUMN n_basionym_anonymous BOOLEAN NOT NULL DEFAULT FALSE,
+  ADD COLUMN n_basionym_sanctioning_author TEXT,
+  ADD COLUMN n_combination_anonymous BOOLEAN NOT NULL DEFAULT FALSE;
+```
 
 #### 2026-10-05 sector profiles
 Sector settings for large groups of sectors, see `docs/SECTOR-SETTINGS.md` and `docs/2026-10-05-sector-profiles.md`.

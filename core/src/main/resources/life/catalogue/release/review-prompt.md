@@ -98,12 +98,49 @@ Abacetus biimpressus
 The ID reports can hold hundreds of thousands of lines. Count and filter them with `wc`, `cut`, `sort | uniq -c`
 and `grep` instead of reading them whole.
 
+### GBIF impact reports
+
+GBIF uses the extended release as the taxonomic backbone it interprets its occurrences with. Before a candidate
+goes live, GBIF matches its occurrences against it and publishes what would change. The same files drive the GBIF
+Impact Tool in ChecklistBank. For this release:
+
+{{gbifImpactReports}}
+
+Each report covers one scope (`alltaxa`, or one group such as `coleoptera`, `fabaceae`, `fossils`) and only holds
+the verbatim classifications seen in more occurrences than its threshold, given in its description. It is tab
+separated with a header row, and the literal string `null` marks an empty value. Every row is one distinct verbatim
+classification, as occurrences give it, whose interpretation **changes**. Rows that would stay the same are not in
+the file, so its length is not the number of names GBIF matched. The columns are:
+
+- `count` - the number of GBIF occurrences carrying that verbatim classification. Weigh every finding by it:
+  a change of one row can move a million occurrences.
+- `verbatim_*` - what the occurrences say: `kingdom` to `infraspecificEpithet`, `rank`, `scientificName`,
+  `author` and the identifier columns.
+- `current_*` - how GBIF interprets them today: `kingdom`, `phylum`, `klass`, `order`, `superFamily`, `family`,
+  `subFamily`, `tribe`, `subTribe`, `genus`, `subGenus`, `species`, `scientificName` (the matched name with its
+  authorship) and `acceptedScientificName`.
+- `proposed_*` - the same columns, interpreted with this release.
+- `debug_url` - the GBIF species match request that produced `proposed_*`. It is on a host this sandbox cannot
+  reach. Quote it for a reviewer, but do not try to fetch it.
+
+"Current" is the release GBIF matches against in production today, named in the list above. GBIF aims to adopt
+every monthly extended release, so ideally it is `{{previousReleaseKey}}` itself. Then the impact reports cover the
+same pair of releases as the rest of this review, and a change in them is a change this release makes. GBIF can
+lag behind, though. If "current" is an older release, the reports add up every release since then. That includes
+releases GBIF never adopted, whose changes were already reviewed when they came out. In that case, check a large
+change against this release's own name diff, ID reports and sector comparison before you attribute it to this
+release. Report it either way, because GBIF users will see it all at once, but say which release it most likely
+came from. Count the releases between "current" and this one in the release history above, and state that number.
+
+Count and sum these files with `awk -F'\t'` instead of reading them whole. The `alltaxa` report alone holds
+tens of thousands of rows.
+
 ### Endpoints you will need
 
 | purpose | request |
 |---|---|
 | release metadata | `GET /dataset/{key}` |
-| whole-release metrics (counts per rank, per status, issue counts) | `GET /dataset/{key}/import?limit=1` |
+| whole-release metrics (counts per rank, per status, issue counts) | `GET /dataset/{key}/import`, a result page holding the latest attempt |
 | the sources that went into a release | `GET /dataset/{key}/source` |
 | metrics of one source inside a release | `GET /dataset/{key}/source/{sourceKey}/metrics` |
 | name diff between two releases | `GET /dataset/{key}/diff/{key2}?minRank=order&authorship=false&synonyms=false` |
@@ -150,7 +187,32 @@ explicitly in the report rather than silently dropping it.
    with its count and how that compares with the previous release, and anything in the timeline that says a
    step was skipped, failed or processed nothing. Compare the durations of the main steps between the two
    releases and mention any that changed a lot.
-10. **Unexpected drops and spikes.** Anything from the steps above that moves by more than ~10% without an
+10. **GBIF impact.** Extended releases only; for a base release mark this step not applicable. Read the GBIF
+   impact reports listed above. If none is available, say so and that the impact on GBIF is not checked. Treat
+   that as a gap, not as a red flag. Start by stating which release "current" is, and whether it is the previous
+   release or one that lags behind it. For each report, give the number of rows and the sum of `count`, then
+   classify every row by its most significant change, and give the rows and occurrences of each class:
+   - **lost match** - `current_scientificName` is set and `proposed_scientificName` is `null`. Occurrences that
+     GBIF matches today and would no longer match. **Always a red flag**, worst first.
+   - **gained match** - the reverse. Usually an improvement.
+   - **other name** - the matched name changes beyond its authorship.
+   - **authorship only** - the matched name keeps its words and only its authorship string differs, e.g.
+     `G.W. Saunders` against `G.W.Saunders, 2004`. This is cosmetic. Count it, but do not list it.
+   - **accepted name changed** - the same name is matched, but `acceptedScientificName` differs. A change of
+     synonymy.
+   - **classification only** - name and accepted name are unchanged, and only a higher taxon differs.
+
+   Independently of that class, count the rows and occurrences whose `kingdom`, `phylum`, `klass`, `order` or
+   `family` changes, rank by rank, ignoring a change from `null`. List the twenty rows with the most occurrences
+   whose kingdom, phylum or class changes. A change of the higher classification of many occurrences is the
+   GBIF side of a sector attached in the wrong place, so tie it to the sector, duplicate and name diff findings
+   above where you can.
+   A row whose `current_*` value equals its `verbatim_*` value and whose `proposed_*` value does not is a
+   **regression**: today GBIF agrees with what the occurrence says, and with this release it would not. The
+   reverse is an improvement. Give both counts for `scientificName` (compare the verbatim name with the matched
+   name without its authorship) and for `family` and `kingdom`. Then list the regressions with the most
+   occurrences. Do not count a value that is `null` on either side.
+11. **Unexpected drops and spikes.** Anything from the steps above that moves by more than ~10% without an
    obvious cause. Say what you think caused it and how confident you are.
 
 ## The report
@@ -177,9 +239,13 @@ Structure it in this order:
 6. **Release job** - the errors and warnings of the job, and anything its timeline shows went wrong.
 7. **Per-source findings** - one subsection per source dataset that changed materially, with its sector(s),
    the numbers, and a link to the source in ChecklistBank.
-8. **Everything checked and found fine** - a short list, so the reviewer can see what the review covered. A
+8. **GBIF impact** - for an extended release: the release GBIF uses today and how far it lags behind, the GBIF
+   impact reports used, a table of their change classes in rows
+   and occurrences, the higher classification changes, the regressions, and the rows worth a human look. Each row
+   links to the report in the GBIF Impact Tool. For a base release: one line saying it does not apply.
+9. **Everything checked and found fine** - a short list, so the reviewer can see what the review covered. A
    checklist item you could not complete belongs here too, marked as not checked and why.
-9. **Method** - the release pair, the date, the endpoints and the mounted files you used.
+10. **Method** - the release pair, the date, the endpoints and the mounted files you used.
 
 Link back to the UI at `{{clbURI}}`, using these patterns:
 
@@ -190,6 +256,7 @@ Link back to the UI at `{{clbURI}}`, using these patterns:
 - names carrying an issue: `{{clbURI}}/dataset/{key}/names?issue={ISSUE}`
 - a single usage: `{{clbURI}}/dataset/{key}/taxon/{id}`
 - duplicates: `{{clbURI}}/dataset/{key}/duplicates?category=uninomial&minSize=2&mode=STRICT&rankDifferent=false&status=accepted&rank={rank}`
+- a GBIF impact report in the GBIF Impact Tool: `{{clbURI}}/tools/gbif-impact?csv={report filename}&colKey={{releaseKey}}`
 
 and to the release reports of this release at `{{reportsURI}}/`, which is where the review itself is published.
 

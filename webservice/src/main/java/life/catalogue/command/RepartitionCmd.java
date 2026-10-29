@@ -5,10 +5,13 @@ import life.catalogue.dao.Partitioner;
 import life.catalogue.db.mapper.DatasetPartitionMapper;
 
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -31,9 +34,11 @@ import net.sourceforge.argparse4j.inf.Subparser;
  *  - copies data from old tables
  *  - attaches new tables
  *
- *  WARNING !!!
- *  Since PG 17.1 FK constraints are also checked for detached partitions and the CMD is broken !!!
- *  https://github.com/CatalogueOfLife/backend/issues/1424
+ * Since PG 17.1 a detached partition keeps its foreign keys as standalone constraints referencing the still partitioned
+ * parent tables, so its rows block detaching the parent partition they point to. The detached tables are only ever
+ * copied from and dropped, so their foreign keys are dropped straight after detaching them,
+ * together with their extended statistics whose names would clash with the ones of the new partitions.
+ * See https://github.com/CatalogueOfLife/backend/issues/1424
  */
 public class RepartitionCmd extends AbstractMybatisCmd {
   private static final Logger LOG = LoggerFactory.getLogger(RepartitionCmd.class);
@@ -108,6 +113,7 @@ public class RepartitionCmd extends AbstractMybatisCmd {
             } else {
               LOG.info("  table {} was not attached", src);
             }
+            stripDetached(con, src);
             st.execute(String.format("ALTER TABLE %s RENAME TO _%s", src, src));
           } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -147,6 +153,36 @@ public class RepartitionCmd extends AbstractMybatisCmd {
       st.execute("SET session_replication_role = 'origin'");
       con.commit();
     }
+  }
+
+  /**
+   * Drops the foreign keys and extended statistics of a detached partition.
+   * Statistics are named independently of their table, so they would clash with the ones of the new partitions.
+   */
+  private static void stripDetached(Connection con, String table) throws SQLException {
+    final List<String> fks = list(con, "SELECT conname FROM pg_constraint WHERE contype='f' AND conparentid=0 AND conrelid='" + table + "'::regclass");
+    final List<String> stats = list(con, "SELECT stxname FROM pg_statistic_ext WHERE stxrelid='" + table + "'::regclass");
+    try (Statement st = con.createStatement()) {
+      for (String fk : fks) {
+        st.execute(String.format("ALTER TABLE %s DROP CONSTRAINT \"%s\"", table, fk));
+      }
+      for (String stat : stats) {
+        st.execute(String.format("DROP STATISTICS \"%s\"", stat));
+      }
+    }
+    LOG.info("  dropped {} foreign keys and {} statistics of detached {}", fks.size(), stats.size(), table);
+  }
+
+  private static List<String> list(Connection con, String sql) throws SQLException {
+    final List<String> names = new ArrayList<>();
+    try (Statement st = con.createStatement();
+         ResultSet rs = st.executeQuery(sql)
+    ) {
+      while (rs.next()) {
+        names.add(rs.getString(1));
+      }
+    }
+    return names;
   }
 
   private static String partitionName(String table, int mod) {

@@ -302,6 +302,46 @@ public class VocabResource {
   private static final Pattern REPEAT_DASH = Pattern.compile("-{2,}");
 
 
+  /**
+   * The svg icon of a TaxGroup, built from public domain PhyloPic silhouettes.
+   * @param name the TaxGroup name, case insensitive
+   */
+  @GET
+  @Path("taxgroup/{name}/icon.svg")
+  @Produces(MoreMediaTypes.IMG_SVG)
+  public Response taxGroupIcon(@PathParam("name") String name) {
+    return taxGroupIcon(name, null, MoreMediaTypes.IMG_SVG);
+  }
+
+  /**
+   * The png icon of a TaxGroup in one of the sizes of {@link TaxGroup.SIZE}.
+   * @param name the TaxGroup name, case insensitive
+   * @param px width and height in pixels
+   */
+  @GET
+  // the .png suffix is stripped by SuffixAcceptRequestFilter before matching, turning it into Accept: image/png
+  @Path("taxgroup/{name}/icon/{px}")
+  @Produces(MoreMediaTypes.IMG_PNG)
+  public Response taxGroupIconPng(@PathParam("name") String name, @PathParam("px") int px) {
+    var size = TaxGroup.size(px);
+    if (size == null) {
+      throw new NotFoundException();
+    }
+    return taxGroupIcon(name, size, MoreMediaTypes.IMG_PNG);
+  }
+
+  private static Response taxGroupIcon(String name, @Nullable TaxGroup.SIZE size, String mediaType) {
+    var icon = VocabularyUtils.lookup(name, TaxGroup.class)
+      .map(g -> g.iconResource(size))
+      .orElseThrow(NotFoundException::new);
+    StreamingOutput out = output -> {
+      try (var in = icon.openStream()) {
+        in.transferTo(output);
+      }
+    };
+    return Response.ok(out, mediaType).build();
+  }
+
   @GET
   @Path("{vocab}")
   @Produces({MediaType.APPLICATION_JSON, MoreMediaTypes.TEXT_TSV, MediaType.TEXT_PLAIN})
@@ -314,7 +354,7 @@ public class VocabResource {
 
   @GET
   @Path("{vocab}/{name}")
-  public Optional<Map<String, Object>> value(@PathParam("vocab") String vocab, @PathParam("vocab") String name) {
+  public Optional<Map<String, Object>> value(@PathParam("vocab") String vocab, @PathParam("name") String name) {
     if (vocabs.containsKey(vocab.toLowerCase())) {
       return VocabularyUtils.lookup(name, vocabs.get(vocab.toLowerCase()))
         .map(VocabResource::enumFields);

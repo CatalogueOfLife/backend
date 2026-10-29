@@ -4,6 +4,7 @@ import life.catalogue.api.vocab.NameField;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
 
+import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.Rank;
 
 import java.util.Collection;
@@ -18,6 +19,7 @@ import static life.catalogue.api.vocab.NameField.BASIONYM_AUTHORS;
 import static life.catalogue.api.vocab.NameField.BASIONYM_EX_AUTHORS;
 import static life.catalogue.api.vocab.NameField.BASIONYM_YEAR;
 import static life.catalogue.api.vocab.NameField.CANDIDATUS;
+import static life.catalogue.api.vocab.NameField.GRAFT_CHIMAERA;
 import static life.catalogue.api.vocab.NameField.CODE;
 import static life.catalogue.api.vocab.NameField.COMBINATION_AUTHORS;
 import static life.catalogue.api.vocab.NameField.COMBINATION_EX_AUTHORS;
@@ -146,6 +148,9 @@ public interface NameUsage extends DSID<String>, VerbatimEntity, VerbatimSourceE
     if (name.isCandidatus()) {
       fields.add(CANDIDATUS);
     }
+    if (name.isGraftChimaera()) {
+      fields.add(GRAFT_CHIMAERA);
+    }
     addIfSet(fields, NOTHO, name.getNotho());
     if (name.getBasionymAuthorship() != null) {
       addIfSet(fields, BASIONYM_AUTHORS, name.getBasionymAuthorship().getAuthors());
@@ -157,7 +162,9 @@ public interface NameUsage extends DSID<String>, VerbatimEntity, VerbatimSourceE
       addIfSet(fields, COMBINATION_EX_AUTHORS, name.getCombinationAuthorship().getExAuthors());
       addIfSet(fields, COMBINATION_YEAR, name.getCombinationAuthorship().getYear());
     }
-    addIfSet(fields, SANCTIONING_AUTHOR, name.getSanctioningAuthor());
+    if (sanctioned(name.getCombinationAuthorship()) || sanctioned(name.getBasionymAuthorship())) {
+      fields.add(SANCTIONING_AUTHOR);
+    }
     addIfSet(fields, CODE, name.getCode());
     addIfSet(fields, NOM_STATUS, name.getNomStatus());
     addIfSet(fields, PUBLISHED_IN, name.getPublishedInId());
@@ -181,6 +188,10 @@ public interface NameUsage extends DSID<String>, VerbatimEntity, VerbatimSourceE
     if (val != null) {
       fields.add(nf);
     }
+  }
+
+  private static boolean sanctioned(Authorship a) {
+    return a != null && a.hasSanctioningAuthor();
   }
 
   /**

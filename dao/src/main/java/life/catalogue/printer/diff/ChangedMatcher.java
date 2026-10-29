@@ -178,8 +178,8 @@ public class ChangedMatcher {
   /** Parses a label into its normalised canonical and authorship; falls back to the raw label if unparsable. */
   private static Candidate parse(String label) {
     try {
-      // name-parser 5.0: parse() never throws — it returns a sealed ParseResult; orElseThrow() yields the
-      // ParsedName or throws UnparsableNameException for the unparsable fallback below.
+      // parse() never throws — it returns a sealed ParseResult; orElseThrow() yields the ParsedName, informal names
+      // included, or throws UnparsableNameException for the unparsable fallback below.
       var pn = PARSER.parse(label).orElseThrow();
       String canonical = NameFormatter.canonicalWithoutAuthorship(pn);
       ScientificName sciname = ScientificName.wrap(pn);

@@ -53,6 +53,7 @@ public class ApiKryoPoolTest {
     s.setRanks(Set.of(Rank.SPECIES, Rank.GENUS));
     s.setEntities(Set.of(EntityType.NAME, EntityType.TAXON));
     s.setExtinctFilter(true);
+    s.setTaxonomicStatusExclusion(Set.of(TaxonomicStatus.MISAPPLIED));
     s.setNameTypes(Set.of(NameType.SCIENTIFIC, NameType.OTHER));
     s.setPriority(12);
     s.applyUser(TestEntityGenerator.USER_EDITOR);
@@ -75,7 +76,8 @@ public class ApiKryoPoolTest {
     var d = new TypeMaterial();
     d.setId("1234");
     d.setReferenceId("1984");
-    d.setStatus(TypeStatus.ALLOLECTOTYPE);
+    d.addName("nameID", TypeStatus.ALLOLECTOTYPE);
+    d.addName("nameID2", TypeStatus.HOLOTYPE);
     d.setSectorKey(13);
     d.setVerbatimKey(6789);
     d.setSex(Sex.FEMALE);
@@ -89,7 +91,6 @@ public class ApiKryoPoolTest {
     d.setDate("my date");
     d.setHost("my host");
     d.setCollector("my collector");
-    d.setNameId("nameID");
     d.setLink(URI.create("http://gbif.org/234567"));
     d.setLatitude("12°31``2`");
     d.setLongitude("21°32``12`");

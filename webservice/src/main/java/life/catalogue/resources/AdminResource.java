@@ -24,8 +24,10 @@ import life.catalogue.common.text.StringUtils;
 import life.catalogue.api.model.JobInfo;
 import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.concurrent.JobExecutor;
+import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.JobPriority;
 import life.catalogue.dao.DatasetDao;
+import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.JobDao;
 import life.catalogue.dao.SectorImportDao;
 import life.catalogue.doi.DoiChangeListener;
@@ -47,7 +49,9 @@ import life.catalogue.jobs.*;
 import life.catalogue.matching.GlobalMatcherJob;
 import life.catalogue.matching.RematchArchiveJob;
 import life.catalogue.matching.RematchJob;
+import life.catalogue.matching.UsageMatcherFactory;
 import life.catalogue.matching.nidx.NameIndex;
+import life.catalogue.release.LegacyIdMapJob;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -82,6 +86,7 @@ public class AdminResource {
   private final Maintenance maintenance;
   private final DatasetDao ddao;
   private final SectorImportDao siDao;
+  private final DatasetImportDao diDao;
   private final SyncManager assembly;
   private final ImportManager importManager;
   private final GbifSyncManager gbifSync;
@@ -91,13 +96,17 @@ public class AdminResource {
   private final EventBroker bus;
   private final EmailEncryption encryption;
   private final DoiChangeListener doiListener;
+  private final UsageMatcherFactory matcherFactory;
 
   public AdminResource(SqlSessionFactory factory, ManagedService managedService, SyncManager assembly, DownloadUtil downloader,
                        WsServerConfig cfg, ImageService imgService, NameIndex ni,
                        NameUsageIndexService indexService, NameUsageSearchService searchService,
-                       ImportManager importManager, DatasetDao ddao, SectorImportDao siDao, GbifSyncManager gbifSync,
-                       JobExecutor executor, EventBroker bus, EmailEncryption encryption, DoiChangeListener doiListener) {
+                       ImportManager importManager, DatasetDao ddao, SectorImportDao siDao, DatasetImportDao diDao, GbifSyncManager gbifSync,
+                       JobExecutor executor, EventBroker bus, EmailEncryption encryption, DoiChangeListener doiListener,
+                       UsageMatcherFactory matcherFactory) {
     this.factory = factory;
+    this.diDao = diDao;
+    this.matcherFactory = matcherFactory;
     this.doiListener = doiListener;
     this.encryption = encryption;
     this.bus = bus;
@@ -290,6 +299,27 @@ public class AdminResource {
     return runJob(job);
   }
 
+  /**
+   * Maps the identifiers of a retired COL edition configured in release.legacyIdMaps to the given release.
+   * Each release gets its own dated file next to the monthly exports, which is never overwritten.
+   */
+  @POST
+  @Path("/legacy-idmap/{name}")
+  public Response legacyIdMap(@PathParam("name") String name, @QueryParam("release") Integer releaseKey, @Auth User user) {
+    if (releaseKey == null) {
+      throw new IllegalArgumentException("Request parameter release must be provided");
+    }
+    var map = cfg.release.legacyIdMaps.stream()
+      .filter(m -> m.name.equals(name))
+      .findFirst()
+      .orElseThrow(() -> new NotFoundException("No legacy id map " + name + " configured"));
+    var job = new LegacyIdMapJob(map, releaseKey, user.getKey(), cfg.release.colDownloadDir, factory, matcherFactory);
+    if (job.file().exists()) {
+      return Response.status(Response.Status.CONFLICT).entity(name + " id mapping exists already at " + job.file().getName()).build();
+    }
+    return Response.ok(runJob(job)).build();
+  }
+
   @GET
   @Path("/gbif-deleted")
   @Produces({TEXT_TSV, TEXT_CSV})
@@ -393,6 +423,28 @@ public class AdminResource {
    */
   public JobInfo rematchUnmatched(@Auth User user) {
     return runJob(new GlobalMatcherJob(user.getKey(), factory, namesIndex, bus));
+  }
+
+  /**
+   * Checks the placement of the accepted genera of an external dataset, or of all public external datasets of a type,
+   * against the reference checklist and flags them with a PLACEMENT_CONFLICT.
+   * See https://github.com/CatalogueOfLife/backend/issues/1608
+   *
+   * @param references optional reference checklists overriding the configured importer.placementReferences
+   */
+  @POST
+  @Path("/placement-check")
+  public JobInfo placementCheck(@QueryParam("datasetKey") Integer datasetKey,
+                                @QueryParam("datasetType") DatasetType type,
+                                @QueryParam("reference") List<String> references,
+                                @Auth User user) {
+    List<String> ref = references != null && !references.isEmpty() ? references : cfg.importer.placementReferences;
+    Preconditions.checkArgument(!ref.isEmpty(), "No placement reference configured or given");
+    if (datasetKey != null) {
+      return runJob(new PlacementCheckJob(user.getKey(), datasetKey, ref, factory, matcherFactory, diDao, indexService));
+    }
+    Preconditions.checkArgument(type != null, "A datasetKey or datasetType parameter must be given");
+    return runJob(new PlacementCheckSchedulerJob(user.getKey(), type, ref, factory, exec, matcherFactory, diDao, indexService));
   }
 
   @POST

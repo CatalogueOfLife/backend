@@ -106,6 +106,12 @@ public class NameIndexImpl implements NameIndex {
       if (name.getRank() == null) {
         name.setRank(ScientificName.CANONICAL_RANK);
       }
+      // a name not eligible for the index must not even be looked up: a placeholder hanging off a real taxon is parsed
+      // anchored on it, so its key is that of the taxon, "mollusca" for Mollusca incertae sedis
+      if (!eligable(name)) {
+        LOG.debug("Name {} of type {} is not indexed", name.getLabel(), name.getType());
+        return NameMatch.noMatch();
+      }
       final String key = key(name);
       if (!indexable(key)) {
         LOG.debug("Name {} has no indexable key >>{}<<", name.getLabel(), key);
@@ -113,7 +119,7 @@ public class NameIndexImpl implements NameIndex {
       }
       int nidx = store.get(key);
       NameMatch m = nidx > 0 ? NameMatch.match(nidx) : NameMatch.noMatch();
-      if (allowInserts && !m.isMatched() && eligable(name)) {
+      if (allowInserts && !m.isMatched()) {
         m = tryToAdd(name, key);
       }
       LOG.debug("Matched {} => {}", name.getLabel(), m);
@@ -132,7 +138,7 @@ public class NameIndexImpl implements NameIndex {
    * Checks if the given name is eligable to be included in the names index.
    * We allow bad names in the index - it is not a reference, just a lookup.
    * But we exclude no names and placeholders.
-   * A name also needs an {@link #indexable} key, which match checks before it even looks the key up.
+   * A name also needs an {@link #indexable} key. Match checks both before it even looks the key up.
    */
   private static boolean eligable(Name n){
     return INDEX_NAME_TYPES.contains(n.getType());

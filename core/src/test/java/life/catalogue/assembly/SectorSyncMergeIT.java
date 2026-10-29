@@ -3,6 +3,8 @@ package life.catalogue.assembly;
 import life.catalogue.TestUtils;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
+import life.catalogue.api.vocab.area.Gazetteer;
+import life.catalogue.api.vocab.area.GenericArea;
 import life.catalogue.common.util.YamlUtils;
 import life.catalogue.dao.*;
 import life.catalogue.db.mapper.*;
@@ -20,6 +22,7 @@ import life.catalogue.release.XReleaseConfig;
 import org.gbif.nameparser.api.Rank;
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.*;
 
 import org.apache.ibatis.io.Resources;
@@ -77,6 +80,8 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
   List<String> trees;
 
   ProjectTestInfo info;
+  // the imports of the last syncAndCompare, one per sector
+  final List<SectorImport> imports = new ArrayList<>();
 
 
   @Parameterized.Parameters(name = "{0}")
@@ -118,8 +123,11 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
       {"protected", List.of("src")}, // XReleaseConfig.protectedGroups shields the Carabus subtree from merges
       {"bareauthorship", List.of("src")}, // bare-name merge candidates must be filtered by authorship, see readme.md
       {"genushomonyms", List.of("src")}, // genus homonyms decided by the lowest shared rank, see readme.md
+      {"placementconflict", List.of("article", "species")}, // misplaced source genera and homonyms of disparate groups, see readme.md
       {"environment", List.of("src")}, // merges fill in missing environments & temporal ranges, never extinct, see readme.md
-      {"profiles", List.of("src")} // sector profiles cascade and their blocklists reach the merge, see readme.md
+      {"profiles", List.of("src")}, // sector profiles cascade and their blocklists reach the merge, see readme.md
+      {"nametypes", List.of("src")}, // a name type filter drops parsed and unparsable names alike, see readme.md
+      {"placeholder-anchor", List.of("src")} // placeholders snap to the taxon they are anchored on, see readme.md
     });
   }
 
@@ -298,6 +306,17 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
     return usages.get(0);
   }
 
+  /**
+   * Placeholders, informal and other names are dropped for their type, whether parsed or not
+   */
+  public void nametypesValidate() {
+    var ignored = imports.get(0).getIgnoredByReasonCount();
+    assertEquals(2, (int) ignored.get(IgnoreReason.NAME_PLACEHOLDER));
+    assertEquals(2, (int) ignored.get(IgnoreReason.NAME_INFORMAL));
+    assertEquals(2, (int) ignored.get(IgnoreReason.NAME_OTHER));
+    assertEquals(3, ignored.size());
+  }
+
   public void literatureValidate() {
     // check if reference were copied - cant be done with text tree easily
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
@@ -359,8 +378,9 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
   @Test
   public void syncAndCompare() throws Throwable {
     var mcfg = info.buildMergeConfig();
+    imports.clear();
     for (var s : info.sectors) {
-      sync(s, mcfg);
+      imports.add(sync(s, mcfg));
     }
     assertTree(project, Datasets.COL, null, getClass().getResourceAsStream("/txtree/" + project + "/expected.txtree"));
 
@@ -438,6 +458,311 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
     assertReindexed(index, factory, info.sectors.get(0), mcfg, Rank.PHYLUM, "Arthropoda");
     // v2 adds german names to Aedes albopictus, which was created by v1
     assertReindexed(index, factory, info.sectors.get(1), mcfg, Rank.SPECIES, "Aedes albopictus");
+  }
+
+  /**
+   * v2 adds german names to Aedes albopictus, a usage created by v1. Syncing v1 again deletes that usage,
+   * which the foreign vernacular names must not block. https://github.com/CatalogueOfLife/backend/issues/1585
+   */
+  @Test
+  public void resyncSectorWhoseUsagesCarryAnotherSectorsVernaculars() throws Throwable {
+    Assume.assumeTrue("vernacular".equals(project));
+    var factory = syncFactoryRule.factory(NameUsageIndexService.passThru());
+    var mcfg = info.buildMergeConfig();
+    for (Sector s : List.of(info.sectors.get(0), info.sectors.get(1), info.sectors.get(0))) {
+      SectorSync ss = factory.project(s, null, TestDataRule.TEST_USER.getKey());
+      ss.setMergeCfg(mcfg);
+      ss.run();
+      assertEquals("sync of sector " + s.getId() + " failed: " + ss.getState().getError(), JobStatus.FINISHED, ss.getStatus());
+    }
+    // the names v2 added to usages of v1 are attached to their new usages again
+    validateVernacular();
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      var vnames = session.getMapper(VernacularNameMapper.class).listByTaxon(getByName(Datasets.COL, Rank.SPECIES, "Aedes albopictus"));
+      assertEquals(2, vnames.size());
+      vnames.forEach(vn -> assertEquals(info.sectors.get(1).getId(), vn.getSectorKey()));
+    }
+  }
+
+  /**
+   * Editors can attach any extension to a usage of a sector, and a relation of another sector can point into it.
+   * A resync of the sector gives its usages new ids and must take all of them along, while the taxon properties
+   * the sector owns itself are deleted with it. https://github.com/CatalogueOfLife/backend/issues/1585
+   */
+  @Test
+  public void resyncSectorWhoseUsagesCarryForeignEntities() throws Throwable {
+    Assume.assumeTrue("vernacular".equals(project));
+    var factory = syncFactoryRule.factory(NameUsageIndexService.passThru());
+    var mcfg = info.buildMergeConfig();
+    final Sector v1 = info.sectors.get(0);
+    final int user = TestDataRule.TEST_USER.getKey();
+    sync(factory, mcfg, v1);
+
+    final var aedes = getByName(Datasets.COL, Rank.SPECIES, "Aedes albopictus");
+    final var musca = getByName(Datasets.COL, Rank.SPECIES, "Musca domestica");
+    // the project's own phylum, which no sector owns
+    final var arthropoda = getByName(Datasets.COL, Rank.PHYLUM, "Arthropoda");
+    assertEquals(v1.getId(), aedes.getSectorKey());
+    assertNull(arthropoda.getSectorKey());
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      var d = new Distribution();
+      d.copyArea(new GenericArea("Europe"));
+      session.getMapper(DistributionMapper.class).create(withUser(d, user), aedes.getId());
+
+      var m = new Media();
+      m.setUrl(URI.create("https://example.org/aedes.jpg"));
+      session.getMapper(MediaMapper.class).create(withUser(m, user), aedes.getId());
+
+      var pm = session.getMapper(TaxonPropertyMapper.class);
+      pm.create(withUser(property("habitat", "urban", null), user), aedes.getId());
+      // a property the sector owns itself is deleted with it
+      pm.create(withUser(property("habitat", "copied", v1.getId()), user), aedes.getId());
+
+      var t = new Treatment();
+      t.setDatasetKey(Datasets.COL);
+      t.setId(aedes.getId());
+      t.setDocument("Bites in daylight");
+      t.setFormat(TreatmentFormat.PLAIN_TEXT);
+      session.getMapper(TreatmentMapper.class).create(withUser(t, user));
+
+      // only the related end is in the sector
+      var si = new SpeciesInteraction();
+      si.setDatasetKey(Datasets.COL);
+      si.setType(SpeciesInteractionType.EATS);
+      si.setTaxonId(arthropoda.getId());
+      si.setRelatedTaxonId(aedes.getId());
+      session.getMapper(SpeciesInteractionMapper.class).create(withUser(si, user));
+
+      // both ends are in the sector
+      var tc = new TaxonConceptRelation();
+      tc.setDatasetKey(Datasets.COL);
+      tc.setType(TaxonConceptRelType.OVERLAPS);
+      tc.setTaxonId(aedes.getId());
+      tc.setRelatedTaxonId(musca.getId());
+      session.getMapper(TaxonConceptRelationMapper.class).create(withUser(tc, user));
+    }
+
+    sync(factory, mcfg, v1);
+
+    final var aedes2 = getByName(Datasets.COL, Rank.SPECIES, "Aedes albopictus");
+    final var musca2 = getByName(Datasets.COL, Rank.SPECIES, "Musca domestica");
+    assertNotEquals("a sync gives its usages new ids", aedes.getId(), aedes2.getId());
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      assertEquals(1, session.getMapper(DistributionMapper.class).listByTaxon(aedes2).size());
+      assertEquals(1, session.getMapper(MediaMapper.class).listByTaxon(aedes2).size());
+      var props = session.getMapper(TaxonPropertyMapper.class).listByTaxon(aedes2);
+      assertEquals(1, props.size());
+      assertEquals("urban", props.getFirst().getValue());
+      assertNotNull(session.getMapper(TreatmentMapper.class).get(aedes2));
+      assertNull(session.getMapper(TreatmentMapper.class).get(aedes));
+
+      var sis = session.getMapper(SpeciesInteractionMapper.class).listByRelatedTaxon(aedes2);
+      assertEquals(1, sis.size());
+      assertEquals(arthropoda.getId(), sis.getFirst().getTaxonId());
+
+      var tcs = session.getMapper(TaxonConceptRelationMapper.class).listByTaxon(aedes2);
+      assertEquals(1, tcs.size());
+      assertEquals(musca2.getId(), tcs.getFirst().getRelatedTaxonId());
+    }
+  }
+
+  /**
+   * A merge adds distributions, media and taxon properties to existing usages,
+   * but skips distributions of an existing area and properties of an existing key, even if their values differ.
+   */
+  @Test
+  public void mergeExtensionsIntoExistingUsages() throws Throwable {
+    Assume.assumeTrue("vernacular".equals(project));
+    var factory = syncFactoryRule.factory(NameUsageIndexService.passThru());
+    var mcfg = info.buildMergeConfig();
+    final Sector v1 = info.sectors.get(0);
+    final int srcKey = v1.getSubjectDatasetKey();
+    final int user = TestDataRule.TEST_USER.getKey();
+
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      v1.setEntities(Set.of(EntityType.NAME_USAGE, EntityType.DISTRIBUTION, EntityType.MEDIA, EntityType.TAXON_PROPERTY));
+      session.getMapper(SectorMapper.class).update(v1);
+      // external source datasets have no id sequences
+      session.getMapper(DatasetPartitionMapper.class).createSequences(srcKey);
+
+      var dm = session.getMapper(DistributionMapper.class);
+      var pm = session.getMapper(TaxonPropertyMapper.class);
+      // the project's own usage
+      final var musca = getByName(Datasets.COL, Rank.SPECIES, "Musca domestica");
+      assertNull(musca.getSectorKey());
+      dm.create(withUser(distribution(Gazetteer.TDWG, "BZL", EstablishmentMeans.NATIVE), user), musca.getId());
+      pm.create(withUser(property("habitat", "houses", null), user), musca.getId());
+
+      // the source usage
+      final var src = getByName(srcKey, Rank.SPECIES, "Musca domestica");
+      dm.create(inDataset(distribution(Gazetteer.TDWG, "bzl", EstablishmentMeans.INTRODUCED), srcKey, user), src.getId());
+      dm.create(inDataset(distribution(Gazetteer.TDWG, "EUR", EstablishmentMeans.NATIVE), srcKey, user), src.getId());
+      pm.create(inDataset(property("habitat", "urban", null), srcKey, user), src.getId());
+      pm.create(inDataset(property("size", "7mm", null), srcKey, user), src.getId());
+      var m = new Media();
+      m.setUrl(URI.create("https://example.org/musca.jpg"));
+      session.getMapper(MediaMapper.class).create(inDataset(m, srcKey, user), src.getId());
+    }
+
+    // a resync replaces what the sector added before and must not duplicate anything
+    for (int x = 0; x < 2; x++) {
+      sync(factory, mcfg, v1);
+      try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+        final var musca = getByName(Datasets.COL, Rank.SPECIES, "Musca domestica");
+        var dists = session.getMapper(DistributionMapper.class).listByTaxon(musca);
+        assertEquals(2, dists.size());
+        for (var d : dists) {
+          if (d.getArea().getId().equals("BZL")) {
+            assertEquals(EstablishmentMeans.NATIVE, d.getEstablishmentMeans());
+            assertNull(d.getSectorKey());
+          } else {
+            assertEquals("EUR", d.getArea().getId());
+            assertEquals(v1.getId(), d.getSectorKey());
+          }
+        }
+
+        var props = session.getMapper(TaxonPropertyMapper.class).listByTaxon(musca);
+        assertEquals(2, props.size());
+        for (var p : props) {
+          if (p.getProperty().equals("habitat")) {
+            assertEquals("houses", p.getValue());
+          } else {
+            assertEquals("size", p.getProperty());
+            assertEquals("7mm", p.getValue());
+            assertEquals(v1.getId(), p.getSectorKey());
+          }
+        }
+
+        var media = session.getMapper(MediaMapper.class).listByTaxon(musca);
+        assertEquals(1, media.size());
+        assertEquals(v1.getId(), media.getFirst().getSectorKey());
+        assertNotNull(media.getFirst().getVerbatimSourceKey());
+      }
+    }
+  }
+
+  /**
+   * A merge copies name relations and species interactions of both created and matched usages,
+   * skipping those existing already in the project.
+   */
+  @Test
+  public void mergeRelations() throws Throwable {
+    Assume.assumeTrue("vernacular".equals(project));
+    var factory = syncFactoryRule.factory(NameUsageIndexService.passThru());
+    var mcfg = info.buildMergeConfig();
+    final Sector v1 = info.sectors.get(0);
+    final int srcKey = v1.getSubjectDatasetKey();
+    final int user = TestDataRule.TEST_USER.getKey();
+
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      v1.setEntities(Set.of(EntityType.NAME_USAGE, EntityType.NAME_RELATION, EntityType.SPECIES_INTERACTION));
+      session.getMapper(SectorMapper.class).update(v1);
+      // external source datasets have no id sequences
+      session.getMapper(DatasetPartitionMapper.class).createSequences(srcKey);
+
+      // both exist in the project already, Drosophila does not
+      final var musca = getByName(Datasets.COL, Rank.SPECIES, "Musca domestica");
+      final var diptera = getByName(Datasets.COL, Rank.ORDER, "Diptera");
+      var nrm = session.getMapper(NameRelationMapper.class);
+      nrm.create(withUser(nameRel(musca, diptera, NomRelType.HOMOTYPIC), user));
+      var sim = session.getMapper(SpeciesInteractionMapper.class);
+      sim.create(withUser(interaction(SpeciesInteractionType.EATS, musca, diptera), user));
+
+      final var sMusca = getByName(srcKey, Rank.SPECIES, "Musca domestica");
+      final var sDiptera = getByName(srcKey, Rank.ORDER, "Diptera");
+      final var sDroso = getByName(srcKey, Rank.SPECIES, "Drosophila melanogaster");
+      // existing ones
+      nrm.create(inDataset(nameRel(sMusca, sDiptera, NomRelType.HOMOTYPIC), srcKey, user));
+      sim.create(inDataset(interaction(SpeciesInteractionType.EATS, sMusca, sDiptera), srcKey, user));
+      // new ones between a matched and a created usage
+      nrm.create(inDataset(nameRel(sDroso, sMusca, NomRelType.SPELLING_CORRECTION), srcKey, user));
+      sim.create(inDataset(interaction(SpeciesInteractionType.EATS, sMusca, sDroso), srcKey, user));
+    }
+
+    // a resync replaces what the sector added before and must not duplicate anything
+    for (int x = 0; x < 2; x++) {
+      sync(factory, mcfg, v1);
+      try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+        final var musca = getByName(Datasets.COL, Rank.SPECIES, "Musca domestica");
+        final var diptera = getByName(Datasets.COL, Rank.ORDER, "Diptera");
+        final var droso = getByName(Datasets.COL, Rank.SPECIES, "Drosophila melanogaster");
+        assertEquals(v1.getId(), droso.getSectorKey());
+
+        var rels = session.getMapper(NameRelationMapper.class).listByName(musca.getName());
+        assertEquals(1, rels.size());
+        assertEquals(diptera.getName().getId(), rels.getFirst().getRelatedNameId());
+        assertNull(rels.getFirst().getSectorKey());
+
+        rels = session.getMapper(NameRelationMapper.class).listByName(droso.getName());
+        assertEquals(1, rels.size());
+        assertEquals(NomRelType.SPELLING_CORRECTION, rels.getFirst().getType());
+        assertEquals(musca.getName().getId(), rels.getFirst().getRelatedNameId());
+        assertEquals(v1.getId(), rels.getFirst().getSectorKey());
+
+        var sis = session.getMapper(SpeciesInteractionMapper.class).listByTaxon(musca);
+        assertEquals(2, sis.size());
+        for (var si : sis) {
+          if (si.getRelatedTaxonId().equals(diptera.getId())) {
+            assertNull(si.getSectorKey());
+          } else {
+            assertEquals(droso.getId(), si.getRelatedTaxonId());
+            assertEquals(v1.getId(), si.getSectorKey());
+          }
+        }
+      }
+    }
+  }
+
+  private static NameRelation nameRel(NameUsageBase from, NameUsageBase to, NomRelType type) {
+    var nr = new NameRelation();
+    nr.setType(type);
+    nr.setNameId(from.getName().getId());
+    nr.setRelatedNameId(to.getName().getId());
+    return nr;
+  }
+
+  private static SpeciesInteraction interaction(SpeciesInteractionType type, NameUsageBase taxon, NameUsageBase related) {
+    var si = new SpeciesInteraction();
+    si.setType(type);
+    si.setTaxonId(taxon.getId());
+    si.setRelatedTaxonId(related.getId());
+    return si;
+  }
+
+  private static Distribution distribution(Gazetteer gazetteer, String areaId, EstablishmentMeans means) {
+    var d = new Distribution();
+    d.setArea(new GenericArea(gazetteer, areaId));
+    d.setEstablishmentMeans(means);
+    return d;
+  }
+
+  private static <T extends DatasetScopedEntity<?>> T inDataset(T obj, int datasetKey, int user) {
+    withUser(obj, user);
+    obj.setDatasetKey(datasetKey);
+    return obj;
+  }
+
+  private static void sync(SyncFactory factory, TreeMergeHandlerConfig mcfg, Sector s) {
+    SectorSync ss = factory.project(s, null, TestDataRule.TEST_USER.getKey());
+    ss.setMergeCfg(mcfg);
+    ss.run();
+    assertEquals("sync of sector " + s.getId() + " failed: " + ss.getState().getError(), JobStatus.FINISHED, ss.getStatus());
+  }
+
+  private static TaxonProperty property(String property, String value, Integer sectorKey) {
+    var p = new TaxonProperty();
+    p.setDatasetKey(Datasets.COL);
+    p.setSectorKey(sectorKey);
+    p.setProperty(property);
+    p.setValue(value);
+    return p;
+  }
+
+  private static <T extends DatasetScopedEntity<?>> T withUser(T obj, int user) {
+    obj.setDatasetKey(Datasets.COL);
+    obj.setCreatedBy(user);
+    obj.setModifiedBy(user);
+    return obj;
   }
 
   private static void assertReindexed(NameUsageIndexService index, SyncFactory factory, Sector s, TreeMergeHandlerConfig mcfg,
@@ -684,6 +1009,36 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
     // a skipped genus must not leave its species orphaned under the nearest matched parent.
     assertNull("The descendants of a skipped genus must be skipped too",
       getByName(Datasets.COL, Rank.SPECIES, "Cus secundus"));
+  }
+
+  public void placementconflictValidate() {
+    // the article filed the fungus Curvularia under the grass family of its host. Its genus was flagged with a
+    // placement conflict, so it joins the single project Curvularia instead of creating a grass genus of that name
+    var curvularia = listByName(Datasets.COL, Rank.GENUS, "Curvularia");
+    assertEquals("A misplaced genus must not be duplicated under its host", 1, curvularia.size());
+    assertEquals("Boedijn, 1933", curvularia.get(0).getName().getAuthorship());
+    var nanningensis = getByName(Datasets.COL, Rank.SPECIES, "Curvularia nanningensis");
+    assertNotNull(nanningensis);
+    assertEquals(curvularia.get(0).getId(), nanningensis.getParentId());
+
+    // species that came with nothing but their genus name, which exists in disparate groups: skipped, not guessed
+    assertNull("A species must not be placed in a homonym genus of another order",
+      getByName(Datasets.COL, Rank.SPECIES, "Platygaster mayi"));
+    assertNull("A species must not be placed in a homonym genus of another kingdom",
+      getByName(Datasets.COL, Rank.SPECIES, "Paracoccus rhizosphaerae"));
+    assertEquals(2, listByName(Datasets.COL, Rank.GENUS, "Platygaster").size());
+    assertEquals(2, listByName(Datasets.COL, Rank.GENUS, "Paracoccus").size());
+
+    // the bacterial code alone tells the bacterium from the scale insect
+    var aestuarii = getByName(Datasets.COL, Rank.SPECIES, "Paracoccus aestuarii");
+    assertNotNull(aestuarii);
+    assertEquals("Davis, 1969", getByID(aestuarii.getParentId()).getName().getAuthorship());
+
+    // the accepted mite genus wins over the moth synonym of the same name
+    var badius = getByName(Datasets.COL, Rank.SPECIES, "Oribates badius");
+    assertNotNull(badius);
+    assertEquals(TaxonomicStatus.ACCEPTED, badius.getStatus());
+    assertEquals("Latreille, 1802", getByID(badius.getParentId()).getName().getAuthorship());
   }
 
   void assertVNames(DSID<String> key, int num, VernacularNameMapper vnm) {

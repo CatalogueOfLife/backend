@@ -2,7 +2,6 @@ package life.catalogue.api.model;
 
 import life.catalogue.api.vocab.JobStatus;
 
-import org.gbif.dwc.terms.Term;
 import org.gbif.nameparser.api.Rank;
 
 import java.time.LocalDateTime;
@@ -19,7 +18,6 @@ public class DatasetExport extends JobResult {
   private LocalDateTime deleted;  // export file was deleted
   private JobStatus status;
   private String error;
-  private Set<Term> truncated;
   // result metrics
   private Integer synonymCount;
   private Integer taxonCount;
@@ -84,21 +82,6 @@ public class DatasetExport extends JobResult {
     this.status = status;
   }
 
-  public Set<Term> getTruncated() {
-    return truncated;
-  }
-
-  public void setTruncated(Set<Term> truncated) {
-    this.truncated = truncated;
-  }
-
-  public void addTruncated(Term rowType) {
-    if (truncated == null) {
-      truncated = new HashSet<>();
-    }
-    truncated.add(rowType);
-  }
-
   public Integer getSynonymCount() {
     return synonymCount;
   }
@@ -153,7 +136,6 @@ public class DatasetExport extends JobResult {
            && Objects.equals(deleted, that.deleted)
            && status == that.status
            && Objects.equals(error, that.error)
-           && Objects.equals(truncated, that.truncated)
            && Objects.equals(synonymCount, that.synonymCount)
            && Objects.equals(taxonCount, that.taxonCount)
            && Objects.equals(taxaByRankCount, that.taxaByRankCount);
@@ -161,6 +143,6 @@ public class DatasetExport extends JobResult {
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), request, classification, attempt, started, finished, deleted, status, error, truncated, synonymCount, taxonCount, taxaByRankCount);
+    return Objects.hash(super.hashCode(), request, classification, attempt, started, finished, deleted, status, error, synonymCount, taxonCount, taxaByRankCount);
   }
 }

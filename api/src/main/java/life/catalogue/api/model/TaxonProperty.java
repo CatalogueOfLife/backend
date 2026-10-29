@@ -2,7 +2,7 @@ package life.catalogue.api.model;
 
 import java.util.Objects;
 
-public class TaxonProperty extends DatasetScopedEntity<Integer> implements ExtensionEntity, SameAs<TaxonProperty> {
+public class TaxonProperty extends DatasetScopedEntity<Integer> implements ExtensionEntity, DuplicateCheck<TaxonProperty> {
 
   private Integer sectorKey;
   private Sector.Mode sectorMode;
@@ -123,14 +123,12 @@ public class TaxonProperty extends DatasetScopedEntity<Integer> implements Exten
       Objects.equals(remarks, that.remarks);
   }
 
+  /**
+   * A property with the same key is a duplicate, even if its value or other details differ.
+   */
   @Override
-  public boolean sameAs(TaxonProperty that) {
-    return Objects.equals(property, that.property) &&
-        Objects.equals(value, that.value) &&
-        Objects.equals(referenceId, that.referenceId) &&
-        Objects.equals(page, that.page) &&
-        Objects.equals(ordinal, that.ordinal) &&
-        Objects.equals(remarks, that.remarks);
+  public boolean isDuplicate(TaxonProperty that) {
+    return Objects.equals(property, that.property);
   }
 
   @Override

@@ -51,6 +51,12 @@ public class DatasetImport extends ImportMetrics {
    */
   private Map<Term, Map<Term, Integer>> verbatimByRowTypeCount = Maps.newHashMap();
 
+  /**
+   * The release dataset this project attempt produced.
+   * Null for imports, project duplications and releases that failed.
+   */
+  private Integer releaseKey;
+
   public URI getDownloadUri() {
     return downloadUri;
   }
@@ -122,6 +128,14 @@ public class DatasetImport extends ImportMetrics {
     this.verbatimByRowTypeCount = verbatimByRowTypeCount;
   }
 
+  public Integer getReleaseKey() {
+    return releaseKey;
+  }
+
+  public void setReleaseKey(Integer releaseKey) {
+    this.releaseKey = releaseKey;
+  }
+
   public int getMaxClassificationDepth() {
     return maxClassificationDepth;
   }
@@ -144,12 +158,14 @@ public class DatasetImport extends ImportMetrics {
            Objects.equals(md5, that.md5) &&
            Objects.equals(verbatimCount, that.verbatimCount) &&
            Objects.equals(verbatimByTermCount, that.verbatimByTermCount) &&
-           Objects.equals(verbatimByRowTypeCount, that.verbatimByRowTypeCount);
+           Objects.equals(verbatimByRowTypeCount, that.verbatimByRowTypeCount) &&
+           Objects.equals(releaseKey, that.releaseKey);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), maxClassificationDepth, downloadUri, origin, format, download, md5, verbatimCount, verbatimByTermCount, verbatimByRowTypeCount);
+    return Objects.hash(super.hashCode(), maxClassificationDepth, downloadUri, origin, format, download, md5, verbatimCount, verbatimByTermCount, verbatimByRowTypeCount,
+      releaseKey);
   }
 
   @Override

@@ -1,0 +1,9 @@
+rowType	scientificName	authorship	rank	code
+dwc:Taxon	Eurhizophagus	Méquignon, 1909	Genus
+dwc:Taxon	Abies alba	Mill.	species	ICBN
+dwc:Taxon	Tachyusa (Tachyusa) smetanai Pas\\nik, 2006	Pas\\nik, 2006	species	ICZN
+col:NameUsage	Polistes japonicus formosanus		infraspecies
+col:Name	Rosa canina L.
+col:Name	Rhizobium sp. RMCC TR1811
+dwc:Taxon	Geranium	L.	species
+dwc:Taxon	Puccinia graminis	Pers. : Pers.

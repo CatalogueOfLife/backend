@@ -12,6 +12,7 @@ pipeline {
     skipDefaultCheckout(true)   // disables auto checkout - we wipe the workspace here
     skipStagesAfterUnstable()
     timestamps()
+    timeout(time: 1, unit: 'HOURS')
   }
   parameters {
     separator(name: "release_separator", sectionHeader: "Release Parameters")

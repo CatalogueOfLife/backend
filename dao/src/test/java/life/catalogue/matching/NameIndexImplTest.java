@@ -551,6 +551,24 @@ public class NameIndexImplTest {
     assertEquals(m.getNidx(), m2.getNidx());
   }
 
+  /**
+   * A placeholder is never in the names index. One hanging off a real taxon is parsed anchored on it, so its canonical
+   * name is that of the taxon: it must still never take the entry of Mollusca.
+   */
+  @Test
+  public void placeholders() throws Exception {
+    assertTrue(ni.match(name("Mollusca", Rank.PHYLUM), true, false).isMatched());
+    assertTrue(ni.match(name("Cisticola", Rank.GENUS), true, false).isMatched());
+    final int size = ni.size();
+    for (String sn : List.of("Mollusca incertae sedis", "Mollusca unassigned", "Cisticola unnamed", "[unassigned] Cladobranchia")) {
+      var n = name(sn, Rank.CLASS);
+      assertEquals(sn, NameType.PLACEHOLDER, n.getType());
+      assertFalse(sn, ni.match(n, true, false).isMatched());
+      assertFalse(sn, ni.match(n, false, false).isMatched());
+    }
+    assertEquals(size, ni.size());
+  }
+
   private static Name create(String genus, String species) {
     return create(genus, species, null);
   }

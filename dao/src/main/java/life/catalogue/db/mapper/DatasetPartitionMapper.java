@@ -19,12 +19,11 @@ import com.google.common.collect.Lists;
  *
  * The number of partitions is fixed when the database is initialised, see the init command and its --num argument.
  * It can only be changed afterwards by the repartition command, which rebalances all data into a new number of partitions.
- * Beware that repartitioning is currently broken on PG 17.1 and above,
- * see https://github.com/CatalogueOfLife/backend/issues/1424
  *
  * Because partitions are hashed, deleting a dataset cannot drop a partition.
  * It is a regular DELETE by dataset_key across all partitioned tables, see DatasetDao.deleteData
- * which iterates PARTITIONED_TABLES in reverse order to satisfy foreign keys.
+ * which iterates PARTITIONED_TABLES in reverse order to satisfy foreign keys
+ * and skips their checks altogether when the session may, see {@link #canSkipTriggers()}.
  *
  * What does still exist per dataset are standalone, non partitioned objects:
  * the id sequences for all {@link #SERIAL_TABLES} and the temporary id mapping tables for {@link #IDMAP_TABLES},
@@ -52,6 +51,7 @@ public interface DatasetPartitionMapper {
       "name_rel",
       "name_match",
       "type_material",
+      "type_material_name",
       "name_usage",
       "taxon_concept_rel",
       "species_interaction",
@@ -139,6 +139,24 @@ public interface DatasetPartitionMapper {
    * @param key datasetKey
    */
   void deleteData(@Param("table") String table, @Param("key") int key);
+
+  /**
+   * @return true if the session may set session_replication_role, i.e. is a superuser
+   * or was granted SET ON PARAMETER session_replication_role.
+   */
+  boolean canSkipTriggers();
+
+  /**
+   * Sets session_replication_role to replica, which disables all triggers of the session
+   * including the ones checking foreign keys. Requires {@link #canSkipTriggers()}.
+   * Always pair it with {@link #restoreTriggers()}, a pooled connection keeps the setting.
+   */
+  void skipTriggers();
+
+  /**
+   * Sets session_replication_role back to origin, the default.
+   */
+  void restoreTriggers();
 
   void dropTable(@Param("table") String table, @Param("key") int key);
 

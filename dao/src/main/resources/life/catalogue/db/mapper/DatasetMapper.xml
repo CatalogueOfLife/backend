@@ -244,10 +244,12 @@
 
   <resultMap id="datasetSimpleResultMap" type="DatasetSimple" autoMapping="true">
     <id property="key" column="key"/>
+    <result property="privat" column="private"/>
   </resultMap>
 
   <resultMap id="datasetGBIFResultMap" type="DatasetGBIF" autoMapping="true">
     <id property="key" column="key"/>
+    <result property="privat" column="private"/>
   </resultMap>
 
   <resultMap id="datasetResultMap" type="Dataset" autoMapping="true">
@@ -527,6 +529,34 @@
     GROUP BY title, description
     HAVING count(*) >= #{minCount}
     ORDER BY title
+  </select>
+
+  <!-- accepted genera and those flagged with a placement conflict in the latest import of every public external dataset -->
+  <sql id="placementConflictsFrom">
+    FROM dataset d
+      JOIN dataset_import di ON di.dataset_key = d.key AND di.attempt = d.attempt
+      CROSS JOIN LATERAL (SELECT
+        (di.taxa_by_rank_count -> 'GENUS')::int AS genera,
+        (di.issues_by_issue_count -> 'PLACEMENT_CONFLICT')::int AS conflicts
+      ) x
+    WHERE d.deleted IS NULL AND NOT d.private AND d.origin = 'EXTERNAL'
+      AND x.genera > 0 AND x.conflicts > 0 AND x.conflicts >= #{minConflicts}
+      AND x.conflicts::float / x.genera >= #{minRatio}
+    <if test="type != null">
+      AND d.type = #{type}::DATASETTYPE
+    </if>
+  </sql>
+
+  <select id="listPlacementConflicts" resultType="PlacementConflicts">
+    SELECT d.key AS datasetKey, d.title, d.type, di.attempt, x.genera, x.conflicts, x.conflicts::float / x.genera AS ratio
+    <include refid="placementConflictsFrom"/>
+    ORDER BY ratio DESC, x.conflicts DESC, d.key
+    <include refid="life.catalogue.db.Common.limit"/>
+  </select>
+
+  <select id="countPlacementConflicts" resultType="integer">
+    SELECT count(*)
+    <include refid="placementConflictsFrom"/>
   </select>
 
   <sql id="importable">

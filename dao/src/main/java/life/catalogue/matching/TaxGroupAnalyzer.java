@@ -83,6 +83,34 @@ public class TaxGroupAnalyzer {
     return analyze(name, List.of());
   }
 
+  /**
+   * The lowest group shared by all given groups, e.g. Insects for Diptera and Hymenoptera.
+   * Usable to sum up the taxonomic group scope of a whole dataset.
+   *
+   * @return the lowest common group or null if there is none or no single lowest one
+   */
+  public static TaxGroup lowestCommonGroup(Collection<TaxGroup> groups) {
+    if (groups == null || groups.isEmpty()) {
+      return null;
+    }
+    Set<TaxGroup> common = null;
+    for (var g : groups) {
+      var lineage = g.classification();
+      lineage.add(g);
+      if (common == null) {
+        common = lineage;
+      } else {
+        common.retainAll(lineage);
+      }
+    }
+    // the lowest is the one that contains no other common group
+    final Set<TaxGroup> shared = common;
+    var lowest = shared.stream()
+      .filter(g -> shared.stream().noneMatch(o -> o != g && g.contains(o)))
+      .toList();
+    return lowest.size() == 1 ? lowest.getFirst() : null;
+  }
+
   private boolean considerName(SimpleName sn) {
     return (sn.getStatus() == null || sn.getStatus().isTaxon()) && (
         sn.getRank() == null || sn.getRank().otherOrUnranked() || sn.getRank().higherOrEqualsTo(Rank.SUPRAGENERIC_NAME)

@@ -820,6 +820,9 @@ public class CsvReader implements AutoCloseable {
           }
           if (val != null) {
             tr.put(f.term, val);
+            if (ValueLength.isUnusual(f.term, val)) {
+              tr.add(Issue.UNUSUAL_VALUE_LENGTH);
+            }
           }
         }
       }

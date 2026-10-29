@@ -93,6 +93,11 @@ public class DatasetSourceMapperTest extends MapperTestBase<DatasetSourceMapper>
     var simple = mapper().listProjectSourcesSimple(Datasets.COL, true);
     assertEquals(1, simple.size());
     assertEquals(source.getKey(), simple.get(0).getKey());
+    for (boolean inclPublisherSources : new boolean[]{true, false}) {
+      assertEquals(mapper().listProjectSourcesSimple(Datasets.COL, inclPublisherSources).size(),
+        mapper().countProjectSources(Datasets.COL, inclPublisherSources));
+    }
+    assertEquals(1, mapper().countProjectSources(Datasets.COL, true));
 
     assertNotNull(mapper().getProjectSource(source.getKey(), Datasets.COL));
     assertNotNull(mapper().getProjectSourceSimple(source.getKey(), Datasets.COL));
@@ -191,10 +196,10 @@ public class DatasetSourceMapperTest extends MapperTestBase<DatasetSourceMapper>
     commit();
 
     // COL container
-    // mapper takes these from the project
+    // mapper takes these from the project, with only the first 3 creators when not configured
     rs.setContainerKey(col.getKey());
     rs.setContainerTitle(col.getTitle());
-    rs.setContainerCreator(col.getCreator());
+    rs.setContainerCreator(col.getCreator().subList(0, 3));
     rs.setContainerPublisher(col.getPublisher());
     rs.setContainerVersion(col.getVersion());
     rs.setContainerIssued(col.getIssued());
@@ -203,6 +208,11 @@ public class DatasetSourceMapperTest extends MapperTestBase<DatasetSourceMapper>
 
     // now try to list sources
     mapper().listReleaseSources(Datasets.COL, true);
+    for (boolean inclPublisherSources : new boolean[]{true, false}) {
+      assertEquals(mapper().listReleaseSourcesSimple(Datasets.COL, inclPublisherSources).size(),
+        mapper().countReleaseSources(Datasets.COL, inclPublisherSources));
+    }
+    assertEquals(1, mapper().countReleaseSources(Datasets.COL, true));
 
     // the slim projection reads the very same dataset_source row
     var simple = mapper().getReleaseSourceSimple(rs.getKey(), Datasets.COL);

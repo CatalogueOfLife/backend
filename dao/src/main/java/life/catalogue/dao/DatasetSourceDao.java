@@ -145,7 +145,6 @@ public class DatasetSourceDao {
     try (SqlSession session = factory.openSession()) {
       var dm = session.getMapper(DatasetMapper.class);
       final var container = dm.get(datasetKey);
-      final var settings = dm.getSettings(info.keyOrProjectKey());
       DatasetSourceMapper psm = session.getMapper(DatasetSourceMapper.class);
       if (info.origin.isRelease()) {
         sources = psm.listReleaseSourcesSimple(datasetKey, inclPublisherSources);
@@ -156,7 +155,7 @@ public class DatasetSourceDao {
         final DatasetPatchMapper pm = session.getMapper(DatasetPatchMapper.class);
         sources.forEach(d -> patch(d, datasetKey, pm));
       }
-      sources.forEach(d -> d.addContainer(container, settings));
+      sources.forEach(d -> d.addContainer(container));
       // should we create 2 copies of sources with merge and non merge sector modes?
       if (splitMerge) {
         var splitSources = new ArrayList<DatasetSourceMapper.SourceDataset>();
@@ -178,6 +177,19 @@ public class DatasetSourceDao {
         return splitSources;
       }
       return sources;
+    }
+  }
+
+  /**
+   * @return the number of sources listSimple returns when not splitting merge sources
+   */
+  public int count(int datasetKey, boolean inclPublisherSources){
+    DatasetInfoCache.DatasetInfo info = DatasetInfoCache.CACHE.info(datasetKey, true).requireOrigin(RELEASE, XRELEASE, PROJECT);
+    try (SqlSession session = factory.openSession()) {
+      DatasetSourceMapper psm = session.getMapper(DatasetSourceMapper.class);
+      return info.origin.isRelease()
+        ? psm.countReleaseSources(datasetKey, inclPublisherSources)
+        : psm.countProjectSources(datasetKey, inclPublisherSources);
     }
   }
 
@@ -307,7 +319,8 @@ public class DatasetSourceDao {
    *
    * @param datasetKey of the project or release
    * @param sourceKey  dataset key of the source in the project/release
-   * @param merged defines whether to calculate metrics for all sectors (null), only from merge sectors (true) or non merge (false)
+   * @param merged defines whether to calculate metrics for all sectors (null), only from merge sectors (true) or all others (false),
+   *               i.e. attach, union and hierarchy sectors
    * @return
    */
   public SourceMetrics sourceMetrics(int datasetKey, int sourceKey, @Nullable Boolean merged) {
@@ -329,8 +342,9 @@ public class DatasetSourceDao {
       if (merged != null && merged) {
         modes.add(Sector.Mode.MERGE);
       } else if (merged != null) {
-        modes.add(Sector.Mode.ATTACH);
-        modes.add(Sector.Mode.UNION);
+        for (Sector.Mode mode : Sector.Mode.values()) {
+          if (mode != Sector.Mode.MERGE) modes.add(mode);
+        }
       }
       // a release? use mother project in that case
       if (info.origin.isRelease()) {

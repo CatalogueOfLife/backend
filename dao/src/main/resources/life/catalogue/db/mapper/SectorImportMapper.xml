@@ -318,10 +318,11 @@
     GROUP BY n.rank
   </select>
   <select id="countTypeMaterialByStatus" resultType="StringCount">
-    SELECT status AS key, count(*) AS count
-    FROM type_material
-    WHERE dataset_key=#{datasetKey} AND sector_key=#{sectorKey}
-    GROUP BY status
+    SELECT tn.status AS key, count(*) AS count
+    FROM type_material tm
+      JOIN type_material_name tn ON tn.dataset_key=tm.dataset_key AND tn.type_material_id=tm.id
+    WHERE tm.dataset_key=#{datasetKey} AND tm.sector_key=#{sectorKey}
+    GROUP BY tn.status
   </select>
   <select id="countUsagesByOrigin" resultType="StringCount">
     SELECT origin AS key, count(*) AS count

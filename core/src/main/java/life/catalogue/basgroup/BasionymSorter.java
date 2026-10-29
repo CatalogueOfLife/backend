@@ -14,6 +14,8 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.ToIntFunction;
 
+import javax.annotation.Nullable;
+
 import jakarta.validation.constraints.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -107,6 +109,19 @@ public class BasionymSorter<T extends HasID<String>> {
                                                       Consumer<Pair<T, Issue>> issueConsumer,
                                                       BiPredicate<T, T> linked
   ) {
+    return groupBasionyms(code, epithet, names, nameResolver, issueConsumer, linked, null);
+  }
+
+  /**
+   * @param evidence what the data says about a name being an original one, deciding the basionym among several
+   *                 original names. See {@link HomotypicGroup#addBasionym(Object, int, String)}
+   */
+  public Collection<HomotypicGroup<T>> groupBasionyms(NomCode code, String epithet, List<T> names,
+                                                      Function<T, ? extends FormattableName> nameResolver,
+                                                      Consumer<Pair<T, Issue>> issueConsumer,
+                                                      BiPredicate<T, T> linked,
+                                                      @Nullable HomotypicGroup.Evidence<T> evidence
+  ) {
     List<HomotypicGroup<T>> groups = new ArrayList<>();
 
     List<TNamePair<T>> fNames = new ArrayList<>();
@@ -135,7 +150,7 @@ public class BasionymSorter<T extends HasID<String>> {
           }
         }
         if (create) {
-          var g = new HomotypicGroup<T>(obj.obj, epithet, cand, code);
+          var g = new HomotypicGroup<T>(obj.obj, epithet, cand, code, evidence);
           g.add(obj.obj, obj.name, prio);
           groups.add(g);
         }
@@ -359,7 +374,7 @@ public class BasionymSorter<T extends HasID<String>> {
   }
 
   private HomotypicGroup<T> newGroup(T primary, HomotypicGroup<T> g, Function<T, ? extends FormattableName> nameResolver) {
-    return new HomotypicGroup<>(primary, g.getEpithet(), nameResolver.apply(primary).getBasionymOrCombinationAuthorship(), g.getCode());
+    return new HomotypicGroup<>(primary, g.getEpithet(), nameResolver.apply(primary).getBasionymOrCombinationAuthorship(), g.getCode(), g.getEvidence());
   }
 
   /**

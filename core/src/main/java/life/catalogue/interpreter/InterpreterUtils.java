@@ -24,6 +24,7 @@ import static life.catalogue.matching.NameValidator.MIN_YEAR;
 
 public class InterpreterUtils {
   private static final Pattern YEAR_PATTERN = Pattern.compile("^(\\d{3})(\\d|\\s*\\?)(?:-[0-9-]+)?(?:\\s*[a-zA-Z])?$");
+  private static final Pattern YEAR_RANGE_PATTERN = Pattern.compile("^(\\d{4})\\s*[-–]\\s*(\\d{2}|\\d{4})(?:\\s*[a-zA-Z])?$");
   private static final Pattern SPLIT_COMMA = Pattern.compile("(?<!\\\\),");
 
   private InterpreterUtils() {}
@@ -77,6 +78,24 @@ public class InterpreterUtils {
       }
     }
     return null;
+  }
+
+  /**
+   * @return true if the year falls within a year range like 1880-1887 or 1880-87, of which parseNomenYear only keeps the start
+   */
+  public static boolean inYearRange(int year, @Nullable String range) {
+    if (!StringUtils.isBlank(range)) {
+      Matcher m = YEAR_RANGE_PATTERN.matcher(range.trim());
+      if (m.find()) {
+        int start = Integer.parseInt(m.group(1));
+        int end = Integer.parseInt(m.group(2));
+        if (m.group(2).length() == 2) {
+          end += start / 100 * 100;
+        }
+        return start <= year && year <= end;
+      }
+    }
+    return false;
   }
 
   public static List<Identifier> interpretIdentifiers(String idsRaw, @Nullable Identifier.Scope defaultScope, IssueContainer issues) {

@@ -22,7 +22,6 @@ import life.catalogue.img.ThumborConfig;
 import life.catalogue.matching.DockerConfig;
 import life.catalogue.matching.nidx.NamesIndexConfig;
 import life.catalogue.release.review.AiReviewConfig;
-import life.catalogue.resources.legacy.LegacyConfig;
 
 import java.io.File;
 import java.net.URI;
@@ -151,10 +150,6 @@ public class WsServerConfig extends Configuration implements ExporterConfig, Cor
   public ComponentMode mode(Component c) {
     return components.getOrDefault(c, ComponentMode.AUTO);
   }
-
-  @Valid
-  @NotNull
-  public LegacyConfig legacy = new LegacyConfig();
 
   /**
    * If null no logging will be done!

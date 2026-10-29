@@ -475,7 +475,7 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
   protected static Name nextName(PgBinaryReader r) throws IOException {
     if (!r.startRow()) return null;
 
-    return Name.newBuilder()
+    Name.Builder b = Name.newBuilder()
                  .scientificName(r.readString())
                  .authorship(r.readString())
                  .rank(r.readEnum(Rank.class))
@@ -485,9 +485,11 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
                  .specificEpithet(r.readString())
                  .infraspecificEpithet(r.readString())
                  .cultivarEpithet(r.readString())
-                 .basionymAuthorship(new Authorship(r.readStringArray(),r.readStringArray(),r.readString()))
-                 .combinationAuthorship(new Authorship(r.readStringArray(),r.readStringArray(),r.readString()))
-                 .sanctioningAuthor(r.readString())
+                 .basionymAuthorship(new Authorship(r.readStringArray(),r.readStringArray(),r.readString()));
+    // the sanctioning author column belongs to the combination authorship
+    Authorship comb = new Authorship(r.readStringArray(),r.readStringArray(),r.readString());
+    comb.setSanctioningAuthor(r.readString());
+    return b.combinationAuthorship(comb)
                  .type(r.readEnum(NameType.class))
                  .code(r.readEnum(NomCode.class))
                  .notho(r.readEnum(NamePart.class))

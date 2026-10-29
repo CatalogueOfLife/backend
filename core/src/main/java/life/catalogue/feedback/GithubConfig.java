@@ -6,7 +6,6 @@ import java.util.List;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import jakarta.validation.constraints.NotNull;
 
-import org.apache.poi.ss.formula.functions.T;
 
 public class GithubConfig {
 

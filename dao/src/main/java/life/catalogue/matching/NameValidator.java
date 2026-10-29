@@ -9,6 +9,7 @@ import life.catalogue.parser.NomCodeParser;
 
 import org.gbif.nameparser.api.NamePart;
 import org.gbif.nameparser.api.NameType;
+import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 import org.gbif.nameparser.util.RankUtils;
 
@@ -46,10 +47,11 @@ public class NameValidator {
   // rank & indetermination markers that sources sometimes put in their authorship column instead of an author
   private static final String INDET_MARKER = "(?:sp|spp|ssp|subsp|var|forma|cf|aff|indet|gen|nov|n)";
   // the entire authorship is nothing but markers, brackets, question marks and numbers, e.g. "sp.", "sp. 1", "? sp.".
-  // case insensitive is safe here: a lone "Sp." has no author token behind it, so it cannot be an abbreviated surname
+  // case insensitive is safe here: a lone "Sp." has no author token behind it, so it cannot be an abbreviated surname.
+  // Every marker has to end a word, otherwise markers glue into a surname: "Forman" is forma + n
   @VisibleForTesting
   static final Pattern INDET_AUTHORSHIP_ONLY = Pattern.compile(
-    "^[\\s()\\[\\]?\uff1f.,]*(?:" + INDET_MARKER + "\\.?[\\s()\\[\\]?\uff1f.,]*){1,4}$", Pattern.CASE_INSENSITIVE);
+    "^[\\s()\\[\\]?\uff1f.,]*(?:" + INDET_MARKER + "\\b\\.?[\\s()\\[\\]?\uff1f.,]*){1,4}$", Pattern.CASE_INSENSITIVE);
   // the authorship starts with a marker and trails junk, e.g. "sp. CCZ _ 165", "sp. A Soto-Adames, 2010".
   // deliberately CASE SENSITIVE: title case "Sp. Bate, 1856" is the carcinologist Charles Spence Bate,
   // and "Willd., Sp. Pl." / "Hook., Sp. Fil." are book citations - none of them may match
@@ -142,7 +144,9 @@ public class NameValidator {
     if (!StringUtils.isBlank(n.getScientificName()) && Objects.equals(n.getScientificName(), n.getAuthorship())) {
       v.add(Issue.AUTHORSHIP_UNLIKELY);
     }
-    if (NomCodeParser.isCodeCompliant(type) && StringUtils.isBlank(n.getAuthorship())) {
+    // the ICVCN does not cite authors at all
+    if (NomCodeParser.isCodeCompliant(type) && StringUtils.isBlank(n.getAuthorship()) && !isBotanicalAutonym(n)
+        && n.getCode() != NomCode.VIRUS) {
       v.add(Issue.MISSING_AUTHORSHIP);
     }
     if (isIndetAuthorship(n.getAuthorship())) {
@@ -151,6 +155,21 @@ public class NameValidator {
     return v.hasChanged() ? v.container : null;
   }
   
+  /**
+   * Botanical autonyms like Glycine sericea var. sericea or Abies sect. Abies are established automatically and by
+   * design carry no authorship (ICN Art. 22.1 and 26.1), so they are not missing one.
+   * Zoological nominotypical names are not exempt, they are cited with the author of the species,
+   * and neither are names without a code, as the dataset default code has been applied before.
+   */
+  private static boolean isBotanicalAutonym(FormattableName n) {
+    if (n.getCode() != NomCode.BOTANICAL) {
+      return false;
+    }
+    boolean infragenericAutonym = n.getGenus() != null && n.getSpecificEpithet() == null
+      && n.getGenus().equals(n.getInfragenericEpithet());
+    return n.isAutonym() || infragenericAutonym;
+  }
+
   public static boolean hasUnmatchedBrackets(String x) {
     return !Strings.isNullOrEmpty(x) && OPEN_BRACKETS.countIn(x) != CLOSE_BRACKETS.countIn(x);
   }
@@ -267,8 +286,8 @@ public class NameValidator {
         LOG.info("{} part contains whitespace: {}", part, n.getLabel());
         issues.add(Issue.UNUSUAL_NAME_CHARACTERS);
       }
-      // non ascii chars
-      if (NON_LETTER.matcher(part).find()) {
+      // non ascii chars. ICTV species epithets may contain digits, e.g. Acajnonavirus acj9
+      if (n.getCode() != NomCode.VIRUS && NON_LETTER.matcher(part).find()) {
         LOG.info("{} part contains non ASCII letters: {}", part, n.getLabel());
         issues.add(Issue.UNUSUAL_NAME_CHARACTERS);
       }

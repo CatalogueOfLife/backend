@@ -5,7 +5,6 @@ import life.catalogue.api.vocab.EntityType;
 import life.catalogue.api.vocab.IgnoreReason;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.dao.CopyUtil;
-import life.catalogue.db.mapper.NameRelationMapper;
 import life.catalogue.interpreter.RanKnName;
 import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.release.UsageIdGen;
@@ -16,8 +15,6 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import it.unimi.dsi.fastutil.ints.IntSet;
 
 public class TreeCopyHandler extends TreeBaseHandler {
   private static final Logger LOG = LoggerFactory.getLogger(TreeCopyHandler.class);
@@ -26,7 +23,6 @@ public class TreeCopyHandler extends TreeBaseHandler {
   private DSID<String> targetDSID;
   private final List<NameUsageBase> lastUsages = new ArrayList<>();
   private final Map<String, Usage> ids = new HashMap<>();
-  private final Map<String, String> nameIds = new HashMap<>();
   private final Map<RanKnName, Usage> implicits = new HashMap<>();
 
   TreeCopyHandler(int targetDatasetKey, Map<String, EditorialDecision> decisions, SqlSessionFactory factory, NameIndex nameIndex, int user, Sector sector, SectorImport state) {
@@ -54,69 +50,13 @@ public class TreeCopyHandler extends TreeBaseHandler {
    */
   @Override
   public void copyRelations() {
-    // copy name relations
-    copyNameRelations();
-
-    // copy taxon relations
-    copyTaxonRelations();
-
-    // implicit relations last, so we can check if we have duplicates
-    super.copyRelations();
-  }
-
-  private void copyTaxonRelations() {
-    // TODO: copy taxon relations
-    if (entities.contains(EntityType.SPECIES_INTERACTION)) {
-      LOG.warn("Species interaction sync is not yet supported");
-    }
+    copyNameRelations(false);
+    copySpeciesInteractions(false);
     if (entities.contains(EntityType.TAXON_CONCEPT_RELATION)) {
       LOG.warn("Taxon concept relation sync is not yet supported");
     }
-  }
-
-  private void copyNameRelations(){
-    if (entities.contains(EntityType.NAME_RELATION)) {
-      LOG.debug("Sync name relations from sector {}", sector.getKey());
-      // copy name relations
-      NameRelationMapper nrm = session.getMapper(NameRelationMapper.class);
-      NameRelationMapper nrmWrite = batchSession.getMapper(NameRelationMapper.class);
-      int counter = 0;
-      IntSet relIds = new IntOpenHashSet();
-
-      var key = DSID.of(sector.getSubjectDatasetKey(), "");
-      for (Map.Entry<String, String> n : nameIds.entrySet()) {
-        for (NameRelation nr : nrm.listByName(key.id(n.getKey()))) {
-          if (!relIds.contains((int)nr.getId())) {
-            updateFKs(nr);
-            nr.setSectorKey(sector.getId());
-            nr.setNameId(nameIds.get(nr.getNameId()));
-            nr.setRelatedNameId(nameIds.get(nr.getRelatedNameId()));
-            if (nr.getNameId() != null && nr.getRelatedNameId() != null) {
-              nrmWrite.create(nr);
-              relIds.add((int)nr.getId());
-              if (counter++ % 2500 == 0) {
-                batchSession.commit();
-              }
-            } else {
-              LOG.info("Name relation {} outside of synced sector {}", nr.getKey(), sector.getKey());
-            }
-          }
-        }
-      }
-      batchSession.commit();
-      LOG.info("Synced {} name relations from sector {}", relIds.size(), sector.getKey());
-    }
-  }
-
-  private void updateFKs(DatasetScopedEntity<?> obj){
-    obj.setDatasetKey(sector.getDatasetKey());
-    if (obj instanceof VerbatimEntity) {
-      ((VerbatimEntity)obj).setVerbatimKey(null);
-    }
-    if (obj instanceof Referenced) {
-      Referenced r = (Referenced) obj;
-      r.setReferenceId(lookupOrCreateReference(r.getReferenceId()));
-    }
+    // implicit relations last, so we can check if we have duplicates
+    super.copyRelations();
   }
 
   @Override
@@ -171,6 +111,7 @@ public class TreeCopyHandler extends TreeBaseHandler {
     // remember old to new id mappings
     ids.put(orig.getId(), usage(mod.usage, origParentId, decisions.get(orig.getId())));
     nameIds.put(origNameID, mod.usage.getName().getId());
+    usageIds.put(orig.getId(), mod.usage.getId());
 
     processEnd(sn, mod);
   }

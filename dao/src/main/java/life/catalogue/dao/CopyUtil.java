@@ -7,7 +7,9 @@ import life.catalogue.api.vocab.Origin;
 import life.catalogue.common.id.ShortUUID;
 import life.catalogue.db.mapper.*;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
@@ -35,6 +37,13 @@ public class CopyUtil {
   }
 
   /**
+   * @return the mapper class of a taxon extension entity type or null if the type is no taxon extension
+   */
+  public static Class<? extends TaxonExtensionMapper<? extends SectorScopedEntity<Integer>>> extensionMapper(EntityType type) {
+    return extMapper.get(type);
+  }
+
+  /**
    * Copies the given source taxon into the dataset and under the parent of targetParent.
    * The taxon and name source instance will be modified to represent the newly generated taxon and finally persisted.
    * The original id is retained and finally returned.
@@ -49,7 +58,7 @@ public class CopyUtil {
                                                                  int user,
                                                                  Set<EntityType> include,
                                                                  Supplier<String> nameIdSupplier,
-                                                                 Supplier<String> typeMaterialIdSupplier,
+                                                                 TypeMaterialIds typeMaterialIds,
                                                                  Function<SimpleNameWithNidx, String> usageIdSupplier,
                                                                  Function<Reference, String> lookupReference,
                                                                  Function<String, String> lookupByIdReference) {
@@ -102,8 +111,18 @@ public class CopyUtil {
       } else if (EntityType.TYPE_MATERIAL == type) {
         final var mapper = batchSession.getMapper(TypeMaterialMapper.class);
         mapper.listByName(origN).forEach(tm -> {
-          newKey(tm, typeMaterialIdSupplier); // id=UUID & verbatimKey=null
-          tm.setNameId(t.getName().getId());
+          // the specimen typifies the copied name with this status
+          var link = new TypifiedName(t.getName().getId(), tm.getName(origN.getId()).getStatus());
+          String copyId = typeMaterialIds.get(tm.getId());
+          if (copyId != null) {
+            // the specimen was copied already for another name of this job
+            mapper.createName(targetParent.getDatasetKey(), copyId, link);
+            return;
+          }
+          tm.setVerbatimKey(null);
+          tm.setId(typeMaterialIds.issue(tm.getId()));
+          // only names copied by this job are linked
+          tm.setNames(new ArrayList<>(List.of(link)));
           tm.setDatasetKey(targetParent.getDatasetKey());
           tm.setSectorKey(t.getSectorKey());
           tm.setVerbatimSourceKey(t.getVerbatimSourceKey()); // keep the same verbatim source record as the main usage
@@ -126,7 +145,7 @@ public class CopyUtil {
                                                                  Set<EntityType> include,
                                                                  Function<Reference, String> lookupReference,
                                                                  Function<String, String> lookupByIdReference) {
-    return copyUsage(batchSession, t, targetParent, user, include, ID_GENERATOR, ID_GENERATOR, n -> ID_GENERATOR.get(), lookupReference, lookupByIdReference);
+    return copyUsage(batchSession, t, targetParent, user, include, ID_GENERATOR, new TypeMaterialIds(ID_GENERATOR), n -> ID_GENERATOR.get(), lookupReference, lookupByIdReference);
   }
 
 

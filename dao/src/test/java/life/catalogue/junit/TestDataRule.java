@@ -543,11 +543,14 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
     );
     copyPartitionedTable(pgc, "name_rel", key, datasetEntityDefaults(key), Collections.emptyList());
     copyPartitionedTable(pgc, "type_material", key, datasetEntityDefaults(key), Collections.emptyList());
+    copyPartitionedTable(pgc, "type_material_name", key, datasetDefaults(key), Collections.emptyList());
     copyPartitionedTable(pgc, "name_usage", key,
       datasetEntityDefaults(key, ImmutableMap.<String, Object>of("origin", Origin.SOURCE)), Collections.emptyList()
     );
     copyPartitionedTable(pgc, "distribution", key, datasetEntityDefaults(key), Collections.emptyList());
     copyPartitionedTable(pgc, "vernacular_name", key, datasetEntityDefaults(key), Collections.emptyList());
+    copyPartitionedTable(pgc, "taxon_property", key, datasetEntityDefaults(key), Collections.emptyList());
+    copyPartitionedTable(pgc, "species_interaction", key, datasetEntityDefaults(key), Collections.emptyList());
     copyPartitionedTable(pgc, "taxon_metrics", key, datasetDefaults(key), Collections.emptyList());
   }
 
@@ -588,13 +591,17 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
       data.put("infraspecific_epithet", pn.getInfraspecificEpithet());
       data.put("cultivar_epithet", pn.getCultivarEpithet());
       data.put("basionym_authors", str(pn.getBasionymAuthorship().getAuthors()));
-      data.put("basionym_ex_authors", str(pn.getBasionymAuthorship().getAuthors()));
+      data.put("basionym_ex_authors", str(pn.getBasionymAuthorship().getExAuthors()));
       data.put("basionym_year", pn.getBasionymAuthorship().getYear());
       data.put("combination_authors", str(pn.getCombinationAuthorship().getAuthors()));
-      data.put("combination_ex_authors", str(pn.getCombinationAuthorship().getAuthors()));
+      data.put("combination_ex_authors", str(pn.getCombinationAuthorship().getExAuthors()));
       data.put("combination_year", pn.getCombinationAuthorship().getYear());
+      // after the 6 author columns PgAuthorshipNormalizer reads in a row
+      data.put("basionym_anonymous", str(pn.getBasionymAuthorship().isAnonymous()));
+      data.put("combination_anonymous", str(pn.getCombinationAuthorship().isAnonymous()));
       data.put("notho", str(pn.getNotho()));
       data.put("candidatus", str(pn.isCandidatus()));
+      data.put("graft_chimaera", str(pn.isGraftChimaera()));
       data.put("unparsed", pn.getUnparsed());
       return data;
     }
@@ -626,6 +633,8 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
     return val == null ? null : val.name();
   }
   private static String str(List<String> arr) {
+    // author lists are null until set since name-parser-api 6, empty ones are NULL in the db, see AuthorListTypeHandler
+    if (arr == null || arr.isEmpty()) return null;
     return PgCopyUtils.buildPgArray(arr.toArray(new String[0]));
   }
   private static String str(Set<? extends Enum<?>> set) {

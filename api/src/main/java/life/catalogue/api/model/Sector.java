@@ -3,6 +3,7 @@ package life.catalogue.api.model;
 import life.catalogue.api.vocab.EntityType;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.NomStatus;
+import life.catalogue.api.vocab.TaxonomicStatus;
 
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
@@ -46,6 +47,7 @@ public class Sector extends DatasetScopedEntity<Integer> implements SyncSettings
   private Set<EntityType> entities;
   private Set<NameType> nameTypes;
   private Set<NomStatus> nameStatusExclusion;
+  private Set<TaxonomicStatus> taxonomicStatusExclusion;
   private String nameFilter; // optional regex; if set only usages whose scientificName fully matches are synced
   private Boolean extinctFilter = null; // true only syncs extinct, false only extant, null all
   // null inherits from the matching sector profiles or the built-in default, see SyncSettings
@@ -310,6 +312,16 @@ public class Sector extends DatasetScopedEntity<Integer> implements SyncSettings
     this.nameStatusExclusion = nameStatusExclusion;
   }
 
+  @Override
+  public Set<TaxonomicStatus> getTaxonomicStatusExclusion() {
+    return taxonomicStatusExclusion;
+  }
+
+  @Override
+  public void setTaxonomicStatusExclusion(Set<TaxonomicStatus> taxonomicStatusExclusion) {
+    this.taxonomicStatusExclusion = taxonomicStatusExclusion;
+  }
+
   /**
    * @return an optional regular expression. If given, only usages whose scientific name fully matches
    * the pattern are included in a sync. Useful to sync only a subset of OTU/OTHER type names such as
@@ -434,6 +446,7 @@ public class Sector extends DatasetScopedEntity<Integer> implements SyncSettings
            && Objects.equals(entities, sector.entities)
            && Objects.equals(nameTypes, sector.nameTypes)
            && Objects.equals(nameStatusExclusion, sector.nameStatusExclusion)
+           && Objects.equals(taxonomicStatusExclusion, sector.taxonomicStatusExclusion)
            && Objects.equals(nameFilter, sector.nameFilter)
            && Objects.equals(extinctFilter, sector.extinctFilter)
            && Objects.equals(issueExclusion, sector.issueExclusion)
@@ -446,8 +459,8 @@ public class Sector extends DatasetScopedEntity<Integer> implements SyncSettings
   public int hashCode() {
     return Objects.hash(super.hashCode(), target, subjectDatasetKey, subject, originalSubjectId, placeholderRank, mode,
       useXRelease, priority, syncAttempt, datasetAttempt, code, copyAccordingTo, removeOrdinals, createImplicitNames,
-      authorshipUpdate, ranks, entities, nameTypes, nameStatusExclusion, nameFilter, extinctFilter, issueExclusion,
-      blockedNames, blockedNamePatterns, note);
+      authorshipUpdate, ranks, entities, nameTypes, nameStatusExclusion, taxonomicStatusExclusion, nameFilter, extinctFilter,
+      issueExclusion, blockedNames, blockedNamePatterns, note);
   }
 
   @Override
@@ -486,6 +499,7 @@ public class Sector extends DatasetScopedEntity<Integer> implements SyncSettings
     private Set<EntityType> entities;
     private Set<NameType> nameTypes;
     private Set<NomStatus> nameStatusExclusion;
+    private Set<TaxonomicStatus> taxonomicStatusExclusion;
     private String nameFilter;
     private Boolean copyAccordingTo;
     private Boolean removeOrdinals;
@@ -602,6 +616,11 @@ public class Sector extends DatasetScopedEntity<Integer> implements SyncSettings
       return this;
     }
 
+    public Builder taxonomicStatusExclusion(Set<TaxonomicStatus> taxonomicStatusExclusion) {
+      this.taxonomicStatusExclusion = taxonomicStatusExclusion;
+      return this;
+    }
+
     public Builder nameFilter(String nameFilter) {
       this.nameFilter = nameFilter;
       return this;
@@ -660,6 +679,7 @@ public class Sector extends DatasetScopedEntity<Integer> implements SyncSettings
       sector.setEntities(entities);
       sector.setNameTypes(nameTypes);
       sector.setNameStatusExclusion(nameStatusExclusion);
+      sector.setTaxonomicStatusExclusion(taxonomicStatusExclusion);
       sector.setNameFilter(nameFilter);
       sector.setCopyAccordingTo(copyAccordingTo);
       sector.setRemoveOrdinals(removeOrdinals);

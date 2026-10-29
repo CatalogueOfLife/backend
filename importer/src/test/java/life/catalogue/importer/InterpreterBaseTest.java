@@ -123,6 +123,14 @@ public class InterpreterBaseTest {
     assertSecRef("sensu Turcz., p.p.", "Turcz., p.p.");
     assertSecRef("auct. Jurtzev, p.p.", "Jurtzev, p.p.");
     assertSecRef("auct. Whittaker 1981", "Whittaker 1981");
+    assertSecRef("auct. Errington 1981", "Errington 1981");
+
+    // misspellings are no sensu references, https://github.com/CatalogueOfLife/backend/issues/1618
+    assertNoSecRef("auct. misspelling");
+    assertNoSecRef("auct. lapsus");
+    assertNoSecRef("auct. misspelling for 'immatura'");
+    assertNoSecRef("auct. err.");
+    assertNoSecRef("sensu orth. var.");
   }
 
   void assertSecRef(String authorship, String expected) {
@@ -142,6 +150,27 @@ public class InterpreterBaseTest {
     n.setSpecificEpithet("alba");
     n.rebuildScientificName();
     return new ParsedNameUsage(n);
+  }
+
+  /**
+   * A value that cleans to nothing is no property, the column is NOT NULL.
+   * The GBIF backbone import failed on a description of just markup.
+   */
+  @Test
+  public void blankPropertyValue() throws Exception {
+    for (String x : List.of("<br/>", "<p> </p>", "&nbsp;", "\u200B", "<img src=\"x.png\">")) {
+      VerbatimRecord v = new VerbatimRecord();
+      v.put(ColdpTerm.property, "general");
+      v.put(ColdpTerm.value, x);
+      assertTrue(x, ib.interpretProperty(v, (tp, rec) -> {}, ColdpTerm.property, ColdpTerm.value, null, null, null).isEmpty());
+    }
+
+    VerbatimRecord v = new VerbatimRecord();
+    v.put(ColdpTerm.property, "general");
+    v.put(ColdpTerm.value, "<p>Big tree</p>");
+    var props = ib.interpretProperty(v, (tp, rec) -> {}, ColdpTerm.property, ColdpTerm.value, null, null, null);
+    assertEquals(1, props.size());
+    assertEquals("Big tree", props.get(0).getValue());
   }
 
   /**

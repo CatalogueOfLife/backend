@@ -5,7 +5,7 @@
 
   <groupId>org.catalogueoflife</groupId>
   <artifactId>motherpom</artifactId>
-  <version>1.5.4-SNAPSHOT</version>
+  <version>1.7.0-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>CLB motherpom</name>
@@ -95,8 +95,8 @@
     <mapdb.version>3.1.0</mapdb.version>
     <mockito.version>5.23.0</mockito.version>
     <mybatis.version>3.5.19</mybatis.version>
-    <name-parser.version>5.0.1</name-parser.version>
-    <name-parser-rust.version>0.2.2</name-parser-rust.version>
+    <name-parser.version>6.0.0-SNAPSHOT</name-parser.version>
+    <name-parser-rust.version>0.4.1-SNAPSHOT</name-parser-rust.version>
     <newick-io.version>1.0.6</newick-io.version>
     <poi.version>5.5.1</poi.version>
     <pollexor.version>3.0.0</pollexor.version>
@@ -169,6 +169,17 @@
       <id>gbif-all</id>
       <url>https://repository.gbif.org/repository/gbif</url>
       <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+    <!-- the gbif group above serves no snapshot metadata at all -->
+    <repository>
+      <id>gbif-snapshots</id>
+      <url>https://repository.gbif.org/repository/snapshots</url>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+      <snapshots>
         <enabled>true</enabled>
         <updatePolicy>always</updatePolicy>
       </snapshots>
@@ -176,10 +187,16 @@
     <repository>
       <id>gbif-thirdparty</id>
       <url>https://repository.gbif.org/repository/thirdparty/</url>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
     </repository>
     <repository>
       <id>maven-central</id>
       <url>https://repo1.maven.org/maven2/</url>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
     </repository>
   </repositories>
 
@@ -717,6 +734,12 @@
         <groupId>it.unimi.dsi</groupId>
         <artifactId>fastutil</artifactId>
         <version>${fastutil.version}</version>
+      </dependency>
+      <!-- @Nullable/@Nonnull, which name-parser-api brought along until 6.0 -->
+      <dependency>
+        <groupId>com.google.code.findbugs</groupId>
+        <artifactId>jsr305</artifactId>
+        <version>3.0.2</version>
       </dependency>
       <dependency>
         <groupId>org.glassfish.expressly</groupId>

@@ -2,6 +2,7 @@ package life.catalogue.matching;
 
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.TreeTraversalParameter;
+import life.catalogue.api.vocab.MatchingMode;
 import life.catalogue.api.vocab.TabularFormat;
 
 import java.io.File;
@@ -23,7 +24,18 @@ public class MatchingRequest extends TreeTraversalParameter {
   private TabularFormat format;
   @QueryParam("sourceDatasetKey")
   private Integer sourceDatasetKey;
+  @DefaultValue("RELAXED")
+  @QueryParam("mode")
+  private MatchingMode mode = MatchingMode.RELAXED;
   private File upload;
+
+  public MatchingMode getMode() {
+    return mode;
+  }
+
+  public void setMode(MatchingMode mode) {
+    this.mode = mode;
+  }
 
   public Integer getSourceDatasetKey() {
     return sourceDatasetKey;
@@ -79,11 +91,11 @@ public class MatchingRequest extends TreeTraversalParameter {
     if (!(o instanceof MatchingRequest)) return false;
     if (!super.equals(o)) return false;
     MatchingRequest that = (MatchingRequest) o;
-    return format == that.format && Objects.equals(sourceDatasetKey, that.sourceDatasetKey) && Objects.equals(upload, that.upload);
+    return format == that.format && mode == that.mode && Objects.equals(sourceDatasetKey, that.sourceDatasetKey) && Objects.equals(upload, that.upload);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), format, sourceDatasetKey, upload);
+    return Objects.hash(super.hashCode(), format, mode, sourceDatasetKey, upload);
   }
 }

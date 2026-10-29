@@ -4,6 +4,7 @@ import life.catalogue.api.jackson.PermissiveEnumSerde;
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.VocabularyUtils;
 import life.catalogue.api.vocab.Issue;
+import life.catalogue.api.vocab.MatchingMode;
 import life.catalogue.api.vocab.TabularFormat;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.io.*;
@@ -27,11 +28,14 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Spliterator;
 import java.util.Spliterators;
+import java.util.regex.Pattern;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+
+import javax.annotation.Nullable;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -41,6 +45,7 @@ import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.univocity.parsers.common.AbstractParser;
 import com.univocity.parsers.common.AbstractWriter;
@@ -117,6 +122,7 @@ public abstract class AbstractMatchingJob extends DatasetJob {
   public AbstractMatchingJob(MatchingRequest req, int userKey, Dataset dataset, List<? extends SimpleName> rootClassification,
                              MatcherSupplier matcherSupplier, boolean ownsMatcher, MatchingConfig cfg, NameIndex nidx) {
     super(req.getDatasetKey(), userKey, JobPriority.LOW);
+    req.setMode(supportedMode(req.getMode()));
     this.logToFile = true;
     this.cfg = cfg;
     this.utils = new MatchingUtils(nidx);
@@ -355,25 +361,52 @@ public abstract class AbstractMatchingJob extends DatasetJob {
     }
   }
 
+  /**
+   * @return the given mode, DEFAULT if none
+   * @throws IllegalArgumentException for the not yet available FUZZY mode
+   */
+  public static MatchingMode supportedMode(@Nullable MatchingMode mode) {
+    if (mode == MatchingMode.FUZZY) {
+      throw new IllegalArgumentException("Fuzzy name matching is not available yet");
+    }
+    return mode == null ? MatchingMode.RELAXED : mode;
+  }
+
   private UsageMatchWithOriginal match(IssueName n, UsageMatcher matcher) {
-    UsageMatch match = interpretAndMatch(n.name, MatchingUtils.toSimpleNameCached(n.name.getClassification()), n.issues, false, interpreter, utils, matcher);
+    UsageMatch match = interpretAndMatch(n.name, MatchingUtils.toSimpleNameCached(n.name.getClassification()), n.issues, false,
+      req.getMode(), interpreter, utils, matcher);
     return new UsageMatchWithOriginal(match, n.issues, n.name, n.line);
   }
 
   public static UsageMatch interpretAndMatch(SimpleName sn, List<SimpleNameCached> classification, IssueContainer issues, boolean verbose,
                                        NameInterpreter interpreter, MatchingUtils utils, UsageMatcher matcher
   ) {
-    var snc = interpret(sn, classification, issues, interpreter, utils);
-    // external match requests fall back to a higher rank match when the name itself cannot be matched
-    return snc.isPresent() ? matcher.match(snc.get(), false, verbose, true) : UsageMatch.empty(0);
+    return interpretAndMatch(sn, classification, issues, verbose, MatchingMode.RELAXED, interpreter, utils, matcher);
   }
 
   /**
-   * Parses a name to be matched and matches it to the names index.
+   * Matches an external query, writing nothing. See {@link UsageMatcher#match(SimpleNameClassified, MatchingMode, boolean)}.
+   * @param mode RELAXED if null
+   */
+  public static UsageMatch interpretAndMatch(SimpleName sn, List<SimpleNameCached> classification, IssueContainer issues, boolean verbose,
+                                       @Nullable MatchingMode mode, NameInterpreter interpreter, MatchingUtils utils, UsageMatcher matcher
+  ) {
+    if (StringUtils.isBlank(sn.getName()) && classification != null && !classification.isEmpty()) {
+      // no usable name, e.g. epithets without any genus: only the classification can be matched, never in STRICT mode
+      return matcher.matchClassification(classification, mode, verbose);
+    }
+    var snc = interpret(sn, classification, issues, interpreter, utils);
+    return snc.isPresent() ? matcher.match(snc.get(), mode, verbose) : UsageMatch.empty(0);
+  }
+
+  /**
+   * Parses a name to be matched and looks it up in the names index.
+   * This is the entry point for all external match queries, so it never inserts into the names index:
+   * the index is only ever built from names held in ChecklistBank.
    * @return the name as the usage matcher expects it, empty and flagged as unparsable if it cannot be parsed
    */
-  public static Optional<SimpleNameClassified<SimpleNameCached>> interpret(SimpleName sn, List<SimpleNameCached> classification,
-                                                                          IssueContainer issues, NameInterpreter interpreter, MatchingUtils utils
+  public static Optional<QueryName> interpret(SimpleName sn, List<SimpleNameCached> classification,
+                                              IssueContainer issues, NameInterpreter interpreter, MatchingUtils utils
   ) {
     var opt = interpreter.interpret(sn, issues);
     if (opt.isPresent()) {
@@ -382,10 +415,27 @@ public abstract class AbstractMatchingJob extends DatasetJob {
       if (nu.getRank() == Rank.UNRANKED) {
         nu.getName().setRank(null);
       }
-      return Optional.of(utils.toSimpleNameClassified(nu, classification));
+      var snc = utils.toSimpleNameClassified(nu, classification, false);
+      return Optional.of(new QueryName(snc, classification, unmarkedRank(sn.getName(), nu.getName())));
     }
     issues.add(Issue.UNPARSABLE_NAME);
     return Optional.empty();
+  }
+
+  /**
+   * @param query the name as it was queried
+   * @param n the interpreted name, which shows the rank marker of its rank whether the query had one or not
+   * @return true if the interpreted name is infraspecific, but the queried name has no rank marker between its epithets,
+   *         e.g. Anas platyrhynchos domesticus sent with the rank variety
+   */
+  @VisibleForTesting
+  static boolean unmarkedRank(@Nullable String query, Name n) {
+    if (query == null || n.getRank() == null || !n.getRank().isInfraspecific()
+        || n.getSpecificEpithet() == null || n.getInfraspecificEpithet() == null) {
+      return false;
+    }
+    return Pattern.compile("(?<!\\p{L})" + Pattern.quote(n.getSpecificEpithet()) + "\\s+" + Pattern.quote(n.getInfraspecificEpithet()) + "(?!\\p{L})",
+      Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE).matcher(query).find();
   }
 
   private static class MappedStream {
@@ -480,13 +530,28 @@ public abstract class AbstractMatchingJob extends DatasetJob {
         }
         idx++;
       }
-      if (!this.header.containsKey(ColdpTerm.scientificName)) {
-        throw new IllegalArgumentException("scientificName column required");
+      if (!hasAny(ColdpTerm.scientificName, ColdpTerm.genericName, ColdpTerm.genus, ColdpTerm.specificEpithet,
+        DwcTerm.genericName, DwcTerm.specificEpithet)) {
+        throw new IllegalArgumentException("scientificName, genericName or specificEpithet column required");
       }
+    }
+
+    private boolean hasAny(Term... terms) {
+      for (Term t : terms) {
+        if (header.containsKey(t)) return true;
+      }
+      return false;
     }
 
     String val(Term t, String[] row) {
       return header.containsKey(t) ? row[header.getInt(t)] : null;
+    }
+
+    /**
+     * @return the first value of the given terms, so ColDP and Darwin Core columns can both be used
+     */
+    String val(Term t1, Term t2, String[] row) {
+      return StringUtils.firstNonBlank(val(t1, row), val(t2, row));
     }
 
     <T extends Enum<?>> T parse(Term t, String[] row, Parser<T> parser, Issue unparsableIssue, IssueContainer issues) {
@@ -503,9 +568,8 @@ public abstract class AbstractMatchingJob extends DatasetJob {
     SimpleNameClassified<SimpleName> build(String[] row, IssueContainer issues) {
       final SimpleNameClassified<SimpleName> sn = new SimpleNameClassified<>();
       sn.setId(val(ColdpTerm.ID, row));
-      sn.setName(val(ColdpTerm.scientificName, row));
       sn.setAuthorship(val(ColdpTerm.authorship, row));
-      sn.setRank(parse(ColdpTerm.rank, row, RankParser.PARSER, Issue.RANK_INVALID, issues));
+      Rank rank = parse(ColdpTerm.rank, row, RankParser.PARSER, Issue.RANK_INVALID, issues);
       sn.setCode(parse(ColdpTerm.code, row, NomCodeParser.PARSER, Issue.NOMENCLATURAL_CODE_INVALID, issues));
       sn.setStatus(parse(ColdpTerm.status, row, TaxonomicStatusParser.PARSER, Issue.TAXONOMIC_STATUS_INVALID, issues));
 
@@ -520,6 +584,16 @@ public abstract class AbstractMatchingJob extends DatasetJob {
           cl.setByTerm(dt, row[entry.getIntValue()]);
         }
       }
+      // the name can also be given in parts, as an abbreviated genus or by the classification alone
+      var assembled = NameAssembler.build(val(ColdpTerm.scientificName, row), null,
+        val(ColdpTerm.genericName, DwcTerm.genericName, row), val(ColdpTerm.specificEpithet, DwcTerm.specificEpithet, row),
+        val(ColdpTerm.infraspecificEpithet, DwcTerm.infraspecificEpithet, row), rank, cl);
+      if (assembled.fromClassification()) {
+        rank = assembled.rank();
+        cl.clearRankAndBelow(rank);
+      }
+      sn.setName(assembled.name());
+      sn.setRank(rank);
       sn.setClassification(cl.asSimpleNames());
 
       return sn;

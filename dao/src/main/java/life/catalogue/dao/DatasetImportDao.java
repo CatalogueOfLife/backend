@@ -176,6 +176,20 @@ public class DatasetImportDao {
   }
 
   /**
+   * Recounts the issues of the latest successful import of an external dataset,
+   * e.g. after a job flagged more of its verbatim records.
+   */
+  public void updateIssueCounts(int datasetKey) {
+    try (SqlSession session = factory.openSession(true)) {
+      DatasetImportMapper mapper = session.getMapper(DatasetImportMapper.class);
+      var di = mapper.current(datasetKey);
+      if (di != null) {
+        mapper.updateIssuesCount(datasetKey, di.getAttempt(), countMap(Issue.class, mapper.countIssues(datasetKey)));
+      }
+    }
+  }
+
+  /**
    * @param di import to update
    * @param key the dataset key to analyze the data from
    */

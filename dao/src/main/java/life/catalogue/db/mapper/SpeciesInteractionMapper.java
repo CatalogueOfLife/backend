@@ -13,6 +13,7 @@ import org.apache.ibatis.annotations.Param;
 public interface SpeciesInteractionMapper extends Create<SpeciesInteraction>,
                                                     DatasetProcessable<SpeciesInteraction>,
                                                     SectorProcessable<SpeciesInteraction>,
+                                                    SectorForeignProcessable<SpeciesInteraction>,
                                                     TaxonProcessable<SpeciesInteraction>,
                                                     TaxonBatchable<SpeciesInteraction>,
                                                     CopyDataset {
@@ -20,6 +21,11 @@ public interface SpeciesInteractionMapper extends Create<SpeciesInteraction>,
    * Returns the list of species interactions for a single taxon on the related side of the relation.
    */
   List<SpeciesInteraction> listByRelatedTaxon(@Param("key") DSID<String> key);
+
+  /**
+   * @return true if the dataset has any records at all
+   */
+  boolean entityExists(@Param("datasetKey") int datasetKey);
 
   /**
    * Returns the list of species interactions of a given type for a single taxon on the taxonId side of the relation only.

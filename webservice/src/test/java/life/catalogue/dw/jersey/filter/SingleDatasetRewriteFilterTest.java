@@ -32,6 +32,9 @@ public class SingleDatasetRewriteFilterTest {
     assertEquals("/dataset/3287/reconcile/extend/propose", rewrite("reconcile/extend/propose", KEY));
     assertEquals("/dataset/3287/vernacular", rewrite("vernacular", KEY));
     assertEquals("/dataset/3287/sector/publisher", rewrite("sector/publisher", KEY));
+    // the GBIF species match is the one dataset scoped path below the global match root
+    assertEquals("/dataset/3287/match/gbif", rewrite("match/gbif", KEY));
+    assertEquals("/dataset/3287/match/gbif/metadata", rewrite("/match/gbif/metadata", KEY));
   }
 
   @Test
@@ -59,6 +62,7 @@ public class SingleDatasetRewriteFilterTest {
     assertNull(rewrite("version", KEY));
     assertNull(rewrite("nidx/match", KEY));
     assertNull(rewrite("match/nameusage", KEY));
+    assertNull(rewrite("match/gbifx", KEY));
     assertNull(rewrite("export/1234", KEY));
     assertNull(rewrite("job/types", KEY));
     assertNull(rewrite("openapi", KEY));
@@ -78,8 +82,7 @@ public class SingleDatasetRewriteFilterTest {
     "diff",       // DatasetDiffResource
     "editor",     // DatasetEditorResource, a write resource
     "export",     // DatasetExportResource, only the global /export is mounted
-    "legacy",     // LegacyWebserviceResource
-    "match",      // served globally and already keyless by FixedNameUsageMatchingResource
+    "match",      // served globally and already keyless by FixedNameUsageMatchingResource, only match/gbif is rewritten
     "review",     // DatasetReviewResource, rw server only - its POST triggers a paid AI review job
     "reviewer",   // DatasetReviewerResource, a write resource
     "taxalign"    // DatasetTaxDiffResource
@@ -105,7 +108,7 @@ public class SingleDatasetRewriteFilterTest {
   private static Set<String> datasetScopedRoots() throws IOException {
     Set<String> roots = new TreeSet<>();
     var cp = ClassPath.from(SingleDatasetRewriteFilter.class.getClassLoader());
-    for (String pkg : new String[]{"life.catalogue.resources.dataset", "life.catalogue.resources.legacy",
+    for (String pkg : new String[]{"life.catalogue.resources.dataset",
                                    "life.catalogue.resources.matching.openrefine", "life.catalogue.resources"}) {
       for (ClassPath.ClassInfo info : cp.getTopLevelClasses(pkg)) {
         Path p = info.load().getAnnotation(Path.class);

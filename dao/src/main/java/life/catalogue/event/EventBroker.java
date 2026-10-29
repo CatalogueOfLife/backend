@@ -1,6 +1,7 @@
 package life.catalogue.event;
 
 import life.catalogue.api.event.*;
+import life.catalogue.common.ChronicleLogging;
 import life.catalogue.concurrent.ExecutorUtils;
 
 import java.io.File;
@@ -28,6 +29,7 @@ import static java.util.stream.Collectors.toList;
  */
 public class EventBroker implements AutoCloseable {
   private static final Logger LOG = LoggerFactory.getLogger(EventBroker.class);
+  private static final long POLLING_STOP_TIMEOUT_MS = 5000;
 
   private final BrokerConfig cfg;
   private final List<DoiListener> doiListeners = new ArrayList<>();
@@ -39,6 +41,10 @@ public class EventBroker implements AutoCloseable {
   private final Thread polling;
   private final SingleChronicleQueue queue;
   private final ExcerptAppender appender;
+
+  static {
+    ChronicleLogging.install();
+  }
 
   public EventBroker(BrokerConfig cfg) {
     this.cfg = cfg;
@@ -100,6 +106,15 @@ public class EventBroker implements AutoCloseable {
   public void close() throws IOException {
     LOG.info("Stoping event broker with queue at {} and polling thread {}", cfg.queueDir, polling);
     polling.interrupt();
+    // let the poller close its tailer before the queue goes away underneath it
+    try {
+      polling.join(POLLING_STOP_TIMEOUT_MS);
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+    }
+    if (polling.isAlive()) {
+      LOG.warn("Event polling thread {} did not stop within {}ms, closing the queue anyway", polling, POLLING_STOP_TIMEOUT_MS);
+    }
     queue.close();
   }
 

@@ -84,8 +84,9 @@ See [`2026-09-05-release-source-provenance.md`](2026-09-05-release-source-proven
 
 Calls `SectorProcessable#deleteBySector(DSID)` on every mapper in `SectorProcessable.MAPPERS`,
 deleting in the order required by foreign keys (vernacular → distribution → media →
-species_interaction → name_usage → name → reference → verbatim_source). Anything tagged with this
-sector's id from a previous run is gone before phase 1 starts, so the sync is repeatable.
+species_interaction → taxon_concept_rel → treatment → taxon_property → name_usage → name → reference →
+verbatim_source). Anything tagged with this sector's id from a previous run is gone before phase 1 starts, so the
+sync is repeatable.
 
 ### 2. Phase 1 — Upward classification copy
 
@@ -243,8 +244,8 @@ sector's `authorshipUpdate` setting (`Sector.AuthorshipUpdate`):
 | `MISSING` | the source authorship is applied only when the project name has none yet |
 | `ALWAYS` | the source authorship overwrites the project name's whenever the source has one |
 
-Parsed authorship is copied as the structured combination/basionym/sanctioning parts and the cached
-string rebuilt via `Name.rebuildAuthorship()`; an unparsed source only contributes its raw
+Parsed authorship is copied as the structured combination and basionym authorships, each with its own
+sanctioning author and anonymous flag, and the cached string rebuilt via `Name.rebuildAuthorship()`; an unparsed source only contributes its raw
 authorship string. The provenance is recorded as an `InfoGroup.AUTHORSHIP` **secondary source** on
 the project name's verbatim source (`VerbatimSourceMapper.insertSources(...)`), pointing back to the
 source usage. Because the matched names are pre-existing project data **not** tagged with this
@@ -281,11 +282,14 @@ end state regardless of how many times it has run. Concretely:
   keeps `source id -> project id`; the copy hands each previous id out again (at most once) for the same
   source id, and a new random one otherwise. Everything pointing at an import - children, demoted
   synonyms, a curator's edits, sector targets, estimates - is valid again once the run is done.
-- vernacular names a merge sector attached to an import carry the merge sector's key, and their foreign
-  key to `name_usage` *is* enforced, so they would make `deleteOld` fail. The sync takes them off its
-  imports before deleting them and attaches them again to whatever represents the same source id after
-  phase 1 - the re-import or an existing project usage it deduplicated against. Names whose source taxon
-  is gone are dropped with a warning; the merge sector brings them back on its next sync.
+- entities other sectors or editors attached to an import - vernacular names of a merge sector, any
+  extension or relation an editor adds - do not carry this sector's key, and their foreign keys to
+  `name_usage` *are* enforced, so they would make `deleteOld` fail. `ForeignSectorEntities`, shared with
+  `SectorSync`, takes everything in `SectorForeignProcessable.MAPPERS` off the imports before deleting them
+  (a relation if either end is an import) and attaches it again to whatever represents the same source id
+  after phase 1 - the re-import or an existing project usage it deduplicated against. Entities whose source
+  taxon is gone are dropped with a warning; a merge sector brings its own back on its next sync. A sync
+  that fails before deleting puts them back where they were.
 - project usages that were rewired or had their status flipped are *not* tagged with the sector;
   the new run simply re-applies the same rewire / flip if the target still says so. A usage demoted
   to an imported accepted is a project synonym on the next run; it is found again by its source

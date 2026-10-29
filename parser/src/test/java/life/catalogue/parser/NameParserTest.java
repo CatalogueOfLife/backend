@@ -83,15 +83,15 @@ public class NameParserTest {
   }
 
   @Test
-  public void parseNameWithAuthorshipInfersBotanicalCode() throws InterruptedException {
+  public void parseNameWithAuthorshipInfersNoCode() throws InterruptedException {
     Name n = new Name();
     n.setScientificName("Cerastium ligusticum subsp. granulatum");
     n.setAuthorship("(Huter et al.) P. D. Sell & Whitehead");
     n.setRank(Rank.SUBSPECIES);
     ParsedNameUsage pnu = NameParser.PARSER.parse(n, IssueContainer.VOID).get();
-    // the recombination authorship implies the botanical code...
-    assertEquals(NomCode.BOTANICAL, pnu.getName().getCode());
-    // ...so the rebuilt scientific name keeps the botanical subsp. rank marker
+    // a recombination authorship is citation style shared across codes and implies no code
+    assertNull(pnu.getName().getCode());
+    // the rebuilt scientific name still keeps the subsp. rank marker
     assertEquals("Cerastium ligusticum subsp. granulatum", pnu.getName().getScientificName());
   }
 
@@ -110,7 +110,7 @@ public class NameParserTest {
     assertNull(n.getBasionymAuthorship().getYear());
 
     assertEquals(2, n.getCombinationAuthorship().getAuthors().size());
-    assertEquals(0, n.getCombinationAuthorship().getExAuthors().size());
+    assertFalse(n.getCombinationAuthorship().hasExAuthors());
     assertNull(n.getCombinationAuthorship().getYear());
 
     assertFalse(issues.hasIssues());
@@ -153,6 +153,113 @@ public class NameParserTest {
         .nothingElse();
   }
 
+  /**
+   * https://api.checklistbank.org/dataset/1048/diff?attempts=9..10
+   * An author whose name ends in "et" after a non-ASCII letter (Behçet) must not have it read as the
+   * conjunction "et": Java's \b is ASCII-only, so "ç|et" counted as a word boundary.
+   */
+  @Test
+  public void nonAsciiLetterBeforeConjunction() throws Exception {
+    assertEquals("A. Ilçim & L. Behçet", normalizeAuthorship("A. Ilçim & L. Behçet", null));
+    assertEquals("Öztürk & Ağaçet", normalizeAuthorship("Öztürk et Ağaçet", null));
+    assertEquals("Smith et al., 2020", normalizeAuthorship("Smith et al 2020", null));
+    assertEquals("Görand & Müllerund", normalizeAuthorship("Görand and Müllerund", null));
+
+    Name n = new Name();
+    n.setScientificName("Geranium kalenderianum");
+    n.setAuthorship("A. Ilçim & L. Behçet");
+    n.setRank(Rank.SPECIES);
+    n.setCode(NomCode.BOTANICAL);
+    NameParser.PARSER.parse(n, new IssueContainer.Simple());
+    assertEquals("A. Ilçim & L. Behçet", n.getAuthorship());
+    assertEquals(List.of("A.Ilçim", "L.Behçet"), n.getCombinationAuthorship().getAuthors());
+  }
+
+  /**
+   * The leftover of a separately given authorship that only parses partly is already in the authorship,
+   * so it must not be added to the scientific name as well, which doubled it in the label.
+   * https://api.checklistbank.org/dataset/1027/taxon/18-.08-.28-.00-.001-.000-.011-.-
+   */
+  @Test
+  public void partlyParsedAuthorshipIsNotDoubled() throws Exception {
+    assertLabel("Pachypus baroniensis", "Ahrens, Bazzato, Lopez, etal, 2026", Rank.SPECIES, NomCode.ZOOLOGICAL,
+      "Pachypus baroniensis Ahrens, Bazzato, Lopez, etal, 2026");
+    assertLabel("Anasterias suteri", "(deLoriol, 1894)", Rank.SPECIES, NomCode.ZOOLOGICAL,
+      "Anasterias suteri (deLoriol, 1894)");
+    assertLabel("Udara etsuzoi", "Eliot & kawazoé, 1983", Rank.SPECIES, NomCode.ZOOLOGICAL,
+      "Udara etsuzoi Eliot & kawazoé, 1983");
+    assertLabel("Asteroschematinae", "Verrill, 1899 emended Okanishi et al., 2011", Rank.SUBFAMILY, NomCode.ZOOLOGICAL,
+      "Asteroschematinae Verrill, 1899 emended Okanishi et al., 2011");
+    assertLabel("Carinomiformes", "Chernyshev, 1995, stat.", Rank.ORDER, NomCode.ZOOLOGICAL,
+      "Carinomiformes Chernyshev, 1995, stat.");
+    // the parser keeps the authorship of an informal name in its phrase
+    assertLabel("Geranium", "L.", Rank.SPECIES, NomCode.BOTANICAL, "Geranium sp. L.");
+    assertLabel("Trachyderes sp.", "Dupont, 1838", Rank.SPECIES, NomCode.ZOOLOGICAL, "Trachyderes sp. Dupont, 1838");
+    // an unparsed rest of the name itself stays in the scientific name
+    assertLabel("Abies alba Mill. foo 1234 bar", null, Rank.SPECIES, NomCode.BOTANICAL, "Abies alba foo 1234 bar Mill.");
+    assertLabel("Abies alba Mill. foo 1234 bar", "Mill.", Rank.SPECIES, NomCode.BOTANICAL, "Abies alba foo 1234 bar Mill.");
+  }
+
+  /**
+   * A taxonomic note removed from the authorship must take its brackets along, not leave "()" or "[]" behind.
+   */
+  @Test
+  public void removedNoteLeavesNoEmptyBrackets() throws Exception {
+    assertLabel("Astroceras pergamena", "Matsumoto, 1917 (non Lyman, 1879)", Rank.SPECIES, NomCode.ZOOLOGICAL,
+      "Astroceras pergamena Matsumoto, 1917");
+    assertLabel("Listriolobus", "Fischer, 1926 [not Spengel, 1912]", Rank.GENUS, NomCode.ZOOLOGICAL,
+      "Listriolobus Fischer, 1926");
+    assertLabel("Aspidiophorus ontarionensis", "Schwank, 1990 [sensu Schwank & Kånneby, 2014]", Rank.SPECIES, NomCode.ZOOLOGICAL,
+      "Aspidiophorus ontarionensis Schwank, 1990");
+    assertLabel("Dysteria lanceolata", "(sensu Calkins, 1902) Kahl, 1931", Rank.SPECIES, NomCode.ZOOLOGICAL,
+      "Dysteria lanceolata Kahl, 1931");
+    assertLabel("Acanthodiscus", "MacCallum, 1916 (nec 1918)", Rank.GENUS, NomCode.ZOOLOGICAL,
+      "Acanthodiscus MacCallum, 1916");
+    assertLabel("Dactylogyrus simplex", "Mizelle, 1937 (nec Bychowsky, 1936; nec Birgi & Lambert, 1987)", Rank.SPECIES, NomCode.ZOOLOGICAL,
+      "Dactylogyrus simplex Mizelle, 1937");
+    assertLabel("Asterias alta", "Philippi (MS) in Quijada, 1911 [not seen]", Rank.SPECIES, NomCode.ZOOLOGICAL,
+      "Asterias alta Philippi (MS) in Quijada, 1911");
+    // empty brackets in the source
+    assertLabel("Ervilia monostylus", "() Dujardin", Rank.SPECIES, NomCode.ZOOLOGICAL, "Ervilia monostylus Dujardin");
+    // a basionym authorship stays
+    assertLabel("Ophiopeza fallax", "(Lütken, 1869) Peters (non Peters, 1851)", Rank.SPECIES, NomCode.ZOOLOGICAL,
+      "Ophiopeza fallax (Lütken, 1869) Peters");
+  }
+
+  /**
+   * The taxonomic note is parsed from name and authorship together, so it can be spelled differently from the one in
+   * the authorship, or be all the authorship holds. Found in the interpreter corpus.
+   */
+  @Test
+  public void noteFromNameAndAuthorship() throws Exception {
+    String label = parse("Ammonifex emend. Miroshnichenko & al. , 2008", "Huber & Stetter, 1996 emend. Miroshnichenko et al., 2008",
+      Rank.GENUS, NomCode.BACTERIAL).getLabel();
+    assertTrue(label, label.startsWith("Ammonifex Huber & Stetter"));
+    assertFalse(label, label.contains("emend"));
+    assertLabel("Sclerotinia cinerea sensu", "auct NZ", Rank.SPECIES, NomCode.BOTANICAL, "Sclerotinia cinerea");
+    // a note in the name string only leaves the authorship alone
+    assertLabel("Abies alba sensu Smith 1999", "Mill.", Rank.SPECIES, NomCode.BOTANICAL, "Abies alba Mill.");
+    // an authorship that is a word of the note only
+    assertLabel("Abies alba sensu lato", "L.", Rank.SPECIES, NomCode.BOTANICAL, "Abies alba L.");
+  }
+
+  /**
+   * A taxonomic note is removed from the authorship with a regular expression made from the note,
+   * which must match the characters of the note literally. Braces made it throw, found in the interpreter corpus.
+   */
+  @Test
+  public void noteWithRegexCharacters() throws Exception {
+    var pnu = NameParser.PARSER.parse("Coccus adonidum", "Auctorum ({non} Linnaeus, 1767), 1767", Rank.SPECIES, null, new IssueContainer.Simple()).get();
+    assertNotNull(pnu.getTaxonomicNote());
+    assertFalse(pnu.getName().getLabel(), pnu.getName().getLabel().contains(pnu.getTaxonomicNote()));
+    assertTrue("x a{1} * b+ y".matches(".*" + NameParser.note2pattern("a{1} *b+") + ".*"));
+  }
+
+  private static void assertLabel(String name, String authorship, Rank rank, NomCode code, String expected) {
+    Name n = NameParser.PARSER.parse(name, authorship, rank, code, new IssueContainer.Simple()).get().getName();
+    assertEquals(expected, n.getLabel());
+  }
+
   static String normalizeAuthorship(String authorship, String taxnote) {
     ParsedNameUsage pnu = new ParsedNameUsage();
     pnu.setName(new Name());
@@ -188,6 +295,178 @@ public class NameParserTest {
 
     assertNull(normalizeAuthorship("[sic]", ""));
     assertNull(normalizeAuthorship("[sic!]", ""));
+
+    // anonymous authors are kept as given, https://github.com/CatalogueOfLife/backend/issues/1611
+    assertEquals("anon., 1830", normalizeAuthorship("anon., 1830", null));
+    assertEquals("(anon.) Baker", normalizeAuthorship("(anon.) Baker", null));
+    assertEquals("anon. ex Baker", normalizeAuthorship("anon. ex Baker", null));
+  }
+
+  /**
+   * https://github.com/CatalogueOfLife/backend/issues/1611
+   */
+  @Test
+  public void anonymous() throws Exception {
+    // a separate authorship string is kept as given
+    Name n = parse("Aodon", "Anonymous, 1798", Rank.GENUS, NomCode.ZOOLOGICAL);
+    assertTrue(n.getCombinationAuthorship().isAnonymous());
+    assertFalse(n.getCombinationAuthorship().hasAuthors());
+    assertEquals("1798", n.getCombinationAuthorship().getYear());
+    assertEquals("Anonymous, 1798", n.getAuthorship());
+
+    // attributed authors keep their names
+    n = parse("Lycaena virgaureae", "[Denis & Schiffermüller], 1775", Rank.SPECIES, NomCode.ZOOLOGICAL);
+    assertTrue(n.getCombinationAuthorship().isAnonymous());
+    assertEquals(List.of("Denis", "Schiffermüller"), n.getCombinationAuthorship().getAuthors());
+    assertEquals("1775", n.getCombinationAuthorship().getYear());
+    assertEquals("[Denis & Schiffermüller], 1775", n.getAuthorship());
+
+    // an anonymous basionym
+    n = parse("Agaricus muscarius", "(anon.) Baker", Rank.SPECIES, null);
+    assertTrue(n.getBasionymAuthorship().isAnonymous());
+    assertFalse(n.getBasionymAuthorship().hasAuthors());
+    assertFalse(n.getCombinationAuthorship().isAnonymous());
+    assertEquals(List.of("Baker"), n.getCombinationAuthorship().getAuthors());
+
+    // an authorship built from the parsed parts is rendered per code
+    n = parse("Aodon Anonymous, 1798", null, Rank.GENUS, NomCode.ZOOLOGICAL);
+    assertTrue(n.getCombinationAuthorship().isAnonymous());
+    assertEquals("Anon., 1798", n.getAuthorship());
+
+    n = parse("Abies alba var. aurea Anon.", null, Rank.VARIETY, NomCode.BOTANICAL);
+    assertTrue(n.getCombinationAuthorship().isAnonymous());
+    assertEquals("anon.", n.getAuthorship());
+  }
+
+  /**
+   * name-parser-api 5.2 keeps the sanctioning author on each authorship, so a sanctioned basionym has one too.
+   */
+  @Test
+  public void sanctioningAuthor() throws Exception {
+    Name n = parse("Boletus edulis Bull. : Fr.", null, Rank.SPECIES, NomCode.BOTANICAL);
+    assertEquals("Fr.", n.getCombinationAuthorship().getSanctioningAuthor());
+    assertEquals(List.of("Bull."), n.getCombinationAuthorship().getAuthors());
+    assertEquals("Bull. : Fr.", n.getAuthorship());
+
+    n = parse("Merulius lacrimans (Wulfen : Fr.) Schum.", null, Rank.SPECIES, NomCode.BOTANICAL);
+    assertEquals("Fr.", n.getBasionymAuthorship().getSanctioningAuthor());
+    assertNull(n.getCombinationAuthorship().getSanctioningAuthor());
+    assertEquals("(Wulfen : Fr.) Schum.", n.getAuthorship());
+  }
+
+  /**
+   * name-parser-api 5.4 flags a year known only from evidence outside the work, given in square brackets.
+   */
+  @Test
+  public void bracketedYear() throws Exception {
+    Name n = parse("Toleria aegerides (Strand, [1916])", null, Rank.SPECIES, NomCode.ZOOLOGICAL);
+    assertTrue(n.getBasionymAuthorship().isBracketedYear());
+    assertEquals("1916", n.getBasionymAuthorship().getYear());
+    assertFalse(n.getCombinationAuthorship().isBracketedYear());
+    assertEquals("(Strand, [1916])", n.getAuthorship());
+
+    n = parse("Lycaena virgaureae", "Denis & Schiffermüller, [1775]", Rank.SPECIES, NomCode.ZOOLOGICAL);
+    assertTrue(n.getCombinationAuthorship().isBracketedYear());
+    assertEquals("1775", n.getCombinationAuthorship().getYear());
+    assertEquals("Denis & Schiffermüller, [1775]", n.getAuthorship());
+
+    n = parse("Toleria aegerides (Strand, 1916)", null, Rank.SPECIES, NomCode.ZOOLOGICAL);
+    assertFalse(n.getBasionymAuthorship().isBracketedYear());
+    assertEquals("(Strand, 1916)", n.getAuthorship());
+  }
+
+  /**
+   * name-parser-api 5.4 keeps the Candidatus prefix of an informal name.
+   */
+  @Test
+  public void informalCandidatus() throws Exception {
+    var pnu = NameParser.PARSER.parse("Candidatus Phytoplasma sp. ASHY", null, Rank.SPECIES, null, new IssueContainer.Simple()).get();
+    Name n = pnu.getName();
+    assertEquals(NameType.INFORMAL, n.getType());
+    assertTrue(n.isCandidatus());
+    assertEquals("Phytoplasma", n.getGenus());
+  }
+
+  /**
+   * name-parser 6.0 flags a graft-chimaera instead of reading its plus sign as a hybrid marker.
+   */
+  @Test
+  public void graftChimaera() throws Exception {
+    Name n = parse("+Crataegomespilus", null, Rank.GENUS, null);
+    assertTrue(n.isGraftChimaera());
+    assertTrue(n.getNotho().isEmpty());
+    assertEquals("Crataegomespilus", n.getUninomial());
+    assertEquals("+ Crataegomespilus", n.getScientificName());
+
+    n = parse("+ Laburnocytisus adamii", null, Rank.SPECIES, null);
+    assertTrue(n.isGraftChimaera());
+    assertTrue(n.getNotho().isEmpty());
+    assertEquals("Laburnocytisus", n.getGenus());
+    assertEquals("+ Laburnocytisus adamii", n.getScientificName());
+
+    n = parse("Abies alba", null, Rank.SPECIES, null);
+    assertFalse(n.isGraftChimaera());
+  }
+
+  /**
+   * The authorship string is kept as given, but not the broken characters of
+   * https://github.com/CatalogueOfLife/data/issues/1765 and 1766 the parser already dropped from the authorship atoms.
+   */
+  @Test
+  public void authorshipCharacters() throws Exception {
+    // non breaking hyphens
+    Name n = parse("Opegaster gorgonioi", "Aguilar‑Aguilar, 2025", Rank.SPECIES, NomCode.ZOOLOGICAL);
+    assertEquals("Aguilar-Aguilar, 2025", n.getAuthorship());
+    n = parse("Scaphytopius ancorus", "Arias\u2011Paco & Godoy, 2025", Rank.SPECIES, NomCode.ZOOLOGICAL);
+    assertEquals("Arias-Paco & Godoy, 2025", n.getAuthorship());
+
+    // a cyrillic homoglyph in an otherwise latin authorship
+    n = parse("Ochetosoma megametricum", "(Talbot, 1934) Caballero y С. & Vogelsang, 1947", Rank.SPECIES, NomCode.ZOOLOGICAL);
+    assertEquals("(Talbot, 1934) Caballero y C. & Vogelsang, 1947", n.getAuthorship());
+
+    // homoglyphs keep their case
+    n = parse("Abies alba", "Villalo\u0432os-Guerrero & \u0412akken, 2018", Rank.SPECIES, NomCode.ZOOLOGICAL);
+    assertEquals("Villalobos-Guerrero & Bakken, 2018", n.getAuthorship());
+    n = parse("Abies alba", "Krupi\u0442sky, 2018", Rank.SPECIES, NomCode.ZOOLOGICAL);
+    assertEquals("Krupitsky, 2018", n.getAuthorship());
+    // greek capitals as initials are replaced, a lone small greek letter is no homoglyph but numbers a variety
+    n = parse("Abies alba", "C. \u0391. Meyer", Rank.SPECIES, NomCode.BOTANICAL);
+    assertEquals("C. A. Meyer", n.getAuthorship());
+    n = parse("Abies alba", "(Laxmann, 1769) \u03B1. afiaticus", Rank.SPECIES, NomCode.ZOOLOGICAL);
+    assertTrue(n.getAuthorship().contains("\u03B1"));
+
+    // a cyrillic authorship stays cyrillic
+    n = parse("Abies alba", "Скворцов, 1966", Rank.SPECIES, NomCode.BOTANICAL);
+    assertEquals("Скворцов, 1966", n.getAuthorship());
+    n = parse("Abies alba", "Смит & Скворцов, 1966", Rank.SPECIES, NomCode.BOTANICAL);
+    assertEquals("Смит & Скворцов, 1966", n.getAuthorship());
+
+    // the dagger of an extinct name
+    var pnu = NameParser.PARSER.parse("Stylina waltoni", "(Milne Edwards & Haime, 1851) †", Rank.SPECIES, NomCode.ZOOLOGICAL, new IssueContainer.Simple()).get();
+    assertTrue(pnu.isExtinct());
+    assertEquals("(Milne Edwards & Haime, 1851)", pnu.getName().getAuthorship());
+
+    // unbalanced brackets are completed, they mostly lost their partner by truncation
+    n = parse("Aricidea (Aricidea)", "[Webster, 1879", Rank.SUBGENUS, NomCode.ZOOLOGICAL);
+    assertEquals("[Webster, 1879]", n.getAuthorship());
+    n = parse("Colotis lais", "(Butler, 1876", Rank.SPECIES, NomCode.ZOOLOGICAL);
+    assertEquals("(Butler, 1876)", n.getAuthorship());
+    n = parse("Jania pedunculata var. adhaerens", "J.V.Lamouroux) A.S.Harvey, Woelkerling & Reviers, 2020", Rank.VARIETY, NomCode.BOTANICAL);
+    assertEquals("(J.V.Lamouroux) A.S.Harvey, Woelkerling & Reviers, 2020", n.getAuthorship());
+    n = parse("Bombyx lacertula", "[Denis & Schiffermueller) 1775", Rank.SPECIES, NomCode.ZOOLOGICAL);
+    assertEquals("[Denis & Schiffermueller], 1775", n.getAuthorship());
+
+    // a taxonomic note removed from inside a bracket leaves no comma behind
+    n = parse("Aus bus", "(Smith, 1879, sensu stricto)", Rank.SPECIES, NomCode.ZOOLOGICAL);
+    assertEquals("(Smith, 1879)", n.getAuthorship());
+
+    // a colon after an in
+    n = parse("Pseudocharopinus tenshken", "Montes, Castro-Romero & Bovcon, 2025 in: Montes, Castro-Romero & Bovcon, 2025", Rank.SPECIES, NomCode.ZOOLOGICAL);
+    assertEquals("Montes, Castro-Romero & Bovcon, 2025 in Montes, Castro-Romero & Bovcon, 2025", n.getAuthorship());
+  }
+
+  static Name parse(String name, String authorship, Rank rank, NomCode code) {
+    return NameParser.PARSER.parse(name, authorship, rank, code, new IssueContainer.Simple()).get().getName();
   }
 
   @Test
@@ -218,8 +497,8 @@ public class NameParserTest {
   public void parseBracketYear() throws Exception {
     assertName("Toleria aegerides (Strand, [1916])", "Toleria aegerides")
       .species("Toleria", "aegerides")
-      .basAuthors(null, "Strand")
-      .imprintYear("1916")
+      // a bracketed year alone is the actual year, known from evidence outside the work (ICZN Rec. 22A.2.3)
+      .basAuthors("1916", "Strand")
       .nothingElse();
   }
 
@@ -355,10 +634,17 @@ public class NameParserTest {
     assertName("[unassigned] Cladobranchia", "[unassigned] Cladobranchia", NameType.PLACEHOLDER)
         .nothingElse();
     
+    // a placeholder hanging off a real taxon is anchored on it, the placeholder kept as the unparsed rest
     assertName("Biota incertae sedis", "Biota incertae sedis", NameType.PLACEHOLDER)
+        .monomial("Biota", Rank.UNRANKED)
+        .unparsed("incertae sedis")
+        .noIssue(Issue.PARTIALLY_PARSABLE_NAME)
         .nothingElse();
     
     assertName("Mollusca not assigned", "Mollusca not assigned", NameType.PLACEHOLDER)
+        .monomial("Mollusca", Rank.UNRANKED)
+        .unparsed("not assigned")
+        .noIssue(Issue.PARTIALLY_PARSABLE_NAME)
         .nothingElse();
   }
 
@@ -384,6 +670,27 @@ public class NameParserTest {
     // superfluous authorship on the genus / species part of a more specific name
     assertIssue("Cordia (Adans.) Kuntze sect. Salimori", Rank.SECTION_BOTANY, NomCode.BOTANICAL, Issue.SUPERFLUOUS_AUTHORSHIP);
     assertIssue("Acer campestre L. cv. 'Elsrijk' Broerse", Rank.CULTIVAR, NomCode.CULTIVARS, Issue.SUPERFLUOUS_AUTHORSHIP);
+  }
+
+  /**
+   * VASCAN gives botanical autonyms with the species authorship inside the name string and again as the authorship,
+   * which belongs to the species and must not become the authorship of the autonym.
+   */
+  @Test
+  public void autonymWithSpeciesAuthorship() throws Exception {
+    for (String name : new String[]{"Eriocoma nelsonii (Scribner) Romaschenko subsp. nelsonii", "Eriocoma nelsonii subsp. nelsonii"}) {
+      var issues = new IssueContainer.Simple();
+      var n = NameParser.PARSER.parse(name, "(Scribner) Romaschenko", Rank.SUBSPECIES, NomCode.BOTANICAL, issues).get().getName();
+      assertEquals("Eriocoma nelsonii subsp. nelsonii", n.getScientificName());
+      if (name.contains("Scribner")) {
+        assertNull(name, n.getAuthorship());
+        assertFalse(name, n.hasAuthorship());
+        assertTrue(issues.contains(Issue.SUPERFLUOUS_AUTHORSHIP));
+      } else {
+        // nothing tells us it belongs to the species, keep it as given
+        assertEquals("(Scribner) Romaschenko", n.getAuthorship());
+      }
+    }
   }
 
   @Test
@@ -447,12 +754,12 @@ public class NameParserTest {
    */
   @Test
   public void testEmpty() throws Exception {
-    assertEquals(Optional.empty(), NameParser.PARSER.parse((String)null));
-    assertEquals(Optional.empty(), NameParser.PARSER.parse(""));
-    assertEquals(Optional.empty(), NameParser.PARSER.parse(" "));
-    assertEquals(Optional.empty(), NameParser.PARSER.parse("\t"));
-    assertEquals(Optional.empty(), NameParser.PARSER.parse("\n"));
-    assertEquals(Optional.empty(), NameParser.PARSER.parse("\t\n"));
+    assertEquals(Optional.empty(), NameParser.PARSER.parse((String) null, Rank.UNRANKED, null, IssueContainer.VOID));
+    assertEquals(Optional.empty(), NameParser.PARSER.parse("", Rank.UNRANKED, null, IssueContainer.VOID));
+    assertEquals(Optional.empty(), NameParser.PARSER.parse(" ", Rank.UNRANKED, null, IssueContainer.VOID));
+    assertEquals(Optional.empty(), NameParser.PARSER.parse("\t", Rank.UNRANKED, null, IssueContainer.VOID));
+    assertEquals(Optional.empty(), NameParser.PARSER.parse("\n", Rank.UNRANKED, null, IssueContainer.VOID));
+    assertEquals(Optional.empty(), NameParser.PARSER.parse("\t\n", Rank.UNRANKED, null, IssueContainer.VOID));
   }
   
   /**
@@ -475,12 +782,12 @@ public class NameParserTest {
   
   @Test
   public void parseSanctioned() throws Exception {
-    // sanctioning authors not supported
-    // https://github.com/GlobalNamesArchitecture/gnparser/issues/409
+    // since name-parser-api 5.2 a sanctioned basionym keeps its own sanctioning author
     assertName("Agaricus compactus sarcocephalus (Fr. : Fr.) Fr. ", "Agaricus compactus sarcocephalus")
         .infraSpecies("Agaricus", "compactus", Rank.INFRASPECIFIC_NAME, "sarcocephalus")
         .combAuthors(null, "Fr.")
         .basAuthors(null, "Fr.")
+        .basSanctAuthor("Fr.")
         .nothingElse();
     
     assertName("Boletus versicolor L. : Fr.", "Boletus versicolor")
@@ -528,7 +835,7 @@ public class NameParserTest {
     Authorship a = new Authorship();
     a.setYear(year);
     for (String x : authors) {
-      a.getAuthors().add(x);
+      a.addAuthor(x);
     }
     assertEquals(a, pa.getCombinationAuthorship());
   }
@@ -565,6 +872,7 @@ public class NameParserTest {
       BAS,
       EXBAS,
       SANCT,
+      BASSANCT,
       RANK,
       TYPE,
       STATUS,
@@ -595,20 +903,23 @@ public class NameParserTest {
               break;
             case AUTH:
               assertNull(n.getCombinationAuthorship().getYear());
-              assertTrue(n.getCombinationAuthorship().getAuthors().isEmpty());
+              assertFalse(n.getCombinationAuthorship().hasAuthors());
               break;
             case EXAUTH:
-              assertTrue(n.getCombinationAuthorship().getExAuthors().isEmpty());
+              assertFalse(n.getCombinationAuthorship().hasExAuthors());
               break;
             case BAS:
               assertNull(n.getBasionymAuthorship().getYear());
-              assertTrue(n.getBasionymAuthorship().getAuthors().isEmpty());
+              assertFalse(n.getBasionymAuthorship().hasAuthors());
               break;
             case EXBAS:
-              assertTrue(n.getBasionymAuthorship().getExAuthors().isEmpty());
+              assertFalse(n.getBasionymAuthorship().hasExAuthors());
               break;
             case SANCT:
-              assertNull(n.getSanctioningAuthor());
+              assertNull(n.getCombinationAuthorship().getSanctioningAuthor());
+              break;
+            case BASSANCT:
+              assertNull(n.getBasionymAuthorship().getSanctioningAuthor());
               break;
             case RANK:
               assertEquals(Rank.UNRANKED, n.getRank());
@@ -704,8 +1015,13 @@ public class NameParserTest {
     }
     
     NameAssertion sanctAuthor(String author) {
-      assertEquals(author, n.getSanctioningAuthor());
+      assertEquals(author, n.getCombinationAuthorship().getSanctioningAuthor());
       return add(NP.SANCT);
+    }
+
+    NameAssertion basSanctAuthor(String author) {
+      assertEquals(author, n.getBasionymAuthorship().getSanctioningAuthor());
+      return add(NP.BASSANCT);
     }
     
     NameAssertion combExAuthors(String... authors) {
@@ -753,5 +1069,17 @@ public class NameParserTest {
       assertEquals(imprintYear, n.getImprintYear());
       return add(NP.IMPRINT);
     }
+  }
+
+  /**
+   * https://github.com/CatalogueOfLife/backend/issues/1621
+   */
+  @Test
+  public void removeTrailingAuthorship() throws Exception {
+    assertEquals("Aries", NameParser.removeTrailingAuthorship("Aries Linnæus, 1758", "Linnaeus 1758"));
+    assertEquals("Aries", NameParser.removeTrailingAuthorship("Aries (Linnæus, 1758)", "(Linnaeus 1758)"));
+    assertNull(NameParser.removeTrailingAuthorship("Champion, 1923", "Champion 1923"));
+    assertEquals("Aries Linnæus, 1758", NameParser.removeTrailingAuthorship("Aries Linnæus, 1758", "Mill."));
+    assertEquals("Aries Linnæus, 1758", NameParser.removeTrailingAuthorship("Aries Linnæus, 1758", "nnaeus 1758"));
   }
 }

@@ -24,7 +24,7 @@ public abstract class PrinterExport<T extends AbstractPrinter> extends DatasetEx
   PrinterExport(Class<T> printerClass, String printerName, DataFormat requiredFormat,
                 ExportRequest req, int userKey, SqlSessionFactory factory, ExporterConfig cfg, ImageService imageService
   ) {
-    super(req, userKey, requiredFormat, false, factory, cfg, imageService);
+    super(req, userKey, requiredFormat, factory, cfg, imageService);
     this.printerClass = printerClass;
     this.printerName = printerName;
   }

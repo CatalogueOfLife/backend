@@ -311,15 +311,70 @@ public class UsageMatcherIT {
   }
 
   /**
+   * Names published anonymously carry no author, only the anonymous flag.
+   * https://github.com/CatalogueOfLife/backend/issues/1611
+   */
+  @Test
+  public void anonymous() throws InterruptedException {
+    loadDataset(9);
+
+    // two anonymous works are the same
+    var m = match(Rank.VARIETY, "Abies alba var. aurea", "anon.", cl().family("Pinaceae"));
+    assertMatch(m, "Aurea");
+    // a year does not make it a year-only authorship that needs a year on the candidate too
+    m = match(Rank.VARIETY, "Abies alba var. aurea", "Anon., 1850", cl().family("Pinaceae"));
+    assertMatch(m, "Aurea");
+    // a named author cannot be told apart from an anonymous work without a year, so it is no match
+    m = match(Rank.VARIETY, "Abies alba var. aurea", "Mast.", cl().family("Pinaceae"));
+    assertNoMatch(m);
+
+    // with the same year the attributed author is the same act
+    m = match(Rank.GENUS, "Aodon", "Lacepède, 1798", cl().family("Balistidae"));
+    assertMatch(m, "Aodon");
+    m = match(Rank.GENUS, "Aodon", "Anonymous [Lacepède], 1798", cl().family("Balistidae"));
+    assertMatch(m, "Aodon");
+  }
+
+  /**
+   * The names index stems epithets, so Euphorbia peplis and Euphorbia peplus share one canonical id.
+   * The exact spelling decides between them, while a gender variant still matches through the stem.
+   * https://github.com/CatalogueOfLife/backend/issues/1566
+   */
+  @Test
+  public void stemmedEpithets() throws InterruptedException {
+    loadDataset(10);
+
+    var m = match(null, "Euphorbia peplus", null, cl());
+    assertMatch(m, "peplus");
+    assertNotEquals(MatchType.AMBIGUOUS, m.type);
+
+    m = match(Rank.SPECIES, "Euphorbia peplis", null, cl());
+    assertMatch(m, "peplis");
+    assertNotEquals(MatchType.AMBIGUOUS, m.type);
+
+    // authorship without a rank is no qualified name
+    m = match(null, "Euphorbia peplus", "L.", cl());
+    assertMatch(m, "peplus");
+    // a qualified name whose label differs from both candidates
+    m = match(Rank.SPECIES, "Euphorbia peplus", "L", cl());
+    assertMatch(m, "peplus");
+
+    // a gender variant without an exact spelling still matches
+    m = match(Rank.SPECIES, "Euphorbia lathyrus", null, cl());
+    assertMatch(m, "lathyris");
+  }
+
+  /**
    * Monomial homonyms & suprageneric_rank filter
    */
   @Test
   public void bacteria() throws InterruptedException {
     loadDataset(5);
 
-    // no match for a homonym
+    // no match for a homonym, the domain and the stick insect genus are both accepted
     var m = match(null, "Bacteria", null, cl());
-    assertMatch(m, "BacG");
+    assertNoMatch(m);
+    assertTrue(m.unresolvedHomonym);
 
     // match with domain rank
     m = match(Rank.DOMAIN, "Bacteria", null, cl());

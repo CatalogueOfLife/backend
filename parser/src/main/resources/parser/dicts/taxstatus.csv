@@ -41,7 +41,7 @@ genussynonym,SYNONYM
 heterotypicsynonym,SYNONYM
 homotypicsynonym,SYNONYM,homotypic
 incorrect grammatical agreement of specific epithet,SYNONYM,homotypic
-incorrectspelling,SYNONYM
+incorrectspelling,SYNONYM,homotypic,ORTHOGRAPHIC_VARIANT
 invalid,SYNONYM
 isheterotypicsynonymof,SYNONYM
 ishomotypicsynonymof,SYNONYM,homotypic
@@ -52,9 +52,9 @@ junior subjective synonym,SYNONYM
 juniorsynonym,SYNONYM
 lexicalvariant,SYNONYM
 misnomer,SYNONYM
-misspelling,SYNONYM
-misspelling - incorrect original spelling,SYNONYM,homotypic,NOT_ESTABLISHED
-misspelling - incorrect subsequent spelling,SYNONYM,homotypic,NOT_ESTABLISHED
+misspelling,SYNONYM,homotypic,ORTHOGRAPHIC_VARIANT
+misspelling - incorrect original spelling,SYNONYM,homotypic,ORTHOGRAPHIC_VARIANT
+misspelling - incorrect subsequent spelling,SYNONYM,homotypic,ORTHOGRAPHIC_VARIANT
 noacceped,SYNONYM
 nomen oblitum,SYNONYM,,REJECTED
 nomen rejiciendum,SYNONYM,,REJECTED

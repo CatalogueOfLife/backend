@@ -11,7 +11,9 @@ import life.catalogue.api.vocab.terms.ClbTerm;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.csl.CslUtil;
 import life.catalogue.common.io.UTF8IoUtils;
+import life.catalogue.common.tax.AuthorAtoms;
 import life.catalogue.img.ImageService;
+import life.catalogue.matching.TaxGroupAnalyzer;
 import life.catalogue.metadata.coldp.DatasetYamlWriter;
 
 import org.gbif.dwc.terms.Term;
@@ -19,12 +21,19 @@ import org.gbif.dwc.terms.Term;
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 
 /**
  * ColDP exporter using a merged NameUsage entity and usageIDs instead of nameIDs for linking.
@@ -32,12 +41,18 @@ import org.slf4j.LoggerFactory;
 public class ColdpExtendedExport extends ArchiveExport {
   private static final Logger LOG = LoggerFactory.getLogger(ColdpExtendedExport.class);
   private static final String METADATA_FILENAME = "metadata.yaml";
+  private static final TaxGroupAnalyzer TAX_GROUP_ANALYZER = new TaxGroupAnalyzer();
   private Writer cslWriter;
-  private Writer cslWriterJSONL;
   private Writer bibWriter;
   private boolean cslFirst = true;
   private NameUsageKeyMap nameUsageKeyMap;
   private final File treatmentDir;
+  /**
+   * The group of every accepted taxon with one, for its synonyms to take over by their parentID.
+   * The core pass writes all accepted names before any synonym. The keys are the very id instances
+   * nameUsageKeyMap holds already, so this costs little more than the fastutil arrays.
+   */
+  private final Map<String, TaxGroup> taxGroups = new Object2ObjectOpenHashMap<>();
 
   public ColdpExtendedExport(ExportRequest req, int userKey, SqlSessionFactory factory, ExporterConfig cfg, ImageService imageService) {
     super(DataFormat.COLDP, userKey, req, factory, cfg, imageService);
@@ -61,6 +76,9 @@ public class ColdpExtendedExport extends ArchiveExport {
     if (ColdpTerm.RESOURCES.containsKey(entity.coldp)) {
       LinkedList<Term> terms = new LinkedList<>(ColdpTerm.RESOURCES.get(entity.coldp));
       terms.add(ClbTerm.merged);
+      if (entity == EntityType.NAME_USAGE) {
+        terms.add(ClbTerm.taxGroup);
+      }
       terms.push(entity.coldp);
       return terms.toArray(Term[]::new);
     }
@@ -88,8 +106,21 @@ public class ColdpExtendedExport extends ArchiveExport {
     writer.set(ColdpTerm.remarks, u.getRemarks());
     writer.set(ClbTerm.merged, u.isMerged());
 
-    if (!u.isSynonym()) {
+    if (u.isSynonym()) {
+      writer.set(ClbTerm.taxGroup, taxGroups.get(u.getParentId()));
+      // the classification of the accepted taxon including itself
+      if (u instanceof SynonymWithClassification s) {
+        writeClassification(s.getClassification());
+      }
+
+    } else {
       TaxonWithClassification t = (TaxonWithClassification) u;
+      // the classification never holds the taxon itself, the analyzer weighs its name separately
+      var group = TAX_GROUP_ANALYZER.analyze(new SimpleName(u), t.getClassification());
+      if (group != null) {
+        taxGroups.put(u.getId(), group);
+      }
+      writer.set(ClbTerm.taxGroup, group);
       writer.set(ColdpTerm.scrutinizer, t.getScrutinizer());
       writer.set(ColdpTerm.scrutinizerID, t.getScrutinizerID());
       writer.set(ColdpTerm.scrutinizerDate, t.getScrutinizerDate());
@@ -98,11 +129,15 @@ public class ColdpExtendedExport extends ArchiveExport {
       writer.set(ColdpTerm.temporalRangeEnd, t.getTemporalRangeEnd());
       writer.set(ColdpTerm.environment, t.getEnvironments(), PermissiveEnumSerde::enumValueName);
       writer.set(ColdpTerm.ordinal, t.getOrdinal());
-      if (t.getClassification() != null) {
-        for (var ht : t.getClassification()) {
-          if (RankUtils.RANK2COLDP.containsKey(ht.getRank())) {
-            writer.set(RankUtils.RANK2COLDP.get(ht.getRank()), ht.getName());
-          }
+      writeClassification(t.getClassification());
+    }
+  }
+
+  private void writeClassification(List<SimpleName> classification) {
+    if (classification != null) {
+      for (var ht : classification) {
+        if (RankUtils.RANK2COLDP.containsKey(ht.getRank())) {
+          writer.set(RankUtils.RANK2COLDP.get(ht.getRank()), ht.getName());
         }
       }
     }
@@ -152,15 +187,15 @@ public class ColdpExtendedExport extends ArchiveExport {
     // parsed authorship
     var a = n.getCombinationAuthorship();
     if (a != null) {
-      writer.set(ColdpTerm.combinationAuthorship, a.getAuthors(), "|");
+      writer.set(ColdpTerm.combinationAuthorship, AuthorAtoms.encode(a, n.getCode()), "|");
       writer.set(ColdpTerm.combinationExAuthorship, a.getExAuthors(), "|");
-      writer.set(ColdpTerm.combinationAuthorshipYear, a.getYear());
+      writer.set(ColdpTerm.combinationAuthorshipYear, AuthorAtoms.encodeYear(a));
     }
     a = n.getBasionymAuthorship();
     if (a != null) {
-      writer.set(ColdpTerm.basionymAuthorship, a.getAuthors(), "|");
+      writer.set(ColdpTerm.basionymAuthorship, AuthorAtoms.encode(a, n.getCode()), "|");
       writer.set(ColdpTerm.basionymExAuthorship, a.getExAuthors(), "|");
-      writer.set(ColdpTerm.basionymAuthorshipYear, a.getYear());
+      writer.set(ColdpTerm.basionymAuthorshipYear, AuthorAtoms.encodeYear(a));
     }
     // other
     writer.set(ColdpTerm.originalSpelling, n.isOriginalSpelling());
@@ -218,9 +253,7 @@ public class ColdpExtendedExport extends ArchiveExport {
   public void exportReferences() throws IOException, InterruptedException {
     super.exportReferences();
     if (cslWriter != null) {
-      cslWriter.write("\n]\n");
       cslWriter.close();
-      cslWriterJSONL.close();
       bibWriter.close();
     }
   }
@@ -228,11 +261,9 @@ public class ColdpExtendedExport extends ArchiveExport {
   @Override
   protected void openAdditionalWriters(Term rowType) throws IOException {
     if (rowType == ColdpTerm.Reference) {
-      LOG.info("Export references also as CSL-JSON and BibTex");
+      LOG.info("Export references also as CSL-JSON lines and BibTex");
       bibWriter = UTF8IoUtils.writerFromFile(new File(tmpDir, "reference.bib"));
-      cslWriter = UTF8IoUtils.writerFromFile(new File(tmpDir, "reference.json"));
-      cslWriter.write("[\n");
-      cslWriterJSONL = UTF8IoUtils.writerFromFile(new File(tmpDir, "reference.jsonl"));
+      cslWriter = UTF8IoUtils.writerFromFile(new File(tmpDir, "reference.jsonl"));
     }
   }
 
@@ -241,7 +272,6 @@ public class ColdpExtendedExport extends ArchiveExport {
     if (rowType == ColdpTerm.Reference && bibWriter != null) {
       bibWriter.close();
       cslWriter.close();
-      cslWriterJSONL.close();
     }
   }
 
@@ -256,17 +286,15 @@ public class ColdpExtendedExport extends ArchiveExport {
     // BibTex
     bibWriter.write( CslUtil.toBibTexString(r) );
     bibWriter.write("\n");
-    // CSL-JSON + lines file
+    // CSL-JSON lines file
     if (cslFirst) {
       cslFirst = false;
     } else {
-      cslWriter.write(",\n");
-      cslWriterJSONL.write("\n");
+      cslWriter.write("\n");
     }
     // serialising to the writer directly will close the stream!
     String json = ApiModule.MAPPER.writeValueAsString(CslUtil.toCSL(r));
-    cslWriter.write(json);
-    cslWriterJSONL.write(json.replaceAll("[\n\r]+", " "));
+    cslWriter.write(json.replaceAll("[\n\r]+", " "));
     // tabular, atomised
     if (r.getCsl() != null) {
       var csl = r.getCsl();
@@ -316,9 +344,27 @@ public class ColdpExtendedExport extends ArchiveExport {
   void write(TypeMaterial tm) {
     writer.set(ColdpTerm.ID, tm.getId());
     writer.set(ColdpTerm.sourceID, sectorInfoCache.sector2datasetKey(tm.getSectorKey()));
-    writer.set(ColdpTerm.nameID, nameUsageKeyMap.getFirst(tm.getNameId()));
+    // ColDP concatenates the typified names and gives their status in the same order
+    List<String> nameIDs = new ArrayList<>();
+    List<TypeStatus> status = new ArrayList<>();
+    for (var tn : tm.getNames()) {
+      String nameID = nameUsageKeyMap.getFirst(tn.getNameId());
+      if (nameID != null) {
+        nameIDs.add(nameID);
+        status.add(tn.getStatus());
+      }
+    }
+    writer.set(ColdpTerm.nameID, String.join(",", nameIDs));
     writer.set(ColdpTerm.citation, tm.getCitation());
-    writer.set(ColdpTerm.status, tm.getStatus());
+    if (new HashSet<>(status).size() == 1) {
+      // a single value applies to all names
+      writer.set(ColdpTerm.status, status.get(0));
+    } else {
+      writer.set(ColdpTerm.status, status.stream()
+        .map(s -> s == null ? "" : PermissiveEnumSerde.enumValueName(s))
+        .collect(Collectors.joining(","))
+      );
+    }
     writer.set(ColdpTerm.referenceID, tm.getReferenceId());
     writer.set(ColdpTerm.country, tm.getCountry(), Country::getIso2LetterCode);
     writer.set(ColdpTerm.locality, tm.getLocality());

@@ -54,16 +54,17 @@ public class NameResource extends AbstractDatasetScopedResource<String, Name, Na
 
   @GET
   @Path("{id}/relations")
-  public List<NameRelation> getRelations(@PathParam("key") int datasetKey, @PathParam("id") String id) {
-    return dao.relations(DSID.of(datasetKey, id));
+  public List<NameRelation> getRelations(@PathParam("key") int datasetKey, @PathParam("id") String id,
+                                         @QueryParam("inverse") boolean inverse) {
+    return dao.relations(DSID.of(datasetKey, id), inverse);
   }
 
   @GET
   @Path("{id}/types")
-  public List<TypeMaterial> getTypeMaterial(@PathParam("key") int datasetKey,
+  public List<TypeDesignation> getTypeMaterial(@PathParam("key") int datasetKey,
                                          @PathParam("id") String id, @Context SqlSession session) {
     TypeMaterialMapper mapper = session.getMapper(TypeMaterialMapper.class);
-    return mapper.listByName(DSID.of(datasetKey, id));
+    return mapper.listDesignations(DSID.of(datasetKey, id));
   }
 
   @GET

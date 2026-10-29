@@ -41,6 +41,8 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.net.URI;
 import java.sql.Connection;
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.ibatis.session.SqlSession;
@@ -98,6 +100,26 @@ public class ProjectReleaseIT extends ProjectBaseIT {
     assertEquals("Catalogue of Life", pr.newDataset.getTitle());
   }
 
+  /**
+   * https://github.com/CatalogueOfLife/backend/issues/1681
+   */
+  @Test
+  public void defaultReleaseAlias() throws Exception {
+    try(SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      DatasetMapper dm = session.getMapper(DatasetMapper.class);
+      Dataset d = dm.get(projectKey);
+      d.setTitle("Harmonized species names used under the EU nature directives");
+      d.setAlias("EEACOL");
+      dm.update(d);
+    }
+
+    ProjectRelease pr = buildRelease();
+    pr.prCfg.metadata.alias = null;
+    pr.initJob();
+    assertEquals("EEACOL-" + LocalDate.now(), pr.newDataset.getAlias());
+    assertEquals("Harmonized species names used under the EU nature directives", pr.newDataset.getTitle());
+  }
+
   private void assertSameTree(int datasetKey, String resourceName) throws IOException {
     String tree = readTree(datasetKey);
     System.out.println(tree);
@@ -135,6 +157,30 @@ public class ProjectReleaseIT extends ProjectBaseIT {
       // baileyi -> baileii
       u = num.get(key.id("F"));
       assertEquals("Lynx rufus baileii", u.getLabel());
+
+      // all taxon related data is copied, not only what sector profiles sync, #1677
+      var st = session.getConnection().createStatement();
+      var rs = st.executeQuery("SELECT n.scientific_name, p.property FROM taxon_property p" +
+        " JOIN name_usage u ON u.dataset_key=p.dataset_key AND u.id=p.taxon_id" +
+        " JOIN name n ON n.dataset_key=u.dataset_key AND n.id=u.name_id" +
+        " WHERE p.dataset_key=" + release.newDatasetKey + " ORDER BY n.scientific_name, p.ordinal");
+      List<String> props = new ArrayList<>();
+      while (rs.next()) {
+        props.add(rs.getString(1) + ":" + rs.getString(2));
+      }
+      assertEquals(List.of("Lynx lynx:size", "Lynx lynx:weight", "Lynx rufus baileii:size"), props);
+
+      rs = st.executeQuery("SELECT n.scientific_name, coalesce(rn.scientific_name, si.related_taxon_scientific_name) FROM species_interaction si" +
+        " JOIN name_usage u ON u.dataset_key=si.dataset_key AND u.id=si.taxon_id" +
+        " JOIN name n ON n.dataset_key=u.dataset_key AND n.id=u.name_id" +
+        " LEFT JOIN name_usage ru ON ru.dataset_key=si.dataset_key AND ru.id=si.related_taxon_id" +
+        " LEFT JOIN name rn ON rn.dataset_key=ru.dataset_key AND rn.id=ru.name_id" +
+        " WHERE si.dataset_key=" + release.newDatasetKey + " ORDER BY 2");
+      List<String> interactions = new ArrayList<>();
+      while (rs.next()) {
+        interactions.add(rs.getString(1) + ">" + rs.getString(2));
+      }
+      assertEquals(List.of("Lynx lynx>Capreolus capreolus", "Lynx lynx>Lynx rufus baileii"), interactions);
 
       // check metrics
       DatasetImportDao diDao = new DatasetImportDao(release.factory, new File("/tmp"));

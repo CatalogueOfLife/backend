@@ -1,5 +1,6 @@
 package life.catalogue.release;
 
+import life.catalogue.TestConfigs;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.common.id.IdConverter;
@@ -71,7 +72,7 @@ public class IdProviderArchiveIT {
 
   @Test
   public void mapIds() throws Exception {
-    init(new ReleaseConfig(), new ProjectReleaseConfig());
+    init(TestConfigs.releaseConfig(), new ProjectReleaseConfig());
     // verify archived names got loaded
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       assertNotNull( session.getMapper(ArchivedNameUsageMapper.class).get(DSID.of(projectKey, "56TT9")));

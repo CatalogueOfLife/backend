@@ -16,7 +16,6 @@ import life.catalogue.img.ImageService;
 import org.gbif.dwc.terms.Term;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -26,7 +25,6 @@ import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.apache.ibatis.cursor.Cursor;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,26 +51,18 @@ public abstract class ArchiveExport extends DatasetExportJob {
   private long passStarted;
   /** entity counts of the exported data, or null if none can be trusted. See loadMetrics. */
   private DatasetImport metrics;
-  private final SXSSFWorkbook wb;
   protected final boolean inclTreatments;
 
   ArchiveExport(DataFormat requiredFormat, int userKey, ExportRequest req, SqlSessionFactory factory, ExporterConfig cfg, ImageService imageService) {
-    super(req, userKey, requiredFormat, true, factory, cfg, imageService);
+    super(req, userKey, requiredFormat, factory, cfg, imageService);
     logoUriBuilder = cfg.getApiUri() == null ? null : UriBuilder.fromUri(cfg.getApiUri()).path("/dataset/{key}/logo?size=ORIGINAL");
     refCache = Caffeine.newBuilder()
                        .maximumSize(10000)
                        .build(this::lookupReference);
 
     fullDataset = !req.hasFilter();
-    inclTreatments = !req.isExcel() && req.isExtended() && requiredFormat == DataFormat.COLDP;
-    if (req.isExcel()) {
-      // we use SXSSF (Streaming Usermodel API) for low memory footprint
-      // https://poi.apache.org/components/spreadsheet/how-to.html#sxssf
-      wb = new SXSSFWorkbook(100); // keep 100 rows in memory, exceeding rows will be flushed to disk
-    } else {
-      wb = null;
-      // only include treatments with ColDP
-    }
+    // only include treatments with ColDP
+    inclTreatments = req.isExtended() && requiredFormat == DataFormat.COLDP;
     sectorInfoCache = new SectorInfoCache(factory, datasetKey);
   }
 
@@ -172,22 +162,6 @@ public abstract class ArchiveExport extends DatasetExportJob {
 
   abstract void writeSourceMetadata(Dataset source) throws IOException;
 
-  @Override
-  protected void bundle() throws IOException, InterruptedException {
-    checkIfCancelled();
-    // write workbook to single file and cleanup temp POI files
-    if (wb != null) {
-      LOG.info("Writing final Excel file");
-      FileOutputStream out = new FileOutputStream(new File(tmpDir, "data.xlsx"));
-      wb.write(out);
-      out.close();
-      // dispose of temporary files backing this workbook on disk
-      LOG.info("Dispose temporary Excel files");
-      wb.dispose();
-    }
-    super.bundle();
-  }
-
   protected void init() throws Exception {
     metrics = loadMetrics();
   }
@@ -280,19 +254,20 @@ public abstract class ArchiveExport extends DatasetExportJob {
     checkIfCancelled();
     try (SqlSession session = factory.openSession()) {
       NameUsageMapper num = session.getMapper(NameUsageMapper.class);
-      final Cursor<NameUsageBase> cursor;
+      // all accepted names strictly before any synonym, so a synonym can rely on what its accepted taxon told us:
+      // the extinct filter below and the taxGroup ColDP takes from it. Neither query has any order of its own -
+      // the full one scans, and the tree traversal is breadth first only inside its CTE, an order the basionym and
+      // citation joins of its final select need not keep. Hence two passes each. The second tree pass walks the taxa
+      // again to reach their synonyms, but only returns the synonyms.
       if (fullDataset) {
-        cursor = num.processDatasetWithClassification(datasetKey, null, null, inclCitations());
+        consumeUsages(num.processDatasetWithClassification(datasetKey, null, null, false, inclCitations()));
+        consumeUsages(num.processDatasetWithClassification(datasetKey, null, null, true, inclCitations()));
       } else {
-        var ttp = TreeTraversalParameter.dataset(datasetKey, req.getTaxonID(), null, req.getMinRank(), req.isSynonyms());
-        cursor = num.processTree(ttp, false, false, true, inclCitations());
-      }
-      checkIfCancelled();
-      // iterate manually (not PgUtils.consume) so the per-record consumeUsage
-      // can propagate its checked InterruptedException for responsive cancellation
-      try (cursor) {
-        for (NameUsageBase u : cursor) {
-          consumeUsage(u);
+        var ttp = TreeTraversalParameter.dataset(datasetKey, req.getTaxonID(), null, req.getMinRank(), false);
+        consumeUsages(num.processTree(ttp, false, false, true, inclCitations(), false));
+        if (req.isSynonyms()) {
+          ttp.setSynonyms(true);
+          consumeUsages(num.processTree(ttp, false, false, true, inclCitations(), true));
         }
       }
 
@@ -306,22 +281,20 @@ public abstract class ArchiveExport extends DatasetExportJob {
         }
       }
 
-    } catch (RuntimeException e) {
-      catchTruncation(e);
     } finally {
       taxonIDs.remove(null); // can happen
       nameIDs.remove(null); // can happen
     }
   }
 
-  private void catchTruncation(RuntimeException e){
-    if (e.getCause() instanceof ExcelTermWriter.MaxRowsException) {
-      // we truncate the output and keep a warning, but allow to proceed
-      LOG.warn(e.getCause().getMessage());
-      getExport().addTruncated(writer.getRowType());
-    } else {
-      // anything else is unexpected
-      throw e;
+  private void consumeUsages(Cursor<NameUsageBase> cursor) throws IOException, InterruptedException {
+    checkIfCancelled();
+    // iterate manually (not PgUtils.consume) so the per-record consumeUsage
+    // can propagate its checked InterruptedException for responsive cancellation
+    try (cursor) {
+      for (NameUsageBase u : cursor) {
+        consumeUsage(u);
+      }
     }
   }
 
@@ -453,8 +426,6 @@ public abstract class ArchiveExport extends DatasetExportJob {
             }
           }
         }
-      } catch (RuntimeException e) {
-        catchTruncation(e);
       }
     }
   }
@@ -493,15 +464,17 @@ public abstract class ArchiveExport extends DatasetExportJob {
               }
             });
           } else {
+            // a type specimen can typify names of different batches
+            Set<Object> written = new HashSet<>();
             for (List<String> batch : batches(nameIDs)) {
               checkIfCancelledRuntime();
               for (T x : mapper.listByNames(datasetKey, batch)) {
-                writeRelation(x, consumer);
+                if (written.add(x.getId())) {
+                  writeRelation(x, consumer);
+                }
               }
             }
           }
-        } catch (RuntimeException e) {
-          catchTruncation(e);
         }
       }
     }
@@ -534,8 +507,6 @@ public abstract class ArchiveExport extends DatasetExportJob {
               }
             }
           }
-        } catch (RuntimeException e) {
-          catchTruncation(e);
         }
       }
     }
@@ -602,8 +573,6 @@ public abstract class ArchiveExport extends DatasetExportJob {
             }
           }
         }
-      } catch (RuntimeException e) {
-        catchTruncation(e);
       }
     }
   }
@@ -633,11 +602,7 @@ public abstract class ArchiveExport extends DatasetExportJob {
       Term rowType = terms[0];
       var cols = List.of(Arrays.copyOfRange(terms, 1, terms.length));
       LOG.info("Export {} from dataset {}", rowType.simpleName(), datasetKey);
-      if (req.isExcel()) {
-        writer = new ExcelTermWriter(wb, rowType, cols);
-      } else {
-        writer = new TermWriter.TSV(tmpDir, rowType, cols);
-      }
+      writer = new TermWriter.TSV(tmpDir, rowType, cols);
       passStarted = System.currentTimeMillis();
       openAdditionalWriters(rowType);
       return true;

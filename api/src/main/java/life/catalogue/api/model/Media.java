@@ -7,7 +7,7 @@ import java.net.URI;
 import java.time.LocalDate;
 import java.util.Objects;
 
-public class Media extends DatasetScopedEntity<Integer> implements ExtensionEntity, SameAs<Media> {
+public class Media extends DatasetScopedEntity<Integer> implements ExtensionEntity, DuplicateCheck<Media> {
 
   private Integer sectorKey;
   private Sector.Mode sectorMode;
@@ -184,7 +184,7 @@ public class Media extends DatasetScopedEntity<Integer> implements ExtensionEnti
   }
 
   @Override
-  public boolean sameAs(Media media) {
+  public boolean isDuplicate(Media media) {
     return Objects.equals(url, media.url) &&
         Objects.equals(thumbnail, media.thumbnail) &&
         type == media.type &&

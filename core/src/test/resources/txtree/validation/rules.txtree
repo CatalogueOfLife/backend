@@ -1,0 +1,20 @@
+Plantae [kingdom] {ID=pl CODE=botanical}
+  Fabaceae Lindl. [family] {ID=fab}
+    Vicia L. [genus] {ID=vic}
+      Vicia faba L. [species] {ID=faba}
+        =Faba vulgaris Moench [species] {ID=fabav}
+      Vicia cracca L. [species] {ID=cracca}
+      Vicia sativa L. [species] {ID=sativa}
+        =Vicia angustifolia L. [species] {ID=angu}
+    Faba Mill. [genus] {ID=fabag}
+      Faba sativa Bernh. [species] {ID=fsat}
+Animalia [kingdom] {ID=an CODE=zoological}
+  †Trilobita Walch, 1771 [class] {ID=tri}
+    †Agnostida Salter, 1864 [order] {ID=agn}
+      Agnostus Brongniart, 1822 [genus] {ID=agno}
+        Agnostus pisiformis (Wahlenberg, 1818) [species] {ID=pisi}
+      Pagetia Walcott, 1916 [genus] {ID=page}
+        Pagetia bootes Walcott, 1916 [species] {ID=boot}
+  Chordata Haeckel, 1874 [phylum] {ID=cho}
+    Homo Linnaeus, 1758 [genus] {ID=homo}
+      Homo sapiens Linnaeus, 1758 [species] {ID=sap}

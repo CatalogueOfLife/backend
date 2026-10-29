@@ -8,6 +8,7 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.NameField;
 import life.catalogue.es.EsException;
 
+import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.Rank;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -60,6 +61,7 @@ public class EsModule extends SimpleModule {
     ctxt.setMixInAnnotations(Name.class, NameMixIn.class);
     ctxt.setMixInAnnotations(SectorScoped.class, SectorScopedMixIn.class);
     ctxt.setMixInAnnotations(SimpleName.class, SimpleNameMixIn.class);
+    ctxt.setMixInAnnotations(Authorship.class, AuthorshipMixIn.class);
   }
 
   @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "@")
@@ -80,6 +82,8 @@ public class EsModule extends SimpleModule {
     @JsonIgnore abstract String getLabelHtml();
     @JsonIgnore abstract String getBasionymOrCombinationAuthorship();
     @JsonIgnore(false) abstract String getScientificNameNormalized();
+    // the suggest searches it next to the scientific name, so a name is found without its subgenus or rank marker
+    @JsonIgnore(false) @JsonProperty("canonicalName") abstract String getCanonicalNameIfDifferent();
     @JsonIgnore(false) abstract String getAlphaIndex();
   }
 
@@ -90,6 +94,12 @@ public class EsModule extends SimpleModule {
     @JsonIgnore abstract String getLabelHtml();
   }
 
+  // Nearly no name is published anonymously or with a bracketed year: keep the flags out of the _source unless set
+  abstract static class AuthorshipMixIn {
+    @JsonInclude(JsonInclude.Include.NON_DEFAULT) abstract boolean isAnonymous();
+    @JsonInclude(JsonInclude.Include.NON_DEFAULT) abstract boolean isBracketedYear();
+  }
+
   // Override @JsonIgnore from SectorScoped so sectorMode is serialized into ES documents.
   // It remains @JsonIgnore in the ApiModule context (public API).
   abstract static class SectorScopedMixIn {
@@ -98,7 +108,12 @@ public class EsModule extends SimpleModule {
 
   private static ObjectMapper configureMapper(ObjectMapper mapper) {
     mapper.setDefaultPropertyInclusion(JsonInclude.Include.NON_EMPTY);
+    // taxon-ws reads the same index but is released on its own schedule: a document written by a newer backend,
+    // with a new property or enum value (above all a new issue), must not fail an older reader. See gbif/gbif-web#2080
     mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+    mapper.enable(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL);
+    // ... and an unknown value is dropped from a collection, not kept as null
+    mapper.setDefaultSetterInfo(JsonSetter.Value.forContentNulls(Nulls.SKIP));
     mapper.registerModule(new JavaTimeModule());
     mapper.registerModule(new EsModule());
     //TODO: still needed ???

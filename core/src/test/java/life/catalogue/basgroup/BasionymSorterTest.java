@@ -240,7 +240,8 @@ public class BasionymSorterTest {
     assertFalse(g.getRecombinations().isEmpty());
     assertEquals(6, g.getRecombinations().size());
     assertNotNull(g.getBasionym());
-    assertEquals("G.Kirchn.", g.getBasionym().getAuthorship());
+    // the in-citation is part of the authorship since name-parser-api 6 (gbif/name-parser-rust#172)
+    assertEquals("G.Kirchn. in Petzold & G.Kirchn.", g.getBasionym().getAuthorship());
   }
 
   @Test

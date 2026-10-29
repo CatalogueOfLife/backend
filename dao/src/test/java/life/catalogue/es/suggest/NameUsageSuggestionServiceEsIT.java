@@ -151,6 +151,46 @@ public class NameUsageSuggestionServiceEsIT extends EsTestBase {
   }
 
   /**
+   * Names are suggested without their subgenus or infraspecific rank marker, #1676
+   */
+  @Test
+  public void suggestCanonical() throws Exception {
+    setupSuggestTestData();
+
+    var req = new NameUsageSuggestRequest();
+    req.setDatasetFilter(DS1);
+    req.setSortBy(NameUsageRequest.SortBy.RELEVANCE);
+
+    req.setQ("Aleochara comp");
+    var resp = service.suggest(req);
+    assertEquals(2, resp.size());
+
+    // the last word is a prefix, so compositana matches too, but the exact canonical name comes first
+    req.setQ("aleochara composita");
+    resp = service.suggest(req);
+    assertEquals(2, resp.size());
+    assertEquals("Aleochara (Coprochara) composita Casey, 1906", resp.getFirst().getMatch());
+
+    req.setQ("Aleochara compositan");
+    resp = service.suggest(req);
+    assertEquals(1, resp.size());
+    assertEquals("Aleochara compositana Casey, 1911", resp.getFirst().getMatch());
+
+    // the subgenus still works too
+    req.setQ("Aleochara (Coprochara) comp");
+    resp = service.suggest(req);
+    assertEquals(1, resp.size());
+    req.setQ("Aleochara Coprochara");
+    resp = service.suggest(req);
+    assertEquals(1, resp.size());
+
+    req.setQ("Candelaria concolor concolor");
+    resp = service.suggest(req);
+    assertEquals(1, resp.size());
+    assertEquals("Candelaria concolor var. concolor", resp.getFirst().getMatch());
+  }
+
+  /**
    * Tests suggestions loaded from the Taraxacum JSON resource (suggest API response format).
    * Pays special attention to phrase prefix queries ending with a single letter after a space,
    * e.g. "Taraxacum a", which must only match names whose second word starts with that letter.
@@ -401,6 +441,10 @@ public class NameUsageSuggestionServiceEsIT extends EsTestBase {
     insert(client, cfg.index, tax(Rank.SPECIES,    "Phoca vitulina",              "Linnaeus, 1758"));
     insert(client, cfg.index, tax(Rank.SUBSPECIES, "Phoca vitulina vitulina",     "Linnaeus, 1758"));
     insert(client, cfg.index, tax(Rank.SUBSPECIES, "Phoca vitulina mellonae",     "Doutt, 1942"));
+
+    // subgenus left out, #1676
+    insert(client, cfg.index, tax(Rank.SPECIES,    "Aleochara (Coprochara) composita", "Casey, 1906"));
+    insert(client, cfg.index, tax(Rank.SPECIES,    "Aleochara compositana",            "Casey, 1911"));
 
     EsUtil.refreshIndex(client, indexName);
   }

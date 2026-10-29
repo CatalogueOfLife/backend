@@ -81,9 +81,15 @@ public class NormalizerColdpIT extends NormalizerITBase {
       assertNotNull(v);
       var n = store.name(u);
       if (u.getId().equals("fake")) {
-        assertEquals(2, v.getIssues().size());
+        assertEquals(3, v.getIssues().size());
         assertTrue(v.contains(Issue.PARTIAL_DATE));
         assertTrue(v.contains(Issue.PARENT_SPECIES_MISSING));
+        // homotypic relations to hybrid, a separate taxon
+        assertTrue(v.contains(Issue.HOMOTYPIC_NAME_OUTSIDE_SYNONYMY));
+      } else if (u.getId().equals("hybrid")){
+        assertEquals(2, v.getIssues().size());
+        assertTrue(v.contains(Issue.MISSING_AUTHORSHIP));
+        assertTrue(v.contains(Issue.HOMOTYPIC_NAME_OUTSIDE_SYNONYMY));
       } else if (u.getId().equals("cult")){
         assertEquals(1, v.getIssues().size());
         assertTrue(v.contains(Issue.INCONSISTENT_NAME));
@@ -91,8 +97,10 @@ public class NormalizerColdpIT extends NormalizerITBase {
         assertEquals(2, v.getIssues().size());
         assertTrue(v.contains(Issue.RANK_NAME_SUFFIX_CONFLICT));
         assertTrue(v.contains(Issue.MISSING_AUTHORSHIP));
+      } else if (u.getId().equals("1001a")){ // botanical autonym without authorship #1632
+        assertTrue(v.getIssues().isEmpty());
       } else if (n.getName().getRank().isSuprageneric() ||
-        Set.of("1006-s1", "1006-s2", "100", "102", "1001a", "hybrid", "1005").contains(n.getId())
+        Set.of("1006-s1", "1006-s2", "100", "102", "hybrid", "1005").contains(n.getId())
       ) {
         assertEquals(1, v.getIssues().size());
         assertTrue(v.contains(Issue.MISSING_AUTHORSHIP));
@@ -402,12 +410,20 @@ public class NormalizerColdpIT extends NormalizerITBase {
       System.out.println(u.getId()+" "+v.getIssues());
       var n = store.names().objByID(u.nameID);
       if (u.getId().equals("fake")) {
-        assertEquals(2, v.getIssues().size());
+        assertEquals(3, v.getIssues().size());
         assertTrue(v.contains(Issue.PARTIAL_DATE));
         assertTrue(v.contains(Issue.PARENT_SPECIES_MISSING));
+        // homotypic relations to hybrid, a separate taxon
+        assertTrue(v.contains(Issue.HOMOTYPIC_NAME_OUTSIDE_SYNONYMY));
+
+      } else if(u.getId().equals("hybrid")) {
+        assertEquals(2, v.getIssues().size());
+        assertTrue(v.contains(Issue.MISSING_AUTHORSHIP));
+        assertTrue(v.contains(Issue.HOMOTYPIC_NAME_OUTSIDE_SYNONYMY));
 
       } else if(u.getId().equals("cult")) {
-        assertEquals(3, v.getIssues().size());
+        assertEquals(4, v.getIssues().size());
+        assertTrue(v.contains(Issue.NOMENCLATURAL_CODE_INFERRED));
         assertTrue(v.contains(Issue.INCONSISTENT_NAME));
         assertTrue(v.contains(Issue.PARENT_GENUS_MISSING));
         assertTrue(v.contains(Issue.MISSING_AUTHORSHIP));
@@ -417,8 +433,10 @@ public class NormalizerColdpIT extends NormalizerITBase {
         assertTrue(v.contains(Issue.RANK_NAME_SUFFIX_CONFLICT));
         assertTrue(v.contains(Issue.MISSING_AUTHORSHIP));
 
+      } else if (u.getId().equals("1001a")){ // botanical autonym without authorship #1632
+        assertTrue(v.getIssues().isEmpty());
       } else if (n.getName().getRank().isSuprageneric() ||
-        Set.of("1006-s1", "1006-s2", "100", "102", "1001a", "hybrid", "1005").contains(n.getId())
+        Set.of("1006-s1", "1006-s2", "100", "102", "hybrid", "1005").contains(n.getId())
       ) {
         assertEquals(1, v.getIssues().size());
         assertTrue(v.contains(Issue.MISSING_AUTHORSHIP));
@@ -475,7 +493,8 @@ public class NormalizerColdpIT extends NormalizerITBase {
     assertEquals("E.A. Smith, 1886", nn.getName().getAuthorship());
 
     VerbatimRecord v = vByNameID(key);
-    assertTrue(v.getIssues().isEmpty());
+    // the dataset has no code, the year makes it zoological
+    assertEquals(Set.of(Issue.NOMENCLATURAL_CODE_INFERRED), v.getIssues());
 
 
     var rels = nn.getRelations(NomRelType.BASIONYM);
@@ -493,7 +512,7 @@ public class NormalizerColdpIT extends NormalizerITBase {
 
     nn = nameByID("urn:lsid:marinespecies.org:taxname:1252864");
     v = vByNameID(key);
-    assertTrue(v.getIssues().isEmpty());
+    assertEquals(Set.of(Issue.NOMENCLATURAL_CODE_INFERRED), v.getIssues());
     rels = nn.getRelations(NomRelType.BASIONYM);
     assertEquals(1, rels.size());
     assertEquals(key, rels.getFirst().getToID());
@@ -521,11 +540,15 @@ public class NormalizerColdpIT extends NormalizerITBase {
   public void badlyNestedRanks() throws Exception {
     normalize(11);
 
-    for (String id : List.of("3","4","7")) {
+    // 10 is an unranked trinomial under a subspecies. Its classification makes it zoological and so a subspecies itself
+    var n10 = store.names().objByID("10").getName();
+    assertEquals(NomCode.ZOOLOGICAL, n10.getCode());
+    assertEquals(Rank.SUBSPECIES, n10.getRank());
+    for (String id : List.of("3","4","7","10")) {
       var t = usageByID(id);
       assertTrue("Missing issue for "+id, hasIssues(t, Issue.CLASSIFICATION_RANK_ORDER_INVALID));
     }
-    for (String id : List.of("1","2","8a","8","9","10","11","12","13","14")) {
+    for (String id : List.of("1","2","8a","8","9","11","12","13","14")) {
       var t = usageByID(id);
       assertFalse("Wrong issue for "+id, hasIssues(t, Issue.CLASSIFICATION_RANK_ORDER_INVALID));
     }
@@ -609,7 +632,7 @@ public class NormalizerColdpIT extends NormalizerITBase {
     assertNull(usageByID("704264-az"));
     var nn = nameByID("704264-az");
     var n = nn.getName();
-    assertEquals(NomStatus.NOT_ESTABLISHED, n.getNomStatus());
+    assertEquals(NomStatus.ORTHOGRAPHIC_VARIANT, n.getNomStatus());
     assertEquals("Cassine congonha", n.getScientificName());
     assertTree();
   }
@@ -706,6 +729,29 @@ public class NormalizerColdpIT extends NormalizerITBase {
   /**
    * Structured ISO distributions not interpreted properly ending up as TEXT before.
    */
+  /**
+   * A denormalised species column with the epithet only must not create a fake genus.
+   * https://github.com/CatalogueOfLife/backend/issues/1626
+   */
+  @Test
+  public void speciesEpithetColumn() throws Exception {
+    normalize(45);
+    store.debug();
+
+    var u = usageByID("1");
+    var sp = store.usages().parent(u);
+    assertEquals("Chalcionellus blanchii", store.name(sp).getName().getScientificName());
+    assertEquals(Rank.SPECIES, store.name(sp).getName().getRank());
+    var gen = store.usages().parent(sp);
+    assertEquals("Chalcionellus", store.name(gen).getName().getScientificName());
+
+    // no genus to go with the epithet: skip the species
+    u = usageByID("2");
+    var fam = store.usages().parent(u);
+    assertEquals("Poaceae", store.name(fam).getName().getScientificName());
+    assertTrue(store.getVerbatim(u.usage.getVerbatimKey()).contains(Issue.CLASSIFICATION_NOT_APPLIED));
+  }
+
   @Test
   public void donaldDistributions() throws Exception {
     normalize(43);
@@ -726,4 +772,63 @@ public class NormalizerColdpIT extends NormalizerITBase {
     });
   }
 
+
+  /**
+   * The taxon group of the final tree decides the code of names without one, and ColDP names are interpreted again
+   * with it. https://github.com/CatalogueOfLife/backend/issues/1624
+   */
+  @Test
+  public void treeDecidesCode() throws Exception {
+    normalize(46);
+    var n = store.names().objByID("3").getName();
+    assertEquals(NomCode.BOTANICAL, n.getCode());
+    assertEquals("Abies cilicica subsp. isaurica Coode & Cullen, 1965", n.getLabel());
+
+    n = store.names().objByID("4").getName();
+    assertEquals(NomCode.BOTANICAL, n.getCode());
+    assertEquals("Humiriastrum", n.getUninomial());
+    assertNull(n.getInfragenericEpithet());
+    assertEquals(List.of("Urban"), n.getBasionymAuthorship().getAuthors());
+  }
+
+  /**
+   * A type specimen typifying several names through comma concatenated nameID and status values
+   * https://github.com/CatalogueOfLife/backend/issues/1645
+   */
+  @Test
+  public void typeMaterialNames() throws Exception {
+    normalize(47);
+
+    // tm8 has no existing name at all, the one without ID gets a generated one
+    assertEquals(7, store.typeMaterial().size());
+    assertNull(store.typeMaterial().get("tm8"));
+
+    assertNames(store.typeMaterial().get("tm1"), "n1", TypeStatus.HOLOTYPE, "n2", TypeStatus.HOLOTYPE);
+    assertNames(store.typeMaterial().get("tm2"), "n1", TypeStatus.HOLOTYPE, "n3", TypeStatus.ISOTYPE);
+    assertNames(store.typeMaterial().get("tm3"), "n1", TypeStatus.LECTOTYPE, "n3", TypeStatus.LECTOTYPE);
+    assertNames(store.typeMaterial().get("tm4"), "n3", TypeStatus.HOLOTYPE);
+    assertNames(store.typeMaterial().get("tm5"), "n1", TypeStatus.HOLOTYPE, "n2", TypeStatus.ISOTYPE, "n3", TypeStatus.OTHER);
+    assertNames(store.typeMaterial().get("tm7"), "n,4", TypeStatus.HOLOTYPE);
+    var noID = store.typeMaterial().values().stream().filter(tm -> "6".equals(tm.getCatalogNumber())).findFirst().get();
+    assertNames(noID, "n2", TypeStatus.PARATYPE);
+
+    // issues
+    for (var v : (Iterable<VerbatimRecord>) store.verbatimList(ColdpTerm.TypeMaterial)::iterator) {
+      String id = v.getRaw(ColdpTerm.ID);
+      switch (id == null ? "" : id) {
+        case "tm4" -> assertEquals(Set.of(Issue.NAME_ID_INVALID), v.getIssues());
+        case "tm5" -> assertEquals(Set.of(Issue.TYPE_STATUS_INVALID), v.getIssues());
+        case "tm8" -> assertEquals(Set.of(Issue.NAME_ID_INVALID, Issue.NOT_INTERPRETED), v.getIssues());
+        default -> assertTrue(id + " " + v.getIssues(), v.getIssues().isEmpty());
+      }
+    }
+  }
+
+  private static void assertNames(TypeMaterial tm, Object... nameStatus) {
+    List<TypifiedName> expected = new java.util.ArrayList<>();
+    for (int i = 0; i < nameStatus.length; i = i + 2) {
+      expected.add(new TypifiedName((String) nameStatus[i], (TypeStatus) nameStatus[i + 1]));
+    }
+    assertEquals(expected, tm.getNames());
+  }
 }

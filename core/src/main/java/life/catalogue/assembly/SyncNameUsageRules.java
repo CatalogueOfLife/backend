@@ -27,7 +27,6 @@ public class SyncNameUsageRules {
         n.setAuthorship(null);
         n.setCombinationAuthorship(null);
         n.setBasionymAuthorship(null);
-        n.setSanctioningAuthor(null);
         LOG.debug("remove authorship from botanical autonym {}", u.getLabel());
       }
     // zoological rules only

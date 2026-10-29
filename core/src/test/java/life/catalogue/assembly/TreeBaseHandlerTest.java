@@ -80,6 +80,39 @@ public class TreeBaseHandlerTest {
   }
 
   /**
+   * A decision changing the name parses its scientific name together with its own authorship,
+   * and keeps that authorship as the editor wrote it.
+   */
+  @Test
+  public void applyDecisionName() {
+    // a changed name is matched again
+    TreeBaseHandler h = new UselessHandler(1, null, factory, mock(NameIndex.class), 0, SECTOR, null, null, null, null);
+    EditorialDecision d = new EditorialDecision();
+    d.setMode(EditorialDecision.Mode.UPDATE);
+    d.setName(Name.newBuilder().scientificName("Abies alba").authorship("(L.)  Mill.").build());
+
+    Name n = h.applyDecision(new Taxon(Name.newBuilder().scientificName("Abies albus").authorship("Smith").build()), d).usage.getName();
+    assertEquals("Abies alba", n.getScientificName());
+    assertEquals("(L.)  Mill.", n.getAuthorship());
+    assertEquals(List.of("Mill."), n.getCombinationAuthorship().getAuthors());
+    assertEquals(List.of("L."), n.getBasionymAuthorship().getAuthors());
+    assertEquals("alba", n.getSpecificEpithet());
+
+    // an authorship that only comes in the name string is kept
+    d.setName(Name.newBuilder().scientificName("Abies alba Mill.").build());
+    n = h.applyDecision(new Taxon(Name.newBuilder().scientificName("Abies albus").authorship("Smith").build()), d).usage.getName();
+    assertEquals("Abies alba", n.getScientificName());
+    assertEquals("Mill.", n.getAuthorship());
+    assertEquals(List.of("Mill."), n.getCombinationAuthorship().getAuthors());
+
+    // a blank name changes nothing but the authorship
+    d.setName(Name.newBuilder().scientificName(" ").authorship("Mill.").build());
+    n = h.applyDecision(new Taxon(Name.newBuilder().scientificName("Abies alba").authorship("Smith").build()), d).usage.getName();
+    assertEquals("Abies alba", n.getScientificName());
+    assertEquals("Mill.", n.getAuthorship());
+  }
+
+  /**
    * A decision always carries an environment set, empty unless it changes environments.
    * Changing only the status must keep the environments of the taxon.
    */
@@ -184,6 +217,41 @@ public class TreeBaseHandlerTest {
     var h = blockingHandler();
     assertFalse(h.ignoreUsage(taxon("t1", "Aus bus", 7), d, IssueContainer.VOID, false));
     verifyNoInteractions(vrm);
+  }
+
+  /**
+   * Usages with an excluded taxonomic status are skipped and counted, an excluded taxon takes its synonyms along.
+   * https://github.com/CatalogueOfLife/checklistbank/issues/1685
+   */
+  @Test
+  public void excludedTaxonomicStatus() {
+    var s = blockingSector();
+    s.setTaxonomicStatusExclusion(EnumSet.of(TaxonomicStatus.PROVISIONALLY_ACCEPTED, TaxonomicStatus.MISAPPLIED));
+    var h = new UselessHandler(1, Map.of(), factory, null, 0, s, null, null, null, null);
+
+    var prov = taxon("t1", "Cus dus", null);
+    prov.setStatus(TaxonomicStatus.PROVISIONALLY_ACCEPTED);
+    assertTrue(h.ignoreUsage(prov, null, IssueContainer.VOID, false));
+    assertFalse(h.ignoreUsage(taxon("t2", "Dus eus", null), null, IssueContainer.VOID, false));
+
+    assertTrue(h.ignoreUsage(synonym("s1", "Cus des", "t1", TaxonomicStatus.SYNONYM), null, IssueContainer.VOID, false));
+    assertTrue(h.ignoreUsage(synonym("s2", "Dus fus", "t2", TaxonomicStatus.MISAPPLIED), null, IssueContainer.VOID, false));
+    assertFalse(h.ignoreUsage(synonym("s3", "Dus gus", "t2", TaxonomicStatus.SYNONYM), null, IssueContainer.VOID, false));
+
+    var d = new EditorialDecision();
+    d.setMode(EditorialDecision.Mode.REVIEWED);
+    assertFalse(h.ignoreUsage(synonym("s4", "Dus hus", "t2", TaxonomicStatus.MISAPPLIED), d, IssueContainer.VOID, false));
+
+    assertEquals(2, (int) h.ignoredCounter.get(IgnoreReason.TAXONOMIC_STATUS));
+    assertEquals(1, (int) h.ignoredCounter.get(IgnoreReason.IGNORED_PARENT));
+  }
+
+  private static Synonym synonym(String id, String sciname, String parentId, TaxonomicStatus status) {
+    Synonym syn = new Synonym(Name.newBuilder().scientificName(sciname).rank(Rank.SPECIES).type(NameType.SCIENTIFIC).build());
+    syn.setId(id);
+    syn.setParentId(parentId);
+    syn.setStatus(status);
+    return syn;
   }
 
   private static final Sector SECTOR = Sector.newBuilder()

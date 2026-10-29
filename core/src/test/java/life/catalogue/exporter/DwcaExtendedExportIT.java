@@ -56,6 +56,24 @@ public class DwcaExtendedExportIT extends ExportTest {
   }
 
   /**
+   * Synonyms carry the classification of their accepted taxon, see #1556.
+   * In the apple data s1 and s2 are synonyms of root-2, classified in Animalia.
+   */
+  @Test
+  public void synonymClassification() throws Exception {
+    DwcaExtendedExport exp = new DwcaExtendedExport(new ExportRequest(TestDataRule.APPLE.key, DataFormat.DWCA), Users.TESTER, SqlSessionFactoryRule.getSqlSessionFactory(), cfg, ImageService.passThru());
+    exp.run();
+    assertExportExists(exp.getArchive());
+
+    var rows = readArchiveRows(exp.getArchive(), DwcTerm.Taxon.simpleName() + ".tsv");
+    for (String id : new String[]{"s1", "s2"}) {
+      var syn = rows.stream().filter(r -> id.equals(r.get(DwcTerm.taxonID.prefixedName()))).findFirst().orElse(null);
+      assertEquals("root-2", syn.get(DwcTerm.acceptedNameUsageID.prefixedName()));
+      assertEquals("Animalia", syn.get(DwcTerm.kingdom.prefixedName()));
+    }
+  }
+
+  /**
    * Unlike ColDP, DwC-A writes the related *name* id into originalNameUsageID. The apple data also holds a
    * SPELLING_CORRECTION relation on name-2, which must not show up as an original name.
    * The value is resolved by the export query (NameUsageMapper BASIONYM_JOIN), not by a lookup per usage.

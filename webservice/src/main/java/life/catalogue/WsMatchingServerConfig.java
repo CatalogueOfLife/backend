@@ -9,6 +9,7 @@ import life.catalogue.matching.nidx.NamesIndexConfig;
 
 import java.net.URI;
 import java.util.Properties;
+import java.util.UUID;
 
 import javax.annotation.Nullable;
 
@@ -55,6 +56,14 @@ public class WsMatchingServerConfig extends Configuration implements CorsBundleC
   @Valid
   @NotNull
   public MatchingConfig matching = new MatchingConfig();
+
+  /**
+   * The GBIF checklist key the GBIF compatible /match/gbif service answers for.
+   * Defaults to the gbifKey of the matching dataset, which a release usually lacks - the COL checklist key
+   * belongs to the project, not to its releases.
+   */
+  @Nullable
+  public UUID gbifChecklistKey;
 
   @NotNull
   public URI clbURI = URI.create("https://www.checklistbank.org");

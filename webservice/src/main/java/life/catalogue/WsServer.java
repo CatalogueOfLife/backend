@@ -82,7 +82,7 @@ import life.catalogue.release.PublishReleaseListener;
 import life.catalogue.release.PublisherChangeListener;
 import life.catalogue.resources.*;
 import life.catalogue.resources.dataset.*;
-import life.catalogue.resources.legacy.LegacyWebserviceResource;
+import life.catalogue.resources.matching.DatasetGbifMatchResource;
 import life.catalogue.resources.matching.openrefine.DefaultReconciliationResource;
 import life.catalogue.resources.matching.openrefine.ReconciliationResource;
 import life.catalogue.resources.parser.ResolverResource;
@@ -418,7 +418,7 @@ public class WsServer extends Application<WsServerConfig> {
     managedService.manage(Component.DoiUpdater, doiChangeListener);
 
     // exporter
-    ExportManager exportManager = new ExportManager(cfg, getSqlSessionFactory(), executor, imgService, exdao, diDao, searchService, cfg.clbURI);
+    ExportManager exportManager = new ExportManager(cfg, getSqlSessionFactory(), executor, imgService, exdao, searchService, cfg.clbURI);
 
     // syncs and releases
     final var syncFactory = new SyncFactory(getSqlSessionFactory(), matcherFactory, ni, secdao, siDao, edao, indexService, broker, identifierScopeResolver, coljersey.getCache());
@@ -498,7 +498,7 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new AdminResource(
       getSqlSessionFactory(), managedService, syncManager, new DownloadUtil(httpClient), cfg,
       imgService, ni, indexService, searchService,
-      importManager, ddao, siDao, gbifSync, executor, broker, encryption, doiChangeListener)
+      importManager, ddao, siDao, diDao, gbifSync, executor, broker, encryption, doiChangeListener, matcherFactory)
     );
     j.register(new PersonAdminResource(getSqlSessionFactory(), executor, broker, cfg.persons));
 
@@ -512,10 +512,11 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new DatasetBreakdownResource(tdao));
     j.register(new DatasetTaxDiffResource(executor, getSqlSessionFactory(), docker, cfg));
     j.register(new NameUsageMatchingResource(cfg.matching, executor, getSqlSessionFactory(), matcherFactory));
+    // GBIF v2 species match, only over persistent matcher stores
+    j.register(new DatasetGbifMatchResource(matcherFactory, getSqlSessionFactory()));
     // OpenRefine reconciliation service over the name matcher (dataset-scoped + default COL backbone)
     j.register(new ReconciliationResource(cfg.matching, suggestService, getSqlSessionFactory(), matcherFactory, cfg.getApiUri(), cfg.clbURI));
     j.register(new DefaultReconciliationResource(cfg.matching, suggestService, getSqlSessionFactory(), matcherFactory, coljersey.getCache(), cfg.getApiUri(), cfg.clbURI));
-    j.register(new LegacyWebserviceResource(cfg, env.metrics(), getSqlSessionFactory()));
     j.register(new SectorDiffResource(sDiff));
     j.register(new SectorResource(secdao, fmsDao, syncManager, sprdao));
 
@@ -555,7 +556,7 @@ public class WsServer extends Application<WsServerConfig> {
     if (cfg.apiURI != null) {
       broker.register(new CacheFlush(httpClient, cfg.apiURI));
     }
-    broker.register(new PublishReleaseListener(cfg.release, cfg, getSqlSessionFactory(), httpClient, executor, broker));
+    broker.register(new PublishReleaseListener(cfg.release, cfg, getSqlSessionFactory(), matcherFactory, httpClient, executor, broker));
     broker.register(new PublisherChangeListener(getSqlSessionFactory()));
     broker.register(doiChangeListener);
     broker.register(exportManager);

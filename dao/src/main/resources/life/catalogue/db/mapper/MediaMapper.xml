@@ -138,11 +138,31 @@
     WHERE dataset_key = #{datasetKey}
   </insert>
 
+  <select id="entityExists" parameterType="map" resultType="boolean">
+    SELECT EXISTS (
+      SELECT TRUE FROM media WHERE dataset_key=#{datasetKey}
+    )
+  </select>
+
   <select id="processSector" parameterType="map" resultMap="mediaResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
     WHERE m.dataset_key=#{key.datasetKey} AND m.sector_key = #{key.id}
   </select>
+
+  <!-- entities of other sectors or of none attached to usages of the sector. See SectorForeignProcessable -->
+  <select id="listForeignBySector" parameterType="map" resultMap="mediaExtResultMap">
+    SELECT <include refid="SELECT"/>
+    FROM media m
+    WHERE m.dataset_key = #{key.datasetKey} AND m.sector_key IS DISTINCT FROM #{key.id}
+      AND m.taxon_id IN (<include refid="life.catalogue.db.Common.sectorUsageIds"/>)
+  </select>
+
+  <delete id="deleteForeignBySector" parameterType="map">
+    DELETE FROM media
+    WHERE dataset_key = #{key.datasetKey} AND sector_key IS DISTINCT FROM #{key.id}
+      AND taxon_id IN (<include refid="life.catalogue.db.Common.sectorUsageIds"/>)
+  </delete>
 
   <delete id="deleteBySector" parameterType="map">
     DELETE FROM media
@@ -165,6 +185,7 @@
     JOIN name_usage u ON u.dataset_key=nm.dataset_key AND u.name_id=nm.name_id
     JOIN media m ON m.dataset_key=nm.dataset_key AND m.taxon_id=u.id
     WHERE nm.index_id=#{nidx}
+      AND nm.dataset_key IN (SELECT d.key FROM dataset d WHERE <include refid="life.catalogue.db.mapper.NameUsageMapper.DATASET_PUBLIC"/>)
     ORDER BY m.dataset_key, m.id
     <include refid="life.catalogue.db.Common.limit"/>
   </select>

@@ -68,7 +68,7 @@ public class AuthorComparatorTest {
     p1.getCombinationAuthorship().setAuthors(Lists.newArrayList("Reich."));
 
     p2 = new Name();
-    p2.getCombinationAuthorship().getAuthors().add("");
+    p2.getCombinationAuthorship().setAuthors(Lists.newArrayList(""));
     assertEquals(Equality.UNKNOWN, comp.compare(p1, p2));
     
     p2.getCombinationAuthorship().setAuthors(Lists.newArrayList("Reichen."));
@@ -153,6 +153,35 @@ public class AuthorComparatorTest {
 
     p2.getCombinationAuthorship().setAuthors(Lists.newArrayList("Döring"));
     assertEquals(Equality.EQUAL, comp.compare(p1, p2));
+  }
+
+  /**
+   * X in Y: the name is X's, published in a work of Y, and cited either way. The year still has to agree.
+   * See https://github.com/CatalogueOfLife/backend/issues/1652
+   */
+  @Test
+  public void compareIn() throws Exception {
+    assertTrue(parse("Natterer in Kuhl, 1817").hasInAuthors());
+    assertAuth("Natterer in Kuhl, 1817", Equality.EQUAL, "Kuhl, 1817");
+    assertAuth("Natterer in Kuhl, 1817", Equality.EQUAL, "Natterer, 1817");
+    assertAuth("Kuhl, 1817", Equality.EQUAL, "Natterer in Kuhl, 1817");
+    assertAuth("Natterer in Kuhl", Equality.EQUAL, "Kuhl");
+    assertAuth("Boucher ex DC. in Lam. & DC.", Equality.EQUAL, "Lam.");
+    // the year still has to agree, within a year when only the work tells: Kuhl may have named another bus later on
+    assertAuth("Natterer in Kuhl, 1817", Equality.DIFFERENT, "Kuhl, 1850");
+    assertAuth("Natterer in Kuhl, 1817", Equality.DIFFERENT, "Kuhl, 1822");
+    assertAuth("Natterer in Kuhl, 1817", Equality.EQUAL, "Kuhl, 1818");
+    assertAuth("Natterer in Kuhl, 1817", Equality.EQUAL, "Natterer, 1822");
+    assertAuth("Natterer in Kuhl, 1817", Equality.DIFFERENT, "Smith, 1817");
+    // names published in the same work are told apart by their own authors
+    assertAuth("Natterer in Kuhl, 1817", Equality.EQUAL, "Natterer in Kuhl, 1817");
+    assertAuth("Natterer in Kuhl, 1817", Equality.DIFFERENT, "Smith in Kuhl, 1817");
+    // in the basionym authorship
+    assertAuth(null, null, "Natterer in Kuhl", "1817", Equality.EQUAL, null, null, "Kuhl", "1817");
+    // strict and authors first comparisons too
+    assertAuthStrict("Natterer in Kuhl", "1817", true, "Kuhl", "1817", NomCode.ZOOLOGICAL);
+    assertAuthStrict("Natterer in Kuhl", "1817", false, "Smith", "1817", NomCode.ZOOLOGICAL);
+    assertEquals(Equality.EQUAL, comp.compareAuthorsFirst(parse("Natterer in Kuhl, 1817"), parse("Kuhl, 1817")));
   }
 
   /**
@@ -661,9 +690,9 @@ public class AuthorComparatorTest {
     // StringAuthorMatcher.compare(Author, Author, ...), regardless of NomCode or the author map. "DC." vs "de Candolle" has no
     // such common-prefix relationship (surnames "dc" vs "candolle"), so it correctly isolates the author-map lookup behavior.
     var dc = new org.gbif.nameparser.api.Authorship();
-    dc.getAuthors().add("DC.");
+    dc.addAuthor("DC.");
     var candolle = new org.gbif.nameparser.api.Authorship();
-    candolle.getAuthors().add("Augustin Pyramus de Candolle");
+    candolle.addAuthor("Augustin Pyramus de Candolle");
 
     // botany: abbreviation expands, so they match
     assertEquals(Equality.EQUAL, comp.compareAuthorteam(dc, candolle, org.gbif.nameparser.api.NomCode.BOTANICAL));
@@ -787,6 +816,35 @@ public class AuthorComparatorTest {
     assertEquals(a1 + " VS " + a2, eq, comp.compare(parse(a1, y1), parse(a2, y2)));
   }
   
+  /**
+   * https://github.com/CatalogueOfLife/backend/issues/1611
+   */
+  @Test
+  public void anonymous() throws Exception {
+    Authorship anon = parse("Anon.");
+    assertTrue(anon.isAnonymous());
+    assertFalse(anon.hasAuthors());
+
+    // two anonymous works are the same, unless both attribute their authors
+    assertAuth("Anon.", Equality.EQUAL, "anon.");
+    assertAuth("Anonymous, 1798", Equality.EQUAL, "Anonymous [Lacepède], 1798");
+    assertAuth("Anon.", Equality.EQUAL, "[Lacepède]");
+    assertAuth("[Denis & Schiffermüller]", Equality.DIFFERENT, "[Smith]");
+    assertAuth("[Denis & Schiffermüller], 1775", Equality.EQUAL, "Denis & Schiffermüller, 1775");
+    assertAuth("Anonymous, 1798", Equality.DIFFERENT, "Anonymous, 1830");
+    assertTrue(comp.compareStrict(anon, parse("Anonymous"), NomCode.BOTANICAL, 0));
+    assertEquals(Equality.EQUAL, comp.compareAuthorsFirst(anon, parse("Anonymous")));
+
+    // an anonymous work against named authors: only the year can tell
+    assertAuth("Anon.", Equality.UNKNOWN, "Thunb.");
+    assertAuth("Anonymous, 1798", Equality.EQUAL, "Lacepède, 1798");
+    assertAuth("Anonymous, 1798", Equality.DIFFERENT, "Lacepède, 1830");
+    assertFalse(comp.compareStrict(anon, parse("Thunb."), NomCode.BOTANICAL, 0));
+
+    // an anonymous basionym against the original combination
+    assertAuth(null, null, "Anonymous", "1798", Equality.EQUAL, "Anonymous", "1798", null, null);
+  }
+
   private void assertAuth(String a1, Equality eq, String a2) throws InterruptedException {
     assertEquals(eq, comp.compare(parse(a1), parse(a2)));
   }

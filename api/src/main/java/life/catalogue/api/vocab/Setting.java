@@ -89,7 +89,10 @@ public enum Setting {
 
   /**
    * Number of first authors from a project/release to use for the container authors of a source chapter-in-a-book citation.
-   * If not given all authors are used.
+   * A release takes it from its project unless it has its own.
+   * It follows the number of project creators whenever these change, as a release appends source authors to them,
+   * unless it was set manually to another value, which then sticks.
+   * If not given the first 3 authors are used.
    */
   SOURCE_MAX_CONTAINER_AUTHORS(Integer.class, DatasetOrigin.PROJECT, DatasetOrigin.RELEASE),
 

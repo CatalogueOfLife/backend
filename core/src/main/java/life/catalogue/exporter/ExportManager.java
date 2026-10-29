@@ -8,12 +8,10 @@ import life.catalogue.api.model.DatasetExport;
 import life.catalogue.api.model.ExportRequest;
 import life.catalogue.api.model.JobInfo;
 import life.catalogue.api.search.NameUsageSearchRequest;
-import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.concurrent.DatasetBlockingJob;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.dao.DatasetExportDao;
-import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.JobDao;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.es.search.NameUsageSearchService;
@@ -41,13 +39,12 @@ public class ExportManager implements DatasetListener {
   private final JobExecutor executor;
   private final DatasetExportDao dao;
   private final JobDao jobDao;
-  private final DatasetImportDao diDao;
   private final NameUsageSearchService searchService;
   private final @Nullable URI clbURI;
   private final AtomicBoolean blocked = new AtomicBoolean(false);
 
   public ExportManager(ExporterConfig cfg, SqlSessionFactory factory, JobExecutor executor, ImageService imageService,
-                       DatasetExportDao exportDao, DatasetImportDao diDao,
+                       DatasetExportDao exportDao,
                        NameUsageSearchService searchService, @Nullable URI clbURI) {
     this.cfg = cfg;
     this.factory = factory;
@@ -55,7 +52,6 @@ public class ExportManager implements DatasetListener {
     this.imageService = imageService;
     dao = exportDao;
     this.jobDao = new JobDao(factory);
-    this.diDao = diDao;
     this.searchService = searchService;
     this.clbURI = clbURI;
   }
@@ -102,7 +98,6 @@ public class ExportManager implements DatasetListener {
         return info(prev);
       }
     }
-    validate(req);
     if (blocked.get()) {
       throw new UnavailableException("New export requests are currently not accepted.");
     }
@@ -189,48 +184,6 @@ public class ExportManager implements DatasetListener {
     // set extended to false (the default) for formats that make no difference
     if (!req.getFormat().hasExtendedContent()) {
       req.setExtended(false);
-    }
-  }
-
-  /**
-   * Checks the number of records for full excel downloads.
-   * Runs after the lookup so an existing export stays downloadable even if it exceeds todays limits.
-   */
-  private void validate(ExportRequest req) throws IllegalArgumentException {
-    if (req.isExcel() && req.getTaxonID() == null && req.getMinRank() == null) {
-      // check metrics avoiding truncation early
-      var imp = diDao.getLast(req.getDatasetKey());
-      if (imp != null) {
-        if (req.isSynonyms()) {
-          // all usages
-          throwIfTooLarge(ColdpTerm.NameUsage, imp.getUsagesCount());
-          throwIfTooLarge(ColdpTerm.Reference, imp.getReferenceCount());
-          throwIfTooLarge(ColdpTerm.Name, imp.getNameCount());
-          throwIfTooLarge(ColdpTerm.TypeMaterial, imp.getTypeMaterialCount());
-          throwIfTooLarge(ColdpTerm.NameRelation, imp.getNameRelationsCount());
-        } else {
-          // only accepted taxa
-          throwIfTooLarge(ColdpTerm.NameUsage, imp.getTaxonCount());
-        }
-        // these are all attached to taxa so it doesn't matter
-        throwIfTooLarge(ColdpTerm.VernacularName, imp.getVernacularCount());
-        throwIfTooLarge(ColdpTerm.Distribution, imp.getDistributionCount());
-        throwIfTooLarge(ColdpTerm.TaxonConceptRelation, imp.getTaxonConceptRelationsCount());
-        throwIfTooLarge(ColdpTerm.SpeciesInteraction, imp.getSpeciesInteractionsCount());
-        throwIfTooLarge(ColdpTerm.Media, imp.getMediaCount());
-        throwIfTooLarge(ColdpTerm.TaxonProperty, imp.getTaxonPropertyCount());
-      }
-    }
-  }
-
-  /**
-   * An unmeasured count is no reason to refuse the export - it is not evidence that the limit is exceeded.
-   * taxon_property_count in particular is null on every metrics row written before it existed, and unboxing
-   * that into the comparison would have thrown.
-   */
-  private static void throwIfTooLarge(ColdpTerm type, Integer count){
-    if (count != null && count > ExcelTermWriter.MAX_ROWS) {
-      throw new IllegalArgumentException("Excel format can not be used for datasets that have more than "+ExcelTermWriter.MAX_ROWS + " " +type.simpleName() + " records");
     }
   }
 

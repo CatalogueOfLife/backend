@@ -332,4 +332,18 @@ public class NameTest extends SerdeTestBase<Name> {
     assertEquals("Abronia maritima capensis", n.getScientificName());
   }
 
+
+  /**
+   * The authorship is not repeated when the name holds it in another spelling, #1621
+   */
+  @Test
+  public void labelAuthorshipInName() throws Exception {
+    Name n = new Name();
+    n.setScientificName("Ovis sp. Aries Linnaeus, 1758");
+    n.setAuthorship("Linnæus 1758");
+    assertEquals("Ovis sp. Aries Linnaeus, 1758", n.getLabel());
+
+    n.setScientificName("Ovis aries");
+    assertEquals("Ovis aries Linnæus 1758", n.getLabel());
+  }
 }

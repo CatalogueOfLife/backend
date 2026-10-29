@@ -21,6 +21,8 @@ import static life.catalogue.api.search.NameUsageRequest.SearchContent.*;
 
 public class QTranslator {
   protected static final String FLD_SCINAME = "usage.name.scientificName";
+  /** Only present if it differs from the scientific name */
+  protected static final String FLD_CANONICAL = "usage.name.canonicalName";
   static final String FLD_AUTHORSHIP = "usage.name.authorship";
   static final String FLD_VERNACULAR = "vernacularNames.name";
   static final String FLD_VERNACULAR_EXACT = FLD_VERNACULAR + ".exact";
@@ -127,6 +129,13 @@ public class QTranslator {
         .should(b -> b.
           term(t -> t
             .field(FLD_LABEL)
+            .value(request.getQ())
+            .caseInsensitive(true)
+          )
+        )
+        .should(b -> b.
+          term(t -> t
+            .field(FLD_CANONICAL)
             .value(request.getQ())
             .caseInsensitive(true)
           )

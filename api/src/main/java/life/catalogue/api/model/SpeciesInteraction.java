@@ -9,7 +9,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 /**
  * A species interaction relation between two taxa.
  */
-public class SpeciesInteraction extends DatasetScopedEntity<Integer> implements ExtensionEntity, SectorScoped, VerbatimEntity, Referenced, Remarkable, SameAs<SpeciesInteraction> {
+public class SpeciesInteraction extends DatasetScopedEntity<Integer> implements ExtensionEntity, SectorScoped, VerbatimEntity, Referenced, Remarkable, DuplicateCheck<SpeciesInteraction> {
   private Integer datasetKey;
   private Sector.Mode sectorMode;
   private Integer sectorKey;
@@ -150,7 +150,7 @@ public class SpeciesInteraction extends DatasetScopedEntity<Integer> implements 
   }
 
   @Override
-  public boolean sameAs(SpeciesInteraction that) {
+  public boolean isDuplicate(SpeciesInteraction that) {
     return type == that.type &&
         Objects.equals(taxonId, that.taxonId) &&
         Objects.equals(relatedTaxonId, that.relatedTaxonId) &&

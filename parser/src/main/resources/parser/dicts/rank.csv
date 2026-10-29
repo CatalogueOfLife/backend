@@ -219,7 +219,7 @@ sses,SUBSPECIES
 ssp,SUBSPECIES
 stamm,PHYLUM
 stammgruppe,SUPERPHYLUM
-stirps,PROLES
+stirps,INFRAGENERIC_NAME
 sub ribe,SUBTRIBE
 sub variety,SUBVARIETY
 sub_especie,SUBSPECIES

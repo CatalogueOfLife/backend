@@ -8,7 +8,7 @@ import java.util.Objects;
 
 import jakarta.validation.constraints.Size;
 
-public class VernacularName extends DatasetScopedEntity<Integer> implements ExtensionEntity, SameAs<VernacularName> {
+public class VernacularName extends DatasetScopedEntity<Integer> implements ExtensionEntity, DuplicateCheck<VernacularName> {
 
   private Integer sectorKey;
   private Sector.Mode sectorMode;
@@ -179,7 +179,7 @@ public class VernacularName extends DatasetScopedEntity<Integer> implements Exte
   }
 
   @Override
-  public boolean sameAs(VernacularName that) {
+  public boolean isDuplicate(VernacularName that) {
     return Objects.equals(name, that.name) &&
         Objects.equals(latin, that.latin) &&
         Objects.equals(preferred, that.preferred) &&

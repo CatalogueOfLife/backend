@@ -50,7 +50,8 @@ import static life.catalogue.api.util.ObjectUtils.firstNonEmptyList;
 
 public class ProjectRelease extends AbstractProjectCopy {
   private static final Logger LOG = LoggerFactory.getLogger(ProjectRelease.class);
-  private static final String DEFAULT_ALIAS_TEMPLATE = "{aliasOrTitle}-{date}";
+  // the new release dataset has no alias yet, so we use the project's
+  private static final String DEFAULT_ALIAS_TEMPLATE = "{proj.aliasOrTitle}-{date}";
   private static final String DEFAULT_VERSION_TEMPLATE = "{date}";
 
   protected final ReleaseConfig cfg;

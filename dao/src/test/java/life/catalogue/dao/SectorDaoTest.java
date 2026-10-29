@@ -121,6 +121,30 @@ public class SectorDaoTest extends DaoTestBase {
     assertThrows(IllegalArgumentException.class, () -> dao.create(badFilter, user));
   }
 
+  /**
+   * A source whose license is not compatible with the project's can never be synced, so the sector is refused on creation.
+   */
+  @Test
+  public void incompatibleLicenseIsRejected() throws Exception {
+    try (SqlSession session = factory().openSession(true); var st = session.getConnection().createStatement()) {
+      MybatisTestUtils.populateDraftTree(session);
+      MybatisTestUtils.populateTestTree(12, session);
+      st.execute("UPDATE dataset SET license='CC_BY' WHERE key=" + Datasets.COL);
+      st.execute("UPDATE dataset SET license='CC_BY_NC' WHERE key=" + subjectDatasetKey);
+    }
+    Sector s = SectorMapperTest.create();
+    s.getSubject().setId("root-1");
+    s.getTarget().setId("t4");
+    var e = assertThrows(IllegalArgumentException.class, () -> dao.create(s, user));
+    assertTrue(e.getMessage().contains("not compatible"));
+
+    // a compatible license is fine
+    try (SqlSession session = factory().openSession(true); var st = session.getConnection().createStatement()) {
+      st.execute("UPDATE dataset SET license='CC0' WHERE key=" + subjectDatasetKey);
+    }
+    dao.create(s, user);
+  }
+
   @Test
   public void resetCreate() {
 

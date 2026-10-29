@@ -1,10 +1,13 @@
 package life.catalogue.csv;
 
+import life.catalogue.api.vocab.Issue;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.io.Resources;
 
 import org.gbif.dwc.terms.Term;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
@@ -13,6 +16,26 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class ColdpReaderTest {
+
+  /**
+   * Values far longer than expected for their term, often caused by a broken delimiter:
+   * https://github.com/CatalogueOfLife/backend/issues/1233
+   */
+  @Test
+  public void unusualValueLength() throws Exception {
+    ColdpReader reader = ColdpReader.from(Resources.toFile("coldp/long").toPath());
+    Map<String, Boolean> flagged = new HashMap<>();
+    reader.stream(ColdpTerm.NameUsage).forEach(r -> {
+      // values are kept, the first character of the id tells the record
+      flagged.put(r.get(ColdpTerm.ID).substring(0, 1), r.contains(Issue.UNUSUAL_VALUE_LENGTH));
+    });
+    assertEquals(5, flagged.size());
+    assertFalse(flagged.get("1"));
+    assertTrue(flagged.get("2")); // identifier above 200
+    assertTrue(flagged.get("3")); // name above 500
+    assertFalse(flagged.get("4")); // a list of ids is judged per id, remarks below 5000
+    assertTrue(flagged.get("5")); // remarks above 5000
+  }
 
   /**
    * A COLDP archive may consist of nothing but the combined NameUsage file.

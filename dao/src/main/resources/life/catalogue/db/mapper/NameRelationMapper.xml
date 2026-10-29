@@ -158,6 +158,32 @@
     ) SELECT DISTINCT nid FROM graph
   </select>
 
+  <!--
+    Usages of names in a homotypic relation whose usages share no accepted taxon.
+    The accepted taxa of a name are its taxa and the accepted names of its synonyms, pro parte synonyms included.
+    Misapplied names and names without usages are ignored.
+  -->
+  <select id="listUsageIDsOutsideHomotypicSynonymy" resultType="string">
+    WITH acc AS (
+      SELECT u.name_id, array_agg(CASE WHEN u.status IN ('SYNONYM','AMBIGUOUS_SYNONYM') THEN u.parent_id ELSE u.id END) AS ids
+      FROM name_usage u
+      WHERE u.dataset_key = #{datasetKey} AND u.status != 'MISAPPLIED'
+      GROUP BY u.name_id
+    ), bad AS (
+      SELECT nr.name_id AS n1, nr.related_name_id AS n2
+      FROM name_rel nr
+        JOIN acc a1 ON a1.name_id = nr.name_id
+        JOIN acc a2 ON a2.name_id = nr.related_name_id
+      WHERE nr.dataset_key = #{datasetKey} AND nr.name_id != nr.related_name_id
+        AND nr.type IN <foreach item="t" collection="types" open="(" separator="," close=")">'${t.name()}'::NOMRELTYPE</foreach>
+        AND NOT a1.ids &amp;&amp; a2.ids
+    )
+    SELECT u.id
+    FROM name_usage u
+    WHERE u.dataset_key = #{datasetKey} AND u.status != 'MISAPPLIED'
+      AND u.name_id IN (SELECT n1 FROM bad UNION SELECT n2 FROM bad)
+  </select>
+
   <insert id="create" parameterType="NameRelation" useGeneratedKeys="true" keyProperty="id">
     INSERT INTO name_rel (<include refid="COLS"/>, created, modified, id)
     VALUES (<include refid="PROPS"/>, now(), now(), nextval('name_rel_${datasetKey}_id_seq'))
@@ -192,6 +218,12 @@
     </if>
     AND r.dataset_key=#{datasetKey}
   </delete>
+
+  <select id="entityExists" parameterType="map" resultType="boolean">
+    SELECT EXISTS (
+      SELECT TRUE FROM name_rel WHERE dataset_key=#{datasetKey}
+    )
+  </select>
 
   <select id="processSector" parameterType="map" resultMap="nameRelResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
     SELECT <include refid="SELECT"/>

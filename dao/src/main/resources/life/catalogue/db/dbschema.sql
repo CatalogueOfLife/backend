@@ -331,7 +331,16 @@ CREATE TYPE ISSUE AS ENUM (
   'RELATION_SYNONYM',
   'AUTHORSHIP_INDET_MARKER',
   'DERIVED_NOMENCLATURAL_STATUS',
-  'POTENTIALLY_EXTINCT'
+  'POTENTIALLY_EXTINCT',
+  'NOMENCLATURAL_CODE_INFERRED',
+  'PLACEMENT_CONFLICT',
+  'SPELLING_CORRECTION_IMPLAUSIBLE',
+  'DUPLICATE_ACCEPTED_NAME',
+  'HOMOTYPIC_NAME_OUTSIDE_SYNONYMY',
+  'EXTINCT_INCONSISTENT',
+  'UNUSUAL_VALUE_LENGTH',
+  'EMBEDDED_DOI',
+  'REDLIST_STATUS_AMBIGUOUS'
 );
 
 CREATE TYPE JOBLANE AS ENUM (
@@ -426,7 +435,8 @@ CREATE TYPE NOMSTATUS AS ENUM (
   'REJECTED',
   'DOUBTFUL',
   'MANUSCRIPT',
-  'CHRESONYM'
+  'CHRESONYM',
+  'ORTHOGRAPHIC_VARIANT'
 );
 
 CREATE TYPE ORIGIN AS ENUM (
@@ -1131,22 +1141,19 @@ CREATE TABLE dataset_export (
   min_rank RANK,
   synonyms BOOLEAN NOT NULL,
   bare_names BOOLEAN NOT NULL,
-  excel BOOLEAN NOT NULL,
   extended BOOLEAN NOT NULL,
   add_classification BOOLEAN NOT NULL,
-  add_tax_group BOOLEAN NOT NULL,
   extinct BOOLEAN,
 
   -- results
   attempt INTEGER,
   classification SIMPLE_NAME[],
-  truncated TEXT[],
   synonym_count INTEGER,
   taxon_count INTEGER,
   taxa_by_rank_count HSTORE
 );
 
-CREATE INDEX ON dataset_export (dataset_key, attempt, format, excel, synonyms, min_rank);
+CREATE INDEX ON dataset_export (dataset_key, attempt, format, synonyms, min_rank);
 
 -- generic background job, one row per job of any kind ever submitted to the JobExecutor
 CREATE TABLE job (
@@ -1218,6 +1225,7 @@ CREATE TABLE sector (
   entities ENTITYTYPE[] DEFAULT NULL,
   name_types NAMETYPE[] DEFAULT NULL,
   name_status_exclusion NOMSTATUS[] DEFAULT NULL,
+  taxonomic_status_exclusion TAXONOMICSTATUS[] DEFAULT NULL,
   extinct_filter BOOLEAN,
   name_filter TEXT,
   copy_according_to BOOLEAN,
@@ -1424,6 +1432,7 @@ CREATE TABLE name_usage_archive (
   -- shared with name table, keep manually in sync!
   n_rank RANK NOT NULL,
   n_candidatus BOOLEAN DEFAULT FALSE,
+  n_graft_chimaera BOOLEAN DEFAULT FALSE,
   n_notho NAMEPART[],
   n_code NOMCODE,
   n_nom_status NOMSTATUS,
@@ -1440,12 +1449,17 @@ CREATE TABLE name_usage_archive (
   n_specific_epithet TEXT,
   n_infraspecific_epithet TEXT,
   n_cultivar_epithet TEXT,
-  n_basionym_authors TEXT[] DEFAULT '{}',
-  n_basionym_ex_authors TEXT[] DEFAULT '{}',
+  n_basionym_authors TEXT[],
+  n_basionym_ex_authors TEXT[],
   n_basionym_year TEXT,
-  n_combination_authors TEXT[] DEFAULT '{}',
-  n_combination_ex_authors TEXT[] DEFAULT '{}',
+  n_basionym_anonymous BOOLEAN NOT NULL DEFAULT FALSE,
+  n_basionym_bracketed_year BOOLEAN NOT NULL DEFAULT FALSE,
+  n_basionym_sanctioning_author TEXT,
+  n_combination_authors TEXT[],
+  n_combination_ex_authors TEXT[],
   n_combination_year TEXT,
+  n_combination_anonymous BOOLEAN NOT NULL DEFAULT FALSE,
+  n_combination_bracketed_year BOOLEAN NOT NULL DEFAULT FALSE,
   n_sanctioning_author TEXT,
   n_published_in_id TEXT,
   n_published_in_page TEXT,
@@ -1598,6 +1612,7 @@ CREATE TABLE name (
   -- shared with name_usage_archive, keep in sync!
   rank RANK NOT NULL,
   candidatus BOOLEAN DEFAULT FALSE,
+  graft_chimaera BOOLEAN DEFAULT FALSE,
   notho NAMEPART[],
   code NOMCODE,
   nom_status NOMSTATUS,
@@ -1614,12 +1629,17 @@ CREATE TABLE name (
   specific_epithet TEXT,
   infraspecific_epithet TEXT,
   cultivar_epithet TEXT,
-  basionym_authors TEXT[] DEFAULT '{}',
-  basionym_ex_authors TEXT[] DEFAULT '{}',
+  basionym_authors TEXT[],
+  basionym_ex_authors TEXT[],
   basionym_year TEXT,
-  combination_authors TEXT[] DEFAULT '{}',
-  combination_ex_authors TEXT[] DEFAULT '{}',
+  basionym_anonymous BOOLEAN NOT NULL DEFAULT FALSE,
+  basionym_bracketed_year BOOLEAN NOT NULL DEFAULT FALSE,
+  basionym_sanctioning_author TEXT,
+  combination_authors TEXT[],
+  combination_ex_authors TEXT[],
   combination_year TEXT,
+  combination_anonymous BOOLEAN NOT NULL DEFAULT FALSE,
+  combination_bracketed_year BOOLEAN NOT NULL DEFAULT FALSE,
   sanctioning_author TEXT,
   published_in_id TEXT,
   published_in_page TEXT,
@@ -1696,9 +1716,7 @@ CREATE TABLE type_material (
   modified_by INTEGER NOT NULL,
   created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
-  name_id TEXT NOT NULL,
   citation TEXT,
-  status TYPESTATUS,
   country TEXT,
   locality TEXT,
   latitude TEXT,
@@ -1719,15 +1737,26 @@ CREATE TABLE type_material (
   FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim,
   FOREIGN KEY (dataset_key, verbatim_source_key) REFERENCES verbatim_source,
   FOREIGN KEY (dataset_key, sector_key) REFERENCES sector,
-  FOREIGN KEY (dataset_key, reference_id) REFERENCES reference,
-  FOREIGN KEY (dataset_key, name_id) REFERENCES name DEFERRABLE INITIALLY DEFERRED
+  FOREIGN KEY (dataset_key, reference_id) REFERENCES reference
 ) PARTITION BY HASH (dataset_key);
 
-CREATE INDEX ON type_material (dataset_key, name_id);
 CREATE INDEX ON type_material (dataset_key, sector_key);
 CREATE INDEX ON type_material (dataset_key, verbatim_key);
 CREATE INDEX ON type_material (dataset_key, verbatim_source_key);
 CREATE INDEX ON type_material (dataset_key, reference_id);
+
+-- the names a type specimen typifies, each with its own type status
+CREATE TABLE type_material_name (
+  dataset_key INTEGER NOT NULL,
+  type_material_id TEXT NOT NULL,
+  name_id TEXT NOT NULL,
+  status TYPESTATUS,
+  PRIMARY KEY (dataset_key, type_material_id, name_id),
+  FOREIGN KEY (dataset_key, type_material_id) REFERENCES type_material ON DELETE CASCADE,
+  FOREIGN KEY (dataset_key, name_id) REFERENCES name DEFERRABLE INITIALLY DEFERRED
+) PARTITION BY HASH (dataset_key);
+
+CREATE INDEX ON type_material_name (dataset_key, name_id);
 
 
 CREATE TABLE name_match (

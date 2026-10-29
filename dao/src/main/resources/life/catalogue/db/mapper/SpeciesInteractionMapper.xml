@@ -127,11 +127,31 @@
     WHERE dataset_key = #{datasetKey}
   </insert>
 
+  <select id="entityExists" parameterType="map" resultType="boolean">
+    SELECT EXISTS (
+      SELECT TRUE FROM species_interaction WHERE dataset_key=#{datasetKey}
+    )
+  </select>
+
   <select id="processSector" parameterType="map" resultMap="speciesInteractionResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
     WHERE si.dataset_key=#{key.datasetKey} AND si.sector_key = #{key.id}
   </select>
+
+  <!-- entities of other sectors or of none attached to usages of the sector. See SectorForeignProcessable -->
+  <select id="listForeignBySector" parameterType="map" resultMap="speciesInteractionResultMap">
+    SELECT <include refid="SELECT"/>
+    FROM species_interaction si
+    WHERE si.dataset_key = #{key.datasetKey} AND si.sector_key IS DISTINCT FROM #{key.id}
+      AND (si.taxon_id IN (<include refid="life.catalogue.db.Common.sectorUsageIds"/>) OR si.related_taxon_id IN (<include refid="life.catalogue.db.Common.sectorUsageIds"/>))
+  </select>
+
+  <delete id="deleteForeignBySector" parameterType="map">
+    DELETE FROM species_interaction
+    WHERE dataset_key = #{key.datasetKey} AND sector_key IS DISTINCT FROM #{key.id}
+      AND (taxon_id IN (<include refid="life.catalogue.db.Common.sectorUsageIds"/>) OR related_taxon_id IN (<include refid="life.catalogue.db.Common.sectorUsageIds"/>))
+  </delete>
 
   <delete id="deleteBySector" parameterType="map">
     DELETE FROM species_interaction

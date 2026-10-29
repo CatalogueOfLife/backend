@@ -26,6 +26,7 @@ import jakarta.ws.rs.core.UriBuilder;
  *   /taxon/{id}      -&gt;  /dataset/{releaseKey}/taxon/{id}
  *   /tree            -&gt;  /dataset/{releaseKey}/tree
  *   /dataset         -&gt;  /dataset/{releaseKey}
+ *   /match/gbif      -&gt;  /dataset/{releaseKey}/match/gbif
  * </pre>
  *
  * No resource class is forked for this - they all still receive a {@code /dataset/{key}/...} path.
@@ -51,7 +52,7 @@ public class SingleDatasetRewriteFilter implements ContainerRequestFilter {
    * Note that {@code nameusage} and {@code vernacular} also exist as global resources. In a single dataset
    * server the rewrite deliberately shadows those - the dataset scoped variants are strictly richer.
    * {@code match} is absent on purpose: bulk matching is served by the global, already keyless
-   * {@code /match/nameusage}.
+   * {@code /match/nameusage}. Only the GBIF species match below it is dataset scoped, see {@link #MATCH_GBIF}.
    */
   @VisibleForTesting
   static final Set<String> DATASET_SCOPED_ROOTS = Set.of(
@@ -61,6 +62,11 @@ public class SingleDatasetRewriteFilter implements ContainerRequestFilter {
   );
 
   private static final String DATASET = "dataset";
+  /**
+   * The dataset scoped GBIF species match, the one path below the global {@code /match} root that is rewritten.
+   */
+  @VisibleForTesting
+  static final String MATCH_GBIF = "match/gbif";
 
   private final int releaseKey;
 
@@ -107,7 +113,7 @@ public class SingleDatasetRewriteFilter implements ContainerRequestFilter {
       // only the bare /dataset listing becomes the single dataset. /dataset/{key}/... stays as it is.
       return rest.isEmpty() ? "/dataset/" + releaseKey : null;
     }
-    if (DATASET_SCOPED_ROOTS.contains(root)) {
+    if (DATASET_SCOPED_ROOTS.contains(root) || p.equals(MATCH_GBIF) || p.startsWith(MATCH_GBIF + "/")) {
       return "/dataset/" + releaseKey + "/" + p;
     }
     return null;

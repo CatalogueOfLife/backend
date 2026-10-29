@@ -6,6 +6,7 @@ import life.catalogue.common.collection.CollectionUtils;
 import life.catalogue.common.lang.InterruptedRuntimeException;
 import life.catalogue.dao.CopyUtil;
 import life.catalogue.dao.ReferenceDao;
+import life.catalogue.dao.TypeMaterialIds;
 import life.catalogue.db.mapper.*;
 import life.catalogue.matching.NameValidator;
 import life.catalogue.matching.nidx.NameIndex;
@@ -76,11 +77,17 @@ public abstract class TreeBaseHandler implements TreeHandler {
   protected final Supplier<String> nameIdGen;
   protected final UsageIdGen usageIdGen;
   protected final Supplier<String> typeMaterialIdGen;
+  // copies of source type specimens, so a specimen typifying several names is copied once
+  protected final TypeMaterialIds typeMaterialIds;
   protected int vsIdGen;
   // counter
   protected final Map<IgnoreReason, Integer> ignoredCounter = new EnumMap<>(IgnoreReason.class);
   protected final Map<NomRelType, Map<String, String>> nameRelsToBeCreated = new HashMap<>();
   private final Map<String, String> refIds = new HashMap<>();
+  // source usage id -> target usage id of all usages created or updated by this sync
+  protected final Map<String, String> usageIds = new HashMap<>();
+  // source name id -> target name id of all names created by this sync. See targetNameId()
+  protected final Map<String, String> nameIds = new HashMap<>();
   // from name to related name with given type
 
   protected int sCounter = 0;
@@ -100,6 +107,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
     this.nameIdGen = nameIdGen;
     this.usageIdGen = usageIdGen;
     this.typeMaterialIdGen = typeMaterialIdGen;
+    this.typeMaterialIds = new TypeMaterialIds(typeMaterialIdGen);
     this.entities = new HashSet<>(Preconditions.checkNotNull(sector.getEntities(), "Sector entities required"));
     LOG.info("Include entities: {}", Joiner.on(", ").join(entities));
     syncNames = entities.contains(EntityType.NAME) || entities.contains(EntityType.NAME_USAGE);
@@ -112,7 +120,11 @@ public abstract class TreeBaseHandler implements TreeHandler {
     }
 
     if (sector.getNameStatusExclusion() != null && !sector.getNameStatusExclusion().isEmpty())  {
-      LOG.info("Include only name status: {}", Joiner.on(", ").join(sector.getNameStatusExclusion()));
+      LOG.info("Exclude name status: {}", Joiner.on(", ").join(sector.getNameStatusExclusion()));
+    }
+
+    if (sector.getTaxonomicStatusExclusion() != null && !sector.getTaxonomicStatusExclusion().isEmpty())  {
+      LOG.info("Exclude taxonomic status: {}", Joiner.on(", ").join(sector.getTaxonomicStatusExclusion()));
     }
 
     Pattern filter = null;
@@ -346,7 +358,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
 
     // copy usage with all associated information. This assigns a new id !!!
     CopyUtil.copyUsage(batchSession, u, targetKey.id(idOrNull(parent)), user, entities,
-      nameIdGen, typeMaterialIdGen, usageIdGen::issue,
+      nameIdGen, typeMaterialIds, usageIdGen::issue,
       this::lookupOrCreateReference, this::lookupOrCreateReference
     );
     // match name
@@ -583,6 +595,10 @@ public abstract class TreeBaseHandler implements TreeHandler {
     if (n.getNomStatus() != null && sector.getNameStatusExclusion() != null && sector.getNameStatusExclusion().contains(n.getNomStatus())) {
       return incIgnored(IgnoreReason.NOMENCLATURAL_STATUS, u);
     }
+    // apply taxonomic status filter if exists. An excluded taxon takes its synonyms along, see IGNORED_PARENT above
+    if (u.getStatus() != null && sector.getTaxonomicStatusExclusion() != null && sector.getTaxonomicStatusExclusion().contains(u.getStatus())) {
+      return incIgnored(IgnoreReason.TAXONOMIC_STATUS, u);
+    }
     if (blocklist.isBlocked(n)) {
       return incIgnored(IgnoreReason.BLOCKED_NAME, u);
     }
@@ -651,23 +667,22 @@ public abstract class TreeBaseHandler implements TreeHandler {
             Name n = u.getName();
             Name n2 = ed.getName();
 
+            Optional<ParsedNameUsage> nat = Optional.empty();
             if (n2.getScientificName() != null) {
-              // parse a new name!
-              final String name = n2.getScientificName() + " " + coalesce(n2.getAuthorship(), "");
+              // parse a new name, together with the decision's authorship
               NomCode code = coalesce(n2.getCode(), n.getCode());
               Rank rank = coalesce(n2.getRank(), n.getRank());
-              ParsedNameUsage nat = NameParser.PARSER.parse(name, rank, code, VerbatimRecord.VOID).orElseGet(() -> {
-                LOG.warn("Unparsable decision name {}", name);
-                // add the full, unparsed authorship in this case to not lose it
-                ParsedNameUsage nat2 = new ParsedNameUsage();
-                nat2.getName().setScientificName(n2.getScientificName());
-                nat2.getName().setAuthorship(n2.getAuthorship());
-                return nat2;
-              });
+              nat = NameParser.PARSER.parse(n2.getScientificName(), n2.getAuthorship(), rank, code, VerbatimRecord.VOID);
+              if (nat.isEmpty()) {
+                LOG.warn("Blank decision name {} ignored", n2.getScientificName());
+              }
+            }
+            if (nat.isPresent()) {
               // copy all pure name props
-              Name nn = nat.getName();
+              Name nn = nat.get().getName();
               n.setScientificName(nn.getScientificName());
-              n.setAuthorship(nn.getAuthorship());
+              // the authorship as the editor wrote it, or as it came in the name string
+              n.setAuthorship(coalesce(n2.getAuthorship(), nn.getAuthorship()));
               n.setType(nn.getType());
               n.setRank(nn.getRank());
               n.setUninomial(nn.getUninomial());
@@ -677,24 +692,22 @@ public abstract class TreeBaseHandler implements TreeHandler {
               n.setInfraspecificEpithet(nn.getInfraspecificEpithet());
               n.setCultivarEpithet(nn.getCultivarEpithet());
               n.setCandidatus(nn.isCandidatus());
+              n.setGraftChimaera(nn.isGraftChimaera());
               n.setNotho(nn.getNotho());
               n.setCombinationAuthorship(nn.getCombinationAuthorship());
               n.setBasionymAuthorship(nn.getBasionymAuthorship());
-              n.setSanctioningAuthor(nn.getSanctioningAuthor());
-            }
 
-            if (n2.getAuthorship() != null) {
+            } else if (n2.getAuthorship() != null) {
               // just change the authorship, even if it was included in the name already
               n.setAuthorship(n2.getAuthorship());
               ParsedAuthorship an = NameParser.PARSER.parseAuthorship(n2.getAuthorship()).orElseGet(() -> {
                 LOG.warn("Unparsable decision authorship {}", n2.getAuthorship());
                 // add the full, unparsed authorship in this case to not lose it
                 ParsedName pn2 = new ParsedName();
-                pn2.getCombinationAuthorship().getAuthors().add(n2.getAuthorship());
+                pn2.getCombinationAuthorship().addAuthor(n2.getAuthorship());
                 return pn2;
               });
               n.setCombinationAuthorship(an.getCombinationAuthorship());
-              n.setSanctioningAuthor(an.getSanctioningAuthor());
               n.setBasionymAuthorship(an.getBasionymAuthorship());
             }
             // any other changes
@@ -751,6 +764,133 @@ public abstract class TreeBaseHandler implements TreeHandler {
       ed.getMode()== EditorialDecision.Mode.UPDATE && Boolean.TRUE.equals(ed.isKeepOriginalName()),
       originalName
     );
+  }
+
+  /**
+   * @return ids of all source names this sync created or updated a target name for
+   */
+  protected Collection<String> syncedSourceNameIds() {
+    return nameIds.keySet();
+  }
+
+  /**
+   * @return the target name id for a synced source name, or null if the source name was not synced
+   */
+  protected String targetNameId(String sourceNameId) {
+    return nameIds.get(sourceNameId);
+  }
+
+  /**
+   * Copies name relations between synced names.
+   * @param skipExisting if true relations existing already in the target are not copied again
+   */
+  protected void copyNameRelations(boolean skipExisting) {
+    if (!entities.contains(EntityType.NAME_RELATION)) return;
+    NameRelationMapper nrm = session.getMapper(NameRelationMapper.class);
+    if (!nrm.entityExists(sector.getSubjectDatasetKey())) {
+      LOG.info("No name relations in sector {}", sector);
+      return;
+    }
+    LOG.debug("Sync name relations from sector {}", sector.getKey());
+    batchSession.commit();
+    NameRelationMapper nrmWrite = batchSession.getMapper(NameRelationMapper.class);
+    int counter = 0;
+    Set<Integer> relIds = new HashSet<>();
+    var key = DSID.of(sector.getSubjectDatasetKey(), "");
+    // copy as targetNameId() might add to the synced names
+    for (String srcNameId : new ArrayList<>(syncedSourceNameIds())) {
+      for (NameRelation nr : nrm.listByName(key.id(srcNameId))) {
+        if (relIds.add(nr.getId())) {
+          String nameId = targetNameId(nr.getNameId());
+          String relatedNameId = targetNameId(nr.getRelatedNameId());
+          if (nameId == null || relatedNameId == null) {
+            LOG.info("Name relation {} outside of synced sector {}", nr.getKey(), sector.getKey());
+          } else if (skipExisting && nrm.exists(targetDatasetKey, nameId, relatedNameId, nr.getType())) {
+            LOG.debug("Name relation {} exists already in sector {}", nr.getKey(), sector.getKey());
+          } else {
+            updateFKs(nr);
+            nr.setSectorKey(sector.getId());
+            nr.setNameId(nameId);
+            nr.setRelatedNameId(relatedNameId);
+            nr.applyUser(user);
+            nrmWrite.create(nr);
+            if (counter++ % 2500 == 0) {
+              batchSession.commit();
+            }
+          }
+        }
+      }
+    }
+    batchSession.commit();
+    LOG.info("Synced {} name relations from sector {}", counter, sector.getKey());
+  }
+
+  /**
+   * Copies the species interactions of all synced usages.
+   * If the related taxon was not synced the interaction is kept with just the related taxon name.
+   * @param skipExisting if true interactions duplicating an existing one in the target are not copied
+   */
+  protected void copySpeciesInteractions(boolean skipExisting) {
+    if (!entities.contains(EntityType.SPECIES_INTERACTION)) return;
+    var sim = session.getMapper(SpeciesInteractionMapper.class);
+    if (!sim.entityExists(sector.getSubjectDatasetKey())) {
+      LOG.info("No species interactions in sector {}", sector);
+      return;
+    }
+    LOG.debug("Sync species interactions from sector {}", sector.getKey());
+    batchSession.commit();
+    var simWrite = batchSession.getMapper(SpeciesInteractionMapper.class);
+    int counter = 0;
+    var key = DSID.of(sector.getSubjectDatasetKey(), "");
+    for (var ids : usageIds.entrySet()) {
+      List<SpeciesInteraction> existing = null;
+      siloop:
+      for (var si : sim.listByTaxon(key.id(ids.getKey()))) {
+        si.setTaxonId(ids.getValue());
+        if (si.getRelatedTaxonId() != null) {
+          String relatedId = usageIds.get(si.getRelatedTaxonId());
+          if (relatedId == null && si.getRelatedTaxonScientificName() == null) {
+            // the related taxon was not synced, keep at least its name
+            var rel = numRO.getSimple(key.id(si.getRelatedTaxonId()));
+            si.setRelatedTaxonScientificName(rel == null ? null : rel.getLabel());
+          }
+          si.setRelatedTaxonId(relatedId);
+        }
+        if (skipExisting) {
+          if (existing == null) {
+            existing = sim.listByTaxon(DSID.of(targetDatasetKey, ids.getValue()));
+          }
+          for (var ex : existing) {
+            if (ex.isDuplicate(si)) {
+              continue siloop;
+            }
+          }
+          existing.add(si);
+        }
+        updateFKs(si);
+        si.setId(null);
+        si.setSectorKey(sector.getId());
+        si.setVerbatimSourceKey(null);
+        si.applyUser(user);
+        simWrite.create(si);
+        if (counter++ % 2500 == 0) {
+          batchSession.commit();
+        }
+      }
+    }
+    batchSession.commit();
+    LOG.info("Synced {} species interactions from sector {}", counter, sector.getKey());
+  }
+
+  protected void updateFKs(DatasetScopedEntity<?> obj){
+    obj.setDatasetKey(targetDatasetKey);
+    if (obj instanceof VerbatimEntity) {
+      ((VerbatimEntity)obj).setVerbatimKey(null);
+    }
+    if (obj instanceof Referenced) {
+      Referenced r = (Referenced) obj;
+      r.setReferenceId(lookupOrCreateReference(r.getReferenceId()));
+    }
   }
 
   @Override

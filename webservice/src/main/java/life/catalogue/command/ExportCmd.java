@@ -10,7 +10,6 @@ import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.dao.DatasetExportDao;
-import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.UserDao;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.dw.mail.MailBundle;
@@ -118,7 +117,7 @@ public class ExportCmd extends AbstractMybatisCmd {
     exec.start();
     final ImageService imageService = new ImageServiceFS(cfg.img, bus);
     final DatasetExportDao exportDao = new DatasetExportDao(cfg.job, factory, validator);
-    manager = new ExportManager(cfg, factory, exec, imageService, exportDao, new DatasetImportDao(factory, cfg.metricsRepo), life.catalogue.es.search.NameUsageSearchService.passThru(), cfg.clbURI);
+    manager = new ExportManager(cfg, factory, exec, imageService, exportDao, life.catalogue.es.search.NameUsageSearchService.passThru(), cfg.clbURI);
   }
 
   @Override
@@ -184,7 +183,6 @@ public class ExportCmd extends AbstractMybatisCmd {
 
     for (DataFormat df : formats) {
       ExportRequest req = new ExportRequest(d.getKey(), df);
-      req.setExcel(false);
       req.setForce(force);
       req.setExtended(extended && df != DataFormat.TEXT_TREE);
       UUID key = manager.submit(req, userKey).getKey();

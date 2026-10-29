@@ -25,6 +25,7 @@ public interface SectorProcessable<V> {
     SpeciesInteractionMapper.class,
     TaxonConceptRelationMapper.class,
     TreatmentMapper.class,
+    TaxonPropertyMapper.class,
     // usage
     NameUsageMapper.class,
     // name related

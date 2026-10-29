@@ -15,16 +15,13 @@
     de.tab_format,
     de.extended,
     de.add_classification,
-    de.add_tax_group,
     de.extinct,
-    de.excel,
     de.root,
     de.synonyms,
     de.bare_names,
     de.min_rank,
     de.attempt,
     de.classification,
-    de.truncated,
     de.synonym_count,
     de.taxon_count,
     de.taxa_by_rank_count,
@@ -46,16 +43,13 @@
     tab_format,
     extended,
     add_classification,
-    add_tax_group,
     extinct,
-    excel,
     root,
     synonyms,
     bare_names,
     min_rank,
     attempt,
     classification,
-    truncated,
     synonym_count,
     taxon_count,
     taxa_by_rank_count
@@ -68,16 +62,13 @@
     #{request.tabFormat}::TABFORMAT,
     #{request.extended},
     coalesce(#{request.classification}, false),
-    coalesce(#{request.taxGroups}, false),
     #{request.extinct},
-    #{request.excel},
     #{request.root, typeHandler=life.catalogue.db.type2.SimpleNameTypeHandler}::SIMPLE_NAME,
     #{request.synonyms},
     #{request.bareNames},
     #{request.minRank}::RANK,
     #{attempt},
     #{classification, typeHandler=life.catalogue.db.type2.SimpleNameArrayTypeHandler}::SIMPLE_NAME[],
-    #{truncated, typeHandler=life.catalogue.db.type2.TermSetTypeHandler}::TEXT[],
     #{synonymCount},
     #{taxonCount},
     #{taxaByRankCount, typeHandler=life.catalogue.db.type2.HstoreRankCountTypeHandler}::hstore
@@ -91,7 +82,6 @@
     <id property="key" column="key"/>
     <result property="taxaByRankCount" column="taxa_by_rank_count" typeHandler="life.catalogue.db.type2.HstoreRankCountTypeHandler"/>
     <result property="classification" column="classification" typeHandler="life.catalogue.db.type2.SimpleNameArrayTypeHandler"/>
-    <result property="truncated" column="truncated" typeHandler="life.catalogue.db.type2.TermSetTypeHandler"/>
     <!-- generic lifecycle joined from the job record -->
     <result property="created" column="created"/>
     <result property="createdBy" column="created_by"/>
@@ -155,11 +145,9 @@
       AND de.min_rank <if test="req.minRank == null">IS NULL</if><if test="req.minRank != null">= #{req.minRank}::RANK</if>
       <if test="req.synonyms != null">AND de.synonyms = #{req.synonyms}</if>
       <if test="req.bareNames != null">AND de.bare_names = #{req.bareNames}</if>
-      <if test="req.excel != null">AND de.excel = #{req.excel}</if>
       <if test="req.extended != null">AND de.extended = #{req.extended}</if>
       AND <if test="req.extinct == null">de.extinct IS NULL</if><if test="req.extinct != null">de.extinct = #{req.extinct}</if>
       <if test="req.classification != null">AND de.add_classification = #{req.classification}</if>
-      <if test="req.taxGroups != null">AND de.add_tax_group = #{req.taxGroups}</if>
     </where>
   </sql>
 

@@ -42,6 +42,7 @@
     s.entities,
     s.name_types,
     s.name_status_exclusion,
+    s.taxonomic_status_exclusion,
     s.extinct_filter,
     s.name_filter,
     s.copy_according_to,
@@ -105,6 +106,7 @@
     entities,
     name_types,
     name_status_exclusion,
+    taxonomic_status_exclusion,
     extinct_filter,
     name_filter,
     copy_according_to,
@@ -143,6 +145,7 @@
     #{entities, typeHandler=life.catalogue.db.type2.EntitySetTypeHandler},
     #{nameTypes, typeHandler=life.catalogue.db.type2.NameTypeSetTypeHandler},
     #{nameStatusExclusion, typeHandler=life.catalogue.db.type2.NomStatusSetTypeHandler},
+    #{taxonomicStatusExclusion, typeHandler=life.catalogue.db.type2.TaxonomicStatusSetTypeHandler},
     #{extinctFilter},
     #{nameFilter},
     #{copyAccordingTo},
@@ -247,6 +250,7 @@
     <result property="entities" column="entities" typeHandler="life.catalogue.db.type2.EntitySetTypeHandler"/>
     <result property="nameTypes" column="name_types" typeHandler="life.catalogue.db.type2.NameTypeSetTypeHandler"/>
     <result property="nameStatusExclusion" column="name_status_exclusion" typeHandler="life.catalogue.db.type2.NomStatusSetTypeHandler"/>
+    <result property="taxonomicStatusExclusion" column="taxonomic_status_exclusion" typeHandler="life.catalogue.db.type2.TaxonomicStatusSetTypeHandler"/>
     <result property="issueExclusion" column="issue_exclusion" typeHandler="life.catalogue.db.type.IssueSetTypeHandler"/>
     <result property="blockedNames" column="blocked_names" typeHandler="life.catalogue.db.type2.StringSetTypeHandler"/>
     <result property="blockedNamePatterns" column="blocked_name_patterns" typeHandler="life.catalogue.db.type2.StringSetTypeHandler"/>

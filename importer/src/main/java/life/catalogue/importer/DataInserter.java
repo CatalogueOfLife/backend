@@ -21,4 +21,11 @@ public interface DataInserter {
   MappingInfos getMappingFlags();
 
   Optional<Path> logo();
+
+  /**
+   * @return the interpreter of the format which can interpret names again, if the format has one
+   */
+  default Optional<InterpreterBase> interpreter() {
+    return Optional.empty();
+  }
 }

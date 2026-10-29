@@ -1,0 +1,3 @@
+id,taxon_id,related_taxon_id,related_taxon_scientific_name,type
+1,12,15,,EATS
+2,12,,Capreolus capreolus,EATS

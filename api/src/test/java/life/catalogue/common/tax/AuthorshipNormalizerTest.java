@@ -138,8 +138,20 @@ import static org.junit.Assert.*;
       n.setBasionymAuthorship(cr("1904", "B.C.Tremendous", "L.", "Linne"));
       n.getBasionymAuthorship().setExAuthors(Lists.newArrayList("BBC Tremendous", "L"));
       assertEqual(comp.normalizeName(n), "linnaus", "tremendous");
+
+      // anonymous works, https://github.com/CatalogueOfLife/backend/issues/1611
+      n = new Name();
+      n.getCombinationAuthorship().setAnonymous(true);
+      assertEqual(comp.normalizeName(n), "anon");
+
+      n.getCombinationAuthorship().setAuthors(Lists.newArrayList("Lacepède"));
+      assertEqual(comp.normalizeName(n), "lacepede");
+
+      n.setBasionymAuthorship(cr("1798"));
+      n.getBasionymAuthorship().setAnonymous(true);
+      assertEqual(comp.normalizeName(n), "anon");
     }
-  
+
     private static void assertEqual(List<String> totest, String... expected) {
       assertEquals(Lists.newArrayList(expected), totest);
     }

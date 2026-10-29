@@ -150,6 +150,18 @@ public class UserMapperTest extends MapperTestBase<UserMapper> {
     assertEquals(u1, u2);
   }
 
+  @Test
+  public void updateLastLogin() throws Exception {
+    User u = createTestEntity();
+    mapper().create(u);
+    commit();
+
+    final var now = LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS);
+    mapper().updateLastLogin(u.getKey(), now);
+    commit();
+    assertEquals(now, mapper().get(u.getKey()).getLastLogin());
+  }
+
   /**
    * We don't offer a delete method!!!
    */

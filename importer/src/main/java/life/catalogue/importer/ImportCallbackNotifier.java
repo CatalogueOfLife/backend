@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory;
  * Fires a single, asynchronous HTTP POST carrying the final DatasetImport JSON to an optional,
  * client-supplied callback URL once an import or validation reaches a terminal state (success or failure).
  * <p>
- * The payload is the exact same JSON as returned by {@code GET /dataset/{key}/import}, so clients that
+ * The payload is the exact same JSON as returned by {@code GET /dataset/{key}/import/{attempt}}, so clients that
  * submitted an archive and provided a callback need no follow-up fetch.
  * <p>
  * Only a single attempt is made and any failure (serialization, connection, timeout, non-2xx response)

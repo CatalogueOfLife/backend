@@ -7,6 +7,7 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.Datasets;
+import life.catalogue.api.vocab.Setting;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.event.EventBroker;
 import life.catalogue.common.date.FuzzyDate;
@@ -16,11 +17,13 @@ import life.catalogue.config.ImporterConfig;
 import life.catalogue.config.NormalizerConfig;
 import life.catalogue.config.ReleaseConfig;
 import life.catalogue.db.mapper.DatasetMapperTest;
+import life.catalogue.db.mapper.DatasetPartitionMapper;
 import life.catalogue.db.mapper.SectorProfileMapper;
 import life.catalogue.doi.service.DoiConfig;
 import life.catalogue.es.indexing.NameUsageIndexService;
 import life.catalogue.img.ImageService;
 import life.catalogue.junit.SqlSessionFactoryRule;
+import life.catalogue.junit.TestDataRule;
 import life.catalogue.metadata.coldp.ColdpMetadataParser;
 
 import java.net.URI;
@@ -219,6 +222,40 @@ public class DatasetDaoTest extends DaoTestBase {
     assertEquals(upd.getLogo(), dao.get(d1.getKey()).getLogo());
   }
 
+  /**
+   * The max container authors follow the number of project creators, unless they were set manually to another value.
+   */
+  @Test
+  public void maxContainerAuthorsFollowCreators() throws Exception {
+    Dataset proj = DatasetMapperTest.create();
+    proj.setOrigin(DatasetOrigin.PROJECT);
+    proj.setCreator(List.of(Agent.person("Anna", "Ast"), Agent.person("Bert", "Baum")));
+    dao.create(proj, Users.TESTER);
+    assertNull(dao.getSettings(proj.getKey()).getInt(Setting.SOURCE_MAX_CONTAINER_AUTHORS));
+
+    updateCreators(proj.getKey(), 3);
+    assertEquals((Integer) 3, dao.getSettings(proj.getKey()).getInt(Setting.SOURCE_MAX_CONTAINER_AUTHORS));
+    updateCreators(proj.getKey(), 4);
+    assertEquals((Integer) 4, dao.getSettings(proj.getKey()).getInt(Setting.SOURCE_MAX_CONTAINER_AUTHORS));
+
+    // a manual value sticks
+    var ds = dao.getSettings(proj.getKey());
+    ds.put(Setting.SOURCE_MAX_CONTAINER_AUTHORS, 2);
+    dao.putSettings(proj.getKey(), ds, Users.TESTER);
+    updateCreators(proj.getKey(), 5);
+    assertEquals((Integer) 2, dao.getSettings(proj.getKey()).getInt(Setting.SOURCE_MAX_CONTAINER_AUTHORS));
+  }
+
+  private void updateCreators(int key, int size) {
+    var d = dao.get(key);
+    List<Agent> creators = new java.util.ArrayList<>();
+    for (int i = 0; i < size; i++) {
+      creators.add(Agent.person("Given" + i, "Family" + i));
+    }
+    d.setCreator(creators);
+    dao.update(d, Users.TESTER);
+  }
+
   @Test(expected = IllegalArgumentException.class)
   public void invalid() throws Exception {
     Dataset d = DatasetMapperTest.create();
@@ -274,6 +311,42 @@ public class DatasetDaoTest extends DaoTestBase {
     dao.delete(proj.getKey(), Users.TESTER);
     assertEquals(0, countProfiles(proj.getKey()));
     assertEquals(0, countProfiles(pubRelease));
+  }
+
+  /**
+   * deleteData skips the foreign key checks for the whole dataset delete
+   * and leaves the pooled connection with its triggers enabled again.
+   */
+  @Test
+  public void deleteDataSkipsChecksAndRestoresRole() throws Exception {
+    final int key = TestDataRule.APPLE.key;
+    try (SqlSession session = factory().openSession(true)) {
+      assertTrue(count(session, "name_usage", key) > 0);
+      assertTrue(session.getMapper(DatasetPartitionMapper.class).canSkipTriggers());
+
+      dao.deleteData(key, session);
+
+      for (String t : DatasetPartitionMapper.PARTITIONED_TABLES) {
+        assertEquals(t, 0, count(session, t, key));
+      }
+      assertEquals("origin", replicationRole(session));
+    }
+  }
+
+  private static int count(SqlSession session, String table, int datasetKey) throws Exception {
+    try (var st = session.getConnection().createStatement();
+         var rs = st.executeQuery("SELECT count(*) FROM " + table + " WHERE dataset_key=" + datasetKey)) {
+      rs.next();
+      return rs.getInt(1);
+    }
+  }
+
+  private static String replicationRole(SqlSession session) throws Exception {
+    try (var st = session.getConnection().createStatement();
+         var rs = st.executeQuery("SHOW session_replication_role")) {
+      rs.next();
+      return rs.getString(1);
+    }
   }
 
   private void createProfile(int datasetKey) {

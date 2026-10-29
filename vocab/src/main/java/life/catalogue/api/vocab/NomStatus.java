@@ -153,7 +153,17 @@ public enum NomStatus {
    * A name usage erroneously cited without a sec/sensu indication so it appears to be a published homonym with a different authority.
    * See https://en.wikipedia.org/wiki/Chresonym
    */
-  CHRESONYM("chresonym", null, "chresonym");
+  CHRESONYM("chresonym", null, "chresonym"),
+
+  /**
+   * A spelling of a name that is not the correct one and not a name of its own:
+   * an incorrect original or subsequent spelling in zoology (ICZN Art. 32.5 and 33.3), which is unavailable,
+   * or an orthographic variant in botany (ICN Art. 61), which is not a name distinct from the one it misspells.
+   * <p>
+   * A justified emendation is an available name and does not have this status.
+   * The correct spelling is linked by a SPELLING_CORRECTION name relation pointing from it to this name.
+   */
+  ORTHOGRAPHIC_VARIANT(NOT_ESTABLISHED, "orthographic variant", "orth. var.", "incorrect spelling");
 
 
   private final NomStatus parent;
@@ -214,7 +224,7 @@ public enum NomStatus {
    * @return true if the name status indicates that it is validly published / available.
    */
   public boolean isAvailable() {
-    return this != CHRESONYM && this != MANUSCRIPT && this != NOT_ESTABLISHED;
+    return this != CHRESONYM && this != MANUSCRIPT && this != NOT_ESTABLISHED && this != ORTHOGRAPHIC_VARIANT;
   }
   
   /**

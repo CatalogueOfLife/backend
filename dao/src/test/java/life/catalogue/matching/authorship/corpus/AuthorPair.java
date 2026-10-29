@@ -74,7 +74,7 @@ public record AuthorPair(
       n.setCode(code);
       n.setCombinationAuthorship(authorship(combAuthors, combExAuthors, withYears ? combYear : null));
       n.setBasionymAuthorship(authorship(basAuthors, basExAuthors, withYears ? basYear : null));
-      n.setSanctioningAuthor(sanctioningAuthor);
+      n.getCombinationAuthorship().setSanctioningAuthor(sanctioningAuthor);
       return n;
     }
 

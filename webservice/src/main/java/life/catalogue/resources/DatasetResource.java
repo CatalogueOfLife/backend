@@ -3,6 +3,7 @@ package life.catalogue.resources;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.DatasetSearchRequest;
+import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.common.ws.MoreMediaTypes;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.dao.DatasetDao;
@@ -12,6 +13,7 @@ import life.catalogue.db.mapper.DatasetImportMapper;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.NameMatchMapper;
 import life.catalogue.db.type2.StringCount;
+import life.catalogue.dw.auth.AuthFilter;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.dw.jersey.filter.VaryAccept;
 
@@ -19,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -87,6 +90,34 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
     return dao.listDuplicates(minCount, gbifPublisherKey);
   }
 
+  /**
+   * Lists datasets whose latest import placed at least minRatio and at least minConflicts of its accepted genera in a
+   * taxonomic group the reference checklist does not know them in, flagged as PLACEMENT_CONFLICT. See
+   * https://github.com/CatalogueOfLife/backend/issues/1608
+   */
+  @GET
+  @VaryAccept
+  @Path("placementConflict")
+  public ResultPage<PlacementConflicts> listPlacementConflicts(@QueryParam("minRatio") @DefaultValue("0.1") double minRatio,
+                                                               @QueryParam("minConflicts") @DefaultValue("1") int minConflicts,
+                                                               @QueryParam("type") DatasetType type,
+                                                               @Valid @BeanParam Page page) {
+    return dao.listPlacementConflicts(minRatio, minConflicts, type, page);
+  }
+
+  /**
+   * The same report as a CSV or TSV download of all rows with a header, unpaged.
+   */
+  @GET
+  @VaryAccept
+  @Path("placementConflict")
+  @Produces({MoreMediaTypes.TEXT_CSV, MoreMediaTypes.TEXT_TSV})
+  public Stream<Object[]> downloadPlacementConflicts(@QueryParam("minRatio") @DefaultValue("0.1") double minRatio,
+                                                     @QueryParam("minConflicts") @DefaultValue("1") int minConflicts,
+                                                     @QueryParam("type") DatasetType type) {
+    return dao.streamPlacementConflicts(minRatio, minConflicts, type);
+  }
+
   @GET
   @Path("publishers")
   public List<StringCount> suggestPublishers(@QueryParam("q") String q,
@@ -97,8 +128,11 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
 
   @GET
   @Path("simple")
-  public List<DatasetSimple> projectSourceSimple(@QueryParam("id") List<Integer> keys) {
-    return dao.listSimple(keys);
+  public List<DatasetSimple> projectSourceSimple(@QueryParam("id") List<Integer> keys, @Auth Optional<User> user) {
+    // a private dataset the user cannot read gets a null entry, just like an unknown key, see #1643
+    return dao.listSimple(keys).stream()
+      .map(d -> d == null || !d.isPrivat() || user.map(u -> AuthFilter.hasReadAccess(u, d.getKey())).orElse(false) ? d : null)
+      .toList();
   }
 
   @GET

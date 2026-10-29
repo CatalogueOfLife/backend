@@ -89,7 +89,7 @@ public class TxtTreeInterpreter implements TxtTreeDao.TxTreeNodeInterpreter {
       t.setOrdinal(ordinal);
       interpretTypeMaterial(tn, u);
       // DAGGER
-      t.setExtinct(tn.extinct);
+      t.setExtinct(tn.extinct ? true : null); // without a dagger nothing is said about being extant
       // ENVIRONMENT
       if (hasDataItem(ENV, tn)) {
         String[] vals = rmDataItem(ENV, tn);
@@ -208,7 +208,8 @@ public class TxtTreeInterpreter implements TxtTreeDao.TxTreeNodeInterpreter {
     u.generatedId = uid == null;
     u.usage.setId(ObjectUtils.coalesce(uid, String.valueOf(tn.id)));
     u.usage.setLink(link);
-    u.usage.setAccordingToId(pnu.getTaxonomicNote());
+    // a taxonomic note like "sensu Smith 1999" is the name phrase as in ColDP, it used to end up as the accordingToId
+    u.usage.setNamePhrase(pnu.getTaxonomicNote());
     // COMMENT
     u.usage.setRemarks(tn.comment);
     return u;
@@ -225,13 +226,15 @@ public class TxtTreeInterpreter implements TxtTreeDao.TxTreeNodeInterpreter {
       for (String val : vals) {
         var tm = new TypeMaterial();
         var m = TYPE_MATERIAL.matcher(val);
+        TypeStatus status = null;
         if (m.find()) {
-          var status = parse(TypeStatusParser.PARSER, m.group(1)).orNull(Issue.TYPE_STATUS_INVALID, u.issues);
-          tm.setStatus(status);
+          status = parse(TypeStatusParser.PARSER, m.group(1)).orNull(Issue.TYPE_STATUS_INVALID, u.issues);
           tm.setCitation(decode(m.group(2)));
         } else {
           tm.setCitation(decode(val));
         }
+        // the name is only known once it is persisted, see TxtTreeDao
+        tm.addName(null, status);
         u.typeMaterial.add(tm);
       }
     }

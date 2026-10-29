@@ -4,6 +4,8 @@ import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 /**
  *
  */
@@ -13,6 +15,8 @@ public class ParsedNameUsage {
   private boolean doubtful;
   private String taxonomicNote;
   private String publishedIn;
+  // the code was given by the record or the dataset, not inferred by the parser
+  private boolean codeGiven;
 
   public ParsedNameUsage() {
   }
@@ -64,6 +68,15 @@ public class ParsedNameUsage {
     if (!StringUtils.isBlank(accordingTo)) {
       this.taxonomicNote = this.taxonomicNote == null ? accordingTo.trim() : this.taxonomicNote + " " + accordingTo.trim();
     }
+  }
+
+  @JsonIgnore
+  public boolean isCodeGiven() {
+    return codeGiven;
+  }
+
+  public void setCodeGiven(boolean codeGiven) {
+    this.codeGiven = codeGiven;
   }
 
   public String getPublishedIn() {

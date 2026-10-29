@@ -1,4 +1,4 @@
-ANIMALIA [kingdom]
+ANIMALIA [kingdom] {CODE=zoological}
   ARTHROPODA [phylum]
     INSECTA [class]
       COLEOPTERA [order]

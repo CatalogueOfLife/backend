@@ -6,6 +6,7 @@ import life.catalogue.api.model.CslName;
 import life.catalogue.api.model.ExportRequest;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.Users;
+import life.catalogue.api.vocab.terms.ClbTerm;
 import life.catalogue.db.mapper.ReferenceMapper;
 import life.catalogue.img.ImageService;
 import life.catalogue.junit.SqlSessionFactoryRule;
@@ -14,6 +15,8 @@ import life.catalogue.junit.TestDataRule;
 import org.apache.ibatis.session.SqlSession;
 import org.junit.Before;
 import org.junit.Test;
+
+import static org.junit.Assert.assertTrue;
 
 public class ColdpSimpleExportIT extends ExportTest {
   ExportRequest req;
@@ -45,6 +48,21 @@ public class ColdpSimpleExportIT extends ExportTest {
     exp.run();
 
     assertExportExists(exp.getArchive());
+  }
+
+  /**
+   * A classification export always carries the taxonomic group of each usage, there is no flag of its own.
+   */
+  @Test
+  public void classificationWithTaxGroups() throws Exception {
+    req.setClassification(true);
+    var exp = new ColdpTreeExport(req, Users.TESTER, SqlSessionFactoryRule.getSqlSessionFactory(), cfg, ImageService.passThru());
+    exp.run();
+
+    assertExportExists(exp.getArchive());
+    String file = "dataset-" + req.getDatasetKey() + ".tsv";
+    // the apple taxa are roots without parents, so their group stays empty - the column is what counts here
+    assertTrue(readArchiveHeader(exp.getArchive(), file).contains(ClbTerm.taxGroup.prefixedName()));
   }
 
   @Test

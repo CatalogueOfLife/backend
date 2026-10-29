@@ -9,7 +9,9 @@ import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.importer.store.model.NameData;
 import life.catalogue.importer.store.model.UsageData;
 
+import org.gbif.dwc.terms.GbifTerm;
 import org.gbif.nameparser.api.Authorship;
+import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
 import java.net.URI;
@@ -173,7 +175,8 @@ public class NormalizerDwcaIT extends NormalizerITBase {
     int counter = 0;
     for (var tm : store.typeMaterial().values()) {
       counter++;
-      assertEquals(tm.getNameId(), t4.getId());
+      assertEquals(1, tm.getNames().size());
+      assertEquals(tm.getNames().get(0).getNameId(), t4.getId());
     }
     assertEquals(2, counter);
 
@@ -192,6 +195,42 @@ public class NormalizerDwcaIT extends NormalizerITBase {
         assertFalse(v.hasIssues());
       }
     });
+  }
+
+  /**
+   * The GBIF types and specimen extension holds type specimens and type names, #1071
+   */
+  @Test
+  public void typesAndSpecimen() throws Exception {
+    normalize(15);
+
+    // holotype of Achillea ptarmica
+    UsageData ptarmica = usageByID("2770");
+    assertEquals(1, store.typeMaterial().size());
+    TypeMaterial tm = store.typeMaterial().values().iterator().next();
+    assertEquals(1, tm.getNames().size());
+    assertEquals(ptarmica.nameID, tm.getNames().get(0).getNameId());
+    assertEquals(TypeStatus.HOLOTYPE, tm.getNames().get(0).getStatus());
+    assertEquals("original designation; designated by Mi.Ranke", tm.getRemarks());
+    assertNotNull(tm.getReferenceId());
+    assertEquals("my beloved text book", store.references().get(tm.getReferenceId()).getCitation());
+
+    // Achillea millefolium is the type species of Achillea
+    UsageData achillea = usageByID("770");
+    NameData millefolium = nameByID("2768");
+    assertEquals("Achillea millefolium", millefolium.getName().getScientificName());
+    var rels = store.names().relations(achillea.nameID);
+    assertEquals(1, rels.size());
+    NameRelation rel = rels.get(0);
+    assertEquals(NomRelType.TYPE, rel.getType());
+    assertEquals(achillea.nameID, rel.getNameId());
+    assertEquals(millefolium.getId(), rel.getRelatedNameId());
+    assertEquals("designated by M.Döring", rel.getRemarks());
+
+    // the implicit higher taxa have verbatim records without a row type
+    assertEquals(2, store.verbatimList(GbifTerm.TypesAndSpecimen)
+      .peek(v -> assertFalse(v.contains(Issue.NOT_INTERPRETED)))
+      .count());
   }
 
   @Test
@@ -310,7 +349,8 @@ public class NormalizerDwcaIT extends NormalizerITBase {
     // verify results
     // check species name
     UsageData t = usageByID("10156");
-    assertEquals("'Prosthète'", t.usage.getName().getScientificName());
+    // a quoted name loses its quotes
+    assertEquals("Prosthète", t.usage.getName().getScientificName());
   }
   
   @Test
@@ -646,6 +686,88 @@ public class NormalizerDwcaIT extends NormalizerITBase {
   public void wormsUncertain() throws Exception {
     normalize(55);
     assertTree();
+  }
+
+  /**
+   * The taxon group of the final classification, here built from the kingdom column, decides the code, and so does the
+   * code of the dataset. A flat record without any classification has none, an authorship with a year implies no code.
+   * https://github.com/CatalogueOfLife/backend/issues/1624
+   */
+  @Test
+  public void denormedClassificationDecidesCode() throws Exception {
+    normalize(64);
+    assertNull(store.names().objByID("1").getName().getCode());
+    var n = store.names().objByID("2").getName();
+    assertEquals(NomCode.BOTANICAL, n.getCode());
+    assertEquals("Abies cilicica subsp. pindrow Coode & Cullen, 1965", n.getLabel());
+  }
+
+  @Test
+  public void datasetCodeBeatsInferredCode() throws Exception {
+    normalize(64, NomCode.BOTANICAL);
+    var n = store.names().objByID("1").getName();
+    assertEquals(NomCode.BOTANICAL, n.getCode());
+    assertEquals("Abies cilicica subsp. isaurica Coode & Cullen, 1965", n.getLabel());
+    assertFalse(vByNameID("1").contains(Issue.NOMENCLATURAL_CODE_INFERRED));
+  }
+
+  /**
+   * A parent-child hierarchy without classification columns: the taxon group of the final tree decides the code,
+   * and a name is interpreted again as if that code had been given.
+   * https://github.com/CatalogueOfLife/backend/issues/1624
+   */
+  @Test
+  public void treeDecidesCode() throws Exception {
+    normalize(65);
+
+    // a plant with a year in its authorship
+    var n = store.names().objByID("4").getName();
+    assertEquals(NomCode.BOTANICAL, n.getCode());
+    assertEquals(Rank.SUBSPECIES, n.getRank());
+    assertEquals("Abies cilicica subsp. isaurica Coode & Cullen, 1965", n.getLabel());
+    assertFalse(vByNameID("4").contains(Issue.NOMENCLATURAL_CODE_DIFFERS));
+    // decided by the classification
+    assertTrue(vByNameID("4").contains(Issue.NOMENCLATURAL_CODE_INFERRED));
+    assertTrue(vByNameID("1").contains(Issue.NOMENCLATURAL_CODE_INFERRED));
+    // its synonym
+    assertEquals(NomCode.BOTANICAL, store.names().objByID("5").getName().getCode());
+    // a code of the record wins
+    assertEquals(NomCode.ZOOLOGICAL, store.names().objByID("6").getName().getCode());
+    assertFalse(vByNameID("6").contains(Issue.NOMENCLATURAL_CODE_INFERRED));
+
+    // a zoological parse made Urban a subgenus, a botanical one makes it the basionym author of the record without rank
+    n = store.names().objByID("8").getName();
+    assertEquals(NomCode.BOTANICAL, n.getCode());
+    assertEquals(Rank.UNRANKED, n.getRank());
+    assertEquals("Humiriastrum", n.getUninomial());
+    assertNull(n.getInfragenericEpithet());
+    assertEquals(List.of("Urban"), n.getBasionymAuthorship().getAuthors());
+
+    // diatoms are algae, which follow two codes: the classification decides none, and an authorship with a year
+    // makes no guess either. A bacterial guess is not kept
+    assertNull(store.names().objByID("13").getName().getCode());
+    assertFalse(vByNameID("13").contains(Issue.NOMENCLATURAL_CODE_INFERRED));
+    assertNull(store.names().objByID("14").getName().getCode());
+    assertFalse(vByNameID("14").contains(Issue.NOMENCLATURAL_CODE_INFERRED));
+  }
+
+  /**
+   * WoRMS marks misspellings in the authorship, "[auct. misspelling]" or "[auct. lapsus]". They stay synonyms
+   * without an accordingTo reference "misspelling", while a plain "[auct.]" is still misapplied.
+   * See https://github.com/CatalogueOfLife/backend/issues/1618
+   */
+  @Test
+  public void wormsMisspellings() throws Exception {
+    normalize(63);
+
+    for (String id : new String[]{"2", "3", "4"}) {
+      var u = store.nameUsage(id).ud;
+      assertEquals(id, TaxonomicStatus.SYNONYM, u.usage.getStatus());
+      assertNull(id, u.usage.getAccordingToId());
+      assertEquals("1", accepted(u).ud.getId());
+      assertFalse(id, u.usage.getLabel().contains("sensu"));
+    }
+    assertEquals(TaxonomicStatus.MISAPPLIED, store.nameUsage("5").ud.usage.getStatus());
   }
 
   /**

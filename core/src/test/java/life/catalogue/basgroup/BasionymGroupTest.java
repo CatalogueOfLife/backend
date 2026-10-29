@@ -28,4 +28,49 @@ public class BasionymGroupTest {
     assertEquals(List.of("Turnus albus", "Quercus maximus albus"), group.getAll());
   }
 
+  /**
+   * https://github.com/CatalogueOfLife/backend/issues/1662
+   */
+  @Test
+  public void basionymByEvidence() {
+    // without evidence equally trusted names are ordered by their label
+    var group = new HomotypicGroup<String>(null, "hippurus", Authorship.authors("Linnaeus"), null);
+    group.addBasionym("Coryphaena hippurus", 1, "Coryphaena hippurus");
+    group.addBasionym("Coriphaena hippurus", 1, "Coriphaena hippurus");
+    assertEquals("Coriphaena hippurus", group.getBasionym());
+
+    // the data says the misspelling is no original name
+    HomotypicGroup.Evidence<String> evidence = new HomotypicGroup.Evidence<>() {
+      @Override
+      public boolean isVariant(String obj) {
+        return obj.equals("Coryphaena hyppurus");
+      }
+
+      @Override
+      public int penalty(String obj) {
+        return obj.startsWith("Coriphaena") ? 4 : 0;
+      }
+    };
+    group = new HomotypicGroup<>(null, "hippurus", Authorship.authors("Linnaeus"), null, evidence);
+    group.addBasionym("Coriphaena hippurus", 1, "Coriphaena hippurus");
+    group.addBasionym("Coryphaena hippurus", 1, "Coryphaena hippurus");
+    assertEquals("Coryphaena hippurus", group.getBasionym());
+    assertEquals(List.of("Coriphaena hippurus"), group.getBasionymVariations());
+
+    // priority still beats the evidence
+    group = new HomotypicGroup<>(null, "hippurus", Authorship.authors("Linnaeus"), null, evidence);
+    group.addBasionym("Coryphaena hippurus", 2, "Coryphaena hippurus");
+    group.addBasionym("Coriphaena hippurus", 1, "Coriphaena hippurus");
+    assertEquals("Coriphaena hippurus", group.getBasionym());
+
+    // but a known misspelling never wins, whatever its priority
+    group = new HomotypicGroup<>(null, "hippurus", Authorship.authors("Linnaeus"), null, evidence);
+    group.addBasionym("Coryphaena hyppurus", 1, "Coryphaena hyppurus");
+    group.addBasionym("Coryphaena hippurus", 9, "Coryphaena hippurus");
+    assertEquals("Coryphaena hippurus", group.getBasionym());
+    group.addBasedOn("Coryphaena hyppurus", 1, "Coryphaena hyppurus");
+    group.addBasedOn("Coryphaena hippurus", 9, "Coryphaena hippurus");
+    assertEquals("Coryphaena hippurus", group.getBasedOn());
+  }
+
 }

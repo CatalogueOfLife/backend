@@ -41,6 +41,19 @@ In general all dataset properties are allowed as variables:
  - source
 
 In addition the current `{date}` is supported.
+Nested properties are reached with a dot, e.g. `{issued.year}`; a missing intermediate value renders as an empty string.
+
+## Release metadata
+The release config of a project (`metadata` section, release or extended release config URL in the project settings)
+takes templates for the new release's `alias`, `title`, `version` and `description`.
+Plain variables refer to the new release itself, which at that point has no alias yet.
+The project is available as `proj`, e.g. `{proj.alias}`, and an extended release's base release as `base`, e.g. `{base.version}`.
+
+Without a configured template a release uses:
+
+ - alias: `{proj.aliasOrTitle}-{date}`, i.e. the project alias or, if it has none, its title, followed by the ISO date
+ - version: `{date}`
+ - title and description: copied from the project
 All dates are formatted as ISO dates by default, but you can also give a custom date format to the template
 that follows after the variable and a comma inside the brackets, e.g. `{created,YYYY}` will render the date the dataset record was created 
 in ChecklistBank as a 4 digit year.

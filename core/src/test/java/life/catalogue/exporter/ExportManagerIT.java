@@ -11,7 +11,6 @@ import life.catalogue.concurrent.DatasetBlockingJob;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.api.vocab.JobPriority;
 import life.catalogue.dao.DatasetExportDao;
-import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.UserDao;
 import life.catalogue.img.ImageService;
 import life.catalogue.junit.PgSetupRule;
@@ -73,7 +72,7 @@ public class ExportManagerIT {
     cfg.job.downloadURI = URI.create("http://gbif.org/");
     cfg.job.downloadDir = new File("/tmp/col");
     cfg.job.threads = 3;
-    ExportManager manager = new ExportManager(cfg, SqlSessionFactoryRule.getSqlSessionFactory(), executor, ImageService.passThru(), exDao, mock(DatasetImportDao.class), NameUsageSearchService.passThru(), java.net.URI.create("https://www.checklistbank.org"));
+    ExportManager manager = new ExportManager(cfg, SqlSessionFactoryRule.getSqlSessionFactory(), executor, ImageService.passThru(), exDao, NameUsageSearchService.passThru(), java.net.URI.create("https://www.checklistbank.org"));
 
     PrintBlockJob job = new PrintBlockJob(TestDataRule.APPLE.key);
     PrintBlockJob job2 = new PrintBlockJob(TestDataRule.APPLE.key);
@@ -108,7 +107,7 @@ public class ExportManagerIT {
     cfg.job.downloadDir = new File("/tmp/col");
     cfg.job.threads = 3;
     return new ExportManager(cfg, SqlSessionFactoryRule.getSqlSessionFactory(), executor, ImageService.passThru(), exDao,
-      mock(DatasetImportDao.class), NameUsageSearchService.passThru(), URI.create("https://www.checklistbank.org"));
+      NameUsageSearchService.passThru(), URI.create("https://www.checklistbank.org"));
   }
 
   /**
@@ -156,7 +155,7 @@ public class ExportManagerIT {
     cfg.job.downloadDir = new File("/tmp/col");
     cfg.job.threads = 3;
 
-    ExportManager manager = new ExportManager(cfg, SqlSessionFactoryRule.getSqlSessionFactory(), executor, ImageService.passThru(), exDao, mock(DatasetImportDao.class), NameUsageSearchService.passThru(), java.net.URI.create("https://www.checklistbank.org"));
+    ExportManager manager = new ExportManager(cfg, SqlSessionFactoryRule.getSqlSessionFactory(), executor, ImageService.passThru(), exDao, NameUsageSearchService.passThru(), java.net.URI.create("https://www.checklistbank.org"));
 
     // first schedule a block job that runs forever
     for (DataFormat df : PublishReleaseListener.EXPORT_FORMATS) {

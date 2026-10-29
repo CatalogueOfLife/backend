@@ -1,6 +1,6 @@
 abortivum,
-alternative,
-alternativum,
+alternative,ORTHOGRAPHIC_VARIANT
+alternativum,ORTHOGRAPHIC_VARIANT
 ambigua,DOUBTFUL
 ambiguous,DOUBTFUL
 anticipatione,MANUSCRIPT
@@ -64,8 +64,8 @@ later homonym,UNACCEPTABLE
 later usage,UNACCEPTABLE
 legitimate,ACCEPTABLE
 misapplied,
-misspelling,
-misspelling / subsequent emendation,
+misspelling,ORTHOGRAPHIC_VARIANT
+misspelling / subsequent emendation,ORTHOGRAPHIC_VARIANT
 mss,MANUSCRIPT
 negatum,
 new combination,
@@ -147,15 +147,15 @@ oppressa negatum,
 oppressa oblitum,
 opus utique oppressa,REJECTED
 original combination,ACCEPTABLE
-original incorrect spelling,
-original misspelling,
+original incorrect spelling,ORTHOGRAPHIC_VARIANT
+original misspelling,ORTHOGRAPHIC_VARIANT
 original name/combination,
 orth cons,CONSERVED
-orth var,NOT_ESTABLISHED
-orthographia,NOT_ESTABLISHED
-orthographic,NOT_ESTABLISHED
-orthographic variant,NOT_ESTABLISHED
-orthographically incorrect name,NOT_ESTABLISHED
+orth var,ORTHOGRAPHIC_VARIANT
+orthographia,ORTHOGRAPHIC_VARIANT
+orthographic,ORTHOGRAPHIC_VARIANT
+orthographic variant,ORTHOGRAPHIC_VARIANT
+orthographically incorrect name,ORTHOGRAPHIC_VARIANT
 primary homonym,
 pro parte,
 protected,CONSERVED
@@ -212,8 +212,8 @@ unavailable,NOT_ESTABLISHED
 unavailable except for homonymy,NOT_ESTABLISHED
 unavailable except homonymy,NOT_ESTABLISHED
 unavailable homonym,NOT_ESTABLISHED
-unavailable incorrect original spelling,NOT_ESTABLISHED
-unavailable literature misspelling,NOT_ESTABLISHED
+unavailable incorrect original spelling,ORTHOGRAPHIC_VARIANT
+unavailable literature misspelling,ORTHOGRAPHIC_VARIANT
 unavailable manuscript name,NOT_ESTABLISHED
 unavailable nomen nudum,NOT_ESTABLISHED
 unavailable other,NOT_ESTABLISHED
@@ -225,3 +225,9 @@ valid,ACCEPTABLE
 validly published,ESTABLISHED
 variante_ortografica,
 uncertain,DOUBTFUL
+incorrect original spelling,ORTHOGRAPHIC_VARIANT
+incorrect subsequent spelling,ORTHOGRAPHIC_VARIANT
+lapsus,ORTHOGRAPHIC_VARIANT
+lapsus calami,ORTHOGRAPHIC_VARIANT
+misspelling - incorrect original spelling,ORTHOGRAPHIC_VARIANT
+misspelling - incorrect subsequent spelling,ORTHOGRAPHIC_VARIANT

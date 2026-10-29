@@ -360,6 +360,9 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
       copyTable(Distribution.class, DistributionMapper.class, session);
       copyTable(Treatment.class, TreatmentMapper.class, session);
       copyTable(Media.class, MediaMapper.class, session);
+      copyTable(TaxonProperty.class, TaxonPropertyMapper.class, session);
+      copyTable(SpeciesInteraction.class, SpeciesInteractionMapper.class, session);
+      copyTable(TaxonConceptRelation.class, TaxonConceptRelationMapper.class, session);
       session.commit();
     }
   }

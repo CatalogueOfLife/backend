@@ -40,7 +40,7 @@ public class NameValidatorTest {
     for (String a : new String[]{
       "sp.", "sp", "Sp.", "SP.", "spp.", "cf.", "aff.", "indet.",
       "sp. 1", "sp. 2", "sp. 3", "sp. 1.", "sp. nov.", "sp.nov.", "sp. nov. 1", "n. sp.", "gen. nov.",
-      "? sp.", "? sp. 1", "(?) (?) sp.", "?", "(?)", "  sp.  ",
+      "? sp.", "? sp. 1", "(?) (?) sp.", "?", "(?)", "  sp.  ", "forma n", "cf. sp.", "sp.spp.",
       "sp. A", "sp. A-D", "sp. AS 30", "sp. CCZ _ 165", "sp. (NHM _ 381",
       "sp. A Soto-Adames, 2010", "sp. 1 Franz et al., 2018", "sp. 2 (undescribed",
       "aff. Vitrinella sp. 1 (sensu Blatterer, 2019"
@@ -64,6 +64,7 @@ public class NameValidatorTest {
       "Sp. Bate, 1856", "(Sp. Bate, 1856)", "Sp. Bate, 1862", "Sp. Schn., 1906", "Sp. Schneider",
       "Willd., Sp. Pl.", "Hook., Sp. Fil.", "C. P. Sm., Sp. Lup.", "L. Sp. Pl.",
       "Nov\u00e1k, 1950", "Nov, 1997", "F. Muell.", "Mill.", "L.",
+      "Forman", "(Forman)", "Varn", "Gennov",
       "L. Li & S. H. Li, sp. nov.", "Bing Liu & Rioual, sp. nov.", "Liu & Xu\uff0csp. nov."
     }) {
       assertFalse("must not be flagged as indet authorship: " + a, NameValidator.isIndetAuthorship(a));
@@ -153,7 +154,7 @@ public class NameValidatorTest {
     n.setUninomial("Abies");
     verify(n, Issue.MISSING_AUTHORSHIP);
     
-    n.getCombinationAuthorship().getAuthors().add("Mill.");
+    n.getCombinationAuthorship().addAuthor("Mill.");
     n.rebuildAuthorship();
     verify(n);
     
@@ -305,5 +306,72 @@ public class NameValidatorTest {
     verify(nb.uninomial("Asteraceae").build(), Issue.RANK_NAME_SUFFIX_CONFLICT);
     nb.rank(Rank.FAMILY);
     verify(nb.uninomial("Asteraceae").build(), Issue.MISSING_AUTHORSHIP);
+  }
+
+  /**
+   * https://github.com/CatalogueOfLife/backend/issues/1632
+   */
+  @Test
+  public void botanicalAutonymsHaveNoAuthorship() throws Exception {
+    var nb = Name.newBuilder()
+      .type(NameType.SCIENTIFIC)
+      .genus("Glycine")
+      .specificEpithet("sericea")
+      .infraspecificEpithet("sericea")
+      .rank(Rank.VARIETY)
+      .code(NomCode.BOTANICAL);
+    assertNoMissingAuthorship(nb.build());
+    assertNoMissingAuthorship(nb.rank(Rank.SUBSPECIES).build());
+    // without a code it could be zoological
+    verify(nb.code(null).build(), Issue.MISSING_AUTHORSHIP);
+    // zoological nominotypical subspecies carry the species author
+    verify(nb.code(NomCode.ZOOLOGICAL).build(), Issue.MISSING_AUTHORSHIP);
+    // no autonym
+    verify(nb.code(NomCode.BOTANICAL).infraspecificEpithet("alba").build(), Issue.MISSING_AUTHORSHIP);
+    // the species itself needs an author
+    verify(nb.infraspecificEpithet(null).rank(Rank.SPECIES).build(), Issue.MISSING_AUTHORSHIP);
+
+    // infrageneric autonyms
+    nb = Name.newBuilder()
+      .type(NameType.SCIENTIFIC)
+      .genus("Abies")
+      .infragenericEpithet("Abies")
+      .rank(Rank.SECTION_BOTANY)
+      .code(NomCode.BOTANICAL);
+    assertNoMissingAuthorship(nb.build());
+    verify(nb.infragenericEpithet("Pseudotsuga").build(), Issue.MISSING_AUTHORSHIP);
+  }
+
+  /**
+   * ICTV names parse as scientific names, but the ICVCN cites no authors and allows digits in species epithets.
+   * https://github.com/CatalogueOfLife/backend/issues/1638
+   */
+  @Test
+  public void virusNames() throws Exception {
+    var nb = Name.newBuilder()
+      .type(NameType.SCIENTIFIC)
+      .genus("Acajnonavirus")
+      .specificEpithet("acj9")
+      .rank(Rank.SPECIES)
+      .code(NomCode.VIRUS);
+    verify(nb.build());
+    verify(nb.genus("Ahphunavirus").specificEpithet("yong1").build());
+    // other parsed name rules still apply
+    verify(nb.specificEpithet("Yong1").build(), Issue.UPPERCASE_EPITHET);
+    // the same names under another code are flagged
+    verify(nb.specificEpithet("yong1").code(NomCode.ZOOLOGICAL).build(), Issue.MISSING_AUTHORSHIP, Issue.UNUSUAL_NAME_CHARACTERS);
+
+    nb = Name.newBuilder()
+      .type(NameType.SCIENTIFIC)
+      .uninomial("Adnaviria")
+      .rank(Rank.REALM)
+      .code(NomCode.VIRUS);
+    verify(nb.build());
+  }
+
+  private static void assertNoMissingAuthorship(Name n) {
+    VerbatimRecord v = new VerbatimRecord();
+    NameValidator.flagIssues(n, n.getType(), v);
+    assertFalse(v.contains(Issue.MISSING_AUTHORSHIP));
   }
 }

@@ -17,6 +17,7 @@ import life.catalogue.matching.UsageMatcherFactory;
 import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.matching.nidx.NameIndexFactory;
 import life.catalogue.resources.JobResource;
+import life.catalogue.resources.matching.DatasetGbifMatchResource;
 import life.catalogue.resources.matching.FixedNameUsageMatchingResource;
 import life.catalogue.resources.matching.openrefine.ReconciliationResource;
 
@@ -125,6 +126,8 @@ public class WsBundleServer extends WsROServer<WsBundleServerConfig> {
         + cfg.matching.storageDir + ". The bundle data volume is incomplete.");
     }
     j.register(new FixedNameUsageMatchingResource(cfg.matching, release, matcher));
+    // GBIF v2 species match, dataset scoped and reached keyless as /match/gbif through the rewrite filter
+    j.register(new DatasetGbifMatchResource(matcherFactory, getSqlSessionFactory()));
 
     // OpenRefine reconciliation, dataset scoped and reached keyless through the rewrite filter
     j.register(new ReconciliationResource(cfg.matching, suggestService, getSqlSessionFactory(), matcherFactory,

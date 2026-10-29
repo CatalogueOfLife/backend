@@ -4,6 +4,7 @@ import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.vocab.EntityType;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.NomStatus;
+import life.catalogue.api.vocab.TaxonomicStatus;
 
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
@@ -28,6 +29,7 @@ public class SectorTest {
     s.setEntities(EnumSet.of(EntityType.NAME_USAGE, EntityType.VERNACULAR));
     s.setNameTypes(EnumSet.of(NameType.SCIENTIFIC));
     s.setNameStatusExclusion(EnumSet.of(NomStatus.CHRESONYM));
+    s.setTaxonomicStatusExclusion(EnumSet.of(TaxonomicStatus.MISAPPLIED));
     s.setNameFilter("BOLD:.*");
     s.setExtinctFilter(false);
     s.setCopyAccordingTo(true);

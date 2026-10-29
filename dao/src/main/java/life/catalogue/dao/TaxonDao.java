@@ -390,8 +390,17 @@ public class TaxonDao extends NameUsageBaseDao<Taxon, TaxonMapper> implements Ta
         var v = vsm.getByUsage(usage);
         info.setSource(vsm.addSources(v));
       }
+      var vm = session.getMapper(VerbatimRecordMapper.class);
       if (usage.getVerbatimKey() != null) {
-        info.setVerbatim(session.getMapper(VerbatimRecordMapper.class).get(DSID.of(usage.getDatasetKey(), usage.getVerbatimKey())));
+        info.setVerbatim(vm.get(DSID.of(usage.getDatasetKey(), usage.getVerbatimKey())));
+      }
+      // a name can come from its own verbatim record, e.g. ColDP Name rows - its issues belong to the usage too
+      var nvk = usage.getName().getVerbatimKey();
+      if (nvk != null && !nvk.equals(usage.getVerbatimKey())) {
+        var ni = vm.getIssues(DSID.of(usage.getDatasetKey(), nvk));
+        if (ni != null) {
+          info.setNameIssues(ni.getIssues());
+        }
       }
     }
 
@@ -429,9 +438,9 @@ public class TaxonDao extends NameUsageBaseDao<Taxon, TaxonMapper> implements Ta
     // add all type material
     if (loadTypeMaterial) {
       TypeMaterialMapper tmm = session.getMapper(TypeMaterialMapper.class);
-      info.getTypeMaterial().put(usage.getName().getId(), tmm.listByName(usage.getName()));
+      info.getTypeMaterial().put(usage.getName().getId(), tmm.listDesignations(usage.getName()));
       if (info.getSynonyms() != null) { // can be null for synonym usages
-        info.getSynonyms().forEach(s -> info.getTypeMaterial().put(s.getName().getId(), tmm.listByName(s.getName())));
+        info.getSynonyms().forEach(s -> info.getTypeMaterial().put(s.getName().getId(), tmm.listDesignations(s.getName())));
         // aggregate types for all homotypic names
         if (!info.getTypeMaterial().isEmpty()) {
           final List<String> nids = new ArrayList<>();
@@ -448,8 +457,8 @@ public class TaxonDao extends NameUsageBaseDao<Taxon, TaxonMapper> implements Ta
       // extract all refs
       info.getTypeMaterial().values().forEach(
         types -> types.forEach(t -> {
-          refIds.add(t.getReferenceId());
-          addSectorMode(t, sectorModes, sm);
+          refIds.add(t.getTypeMaterial().getReferenceId());
+          addSectorMode(t.getTypeMaterial(), sectorModes, sm);
         })
       );
     }
@@ -648,9 +657,14 @@ public class TaxonDao extends NameUsageBaseDao<Taxon, TaxonMapper> implements Ta
     return x;
   }
 
+  /**
+   * The specimen content and the status of the designation, but not the typified name,
+   * so the same specimen designated for several homotypic names, or copies of it, collapse into one.
+   */
   @VisibleForTesting
-  protected static String typeContent(TypeMaterial tm) {
-    return Arrays.stream(new Object[]{tm.getCitation(), tm.getStatus(), tm.getLink(), tm.getInstitutionCode(), tm.getCatalogNumber(),
+  protected static String typeContent(TypeDesignation d) {
+    var tm = d.getTypeMaterial();
+    return Arrays.stream(new Object[]{tm.getCitation(), d.getStatus(), tm.getLink(), tm.getInstitutionCode(), tm.getCatalogNumber(),
         tm.getLocality(), tm.getCountry(), tm.getSex(), tm.getAssociatedSequences(), tm.getHost(), tm.getDate(), tm.getCollector(),
         tm.getLatitude(), tm.getLongitude(), tm.getCoordinate(), tm.getAltitude(), tm.getRemarks()}
       )
@@ -663,7 +677,7 @@ public class TaxonDao extends NameUsageBaseDao<Taxon, TaxonMapper> implements Ta
 
   private void aggregateTypes(UsageInfo info, List<String> homotypicNameIds) {
     if (homotypicNameIds != null && !homotypicNameIds.isEmpty()) {
-      List<TypeMaterial> agg = homotypicNameIds.stream()
+      List<TypeDesignation> agg = homotypicNameIds.stream()
         .map(info::getTypeMaterial)
         .flatMap(List::stream)
         .collect(Collectors.groupingBy(TaxonDao::typeContent))

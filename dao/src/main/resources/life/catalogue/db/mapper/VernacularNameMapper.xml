@@ -70,7 +70,7 @@
   <sql id="SEARCH_WHERE">
     <if test="req != null">
       <if test="req.sectorDatasetKey != null">
-        JOIN sector s ON s.id=vn.sector_key
+        JOIN sector s ON s.dataset_key=vn.dataset_key AND s.id=vn.sector_key
       </if>
       <where>
         vn.dataset_key = #{datasetKey}
@@ -205,6 +205,20 @@
     )
   </select>
 
+  <!-- entities of other sectors or of none attached to usages of the sector. See SectorForeignProcessable -->
+  <select id="listForeignBySector" parameterType="map" resultMap="vernacularExtNameResultMap">
+    SELECT <include refid="SELECT"/>
+    FROM vernacular_name vn
+    WHERE vn.dataset_key = #{key.datasetKey} AND vn.sector_key IS DISTINCT FROM #{key.id}
+      AND vn.taxon_id IN (<include refid="life.catalogue.db.Common.sectorUsageIds"/>)
+  </select>
+
+  <delete id="deleteForeignBySector" parameterType="map">
+    DELETE FROM vernacular_name
+    WHERE dataset_key = #{key.datasetKey} AND sector_key IS DISTINCT FROM #{key.id}
+      AND taxon_id IN (<include refid="life.catalogue.db.Common.sectorUsageIds"/>)
+  </delete>
+
   <delete id="deleteBySector" parameterType="map">
     DELETE FROM vernacular_name
     WHERE dataset_key = #{key.datasetKey} AND sector_key=#{key.id}
@@ -226,6 +240,7 @@
     JOIN name_usage u ON u.dataset_key=nm.dataset_key AND u.name_id=nm.name_id
     JOIN vernacular_name vn ON vn.dataset_key=nm.dataset_key AND vn.taxon_id=u.id
     WHERE nm.index_id=#{nidx}
+      AND nm.dataset_key IN (SELECT d.key FROM dataset d WHERE <include refid="life.catalogue.db.mapper.NameUsageMapper.DATASET_PUBLIC"/>)
     ORDER BY vn.dataset_key, vn.id
     <include refid="life.catalogue.db.Common.limit"/>
   </select>

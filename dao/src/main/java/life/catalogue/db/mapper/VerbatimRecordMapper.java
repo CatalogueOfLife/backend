@@ -78,6 +78,16 @@ public interface VerbatimRecordMapper extends Create<VerbatimRecord>, DatasetPro
    * @param issue to add
    */
   void addIssue(@Param("key") DSID<Integer> key, @Param("issue") Issue issue);
+
+  /**
+   * Removes an issue from all verbatim records of a dataset.
+   */
+  void removeIssue(@Param("datasetKey") int datasetKey, @Param("issue") Issue issue);
+
+  /**
+   * @return the keys of all verbatim records of a dataset that carry the given issue
+   */
+  List<Integer> listKeysByIssue(@Param("datasetKey") int datasetKey, @Param("issue") Issue issue);
   
 }
 

@@ -5,6 +5,7 @@ import life.catalogue.api.model.NameRelation;
 import life.catalogue.api.vocab.NomRelType;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.assembly.SectorSyncIT;
+import life.catalogue.common.io.Resources;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.NameRelationMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
@@ -16,12 +17,15 @@ import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
-import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -77,14 +81,38 @@ public class HomotypicConsolidatorIT {
           if (nr.getType() == NomRelType.SPELLING_CORRECTION) {
             assertTrue("Spelling correction between other names: " + rel, HomotypicConsolidator.isOrthographicVariant(n1, n2));
           }
-          if (n1.getRank() == n2.getRank()) {
-            assertNotEquals("Duplicate names related: " + rel, n1.getScientificName().toLowerCase(), n2.getScientificName().toLowerCase());
-          }
+          assertFalse("Duplicate names related: " + rel, HomotypicConsolidator.isDuplicate(n1, n2));
           rels.add(rel);
         }
       }
     }
     return rels;
+  }
+
+  /**
+   * Loads relations as the data delivers them from a tab separated resource:
+   * usage id, related usage id, relation type, created by.
+   */
+  public static void loadRelations(int datasetKey, String resource) throws IOException {
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true);
+         var br = new BufferedReader(new InputStreamReader(Resources.stream(resource), StandardCharsets.UTF_8))
+    ) {
+      var num = session.getMapper(NameUsageMapper.class);
+      var nrm = session.getMapper(NameRelationMapper.class);
+      String line;
+      while ((line = br.readLine()) != null) {
+        if (line.isBlank()) continue;
+        var cols = line.split("\t");
+        var nr = new NameRelation();
+        nr.setDatasetKey(datasetKey);
+        nr.setNameId(num.get(DSID.of(datasetKey, cols[0])).getName().getId());
+        nr.setRelatedNameId(num.get(DSID.of(datasetKey, cols[1])).getName().getId());
+        nr.setType(NomRelType.valueOf(cols[2].toUpperCase().replace(' ', '_')));
+        nr.setCreatedBy(Integer.parseInt(cols[3]));
+        nr.setModifiedBy(nr.getCreatedBy());
+        nrm.create(nr);
+      }
+    }
   }
 
   public static void assertNoLoop(int datasetKey) {

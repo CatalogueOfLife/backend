@@ -4,6 +4,7 @@ import life.catalogue.api.jackson.IsEmptyFilter;
 import life.catalogue.api.vocab.*;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.common.tax.NameFormatter;
+import life.catalogue.common.tax.SciNameNormalizer;
 
 import org.gbif.nameparser.api.*;
 
@@ -22,7 +23,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import static life.catalogue.common.collection.CollectionUtils.notEmpty;
 import static life.catalogue.common.tax.NameFormatter.HYBRID_MARKER;
-import static life.catalogue.common.text.StringUtils.rmWS;
 
 /**
  * A parsed or unparsed name with strictly nomenclatural properties.
@@ -99,6 +99,13 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
    * See http://www.bacterio.net/-candidatus.html and https://en.wikipedia.org/wiki/Candidatus
    */
   private boolean candidatus;
+
+  /**
+   * A graft-chimaera: tissue of two genera grown together at a graft, not a hybrid of them, named under the
+   * cultivated-plants code. Its genus is written with a plus sign, +Crataegomespilus, and so are the species described
+   * while the botanical code still covered them, +Laburnocytisus adamii. A graft-chimaera carries no notho.
+   */
+  private boolean graftChimaera;
   
   /**
    * The part(s) of the named hybrid which are considered hybrids.
@@ -117,11 +124,6 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
    */
   @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = IsEmptyFilter.class)
   private Authorship basionymAuthorship = new Authorship();
-  
-  /**
-   * The sanctioning author for sanctioned fungal names. Fr. or Pers.
-   */
-  private String sanctioningAuthor;
   
   private NomCode code;
   
@@ -268,10 +270,10 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     this.infraspecificEpithet = n.infraspecificEpithet;
     this.cultivarEpithet = n.cultivarEpithet;
     this.candidatus = n.candidatus;
+    this.graftChimaera = n.graftChimaera;
     this.notho = n.notho.isEmpty() ? EnumSet.noneOf(NamePart.class) : EnumSet.copyOf(n.notho);
     this.combinationAuthorship = n.combinationAuthorship;
     this.basionymAuthorship = n.basionymAuthorship;
-    this.sanctioningAuthor = n.sanctioningAuthor;
     this.code = n.code;
     this.nomStatus = n.nomStatus;
     this.originalSpelling = n.originalSpelling;
@@ -317,10 +319,10 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     setInfraspecificEpithet(builder.infraspecificEpithet);
     setCultivarEpithet(builder.cultivarEpithet);
     setCandidatus(builder.candidatus);
+    setGraftChimaera(builder.graftChimaera);
     this.notho = builder.notho == null || builder.notho.isEmpty() ? EnumSet.noneOf(NamePart.class) : EnumSet.copyOf(builder.notho);
     setCombinationAuthorship(builder.combinationAuthorship);
     setBasionymAuthorship(builder.basionymAuthorship);
-    setSanctioningAuthor(builder.sanctioningAuthor);
     setCode(builder.code);
     setNomStatus(builder.nomStatus);
     setOriginalSpelling(builder.originalSpelling);
@@ -349,7 +351,6 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
       .authorship(null)
       .combinationAuthorship(null)
       .basionymAuthorship(null)
-      .sanctioningAuthor(null)
       .namesIndexId(null)
       .build();
   }
@@ -380,10 +381,10 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     builder.infraspecificEpithet = copy.getInfraspecificEpithet();
     builder.cultivarEpithet = copy.getCultivarEpithet();
     builder.candidatus = copy.isCandidatus();
+    builder.graftChimaera = copy.isGraftChimaera();
     builder.notho = copy.getNotho();
     builder.combinationAuthorship = copy.getCombinationAuthorship();
     builder.basionymAuthorship = copy.getBasionymAuthorship();
-    builder.sanctioningAuthor = copy.getSanctioningAuthor();
     builder.code = copy.getCode();
     builder.nomStatus = copy.getNomStatus();
     builder.originalSpelling = copy.isOriginalSpelling();
@@ -638,13 +639,18 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     this.basionymAuthorship = basionymAuthorship;
   }
   
-  @Override
-  public String getSanctioningAuthor() {
-    return sanctioningAuthor;
-  }
-  
-  public void setSanctioningAuthor(String sanctioningAuthor) {
-    this.sanctioningAuthor = sanctioningAuthor;
+  /**
+   * Reads the sanctioning author of JSON written before it moved onto the combination authorship
+   * with name-parser-api 5.2, e.g. the names of stored decisions.
+   */
+  @JsonProperty(value = "sanctioningAuthor", access = JsonProperty.Access.WRITE_ONLY)
+  private void setLegacySanctioningAuthor(String sanctioningAuthor) {
+    if (sanctioningAuthor != null) {
+      if (combinationAuthorship == null) {
+        combinationAuthorship = new Authorship();
+      }
+      combinationAuthorship.setSanctioningAuthor(sanctioningAuthor);
+    }
   }
 
   @Override
@@ -754,6 +760,16 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
   
   public void setCandidatus(boolean candidatus) {
     this.candidatus = candidatus;
+  }
+
+  @Override
+  @JsonInclude(value = JsonInclude.Include.NON_DEFAULT)
+  public boolean isGraftChimaera() {
+    return graftChimaera;
+  }
+
+  public void setGraftChimaera(boolean graftChimaera) {
+    this.graftChimaera = graftChimaera;
   }
   
   @JsonProperty("notho")
@@ -883,11 +899,19 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
       sb.append(" ");
       sb.append(preAuthorship);
     }
-    if (authorship != null && name != null && !rmWS(name.toLowerCase()).contains(rmWS(authorship.toLowerCase()))) {
+    // compare ASCII folded forms without punctuation: "Linnaeus, 1758" in the name is "Linnæus 1758", see #1621
+    if (authorship != null && name != null && !asciiKey(scientificName).contains(asciiKey(authorship))) {
       sb.append(" ");
       sb.append(authorship);
     }
     return sb;
+  }
+
+  /**
+   * @return the lower case ASCII folded words, without punctuation and padded by spaces to compare whole words only
+   */
+  private static String asciiKey(String x) {
+    return " " + SciNameNormalizer.normalizedAscii(x).toLowerCase() + " ";
   }
 
   public String getBasionymNameId() {
@@ -921,6 +945,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
 
     Name name = (Name) o;
     return candidatus == name.candidatus &&
+      graftChimaera == name.graftChimaera &&
       Objects.equals(sectorKey, name.sectorKey) &&
       sectorMode == name.sectorMode &&
       Objects.equals(verbatimKey, name.verbatimKey) &&
@@ -939,7 +964,6 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
       Objects.equals(notho, name.notho) &&
       Objects.equals(combinationAuthorship, name.combinationAuthorship) &&
       Objects.equals(basionymAuthorship, name.basionymAuthorship) &&
-      Objects.equals(sanctioningAuthor, name.sanctioningAuthor) &&
       code == name.code &&
       nomStatus == name.nomStatus &&
       Objects.equals(originalSpelling, name.originalSpelling) &&
@@ -961,7 +985,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), sectorKey, sectorMode, verbatimKey, verbatimSourceKey, namesIndexId, identifier, scientificName, authorship, rank, uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, candidatus, notho, combinationAuthorship, basionymAuthorship, sanctioningAuthor, code, nomStatus, originalSpelling, genderAgreement, gender, publishedInId, publishedInPage, publishedInPageLink, publishedInYear, imprintYear, origin, type, link, nomenclaturalNote, unparsed, etymology, remarks);
+    return Objects.hash(super.hashCode(), sectorKey, sectorMode, verbatimKey, verbatimSourceKey, namesIndexId, identifier, scientificName, authorship, rank, uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, candidatus, graftChimaera, notho, combinationAuthorship, basionymAuthorship, code, nomStatus, originalSpelling, genderAgreement, gender, publishedInId, publishedInPage, publishedInPageLink, publishedInYear, imprintYear, origin, type, link, nomenclaturalNote, unparsed, etymology, remarks);
   }
 
   @Override
@@ -1033,10 +1057,10 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     private String infraspecificEpithet;
     private String cultivarEpithet;
     private boolean candidatus;
+    private boolean graftChimaera;
     private Set<NamePart> notho = EnumSet.noneOf(NamePart.class);
     private Authorship combinationAuthorship;
     private Authorship basionymAuthorship;
-    private String sanctioningAuthor;
     private NomCode code;
     private NomStatus nomStatus;
     private Boolean originalSpelling;
@@ -1164,6 +1188,11 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
       return this;
     }
 
+    public Builder graftChimaera(boolean val) {
+      graftChimaera = val;
+      return this;
+    }
+
     public Builder notho(NamePart val) {
       notho = val == null ? EnumSet.noneOf(NamePart.class) : EnumSet.of(val);
       return this;
@@ -1176,11 +1205,6 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
 
     public Builder basionymAuthorship(Authorship val) {
       basionymAuthorship = val;
-      return this;
-    }
-
-    public Builder sanctioningAuthor(String val) {
-      sanctioningAuthor = val;
       return this;
     }
 

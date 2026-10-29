@@ -1,0 +1,14 @@
+id	parentNameUsageID	acceptedNameUsageID	scientificName	scientificNameAuthorship	taxonRank	taxonomicStatus	nomenclaturalCode
+1			Plantae		kingdom	accepted	
+2	1		Pinaceae		family	accepted	
+3	2		Abies	Mill.	genus	accepted	
+4	3		Abies cilicica subsp. isaurica	Coode & Cullen, 1965	subspecies	accepted	
+5		4	Abies isaurica	(Coode & Cullen, 1965) Smith, 1990	species	synonym	
+6	3		Abies alba	Linnaeus, 1753	species	accepted	ICZN
+7	1		Humiriaceae		family	accepted	
+8	7		Humiriastrum (Urban) Cuatrecasas, 1961			accepted	
+10			Chromista		kingdom	accepted	
+11	10		Bacillariophyceae		class	accepted	
+12	11		Navicula		genus	accepted	
+13	12		Navicula radiosa	Kützing, 1844	species	accepted	
+14	12		Candidatus Navicula radiosa		species	accepted	

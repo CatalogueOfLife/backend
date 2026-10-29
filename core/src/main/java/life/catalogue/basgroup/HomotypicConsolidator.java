@@ -3,11 +3,13 @@ package life.catalogue.basgroup;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.NomRelType;
+import life.catalogue.api.vocab.NomStatus;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.common.collection.CollectionUtils;
 import life.catalogue.common.collection.CountMap;
 import life.catalogue.common.tax.AuthorshipNormalizer;
+import life.catalogue.common.tax.NameFormatter;
 import life.catalogue.common.tax.SciNameNormalizer;
 import life.catalogue.common.util.LoggingUtils;
 import life.catalogue.concurrent.ExecutorUtils;
@@ -26,6 +28,7 @@ import life.catalogue.matching.similarity.StringSimilarity;
 import life.catalogue.parser.NomCodeParser;
 
 import org.gbif.nameparser.api.NameType;
+import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
 import java.io.IOException;
@@ -55,7 +58,11 @@ public class HomotypicConsolidator {
   private static final Comparator<LinneanNameUsage> PREFERRED_STATUS_ORDER = Comparator.comparing(u -> STATUS_ORDER.indexOf(u.getStatus()));
   private static final Comparator<LinneanNameUsage> PREFERRED_STATUS_RANK_ORDER = PREFERRED_STATUS_ORDER.thenComparing(LinneanNameUsage::getRank);
   private static final int MAX_NAME_DIFF = 1;
-  private static final Set<NomRelType> HOMOTYPIC_REL_TYPES = Set.of(NomRelType.BASIONYM, NomRelType.HOMOTYPIC, NomRelType.BASED_ON);
+  private static final int MAX_GENUS_DIFF = 1;
+  private static final ModifiedDamerauLevenshtein GENUS_DISTANCE = new ModifiedDamerauLevenshtein();
+  // evidence against a name being the original one of its group, see DataRelations
+  private static final int PENALTY_NOT_ORIGINAL = 4;
+  private static final int PENALTY_UNAVAILABLE = 2;
 
   private final SqlSessionFactory factory;
   private final int datasetKey;
@@ -77,17 +84,34 @@ public class HomotypicConsolidator {
   }
 
   /**
-   * @return true if both names are the same name and rank spelled differently only in their terminal epithet,
-   *   e.g. Trachelosiphon colombianum and T. columbianum or Aus albus and Aus alba
+   * @return true if both names are the same name and rank spelled differently either in their terminal epithet,
+   *   e.g. Trachelosiphon colombianum and T. columbianum or Aus albus and Aus alba,
+   *   or in their genus by a single edit, e.g. Coriphaena hippurus and Coryphaena hippurus.
+   *   A subgenus is not part of the name and is ignored.
    */
   @VisibleForTesting
   static boolean isOrthographicVariant(FormattableName n1, FormattableName n2) {
-    return n1.getRank() == n2.getRank()
-      && n1.getGenus() != null && n1.getGenus().equalsIgnoreCase(n2.getGenus())
-      && equalsIgnoreCase(n1.getInfragenericEpithet(), n2.getInfragenericEpithet())
-      && (n1.getInfraspecificEpithet() == null || equalsIgnoreCase(n1.getSpecificEpithet(), n2.getSpecificEpithet()))
-      && n1.getTerminalEpithet() != null && n2.getTerminalEpithet() != null
-      && !n1.getTerminalEpithet().equalsIgnoreCase(n2.getTerminalEpithet());
+    if (n1.getRank() != n2.getRank()
+      || n1.getGenus() == null || n2.getGenus() == null
+      || n1.getTerminalEpithet() == null || n2.getTerminalEpithet() == null
+      || n1.getInfraspecificEpithet() != null && !equalsIgnoreCase(n1.getSpecificEpithet(), n2.getSpecificEpithet())
+    ) {
+      return false;
+    }
+    boolean sameEpithet = n1.getTerminalEpithet().equalsIgnoreCase(n2.getTerminalEpithet());
+    if (n1.getGenus().equalsIgnoreCase(n2.getGenus())) {
+      return !sameEpithet;
+    }
+    return sameEpithet && GENUS_DISTANCE.getEditDistance(n1.getGenus().toLowerCase(), n2.getGenus().toLowerCase()) <= MAX_GENUS_DIFF;
+  }
+
+  /**
+   * @return true if both names are the same name, i.e. the same rank and canonical name.
+   *   A subgenus is not part of a species name, so Machimus erevanensis and Machimus (Machimus) erevanensis are duplicates.
+   */
+  @VisibleForTesting
+  static boolean isDuplicate(FormattableName n1, FormattableName n2) {
+    return n1.getRank() == n2.getRank() && equalsIgnoreCase(NameFormatter.canonicalName(n1), NameFormatter.canonicalName(n2));
   }
 
   private static boolean equalsIgnoreCase(@Nullable String s1, @Nullable String s2) {
@@ -95,10 +119,30 @@ public class HomotypicConsolidator {
   }
 
   /**
+   * @return true if the relation came with the data, not from an earlier grouping
+   */
+  private static boolean isData(NameRelation nr) {
+    return !Objects.equals(nr.getCreatedBy(), Users.HOMOTYPIC_GROUPER);
+  }
+
+  /**
    * @return true if the relation says both names are homotypic and it came with the data, not from an earlier grouping
    */
   private static boolean isHomotypicEvidence(NameRelation nr) {
-    return HOMOTYPIC_REL_TYPES.contains(nr.getType()) && !Objects.equals(nr.getCreatedBy(), Users.HOMOTYPIC_GROUPER);
+    return nr.getType().isHomotypic() && isData(nr);
+  }
+
+  /**
+   * The name relations the data holds for a single name.
+   *
+   * @param homotypic ids of names directly related by a homotypic relation
+   * @param hasBasionym true if the data gives the name a basionym, i.e. it is no original name
+   * @param misspelled true if the data corrects the spelling of the name, i.e. it is the variant spelling
+   */
+  private record DataRelations(Set<String> homotypic, boolean hasBasionym, boolean misspelled) {
+    boolean notOriginal() {
+      return hasBasionym || misspelled;
+    }
   }
 
   /**
@@ -197,7 +241,7 @@ public class HomotypicConsolidator {
     private final boolean consolidateMisspellings;
     private int synCounter;
     private Map<String, LinneanNameUsage> usages; // lookup by id for each taxon group being consolidated
-    private final Map<String, Set<String>> relatedNames = new HashMap<>(); // name id -> directly related name ids from the data
+    private final Map<String, DataRelations> dataRelations = new HashMap<>(); // name id -> its relations from the data
     private final UUID parentJobKey;
 
     /**
@@ -232,6 +276,9 @@ public class HomotypicConsolidator {
         // the executor would swallow it silently and leave the rest of the group unconsolidated
         LOG.error("Homotypic consolidation of {} failed", tax, e);
       } finally {
+        // both passes track their changes in the usage map, so it only goes once they are done
+        usages = null;
+        dataRelations.clear();
         session = null;
         LoggingUtils.removeJobMDC();
       }
@@ -282,7 +329,7 @@ public class HomotypicConsolidator {
 
       // now compare authorships for each epithet group
       for (var epithetGroup : epithets.entrySet()) {
-        var groups = basSorter.groupBasionyms(tax.getCode(), epithetGroup.getKey(), epithetGroup.getValue(), a -> a, this::flagConsolidationIssue, this::linked);
+        var groups = basSorter.groupBasionyms(tax.getCode(), epithetGroup.getKey(), epithetGroup.getValue(), a -> a, this::flagConsolidationIssue, this::linked, evidence);
         // go through groups and persistent basionym relations where needed
         for (var group : groups) {
           // we only need to work on groups with at least 2 names
@@ -323,7 +370,7 @@ public class HomotypicConsolidator {
                 var hom = iter.next();
                 while (iter.hasNext()) {
                   var u = iter.next();
-                  if (createRelationIfNotExisting(u, hom, NomRelType.HOMOTYPIC, nrm)) {
+                  if (!isDuplicate(u, hom) && createRelationIfNotExisting(u, hom, NomRelType.HOMOTYPIC, nrm)) {
                     newHomotypicRelations++;
                   }
                 }
@@ -358,8 +405,6 @@ public class HomotypicConsolidator {
       session.commit();
       LOG.info("Discovered {} new basionym, {} homotypic, {} based on and {} spelling relations. Created {} basionym placeholders and converted {} taxa into synonyms in {}",
         newBasionymRelations, newHomotypicRelations, newBasedOnRelations, newSpellingRelations, newBasionyms, synCounter, tax);
-      usages = null;
-      relatedNames.clear();
     }
 
     /**
@@ -374,23 +419,72 @@ public class HomotypicConsolidator {
       ) {
         return true;
       }
-      return relatedNames(u1.getNameId()).contains(u2.getNameId());
+      return dataRelations(u1.getNameId()).homotypic().contains(u2.getNameId());
     }
 
-    private Set<String> relatedNames(String nameId) {
-      return relatedNames.computeIfAbsent(nameId, id -> {
+    /**
+     * @return true if the data relates both names as homotypic already, directly or through a single other name,
+     *   e.g. two misspellings of the same name. Another relation between them would add nothing.
+     */
+    private boolean linkedByData(LinneanNameUsage u1, LinneanNameUsage u2) {
+      var rel1 = dataRelations(u1.getNameId()).homotypic();
+      if (rel1.contains(u2.getNameId())) {
+        return true;
+      }
+      var rel2 = dataRelations(u2.getNameId()).homotypic();
+      return !Collections.disjoint(rel1, rel2);
+    }
+
+    private DataRelations dataRelations(String nameId) {
+      return dataRelations.computeIfAbsent(nameId, id -> {
         var nrm = session.getMapper(NameRelationMapper.class);
         var key = DSID.of(datasetKey, id);
         Set<String> ids = new HashSet<>();
+        boolean hasBasionym = false;
+        boolean misspelled = false;
         for (var nr : nrm.listByName(key)) {
-          if (isHomotypicEvidence(nr)) ids.add(nr.getRelatedNameId());
+          if (isHomotypicEvidence(nr)) {
+            ids.add(nr.getRelatedNameId());
+            hasBasionym = hasBasionym || nr.getType() == NomRelType.BASIONYM;
+          }
         }
         for (var nr : nrm.listByRelatedName(key)) {
-          if (isHomotypicEvidence(nr)) ids.add(nr.getNameId());
+          if (isHomotypicEvidence(nr)) {
+            ids.add(nr.getNameId());
+            // the spelling correction points from the correct spelling to the variant
+            misspelled = misspelled || nr.getType() == NomRelType.SPELLING_CORRECTION;
+          }
         }
-        return ids;
+        return new DataRelations(ids, hasBasionym, misspelled);
       });
     }
+
+    /**
+     * What the data says against a usage being the original name of its group:
+     * a source that gives a name a basionym of its own or corrects its spelling says it is no original name,
+     * and an unavailable name is unlikely to be one.
+     * A name with the status of an orthographic variant is never the original as long as another name is.
+     * The taxonomic status is no evidence: an accepted name missing its brackets looks like an original name,
+     * while the true original often lives on as its synonym.
+     */
+    private final HomotypicGroup.Evidence<LinneanNameUsage> evidence = new HomotypicGroup.Evidence<>() {
+      @Override
+      public boolean isVariant(LinneanNameUsage u) {
+        return u.getNomStatus() == NomStatus.ORTHOGRAPHIC_VARIANT;
+      }
+
+      @Override
+      public int penalty(LinneanNameUsage u) {
+        int penalty = 0;
+        if (dataRelations(u.getNameId()).notOriginal()) {
+          penalty += PENALTY_NOT_ORIGINAL;
+        }
+        if (u.getNomStatus() != null && !u.getNomStatus().isAvailable()) {
+          penalty += PENALTY_UNAVAILABLE;
+        }
+        return penalty;
+      }
+    };
 
     private void misspellingConsolidation() {
       synCounter = 0;
@@ -399,6 +493,16 @@ public class HomotypicConsolidator {
       final LinkedList<ConsolidationName> window = new LinkedList<>();
       NameUsageMapper num = session.getMapper(NameUsageMapper.class);
       PgUtils.consume(() -> num.processTreeConsolidationName(DSID.of(datasetKey, tax.getId())), sn -> {
+        // ICTV names parse as scientific names without authorship, and valid ones are often a single edit apart,
+        // e.g. Batravirus ranidallo1 and ranidallo2. Keep them out of the window too, so no other name can absorb them.
+        if (sn.getCode() == NomCode.VIRUS) {
+          return;
+        }
+        // only bi- and trinomials: uninomials one letter apart are far too often distinct genera or families,
+        // and a genus would take its whole subtree along. See https://github.com/CatalogueOfLife/backend/issues/1363
+        if (sn.getRank() == null || !sn.getRank().isSpeciesOrBelow()) {
+          return;
+        }
         if (NomCodeParser.isCodeCompliant(sn.getType())) {
           consolidateMisspelling(sn, window);
         }
@@ -430,12 +534,15 @@ public class HomotypicConsolidator {
             syn = n1;
           }
           if (acc != null) {
-            var accLNU = load(session, acc.getId());
-            var synLNU = load(session, syn.getId());
-            updateParentAndStatus(synLNU.getId(), accLNU.getId(), TaxonomicStatus.SYNONYM, session.getMapper(NameUsageMapper.class));
-            addIssue(synLNU.getId(), Issue.MISSPELLING_CONSOLIDATION);
+            // moves the descendants of the misspelled name too, they must not stay below a synonym
+            convertToSynonym(load(session, syn.getId()), load(session, acc.getId()), Issue.MISSPELLING_CONSOLIDATION, session);
+            syn.setConsolidatedId(acc.getId());
             if (synCounter % 1000 == 0) {
               session.commit();
+            }
+            if (syn == n1) {
+              // a synonym now, it must not be moved again to another name of the window
+              break;
             }
           }
         }
@@ -604,7 +711,17 @@ public class HomotypicConsolidator {
       addIssue(obj.key().getId(), obj.value());
     }
 
+    /**
+     * Creates a relation unless one of that type exists or the data links both names already,
+     * which would only add a second, possibly contradicting claim about the same homotypic group.
+     *
+     * @return true if a relation was created
+     */
     private boolean createRelationIfNotExisting(LinneanNameUsage from, LinneanNameUsage to, NomRelType relType, NameRelationMapper mapper) {
+      if (linkedByData(from, to)) {
+        LOG.debug("Data links {} and {} already, skip {} relation", from.getLabel(), to.getLabel(), relType);
+        return false;
+      }
       if (!mapper.exists(datasetKey, from.getNameId(), to.getNameId(), relType)) {
         var nr = new NameRelation();
         nr.setDatasetKey(datasetKey);
@@ -621,18 +738,18 @@ public class HomotypicConsolidator {
 
     /**
      * Relates another original name of a group to its basionym or based on name, the most trusted of them.
-     * An orthographic variant becomes a spelling correction, pointing from the most trusted spelling to the variant.
+     * An orthographic variant, the genus misspelled included, becomes a spelling correction,
+     * pointing from the most trusted spelling to the variant.
      * Any other variation, the same name at another rank missing its brackets or a name of another genus,
      * is only said to be homotypic. Duplicates, i.e. the same name and rank with an authorship the grouping already
-     * found equal but maybe cited differently, are one and the same name and get no relation at all.
+     * found equal but maybe cited differently or with and without a subgenus, are one and the same name and get no
+     * relation at all.
      *
      * @return the type of the relation created or null if none was
      */
     @Nullable
     private NomRelType relateVariation(LinneanNameUsage original, LinneanNameUsage variation, NameRelationMapper mapper) {
-      if (Objects.equals(variation.getNameId(), original.getNameId())
-        || variation.getRank() == original.getRank() && variation.getScientificName().equalsIgnoreCase(original.getScientificName())
-      ) {
+      if (Objects.equals(variation.getNameId(), original.getNameId()) || isDuplicate(original, variation)) {
         return null;
       }
       if (isOrthographicVariant(original, variation)) {

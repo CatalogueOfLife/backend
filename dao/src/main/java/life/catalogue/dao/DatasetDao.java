@@ -52,6 +52,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Objects;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
@@ -378,6 +379,41 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     }
   }
 
+  /**
+   * Public external datasets whose latest import flagged at least the given share and number of its accepted genera
+   * with a placement conflict. See https://github.com/CatalogueOfLife/backend/issues/1608
+   *
+   * @param minRatio minimum share of conflicting accepted genera, 0-1
+   * @param minConflicts minimum number of conflicting accepted genera, at least 1
+   */
+  public ResultPage<PlacementConflicts> listPlacementConflicts(double minRatio, int minConflicts, @Nullable DatasetType type, Page page) {
+    Preconditions.checkArgument(minRatio >= 0 && minRatio <= 1, "minRatio must be between 0 and 1");
+    Preconditions.checkArgument(minConflicts >= 1, "minConflicts must be at least 1");
+    try (SqlSession session = factory.openSession()){
+      var dm = session.getMapper(DatasetMapper.class);
+      var result = dm.listPlacementConflicts(minRatio, minConflicts, type, page);
+      return new ResultPage<>(page, result, () -> dm.countPlacementConflicts(minRatio, minConflicts, type));
+    }
+  }
+
+  private static final Object[] PLACEMENT_CONFLICT_HEADERS = {"datasetKey", "title", "type", "attempt", "genera", "conflicts", "ratio"};
+
+  /**
+   * All rows of {@link #listPlacementConflicts} unpaged, with a header row first, for a CSV or TSV download.
+   */
+  public Stream<Object[]> streamPlacementConflicts(double minRatio, int minConflicts, @Nullable DatasetType type) {
+    Preconditions.checkArgument(minRatio >= 0 && minRatio <= 1, "minRatio must be between 0 and 1");
+    Preconditions.checkArgument(minConflicts >= 1, "minConflicts must be at least 1");
+    List<PlacementConflicts> result;
+    try (SqlSession session = factory.openSession()){
+      result = session.getMapper(DatasetMapper.class).listPlacementConflicts(minRatio, minConflicts, type, null);
+    }
+    return Stream.concat(
+      Stream.<Object[]>of(PLACEMENT_CONFLICT_HEADERS),
+      result.stream().map(p -> new Object[]{p.getDatasetKey(), p.getTitle(), p.getType(), p.getAttempt(), p.getGenera(), p.getConflicts(), p.getRatio()})
+    );
+  }
+
   private void postDoiDeletionForSources(DatasetSourceMapper psm, int datasetKey){
     psm.listReleaseSourcesSimple(datasetKey, false).stream()
       .filter(d -> d.getDoi() != null && d.getDoi().isCOL())
@@ -518,7 +554,14 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
   }
 
   /**
-   * Deletes all data from partitioned tables, clears the usage counter and removed sequences if existing
+   * Deletes all data from partitioned tables, clears the usage counter and removed sequences if existing.
+   *
+   * Every foreign key into a partitioned table comes from another partitioned table of the same dataset,
+   * so deleting a dataset from all of them cannot leave a dangling reference and their per row checks are skipped
+   * if the session may. They are not only redundant but can be fatal: once a child is deleted, its dead rows make the
+   * planner pick any index leading with dataset_key for the check of the parent, which then walks all of them for
+   * every parent row. Deleting the references of WFO took 44h that way, the verbatim records of Wikidata 2 weeks.
+   * Skipping triggers also skips the usage counter trigger, which has nothing to update since the counter is gone.
    */
   public void deleteData(int key, SqlSession session) {
     var dpm = session.getMapper(DatasetPartitionMapper.class);
@@ -526,7 +569,24 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     dpm.deleteUsageCounter(key);
     // delete data from partitions
     LOG.info("Delete partitioned data for dataset {}", key);
-    Lists.reverse(DatasetPartitionMapper.PARTITIONED_TABLES).forEach(t -> dpm.deleteData(t, key));
+    final boolean skipChecks = dpm.canSkipTriggers();
+    if (skipChecks) {
+      dpm.skipTriggers();
+    } else {
+      LOG.warn("Delete dataset {} with foreign key checks, grant SET ON PARAMETER session_replication_role to skip them", key);
+    }
+    try {
+      Lists.reverse(DatasetPartitionMapper.PARTITIONED_TABLES).forEach(t -> dpm.deleteData(t, key));
+    } finally {
+      if (skipChecks) {
+        try {
+          dpm.restoreTriggers();
+        } catch (RuntimeException e) {
+          // an aborted transaction rejects the reset, but its rollback reverts the setting anyway
+          LOG.error("Failed to restore session_replication_role after deleting dataset {}", key, e);
+        }
+      }
+    }
     DatasetPartitionMapper.IDMAP_TABLES.forEach(t -> dpm.dropTable(t, key));
     // drop id sequences
     dpm.deleteSequences(key);
@@ -693,11 +753,16 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
       obj.setAlias(articleAlias(obj));
     }
     sanitize(obj);
-    // if list of creators for a project changes, adjust the max container author settings
+    // A release appends the source authors to the project creators, but only the project's own creators should be
+    // container authors of its sources. So the max container authors follow the number of project creators -
+    // unless the setting was changed manually, i.e. it differs from the old creator count, which then sticks.
     if (obj.getOrigin() == DatasetOrigin.PROJECT && CollectionUtils.size(obj.getCreator()) != CollectionUtils.size(old.getCreator())) {
       var ds = getSettings(obj.getKey());
-      ds.put(Setting.SOURCE_MAX_CONTAINER_AUTHORS, CollectionUtils.size(obj.getCreator()));
-      putSettings(obj.getKey(), ds, user);
+      Integer max = ds.getInt(Setting.SOURCE_MAX_CONTAINER_AUTHORS);
+      if (max == null || max == CollectionUtils.size(old.getCreator())) {
+        ds.put(Setting.SOURCE_MAX_CONTAINER_AUTHORS, CollectionUtils.size(obj.getCreator()));
+        putSettings(obj.getKey(), ds, user);
+      }
     }
     super.updateBefore(obj, old, user, mapper, session);
   }

@@ -171,17 +171,15 @@ public class DwcaExtendedExport extends ArchiveExport {
 
     if (u.isSynonym()) {
       writer.set(DwcTerm.acceptedNameUsageID, u.getParentId());
+      // the classification of the accepted taxon including itself
+      if (u instanceof SynonymWithClassification s) {
+        writeClassification(s.getClassification());
+      }
 
     } else {
       writer.set(DwcTerm.parentNameUsageID, u.getParentId());
       TaxonWithClassification t = (TaxonWithClassification) u;
-      if (t.getClassification() != null) {
-        for (var ht : t.getClassification()) {
-          if (RankUtils.RANK2DWC.containsKey(ht.getRank())) {
-            writer.set(RankUtils.RANK2DWC.get(ht.getRank()), ht.getName());
-          }
-        }
-      }
+      writeClassification(t.getClassification());
       if (t.isExtinct() != null || (t.getEnvironments() != null && !t.getEnvironments().isEmpty())) {
         writer2.set(DwcTerm.taxonID, u.getId());
         writer2.set(GbifTerm.isExtinct, t.isExtinct());
@@ -202,6 +200,16 @@ public class DwcaExtendedExport extends ArchiveExport {
 
     writer.set(DcTerm.references, u.getLink());
     writer.set(DwcTerm.nameAccordingTo, u.getAccordingTo()); // joined in by the core query, see inclCitations
+  }
+
+  private void writeClassification(List<SimpleName> classification) {
+    if (classification != null) {
+      for (var ht : classification) {
+        if (RankUtils.RANK2DWC.containsKey(ht.getRank())) {
+          writer.set(RankUtils.RANK2DWC.get(ht.getRank()), ht.getName());
+        }
+      }
+    }
   }
 
   void write(BareName u) {

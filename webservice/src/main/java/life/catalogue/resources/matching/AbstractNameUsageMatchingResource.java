@@ -3,6 +3,7 @@ package life.catalogue.resources.matching;
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.Issue;
+import life.catalogue.api.vocab.MatchingMode;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.config.MatchingConfig;
 import life.catalogue.interpreter.NameInterpreter;
@@ -43,21 +44,35 @@ public abstract class AbstractNameUsageMatchingResource {
   public abstract UsageMatcher singleMatchMatcher(int datasetKey);
 
   /**
+   * @return true if the matcher handed out by {@link #singleMatchMatcher(int)} is leased per request and must be closed
+   *   after each match. A long lived matcher owned by the resource must not be closed.
+   */
+  protected boolean closeAfterMatch() {
+    return true;
+  }
+
+  /**
    * @param sn will be matched to the nidx here, no need for a matched instance
    */
-  private UsageMatchWithOriginal match(int datasetKey, SimpleNameClassified<SimpleNameCached> sn, IssueContainer issues, boolean verbose) {
+  private UsageMatchWithOriginal match(int datasetKey, SimpleNameClassified<SimpleNameCached> sn, IssueContainer issues, boolean verbose,
+                                       MatchingMode mode) {
     UsageMatch match;
-    try (var matcher = singleMatchMatcher(datasetKey)) {
+    var matcher = singleMatchMatcher(datasetKey);
+    try {
       if (utils == null) {
         utils = new MatchingUtils(matcher.getNameIndex());
       }
-      match = MatchingJob.interpretAndMatch(sn, sn.getClassification(), issues, verbose, interpreter, utils, matcher);
+      match = MatchingJob.interpretAndMatch(sn, sn.getClassification(), issues, verbose, mode, interpreter, utils, matcher);
+    } finally {
+      if (closeAfterMatch()) {
+        matcher.close();
+      }
     }
     return new UsageMatchWithOriginal(match, issues, sn, null);
   }
 
 
-  private static SimpleNameClassified<SimpleNameCached> interpret(String id,
+  public static SimpleNameClassified<SimpleNameCached> interpret(String id,
                                                             String q,
                                                             String name,
                                                             String sciname,
@@ -77,11 +92,12 @@ public abstract class AbstractNameUsageMatchingResource {
       .orElse(() -> new EnumNote<>(TaxonomicStatus.ACCEPTED, null), Issue.TAXONOMIC_STATUS_INVALID, issues);
 
     var sn = SimpleNameClassified.snc(id, iRank, iCode, iStatus.val, ObjectUtils.coalesce(sciname, name, q), authorship);
-    if (StringUtils.isBlank(sn.getName())) {
-      throw new IllegalArgumentException("Missing name");
-    }
     if (classification != null) {
       sn.setClassification(classification.asSimpleNameCached());
+    }
+    // without a name, e.g. epithets without any genus, only the classification can be matched
+    if (StringUtils.isBlank(sn.getName()) && (sn.getClassification() == null || sn.getClassification().isEmpty())) {
+      throw new IllegalArgumentException("Missing name");
     }
     return sn;
   }
@@ -96,12 +112,25 @@ public abstract class AbstractNameUsageMatchingResource {
                                       @QueryParam("code") String code,
                                       @QueryParam("rank") String rank,
                                       @QueryParam("status") String status,
+                                      @QueryParam("genericName") String genericName,
+                                      @QueryParam("specificEpithet") String specificEpithet,
+                                      @QueryParam("infraspecificEpithet") String infraspecificEpithet,
+                                      @QueryParam("mode") MatchingMode mode,
                                       @QueryParam("verbose") boolean verbose,
                                       @BeanParam Classification classification
   ) throws InterruptedException {
+    mode = MatchingJob.supportedMode(mode);
     IssueContainer issues = new IssueContainer.Simple();
-    SimpleNameClassified<SimpleNameCached> orig = interpret(id, q, name, sciname, authorship, code, rank, status, classification, issues);
-    return match(datasetKey, orig, issues, verbose);
+    Classification cl = classification == null ? new Classification() : new Classification(classification);
+    // the name can also be given in parts, as an abbreviated genus or by the classification alone
+    Rank iRank = SafeParser.parse(RankParser.PARSER, rank).orNull();
+    var assembled = NameAssembler.build(ObjectUtils.coalesce(sciname, name, q), null, genericName, specificEpithet, infraspecificEpithet, iRank, cl);
+    if (assembled.fromClassification()) {
+      rank = assembled.rank().name();
+      cl.clearRankAndBelow(assembled.rank());
+    }
+    SimpleNameClassified<SimpleNameCached> orig = interpret(id, null, null, assembled.name(), authorship, code, rank, status, cl, issues);
+    return match(datasetKey, orig, issues, verbose, mode);
   }
 
   protected File upload(InputStream data, User user, String suffix) throws IOException {

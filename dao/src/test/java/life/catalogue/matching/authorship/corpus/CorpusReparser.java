@@ -63,20 +63,28 @@ public class CorpusReparser {
     }
     Authorship comb = p.getCombinationAuthorship();
     Authorship bas = p.getBasionymAuthorship();
-    if (comb.getAuthors().isEmpty() && bas.getAuthors().isEmpty()) {
+    if (!comb.hasAuthors() && !bas.hasAuthors()) {
       return null;
     }
     if (Stream.of(comb.getAuthors(), comb.getExAuthors(), bas.getAuthors(), bas.getExAuthors())
+        .map(CorpusReparser::team)
         .flatMap(List::stream)
         .anyMatch(a -> a.indexOf(ExportRow.TEAM_SEPARATOR) >= 0)) {
       return null;
     }
     return new ExportRow(row.nidx(), row.datasetKey(), row.nameId(), row.rank(), row.code(), row.nomStatus(),
       row.scientificName(), row.authorship(),
-      List.copyOf(comb.getAuthors()), List.copyOf(comb.getExAuthors()), comb.getYear(),
-      List.copyOf(bas.getAuthors()), List.copyOf(bas.getExAuthors()), bas.getYear(),
-      p.getSanctioningAuthor(), row.classification()
+      team(comb.getAuthors()), team(comb.getExAuthors()), comb.getYear(),
+      team(bas.getAuthors()), team(bas.getExAuthors()), bas.getYear(),
+      comb.getSanctioningAuthor(), row.classification()
     );
+  }
+
+  /**
+   * The parser leaves a list without authors null.
+   */
+  private static List<String> team(@Nullable List<String> authors) {
+    return authors == null ? List.of() : List.copyOf(authors);
   }
 
   private static Rank rank(String rank) {

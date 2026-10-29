@@ -1,5 +1,7 @@
 package life.catalogue.matching.nidx;
 
+import life.catalogue.common.ChronicleLogging;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -33,6 +35,10 @@ public class NameIndexChronicleStore implements NameIndexStore {
   static final String IDENTITY_FILE = "identity.properties";
   private static final String PROP_ID = "id";
   private static final String PROP_CREATED = "created";
+
+  static {
+    ChronicleLogging.install();
+  }
 
   private final File dir;
   private final NamesIndexConfig cfg;
@@ -71,7 +77,11 @@ public class NameIndexChronicleStore implements NameIndexStore {
     var b = ChronicleMapBuilder.of(String.class, Integer.class)
       .name("names")
       .entries(cfg.maxEntries)
-      .averageKey("Abies alba");
+      .averageKey("Abies alba")
+      // stop() closes the map, managed by the server lifecycle. Chronicle's own close on exit hook would close it
+      // a second time from another shutdown hook thread, which is the prime suspect for the stop that hung in #1654.
+      // Not closing a persisted map at all is safe, it is memory mapped.
+      .skipCloseOnExitHook(true);
 
     try {
       names = inMem() ? b.create() : b.createPersistedTo(namesF);

@@ -74,7 +74,7 @@ public enum Issue {
       "The parsed scientific name string results in a different name then was given as the preferred atomized parts."),
   
   UNUSUAL_NAME_CHARACTERS(NAME, Level.WARNING,
-      "The name parts contain unusual characters."),
+      "The name parts or the authorship contain unusual characters."),
   
   MULTI_WORD_EPITHET(NAME, Level.WARNING,
       "At least one epithet contains multiple words before parsing."),
@@ -507,7 +507,7 @@ public enum Issue {
     "Only matched to a higher rank in the configured target dataset; identifier added for the higher-ranked match."),
 
   DUPLICATE_DISTRIBUTIONS(NAME_USAGE, Level.WARNING,
-      "Same distribution record appears several times for the same taxon."),
+      "Several distribution records for the same area appear for the same taxon, even if their status differs."),
   DUPLICATE_MEDIA(NAME_USAGE, Level.WARNING,
       "Same media record appears several times for the same taxon."),
   DUPLICATE_VERNACULAR_NAMES(NAME_USAGE, Level.WARNING,
@@ -515,7 +515,7 @@ public enum Issue {
   DUPLICATE_ESTIMATES(NAME_USAGE, Level.WARNING,
       "Same species estimate record appears several times for the same taxon."),
   DUPLICATE_TAXON_PROPERTIES(NAME_USAGE, Level.WARNING,
-      "Same taxon property record appears several times for the same taxon."),
+      "The same property appears several times for the same taxon, even if its values differ."),
 
   AUTHORSHIP_UNCERTAIN(NAME, Level.WARNING,
       "The authorship is explicitly marked as uncertain in the name, e.g. a trailing question mark or alternative authors separated by 'or' or a slash."),
@@ -532,13 +532,53 @@ public enum Issue {
       + "Usually a source that supplies the marker in its own authorship column, e.g. scientificName=Berkeleyia with authorship=sp."),
 
   DERIVED_NOMENCLATURAL_STATUS(NAME, Level.INFO,
-      "The nomenclatural status was not given explicitly, but derived from the taxonomic status. "
+      "The nomenclatural status was not given explicitly, but derived from the taxonomic status or the name remarks. "
       + "Sources often squeeze a nomenclatural statement into their single status column, "
-      + "e.g. dwc:taxonomicStatus=\"nomen nudum\" or \"junior homonym\"."),
+      + "e.g. dwc:taxonomicStatus=\"nomen nudum\" or \"junior homonym\", "
+      + "or state a misspelling only in the remarks, e.g. \"misspelling - incorrect subsequent spelling\"."),
 
   POTENTIALLY_EXTINCT(NAME_USAGE, Level.WARNING,
       "A merged source flags this taxon as extinct, while the taxon itself is not flagged as extinct. "
-      + "The extinct flag has not been changed, so it might be extinct and should be reviewed.")
+      + "The extinct flag has not been changed, so it might be extinct and should be reviewed."),
+
+  NOMENCLATURAL_CODE_INFERRED(NAME, Level.INFO,
+      "The nomenclatural code was given neither by the record nor by the dataset. "
+      + "It was derived from the taxonomic group of the name's classification or, failing that, guessed from its authorship."),
+
+  PLACEMENT_CONFLICT(NAME_USAGE, Level.WARNING,
+      "The accepted genus is placed in a taxonomic group the reference checklist does not know it in, "
+      + "e.g. a fungus filed under the plant family of its host. "
+      + "Only flagged when every genus of that name in the reference belongs to a disparate group."),
+
+  SPELLING_CORRECTION_IMPLAUSIBLE(NAME, Level.WARNING,
+      "A spelling correction relates two names that differ in far more than their spelling. "
+      + "The relation has been ignored, as it would merge distinct homotypic groups."),
+
+  DUPLICATE_ACCEPTED_NAME(NAME_USAGE, Level.WARNING,
+      "Several accepted taxa have the same name and rank under the same nomenclatural code, regardless of their authorship. "
+      + "Only one of them can be correct, the others should be synonyms or bare names. "
+      + "Homonyms under different codes are not flagged."),
+
+  HOMOTYPIC_NAME_OUTSIDE_SYNONYMY(NAME_USAGE, Level.WARNING,
+      "The name is related to another name by a homotypic relation, e.g. a basionym, "
+      + "but the usages of both names do not share an accepted taxon. "
+      + "Homotypic names should be synonyms of the same taxon."),
+
+  EXTINCT_INCONSISTENT(NAME_USAGE, Level.WARNING,
+      "The taxon is flagged as not extinct, but it is classified below an extinct taxon."),
+
+  UNUSUAL_VALUE_LENGTH(ANY, Level.WARNING,
+      "At least one value of the record is far longer than expected for its term, e.g. an identifier with more than 200 characters. "
+      + "Often indicates a broken delimiter or quotation that merged several columns or records into one value."),
+
+  EMBEDDED_DOI(REFERENCE, Level.INFO,
+      "The reference had no DOI, but its citation, title or remarks contain one. "
+      + "The DOI has been extracted into the DOI field."),
+
+  REDLIST_STATUS_AMBIGUOUS(NAME_USAGE, Level.WARNING,
+      "The taxon has more than one threat status for the same area, "
+      + "usually because the status of a synonym was merged into its accepted taxon. "
+      + "The taxon concepts of the red list and the checklist might differ.")
   ;
 
   /**

@@ -644,6 +644,7 @@ public class SectorMapperTest extends BaseDecisionMapperTest<Sector, SectorSearc
     d.setEntities(Set.of(EntityType.NAME, EntityType.NAME_USAGE, EntityType.NAME_RELATION));
     d.setNameTypes(Set.of(NameType.SCIENTIFIC, NameType.OTHER));
     d.setNameStatusExclusion(Set.of(NomStatus.CHRESONYM));
+    d.setTaxonomicStatusExclusion(Set.of(TaxonomicStatus.MISAPPLIED, TaxonomicStatus.PROVISIONALLY_ACCEPTED));
     d.setNameFilter("BOLD:.*");
     d.setCopyAccordingTo(true);
     d.setRemoveOrdinals(false);

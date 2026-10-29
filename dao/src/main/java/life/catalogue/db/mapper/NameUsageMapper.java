@@ -5,6 +5,7 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.Environment;
+import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.db.CopyDataset;
 import life.catalogue.db.DatasetProcessable;
@@ -257,6 +258,11 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
   List<String> listUsageIDsByNameID(@Param("datasetKey") int datasetKey, @Param("nameId") String nameId);
 
   /**
+   * List the ids of all usages in a given dataset whose own verbatim record carries the given issue.
+   */
+  List<String> listUsageIDsByVerbatimIssue(@Param("datasetKey") int datasetKey, @Param("issue") Issue issue);
+
+  /**
    * Warning, this does not return bare names, only true usages!
    */
   List<NameUsageBase> listByNamesIndexOrCanonicalID(@Param("datasetKey") int datasetKey, @Param("nidx") int nidx, @Param("page") Page page);
@@ -333,6 +339,10 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
    * Same as processDataset, but also populates the taxon.classification list and, for the archive exporters,
    * the basionym of every name. Only they use this query.
    *
+   * @param synonym if given only returns synonyms (true) or accepted names (false), otherwise both in any order.
+   *                The archive exporters ask for the accepted names first, so a synonym can rely on what its
+   *                accepted taxon already told them. Only the synonyms alone (true) come with a classification:
+   *                that of their accepted taxon followed by the accepted taxon itself.
    * @param inclCitations if true also joins in the publishedIn and accordingTo reference citations
    *                      (Name.publishedInCitation, NameUsageBase.accordingTo). Only DwC-A writes citations
    *                      inline, and they are wide, so ColDP does not ask for them.
@@ -340,10 +350,11 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
   Cursor<NameUsageBase> processDatasetWithClassification(@Param("datasetKey") int datasetKey,
                                        @Nullable @Param("minRank") Rank minRank,
                                        @Nullable @Param("maxRank") Rank maxRank,
+                                       @Nullable @Param("synonym") Boolean synonym,
                                        @Param("inclCitations") boolean inclCitations);
 
   default Cursor<NameUsageBase> processDatasetWithClassification(int datasetKey, @Nullable Rank minRank, @Nullable Rank maxRank) {
-    return processDatasetWithClassification(datasetKey, minRank, maxRank, false);
+    return processDatasetWithClassification(datasetKey, minRank, maxRank, null, false);
   }
 
   /**
@@ -532,23 +543,26 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
    * @param params various tree traversal request parameters:
    * @param depthFirst if true uses a depth first traversal which is more expensive than breadth first!
    * @param ordered if true the children of a depth first traversal are ordered by name with all synonyms coming first. Only applies to depthFirst traversals!
+   * @param inclBasionym if true also resolves Name.basionymNameId/basionymUsageId. Only the archive exporters
+   *                     need it and it costs a scan of the dataset's BASIONYM relations, so it is opt in.
+   * @param synonym if given only returns synonyms (true) or accepted names (false) of the traversed tree.
+   *                Accepted names alone are cheaper to get with params.synonyms=false, which does not traverse synonyms at all.
+   *                Only the synonyms alone (true) come with a classification: that of their accepted taxon followed by
+   *                the accepted taxon itself.
    */
   Cursor<NameUsageBase> processTree(@Param("param") TreeTraversalParameter params,
                                     @Param("depthFirst") boolean depthFirst,
                                     @Param("ordered") boolean ordered,
                                     @Param("inclBasionym") boolean inclBasionym,
-                                    @Param("inclCitations") boolean inclCitations);
+                                    @Param("inclCitations") boolean inclCitations,
+                                    @Nullable @Param("synonym") Boolean synonym);
 
-  /**
-   * @param inclBasionym if true also resolves Name.basionymNameId/basionymUsageId. Only the archive exporters
-   *                     need it and it costs a scan of the dataset's BASIONYM relations, so it is opt in.
-   */
   default Cursor<NameUsageBase> processTree(TreeTraversalParameter params, boolean depthFirst, boolean ordered) {
-    return processTree(params, depthFirst, ordered, false, false);
+    return processTree(params, depthFirst, ordered, false, false, null);
   }
 
   default Cursor<NameUsageBase> processTree(@Param("param") TreeTraversalParameter params) {
-    return processTree(params, false, false, false, false);
+    return processTree(params, false, false, false, false, null);
   }
 
   /**
@@ -565,7 +579,6 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
    * Processed SimpleName instances have the parentID as their parent property, not a scientificName!
    *
    * @param params various tree traversal request parameters
-   * @param params various tree traversal request parameters:
    * @param depthFirst if true uses a depth first traversal which is more expensive than breadth first!
    * @param ordered if true the children of a depth first traversal are ordered by their ordinal and name with all synonyms coming first. Only applies to depthFirst traversals!
    */

@@ -7,6 +7,7 @@ import life.catalogue.common.lang.InterruptedRuntimeException;
 import life.catalogue.dao.EstimateDao;
 import life.catalogue.dao.SectorDao;
 import life.catalogue.dao.SectorImportDao;
+import life.catalogue.dao.SectorSettingsResolver;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.SectorProcessable;
 import life.catalogue.db.mapper.NameMapper;
@@ -60,6 +61,8 @@ public class SectorSync extends SectorRunnable {
   private List<SimpleName> foreignChildren;
   // map with foreign child id to original parent name
   private final Map<String, Name> foreignChildrenParents = new HashMap<>();
+  // entities other sectors or editors attached to the usages of this sector
+  private ForeignSectorEntities foreignEntities;
   private final UsageIdGen usageIdGen;
   private final Supplier<String> nameIdGen;
   private final Supplier<String> typeMaterialIdGen;
@@ -141,6 +144,10 @@ public class SectorSync extends SectorRunnable {
     }
     try {
       if (projectTarget) {
+        // only reattach what was detached for good - a failed detach rolls back
+        var foreign = new ForeignSectorEntities(factory, sector);
+        foreign.detach();
+        foreignEntities = foreign;
         deleteOld();
         // from here on the project no longer holds what the last successful attempt measured,
         // so a failure must not leave sector.sync_attempt pointing at it - see pinFailedAttempt()
@@ -160,6 +167,12 @@ public class SectorSync extends SectorRunnable {
         // run these even if we get errors in the main tree copying
         setStep(ImportState.MATCHING);
         rematchForeignChildren();
+        // never mask the error of a failed sync with this one
+        try {
+          reattachForeignEntities();
+        } catch (RuntimeException e) {
+          LOG.error("Failed to attach the entities of other sectors to sector {} again", sectorKey, e);
+        }
         relinkAttachedSectors();
         rematchEstimates();
       }
@@ -335,6 +348,15 @@ public class SectorSync extends SectorRunnable {
     }
   }
   
+  private void reattachForeignEntities() {
+    if (foreignEntities == null) return;
+    foreignEntities.reattach();
+    if (foreignEntities.getDropped() > 0) {
+      LOG.warn("Dropped {} entities of other sectors whose usage is no longer synced by sector {}", foreignEntities.getDropped(), sectorKey);
+      state.addWarning(String.format("%d entities of other sectors were dropped, as their usage is no longer synced", foreignEntities.getDropped()));
+    }
+  }
+
   private void processForeignChildren(BiConsumer<NameUsageMapper, SimpleName> processor) {
     int counter = 0;
     try (SqlSession session = factory.openSession(ExecutorType.BATCH, false)) {
@@ -381,6 +403,9 @@ public class SectorSync extends SectorRunnable {
       if (projectTarget) {
         // releases index everything at the end, only a project needs to reindex the usages a merge enriched
         handler.trackUpdatedUsages();
+      }
+      if (settings != null && SectorSettingsResolver.SECTOR.equals(settings.getSources().get("nameTypes"))) {
+        handler.nameTypesBySector();
       }
       return handler;
     }

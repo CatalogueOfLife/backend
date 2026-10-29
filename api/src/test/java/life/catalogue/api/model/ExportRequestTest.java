@@ -17,9 +17,9 @@ public class ExportRequestTest {
     assertFalse(req.isTreeRequest());
     req.setMinRank(Rank.FAMILY);
     assertFalse(req.isTreeRequest());
-    req.setTaxGroups(false);
+    req.setClassification(false);
     assertFalse(req.isTreeRequest());
-    req.setTaxGroups(true);
+    req.setClassification(true);
     assertTrue(req.isTreeRequest());
   }
 

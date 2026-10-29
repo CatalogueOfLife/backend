@@ -144,7 +144,7 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
    */
   @GET
   @Path("sync/compare")
-  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
+  @RolesAllowed({Roles.ADMIN, Roles.EDITOR, Roles.REVIEWER})
   public List<SectorMetricsDiff> compareSyncMetrics(@PathParam("key") int datasetKey,
                                                     @QueryParam("to") Integer otherKey,
                                                     @QueryParam("minChange") @DefaultValue("0.1") double minChange,

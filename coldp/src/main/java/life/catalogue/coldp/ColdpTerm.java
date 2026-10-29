@@ -4,6 +4,7 @@ import org.gbif.dwc.terms.AlternativeNames;
 import org.gbif.dwc.terms.Term;
 
 import java.net.URI;
+import java.time.LocalDateTime;
 import java.time.Year;
 import java.util.Arrays;
 import java.util.Date;
@@ -35,8 +36,8 @@ public enum ColdpTerm implements Term, AlternativeNames {
   containerAuthorID,
   containerTitle("source"),
   containerTitleShort,
-  issued(Date.class, "year"),
-  accessed(Date.class),
+  issued("year"),
+  accessed,
   collectionTitle,
   collectionEditor,
   collectionEditorID,
@@ -52,7 +53,7 @@ public enum ColdpTerm implements Term, AlternativeNames {
   doi,
   link(URI.class),
   remarks,
-  modified(Date.class),
+  modified(LocalDateTime.class),
   modifiedBy,
 
   Name((Class) null),
@@ -109,7 +110,7 @@ public enum ColdpTerm implements Term, AlternativeNames {
   accordingToPageLink,
   scrutinizer,
   scrutinizerID,
-  scrutinizerDate(Date.class),
+  scrutinizerDate,
   provisional(Boolean.class),
   //referenceID,
   extinct(Boolean.class),

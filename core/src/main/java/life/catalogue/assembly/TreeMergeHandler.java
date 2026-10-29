@@ -4,7 +4,9 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.dao.CopyUtil;
+import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
+import life.catalogue.db.mapper.TaxonExtensionMapper;
 import life.catalogue.db.mapper.TypeMaterialMapper;
 import life.catalogue.db.mapper.VernacularNameMapper;
 import life.catalogue.interpreter.InterpreterUtils;
@@ -46,14 +48,25 @@ public class TreeMergeHandler extends TreeBaseHandler {
   private final MatchingUtils utils;
   private final AuthorComparator authComp;
   private final TaxGroupAnalyzer groupAnalyzer;
+  // the lowest group the whole source covers, a fallback for usages whose own classification tells none
+  private final @Nullable TaxGroup sourceGroup;
+  // verbatim keys of the source genera whose placement contradicts the reference, see PlacementChecker
+  private final Set<Integer> placementConflicts;
   private int counter = 0;  // all source usages
   private int ignored = 0;
   private int thrown = 0;
   private int created = 0;
   private int updated = 0; // updates
   private int vernaculars = 0; // vernacular names added to existing usages
+  private int extensions = 0; // distributions, media & taxon properties added to existing usages
+  // source name id -> target usage id of names matched to existing usages. Their target name ids are looked up lazily
+  private final Map<String, String> matchedNameUsageIds = new HashMap<>();
+  // extension types besides vernaculars which are added to existing usages
+  private static final List<EntityType> MERGED_EXTENSIONS = List.of(EntityType.DISTRIBUTION, EntityType.MEDIA, EntityType.TAXON_PROPERTY);
   // ids of existing usages an update changed. Only tracked on request, see trackUpdatedUsages()
   private @Nullable Set<String> updatedUsageIds;
+  // true if the sector itself, not one of its profiles, lists the name types to merge. See nameTypesBySector()
+  private boolean nameTypesBySector;
   private Throwable exception;
   private final @Nullable TreeMergeHandlerConfig cfg;
   private final String nameIdScope;
@@ -72,6 +85,9 @@ public class TreeMergeHandler extends TreeBaseHandler {
     this.cfg = cfg;
     this.matcher = matcherSupplier.apply(batchSession);
     groupAnalyzer = new TaxGroupAnalyzer();
+    sourceGroup = source == null ? null : TaxGroupAnalyzer.lowestCommonGroup(source.getTaxonomicGroupScope());
+    placementConflicts = Set.copyOf(vrmRO.listKeysByIssue(sector.getSubjectDatasetKey(), Issue.PLACEMENT_CONFLICT));
+    LOG.info("Source {} covers taxonomic group {} and has {} genera with a placement conflict", sector.getSubjectDatasetKey(), sourceGroup, placementConflicts.size());
     utils = new MatchingUtils(nameIndex);
     // same construction as UsageMatcher: reuse the names index own comparator when available so
     // author matching (used to disambiguate bare-name merge candidates) behaves identically
@@ -129,6 +145,12 @@ public class TreeMergeHandler extends TreeBaseHandler {
         if (!mapper.entityExists(sourceDatasetKey)) {
           entities.remove(EntityType.TYPE_MATERIAL);
           LOG.info("No type material in sector {}", sector);
+        }
+      }
+      for (var type : MERGED_EXTENSIONS) {
+        if (entities.contains(type) && !session.getMapper(CopyUtil.extensionMapper(type)).entityExists(sourceDatasetKey)) {
+          entities.remove(type);
+          LOG.info("No {} in sector {}", type, sector);
         }
       }
     }
@@ -251,11 +273,24 @@ public class TreeMergeHandler extends TreeBaseHandler {
     boolean unique = nu.getName().getRank().isSupraspecific() && cfg != null && cfg.xCfg.enforceUnique(nu.getName());
     boolean markMatch = false;
 
+    // The source placed this genus in a group the reference does not know it in, e.g. a fungus under the plant family of
+    // its host. Its classification cannot be trusted, so match it without one and cut it off for its descendants too.
+    // See https://github.com/CatalogueOfLife/backend/issues/1608
+    final boolean placementConflict = nu.isTaxon() && nu.getVerbatimKey() != null && placementConflicts.contains(nu.getVerbatimKey());
+    if (placementConflict) {
+      parents.mark();
+    }
+
     // find out matching - even if we ignore the name in the merge we want the parents matched for classification comparisons
     // we have a custom usage loader registered that knows about the open batch session
     // that writes new usages to the release which might not be flushed to the database
     var snc = new SimpleNameClassified<SimpleNameCached>(nusn);
-    snc.setClassification(parents.classificationSN(1));
+    if (placementConflict) {
+      snc.setClassification(List.of());
+    } else {
+      snc.setClassification(parents.classificationSN(1));
+      snc.setGroup(sourceGroup);
+    }
     UsageMatch match = matcher.match(snc, true, unique);
     // remove matches to genera for unranked source names as genera often are homonyms with higher names and can cause serious trouble
     if (match.isMatch() && nu.getRank().otherOrUnranked() && match.usage.getRank().isGenusGroup()) {
@@ -263,6 +298,11 @@ public class TreeMergeHandler extends TreeBaseHandler {
       match = UsageMatch.empty(targetDatasetKey);
     } else {
       LOG.debug("{} matches {}", nu.getLabel(), match);
+    }
+    // a placeholder matches the taxon it is anchored on, "Mollusca incertae sedis" its Mollusca, as a higher rank match.
+    // Its children attach there, but the placeholder never updates that taxon
+    if (match.type == MatchType.HIGHERRANK) {
+      match = UsageMatch.snap(match.usage, targetDatasetKey, match.alternatives);
     }
     if (!match.isMatch() && unique) {
       for (var alt : match.alternatives) {
@@ -312,13 +352,29 @@ public class TreeMergeHandler extends TreeBaseHandler {
       }
     }
 
-    // An existing usage shares this canonical name but carries different authorship, and neither the
-    // ranks the two classifications share nor their taxonomic group can tell a real homonym from the
-    // very same taxon. Creating the name would fabricate a duplicate genus, so drop it and its whole
-    // subtree instead - a genus we cannot place with confidence contributes nothing rather than a
-    // second copy. See https://github.com/CatalogueOfLife/data/issues/1718
+    // A genus with a placement conflict joins the project genus of its name if there is a single one to join, without
+    // updating it. Without one there is nowhere to put it but under the wrong host, so it is dropped with its subtree.
+    if (placementConflict) {
+      if (match.isMatch()) {
+        LOG.info("Attach {} {} [{}] from {} with a placement conflict to {} ignoring its source classification {}",
+          nu.getName().getRank(), nu.getName().getLabel(), nu.getId(), sector, match.usage, parents.classificationToString());
+        match = UsageMatch.snap(match.usage, targetDatasetKey, match.alternatives);
+      } else {
+        LOG.warn("Skip {} {} [{}] from {} and its entire subtree: its source classification {} contradicts the reference and the project has no single {} of that name to attach to",
+          nu.getName().getRank(), nu.getName().getLabel(), nu.getId(), sector, parents.classificationToString(), nu.getName().getRank());
+        parents.markSubtreeAsSkipped();
+        incIgnored(IgnoreReason.PLACEMENT_CONFLICT, nu);
+        return;
+      }
+    }
+
+    // Existing usages share this canonical name, but neither authorship, the ranks the classifications share nor
+    // their taxonomic groups can tell a real homonym from the very same taxon, or which of several homonyms it is.
+    // Creating the name would fabricate a duplicate, picking one would guess, so drop it and its whole subtree
+    // instead - a name we cannot place with confidence contributes nothing rather than a second copy.
+    // See https://github.com/CatalogueOfLife/data/issues/1718 and https://github.com/CatalogueOfLife/backend/issues/1608
     if (!match.isMatch() && match.unresolvedHomonym) {
-      LOG.warn("Skip {} {} [{}] from {} and its entire subtree: another {} of the same name but different authorship exists in {}, and neither the ranks they share nor their taxonomic group can tell them apart. Source classification: {}",
+      LOG.warn("Skip {} {} [{}] from {} and its entire subtree: other {} of the same name exist in {}, and neither authorship, the ranks they share nor their taxonomic group can tell them apart. Source classification: {}",
         nu.getName().getRank(), nu.getName().getLabel(), nu.getId(), sector, nu.getName().getRank(), targetDatasetKey, parents.classificationToString());
       parents.markSubtreeAsSkipped();
       incIgnored(IgnoreReason.AMBIGUOUS_HOMONYM, nu);
@@ -331,8 +387,10 @@ public class TreeMergeHandler extends TreeBaseHandler {
       parents.mark();
     }
 
-    // check if usage should be ignored AFTER matching as we need the parents matched to attach child taxa correctly
-    if (match.ignore || ignoreUsage(nu, decisions.get(nu.getId()), mod, true)) {
+    // check if usage should be ignored AFTER matching as we need the parents matched to attach child taxa correctly.
+    // The filters come first, so a name the matcher cannot handle, e.g. an unparsable placeholder without a names index
+    // id, is counted under the reason a filter of the sector gives it, just like a parsed one. It is never merged anyway
+    if (ignoreUsage(nu, decisions.get(nu.getId()), mod, true) || match.ignore) {
       // skip this taxon, but include children
       ignored++;
       return;
@@ -351,11 +409,15 @@ public class TreeMergeHandler extends TreeBaseHandler {
 
     // finally create or update records
     SimpleNameWithNidx sn = null;
+    // creating or updating changes the ids of the source usage instance
+    final String srcId = nu.getId();
+    final String srcNameId = nu.getName().getId();
     if (match.isMatch()) {
       // *** UPDATE ***
       update(nu, match);
       sn = match.usage;
       mod.createOrthVarRel = false; // dont create new name relations for spelling corrections
+      trackIds(srcId, sn.getId(), srcNameId, null);
 
     } else if (match.type == MatchType.AMBIGUOUS) {
       LOG.debug("Do not create new name as we had {} ambiguous matches for {}", match.alternatives.size(), nu.getLabel());
@@ -363,7 +425,20 @@ public class TreeMergeHandler extends TreeBaseHandler {
     } else {
       // *** CREATE ***
       if ( nu.isTaxon() && syncTaxa && !isAmbiguousGenus(nu) ||  nu.isSynonym() && syncSynonyms) {
-        sn = create(nu, parent, mod);
+        try {
+          sn = create(nu, parent, mod);
+          if (sn != null) {
+            trackIds(srcId, sn.getId(), srcNameId, nu.getName().getId());
+          }
+        } catch (UnresolvedHomonymException e) {
+          // the genus or species the name needs cannot be told apart from its homonyms. Guessing one puts it into
+          // another taxon, maybe another kingdom, a new one duplicates one of them, so the name is dropped with its subtree.
+          LOG.warn("Skip {} {} [{}] from {} and its entire subtree: the {} it needs cannot be told apart from its homonyms in {}. Source classification: {}",
+            nu.getName().getRank(), nu.getName().getLabel(), nu.getId(), sector, e.name, targetDatasetKey, parents.classificationToString());
+          parents.markSubtreeAsSkipped();
+          incIgnored(IgnoreReason.AMBIGUOUS_HOMONYM, nu);
+          return;
+        }
       }
     }
 
@@ -575,10 +650,11 @@ public class TreeMergeHandler extends TreeBaseHandler {
         return incIgnored(IgnoreReason.RANK, u);
       }
       // a ranked name the parser could not make sense of is no name to merge, e.g. a family "0" that became the parent of
-      // existing base genera. Viruses are OTHER too, but carry the virus code. An explicit sector name type filter or a
-      // reviewed decision has the final say. See https://github.com/CatalogueOfLife/data/issues/1730
+      // existing base genera. Viruses are OTHER too, but carry the virus code. A name type filter set on the sector itself
+      // or a reviewed decision has the final say - a profile default like COL's "Project defaults", which admits OTHER for
+      // every sector, does not. See https://github.com/CatalogueOfLife/data/issues/1730 and #1636
       if (u.getName().getType() == NameType.OTHER && u.getName().getCode() != NomCode.VIRUS
-          && (sector.getNameTypes() == null || sector.getNameTypes().isEmpty())
+          && !nameTypesBySector
           && (decision == null || decision.getMode() != EditorialDecision.Mode.REVIEWED)) {
         return incIgnored(IgnoreReason.NAME_OTHER, u);
       }
@@ -592,16 +668,35 @@ public class TreeMergeHandler extends TreeBaseHandler {
 
   /**
    * Use the same usage matching to find existing taxa
+   *
+   * @throws UnresolvedHomonymException for a name that cannot be told apart from existing homonyms
    */
   @Override
   protected Usage findExisting(Name n, Usage parent) {
     var snc = utils.toSimpleNameClassified(new Taxon(n), parents.classificationSN());
+    snc.setGroup(sourceGroup);
     var m = matcher.match(snc, true, false);
     // make sure rank is correct - canonical matches are across ranks
     if (m.usage != null && m.usage.getRank() == n.getRank()) {
       return usage(m.usage);
     }
+    if (m.unresolvedHomonym) {
+      throw new UnresolvedHomonymException(n.getRank() + " " + n.getLabel());
+    }
     return null;
+  }
+
+  /**
+   * Thrown while looking up the implicit genus or species of a name that cannot be told apart from existing homonyms.
+   * It aborts the creation of the name before anything is persisted.
+   */
+  static class UnresolvedHomonymException extends RuntimeException {
+    final String name;
+
+    UnresolvedHomonymException(String name) {
+      super("Unresolved homonym " + name);
+      this.name = name;
+    }
   }
 
   @Override
@@ -659,6 +754,39 @@ public class TreeMergeHandler extends TreeBaseHandler {
       }
     }
     return existingParentFound;
+  }
+
+  /**
+   * Adds the extension records of a source usage to an existing usage,
+   * skipping all that are duplicates of the existing ones, e.g. a distribution for an area that exists already.
+   */
+  private <T extends ExtensionEntity & DuplicateCheck<T>> void addExtensions(EntityType type, NameUsageBase nu, DSID<String> existingUsageKey, VerbatimSource vs) {
+    @SuppressWarnings("unchecked")
+    final var mapper = (TaxonExtensionMapper<T>) batchSession.getMapper(CopyUtil.extensionMapper(type));
+    List<T> existingRecords = null;
+    recloop:
+    for (T e : mapper.listByTaxon(nu)) {
+      // lazily query existing records
+      if (existingRecords == null) {
+        existingRecords = mapper.listByTaxon(existingUsageKey);
+      }
+      for (var ex : existingRecords) {
+        if (ex.isDuplicate(e)) {
+          continue recloop;
+        }
+      }
+      e.setId(null);
+      e.setVerbatimKey(null);
+      e.setVerbatimSourceKey(verbatimSourceKey(vs));
+      e.setSectorKey(sector.getId());
+      e.setDatasetKey(targetDatasetKey);
+      e.applyUser(user);
+      e.setReferenceId(lookupOrCreateReference(e.getReferenceId()));
+      mapper.create(e, existingUsageKey.getId());
+      existingRecords.add(e);
+      extensions++;
+      trackUpdated(existingUsageKey.getId());
+    }
   }
 
   /**
@@ -749,6 +877,12 @@ public class TreeMergeHandler extends TreeBaseHandler {
             existingVNames.add(vn);
             vernaculars++;
             trackUpdated(existingUsageKey.getId());
+          }
+        }
+        // distributions, media & taxon properties
+        for (var type : MERGED_EXTENSIONS) {
+          if (entities.contains(type)) {
+            addExtensions(type, nu, existingUsageKey, vs);
           }
         }
         // environments, temporal range & extinct flag
@@ -907,7 +1041,6 @@ public class TreeMergeHandler extends TreeBaseHandler {
       if (src.hasParsedAuthorship() && !n.hasAuthorship()) {
         upd.add(InfoGroup.AUTHORSHIP);
         n.setCombinationAuthorship(src.getCombinationAuthorship());
-        n.setSanctioningAuthor(src.getSanctioningAuthor());
         n.setBasionymAuthorship(src.getBasionymAuthorship());
         n.rebuildAuthorship();
         if (existingUsage != null) {
@@ -927,7 +1060,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
         LOG.debug("Updated {} with gender {}", n.getScientificName(), n.getGender());
       }
       if (!src.getRank().isUncomparable() && n.getRank().isUncomparable()
-        && RankComparator.compareVagueRanks(n.getRank(), src.getRank()) != Equality.DIFFERENT
+        && RankComparator.compare(n.getRank(), src.getRank()) != Equality.DIFFERENT
       ) {
         upd.add(InfoGroup.RANK);
         n.setRank(src.getRank());
@@ -972,47 +1105,48 @@ public class TreeMergeHandler extends TreeBaseHandler {
     if (entities.contains(EntityType.TYPE_MATERIAL)) {
       n = lazilyLoad(n, existingUsage);
       final var mapper = batchSession.getMapper(TypeMaterialMapper.class);
-      List<TypeMaterial> existingTMs = null;
+      List<TypeDesignation> existingTDs = null;
       tmloop:
-      for (var tm : mapper.listByName(src)) {
+      for (var td : mapper.listDesignations(src)) {
         // we only want to add type material with important states
-        if (tm.getStatus() == null || !tm.getStatus().isPrimary()) {
+        if (td.getStatus() == null || !td.getStatus().isPrimary()) {
           continue;
         }
         // does it exist already?
         // lazily query existing material
-        if (existingTMs == null) {
-          existingTMs = mapper.listByName(n);
+        if (existingTDs == null) {
+          existingTDs = mapper.listDesignations(n);
         }
-        for (var etm : existingTMs) {
-          if (sameType(tm, etm)) {
+        for (var etd : existingTDs) {
+          if (sameType(td, etd)) {
             continue tmloop;
           }
         }
         // a new type
-        tm.setNameId(n.getId());
-        tm.setVerbatimSourceKey(verbatimSourceKey(vs));
-        tm.setSectorKey(sector.getId());
-        tm.setDatasetKey(targetDatasetKey);
-        tm.applyUser(user);
-        // check if the entity refers to a reference which we need to lookup / copy
-        String ridCopy = lookupOrCreateReference(tm.getReferenceId());
-        tm.setReferenceId(ridCopy);
-        try {
-          mapper.create(tm);
-        } catch (Exception e) {
-          // ID might be used already - skip or try with no id instead?
-          tm.setId(null);
+        var tm = td.getTypeMaterial();
+        var link = new TypifiedName(n.getId(), td.getStatus());
+        String copyId = typeMaterialIds.get(tm.getId());
+        if (copyId != null) {
+          // the specimen was copied already for another name of this sync
+          mapper.createName(targetDatasetKey, copyId, link);
+        } else {
+          tm.setId(typeMaterialIds.issue(tm.getId()));
+          tm.setVerbatimKey(null);
+          // only names merged by this sync are linked
+          tm.setNames(new ArrayList<>(List.of(link)));
+          tm.setVerbatimSourceKey(verbatimSourceKey(vs));
+          tm.setSectorKey(sector.getId());
+          tm.setDatasetKey(targetDatasetKey);
+          tm.applyUser(user);
+          // check if the entity refers to a reference which we need to lookup / copy
+          String ridCopy = lookupOrCreateReference(tm.getReferenceId());
+          tm.setReferenceId(ridCopy);
           mapper.create(tm);
         }
-        existingTMs.add(tm);
+        existingTDs.add(new TypeDesignation(n.getId(), td.getStatus(), tm));
       }
     }
 
-    // basionym / name relations
-    if (entities.contains(EntityType.NAME_RELATION)) {
-      // TODO: implement basionym/name rel updates
-    }
     // well known name identifier
     if (existingUsage != null && nameIdScope != null) {
       var nid = DSID.of(existingUsage.getDatasetKey(), nm.getNameIdByUsage(existingUsage.getDatasetKey(), existingUsage.getId()));
@@ -1097,15 +1231,17 @@ public class TreeMergeHandler extends TreeBaseHandler {
       ( vn1.getLatin() != null && lc(rmWS(vn1.getLatin())).equalsIgnoreCase(lc(rmWS(vn2.getLatin()))) );
   }
 
-  private static boolean sameType(TypeMaterial mt1, TypeMaterial tm2) {
+  private static boolean sameType(TypeDesignation td1, TypeDesignation td2) {
+    final var mt1 = td1.getTypeMaterial();
+    final var tm2 = td2.getTypeMaterial();
     return (
         rmWS(mt1.getId()).equalsIgnoreCase(rmWS(tm2.getId()))
       ) || (
         // only keep one holo
-        mt1.getStatus() == TypeStatus.HOLOTYPE && tm2.getStatus() == TypeStatus.HOLOTYPE
+        td1.getStatus() == TypeStatus.HOLOTYPE && td2.getStatus() == TypeStatus.HOLOTYPE
       ) || (
         // only keep one lectotype
-        mt1.getStatus() == TypeStatus.LECTOTYPE && tm2.getStatus() == TypeStatus.LECTOTYPE
+        td1.getStatus() == TypeStatus.LECTOTYPE && td2.getStatus() == TypeStatus.LECTOTYPE
       ) || (
         Objects.equals( rmWS(mt1.getInstitutionCode()), rmWS(tm2.getInstitutionCode()) ) &&
         Objects.equals( rmWS(mt1.getCatalogNumber()), rmWS(tm2.getCatalogNumber()) )
@@ -1115,9 +1251,45 @@ public class TreeMergeHandler extends TreeBaseHandler {
   /**
    * Copies all name and taxon relations based on ids collected during the accept calls by the tree traversal.
    */
+  /**
+   * Remembers the target ids of a synced source usage and its name, but only if needed to copy relations later.
+   * @param nameId the target name id or null if the usage was matched to an existing one, so it is looked up lazily
+   */
+  private void trackIds(String srcId, String usageId, String srcNameId, @Nullable String nameId) {
+    if (entities.contains(EntityType.SPECIES_INTERACTION)) {
+      usageIds.put(srcId, usageId);
+    }
+    if (entities.contains(EntityType.NAME_RELATION)) {
+      if (nameId == null) {
+        matchedNameUsageIds.put(srcNameId, usageId);
+      } else {
+        nameIds.put(srcNameId, nameId);
+      }
+    }
+  }
+
+  @Override
+  protected Collection<String> syncedSourceNameIds() {
+    var ids = new HashSet<>(nameIds.keySet());
+    ids.addAll(matchedNameUsageIds.keySet());
+    return ids;
+  }
+
+  @Override
+  protected String targetNameId(String sourceNameId) {
+    return nameIds.computeIfAbsent(sourceNameId, id -> {
+      var usageId = matchedNameUsageIds.get(id);
+      return usageId == null ? null : session.getMapper(NameMapper.class).getNameIdByUsage(targetDatasetKey, usageId);
+    });
+  }
+
+  /**
+   * Copies name relations and species interactions of synced names and usages, skipping those existing already.
+   */
   @Override
   public void copyRelations() {
-    // TODO: copy name & taxon relations
+    copyNameRelations(true);
+    copySpeciesInteractions(true);
     // implicit relations last, so we can check if we have duplicates
     super.copyRelations();
   }
@@ -1128,7 +1300,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
     session.close();
     batchSession.commit();
     batchSession.close();
-    LOG.info("{}: Total processed={}, thrown={}, ignored={}, created={}, updated={}, vernaculars={}", sector, counter, thrown, ignored, created, updated, vernaculars);
+    LOG.info("{}: Total processed={}, thrown={}, ignored={}, created={}, updated={}, vernaculars={}, extensions={}", sector, counter, thrown, ignored, created, updated, vernaculars, extensions);
   }
 
   public int getUpdated() {
@@ -1141,6 +1313,15 @@ public class TreeMergeHandler extends TreeBaseHandler {
    */
   void trackUpdatedUsages() {
     updatedUsageIds = new HashSet<>();
+  }
+
+  /**
+   * Lets the name type filter of the sector decide about ranked OTHER names. Only to be called if the sector lists the
+   * name types itself: a sync copies the settings its profiles resolve onto the sector, so a non empty list alone
+   * does not tell a reviewed exception for this sector from a project wide default.
+   */
+  void nameTypesBySector() {
+    nameTypesBySector = true;
   }
 
   /**

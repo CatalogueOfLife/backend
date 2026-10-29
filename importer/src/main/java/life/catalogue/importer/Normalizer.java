@@ -2,10 +2,12 @@ package life.catalogue.importer;
 
 import com.google.common.annotations.VisibleForTesting;
 import life.catalogue.api.model.*;
+import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.*;
 import life.catalogue.common.collection.CollectionUtils;
 import life.catalogue.common.collection.CountMap;
 import life.catalogue.common.lang.Exceptions;
+import life.catalogue.common.tax.NameFormatter;
 import life.catalogue.common.tax.MisappliedNameMatcher;
 import life.catalogue.csv.MappingInfos;
 import life.catalogue.dao.DatasetDao;
@@ -28,6 +30,7 @@ import life.catalogue.interpreter.ExtinctName;
 import life.catalogue.interpreter.RanKnName;
 import life.catalogue.matching.NameValidator;
 import life.catalogue.matching.nidx.NameIndex;
+import life.catalogue.matching.similarity.ModifiedDamerauLevenshtein;
 import life.catalogue.metadata.DoiResolver;
 import life.catalogue.parser.NameParser;
 
@@ -46,6 +49,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,6 +59,9 @@ import com.google.common.base.Preconditions;
 
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
+import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import jakarta.validation.Validator;
 
 import static life.catalogue.api.vocab.Issue.*;
@@ -64,6 +71,8 @@ import static life.catalogue.api.vocab.Issue.*;
  */
 public class Normalizer implements Callable<Boolean> {
   private static final Logger LOG = LoggerFactory.getLogger(Normalizer.class);
+  private static final int MIN_SPELLING_EDITS = 3;
+  private static final ModifiedDamerauLevenshtein SPELLING_DISTANCE = new ModifiedDamerauLevenshtein();
   private final DataFormat format;
   private final Path sourceDir;
   private final int datasetKey;
@@ -74,6 +83,8 @@ public class Normalizer implements Callable<Boolean> {
   private final DatasetWithSettings dataset;
   private final Validator validator;
   private MappingInfos meta;
+  // the interpreter of the format, to interpret names again with a code decided from their classification
+  private InterpreterBase interpreter;
   // parsing is expensive so we cache the higher taxa names that we need to parse a lot
   private final LoadingCache<RanKnName, ParsedHigherName> parseCache = Caffeine.newBuilder()
     .maximumSize(10000)
@@ -238,8 +249,11 @@ public class Normalizer implements Callable<Boolean> {
       }
     });
 
-    LOG.info("Validate name usages");
-    TreeWalker.walkTree(store, new TreeWalker.StartEndHandler() {
+    LOG.info("Decide missing codes and validate name usages");
+    // the codes have to be decided before the usages are validated, which compares them with their parents.
+    // A dataset code is given for all names, and text trees pass codes down to their children while interpreting
+    final CodeAssigner codeAssigner = dataset.getCode() == null && interpreter != null ? new CodeAssigner(store, interpreter) : null;
+    final TreeWalker.StartEndHandler validator = new TreeWalker.StartEndHandler() {
       final ParentStack<TreeCleanerAndValidator.XLinneanNameUsage> parents = new ParentStack();
 
       @Override
@@ -263,7 +277,13 @@ public class Normalizer implements Callable<Boolean> {
 
       @Override
       public void end(NameUsageData data, TreeWalker.WalkerContext ctxt) {}
-    });
+    };
+    if (codeAssigner == null) {
+      TreeWalker.walkTree(store, validator);
+    } else {
+      TreeWalker.walkTree(store, codeAssigner, validator);
+      codeAssigner.logStats();
+    }
 
     LOG.info("Validate bare names");
     store.names().allBareNames().forEach(nn -> {
@@ -276,6 +296,8 @@ public class Normalizer implements Callable<Boolean> {
       }
     });
 
+    flagHomotypicNamesOutsideSynonymy();
+
     // verify reference truncation
     LOG.info("Validate references");
     for (Reference r : store.references()) {
@@ -287,18 +309,18 @@ public class Normalizer implements Callable<Boolean> {
   }
 
   private void flagRedundantRecords(NameUsageData nu, IssueContainer issues) {
-    flagSameAs(DUPLICATE_DISTRIBUTIONS, nu.ud.distributions, issues);
-    flagSameAs(DUPLICATE_MEDIA, nu.ud.media, issues);
-    flagSameAs(DUPLICATE_VERNACULAR_NAMES, nu.ud.vernacularNames, issues);
-    flagSameAs(DUPLICATE_ESTIMATES, nu.ud.estimates, issues);
-    flagSameAs(DUPLICATE_TAXON_PROPERTIES, nu.ud.properties, issues);
+    flagDuplicates(DUPLICATE_DISTRIBUTIONS, nu.ud.distributions, issues);
+    flagDuplicates(DUPLICATE_MEDIA, nu.ud.media, issues);
+    flagDuplicates(DUPLICATE_VERNACULAR_NAMES, nu.ud.vernacularNames, issues);
+    flagDuplicates(DUPLICATE_ESTIMATES, nu.ud.estimates, issues);
+    flagDuplicates(DUPLICATE_TAXON_PROPERTIES, nu.ud.properties, issues);
   }
 
-  private static <T extends SameAs<T>> void flagSameAs(Issue issue, Collection<T> coll, IssueContainer issues) {
+  private static <T extends DuplicateCheck<T>> void flagDuplicates(Issue issue, Collection<T> coll, IssueContainer issues) {
     for (var rec : coll) {
       if (rec != null) {
         for (var ex : coll) {
-          if (ex != rec && ex.sameAs(rec)) {
+          if (ex != rec && ex.isDuplicate(rec)) {
             issues.add(issue);
             return;
           }
@@ -358,6 +380,110 @@ public class Normalizer implements Callable<Boolean> {
       Exceptions.runtimeInterruptIfCancelled();
     });
     LOG.info("Matched {} of {} names, {} unmatched", matchedCount.get(), matchedCount.get() + unmatchedCount.get(), unmatchedCount.get());
+    flagDuplicateAcceptedNames();
+  }
+
+  private record AcceptedName(String id, Integer verbatimKey, @Nullable NomCode code) {
+    boolean sameCode(AcceptedName other) {
+      return code == null || other.code == null || code == other.code;
+    }
+  }
+
+  /**
+   * @return a key combining the names index id and the rank of an accepted usage, or null if the name has no index id
+   */
+  private Long canonicalRankKey(UsageData u) {
+    var nd = store.name(u);
+    if (nd == null || nd.getName().getNamesIndexId() == null) {
+      return null;
+    }
+    return (long) nd.getName().getNamesIndexId() << 16 | nd.getName().getRank().ordinal();
+  }
+
+  /**
+   * Flags accepted taxa that share their canonical name and rank with another accepted taxon under the same code,
+   * regardless of their authorship: only one of them can be correct, see #1218.
+   * Homonyms under different codes are legitimate, a missing code does not separate names.
+   * Accepted usages are counted first, so only the duplicated ones are kept in memory.
+   */
+  private void flagDuplicateAcceptedNames() {
+    final Long2IntOpenHashMap counts = new Long2IntOpenHashMap();
+    store.usages().allTaxa().forEach(u -> {
+      Long key = canonicalRankKey(u);
+      if (key != null) {
+        counts.addTo(key, 1);
+      }
+    });
+    final Long2ObjectMap<List<AcceptedName>> duplicates = new Long2ObjectOpenHashMap<>();
+    store.usages().allTaxa().forEach(u -> {
+      Long key = canonicalRankKey(u);
+      if (key != null && counts.get((long) key) > 1) {
+        duplicates.computeIfAbsent((long) key, k -> new ArrayList<>())
+          .add(new AcceptedName(u.getId(), u.getVerbatimKey(), store.name(u).getName().getCode()));
+      }
+    });
+    final AtomicInteger flagged = new AtomicInteger();
+    for (var group : duplicates.values()) {
+      for (var an : group) {
+        if (group.stream().anyMatch(other -> other != an && an.sameCode(other))) {
+          store.addIssues(an.verbatimKey(), Issue.DUPLICATE_ACCEPTED_NAME);
+          flagged.incrementAndGet();
+        }
+      }
+    }
+    LOG.info("Flagged {} duplicate accepted names", flagged);
+  }
+
+  /**
+   * @return the usages of a name that take part in a synonymy, i.e. no bare names and no misapplied names
+   */
+  private List<UsageData> synonymyUsages(NameData nd) {
+    return nd.usageIDs.stream()
+      .map(store.usages()::objByID)
+      .filter(u -> u != null && !u.isBareName() && u.usage.getStatus() != TaxonomicStatus.MISAPPLIED)
+      .collect(Collectors.toList());
+  }
+
+  /**
+   * @return the ids of all accepted taxa of a name: its taxa and the accepted taxa of its (pro parte) synonyms
+   */
+  private Set<String> acceptedIDs(List<UsageData> usages) {
+    Set<String> ids = new HashSet<>();
+    for (var u : usages) {
+      if (u.isTaxon()) {
+        ids.add(u.getId());
+      } else {
+        store.usages().accepted(u).forEach(a -> ids.add(a.getId()));
+      }
+    }
+    return ids;
+  }
+
+  /**
+   * Flags the usages of names in a homotypic relation whose usages share no accepted taxon,
+   * e.g. a basionym accepted as another taxon or a synonym of it. See #1158
+   */
+  private void flagHomotypicNamesOutsideSynonymy() {
+    LOG.info("Flag homotypic names outside the synonymy");
+    final AtomicInteger flagged = new AtomicInteger();
+    store.names().all().forEach(nd -> {
+      for (var rel : nd.getRelations()) {
+        if (rel.getType().isHomotypic() && rel.getToID() != null && !rel.getToID().equals(nd.getId())) {
+          var related = store.names().objByID(rel.getToID());
+          if (related == null) continue;
+          var usages = synonymyUsages(nd);
+          var relatedUsages = synonymyUsages(related);
+          var acc = acceptedIDs(usages);
+          var relatedAcc = acceptedIDs(relatedUsages);
+          if (!acc.isEmpty() && !relatedAcc.isEmpty() && Collections.disjoint(acc, relatedAcc)) {
+            usages.forEach(u -> store.addIssues(u, Issue.HOMOTYPIC_NAME_OUTSIDE_SYNONYMY));
+            relatedUsages.forEach(u -> store.addIssues(u, Issue.HOMOTYPIC_NAME_OUTSIDE_SYNONYMY));
+            flagged.incrementAndGet();
+          }
+        }
+      }
+    });
+    LOG.info("Flagged {} homotypic relations between names outside the synonymy", flagged);
   }
 
   private void normalize() throws InterruptedException {
@@ -366,6 +492,7 @@ public class Normalizer implements Callable<Boolean> {
     insertBasionymRelations();
     // deduplicate name relations
     reduceRedundantNameRels();
+    dropImplausibleSpellingCorrections();
 
     // cleanup synonym & parent relations
     resolveSynonymChains();
@@ -490,6 +617,53 @@ public class Normalizer implements Callable<Boolean> {
     }
   }
 
+  /**
+   * Drops spelling corrections between names that differ in far more than their spelling,
+   * e.g. a source relating an accepted name to the misspelling of one of its synonyms.
+   * Such a relation would merge two homotypic groups into one: https://github.com/CatalogueOfLife/backend/issues/1662
+   */
+  private void dropImplausibleSpellingCorrections() {
+    AtomicInteger counter = new AtomicInteger();
+    store.names().all().forEach(n -> {
+      var iter = n.relations.iterator();
+      var changed = false;
+      while (iter.hasNext()) {
+        var r = iter.next();
+        if (r.getType() == NomRelType.SPELLING_CORRECTION) {
+          var n2 = store.names().objByID(r.getToID());
+          if (n2 != null && !isPlausibleSpellingCorrection(n.getName(), n2.getName())) {
+            LOG.debug("Ignore spelling correction {} -> {}", n.getName().getLabel(), n2.getName().getLabel());
+            store.addIssues(r.getVerbatimKey() != null ? r : n, Issue.SPELLING_CORRECTION_IMPLAUSIBLE);
+            iter.remove();
+            changed = true;
+            counter.incrementAndGet();
+          }
+        }
+      }
+      if (changed) {
+        store.names().update(n);
+      }
+    });
+    LOG.info("{} implausible spelling corrections removed", counter);
+  }
+
+  /**
+   * @return true if the canonical names of both names are so close that one can be a spelling of the other:
+   *   they must not differ in more than a fifth of their characters, with at least 3 edits allowed.
+   */
+  @VisibleForTesting
+  static boolean isPlausibleSpellingCorrection(Name n1, Name n2) {
+    String c1 = NameFormatter.canonicalName(n1);
+    String c2 = NameFormatter.canonicalName(n2);
+    if (c1 == null || c2 == null) {
+      return true;
+    }
+    c1 = c1.toLowerCase();
+    c2 = c2.toLowerCase();
+    int maxEdits = Math.max(MIN_SPELLING_EDITS, Math.max(c1.length(), c2.length()) / 5);
+    return SPELLING_DISTANCE.getEditDistance(c1, c2) <= maxEdits;
+  }
+
   private void removeOrphanSynonyms() {
     final AtomicInteger counter = new AtomicInteger(0);
     store.usages().allSynonyms().forEach(syn -> {
@@ -582,15 +756,15 @@ public class Normalizer implements Callable<Boolean> {
   }
 
   private void addSupplementaryInfos(UsageData acc, UsageData u) {
-    addIfNotTheSame(acc.distributions, u.distributions);
-    addIfNotTheSame(acc.media, u.media);
-    addIfNotTheSame(acc.vernacularNames, u.vernacularNames);
-    addIfNotTheSame(acc.estimates, u.estimates);
-    addIfNotTheSame(acc.properties, u.properties);
+    addIfNoDuplicate(acc.distributions, u.distributions);
+    addIfNoDuplicate(acc.media, u.media);
+    addIfNoDuplicate(acc.vernacularNames, u.vernacularNames);
+    addIfNoDuplicate(acc.estimates, u.estimates);
+    addIfNoDuplicate(acc.properties, u.properties);
     store.usages().update(acc);
   }
 
-  private <T extends SameAs<T>> void addIfNotTheSame(Collection<T> coll, Collection<T> toAdd) {
+  private <T extends DuplicateCheck<T>> void addIfNoDuplicate(Collection<T> coll, Collection<T> toAdd) {
     if (format == DataFormat.ACEF) {
       coll.addAll(toAdd);
     } else {
@@ -598,7 +772,7 @@ public class Normalizer implements Callable<Boolean> {
       for (var t : toAdd) {
         if (t != null) {
           for (var ex : coll) {
-            if (ex.sameAs(t)) {
+            if (ex.isDuplicate(t)) {
               continue outer;
             }
           }
@@ -742,6 +916,9 @@ public class Normalizer implements Callable<Boolean> {
       cl.setSpecies(null);
     }
 
+    // a species column holding only the epithet(s) needs the genus, see #1626
+    fixSpeciesEpithet(taxon, cl, clOrig);
+
     // now reconstruct the given classification with the parentID field
     // reusing existing taxa if possible, otherwise creating new ones
     // and at the very end apply that classification to the taxon
@@ -805,6 +982,33 @@ public class Normalizer implements Callable<Boolean> {
     if (parentID != null) {
       store.usages().assignParent(taxon.ud, parentID);
     }
+  }
+
+  /**
+   * Some sources fill the flat species column with the epithet only, sometimes followed by the infraspecific one:
+   * genus Chalcionellus with species "blanchii blanchii". Parsed on its own that becomes the fake genus Blanchii,
+   * so the first epithet is prefixed with the genus of the record. Without any genus the species is not applied.
+   */
+  private void fixSpeciesEpithet(NameUsageData taxon, Classification cl, Classification clOrig) {
+    String species = StringUtils.trimToNull(cl.getSpecies());
+    if (species == null || !startsLowerCase(species)) return;
+    String genus = ObjectUtils.coalesce(StringUtils.trimToNull(cl.getGenus()), StringUtils.trimToNull(clOrig.getGenus()));
+    if (genus == null) {
+      cl.setSpecies(null);
+      store.addIssues(taxon.ud.usage, Issue.CLASSIFICATION_NOT_APPLIED);
+    } else {
+      cl.setSpecies(genus + " " + StringUtils.split(species)[0]);
+    }
+  }
+
+  private static boolean startsLowerCase(String x) {
+    for (int i = 0; i < x.length(); i++) {
+      char c = x.charAt(i);
+      if (Character.isLetter(c)) {
+        return Character.isLowerCase(c);
+      }
+    }
+    return false;
   }
 
   private Rank nextLinneanRankOfParents(UsageData u) {
@@ -1206,6 +1410,7 @@ public class Normalizer implements Callable<Boolean> {
       // data
       inserter.insertAll();
       meta = inserter.getMappingFlags();
+      interpreter = inserter.interpreter().orElse(null);
       store.reportDuplicates();
       inserter.reportBadFks();
       // lookout for local logo file

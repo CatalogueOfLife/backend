@@ -33,6 +33,8 @@ import com.google.common.annotations.VisibleForTesting;
  * compares strings, see {@link StringAuthorMatcher}.
  */
 public class AuthorComparator {
+  // years an authorship may differ from one only equal by the work it was published in, X in Y against Y
+  static final int IN_YEAR_DIFF_ALLOWED = 1;
   private final AuthorMatcher matcher;
 
   public AuthorComparator(AuthorshipNormalizer normalizer) {
@@ -115,7 +117,7 @@ public class AuthorComparator {
       // if authors are not the same we allow a positive year comparison to override it as author comparison is very difficult
       Equality yresult = new YearComparator(a1.getYear(), a2.getYear()).compare();
       if (yresult != Equality.UNKNOWN) {
-        if (yresult == Equality.DIFFERENT || a1.getAuthors().isEmpty()  || a2.getAuthors().isEmpty()) {
+        if (yresult == Equality.DIFFERENT || !a1.hasAuthors() || !a2.hasAuthors()) {
           result = yresult;
         } else {
           // year EQUAL, i.e. very close by
@@ -231,16 +233,39 @@ public class AuthorComparator {
   }
 
   /**
-   * Selects and normalizes both teams and hands them to the matcher, never an empty one.
-   *
    * @param teamCode determines which of authors and ex authors are compared. If null both are
    */
   private Equality compareAuthorteam(@Nullable Authorship a1, @Nullable Authorship a2, @Nullable NomCode teamCode,
                                      AuthorContext ctx, Mode mode) {
+    Equality equality = compareTeams(a1, a2, teamCode, ctx, mode);
+    // X in Y: the name is X's, published in a work of Y, and cited either way, Natterer in Kuhl as Kuhl.
+    // Two in citations are told apart by their own authors, Natterer in Kuhl is not Smith in Kuhl.
+    // As Y may well have named the same epithet himself a few years on, the work only tells when the years agree.
+    // See https://github.com/CatalogueOfLife/backend/issues/1652
+    if (equality != Equality.EQUAL && a1 != null && a2 != null && a1.hasInAuthors() != a2.hasInAuthors()
+        && new YearComparator(IN_YEAR_DIFF_ALLOWED, a1.getYear(), a2.getYear()).compare() != Equality.DIFFERENT) {
+      var in = a1.hasInAuthors() ? new Authorship(a1.getInAuthors()) : new Authorship(a2.getInAuthors());
+      var other = a1.hasInAuthors() ? a2 : a1;
+      if (compareTeams(in, other, teamCode, ctx, mode) == Equality.EQUAL) {
+        return Equality.EQUAL;
+      }
+    }
+    return equality;
+  }
+
+  /**
+   * Selects and normalizes both teams and hands them to the matcher, never an empty one.
+   */
+  private Equality compareTeams(@Nullable Authorship a1, @Nullable Authorship a2, @Nullable NomCode teamCode,
+                                AuthorContext ctx, Mode mode) {
     // convert to all lower case, ascii only, no punctuation but commas seperating authors and normed whitespace
     List<String> team1 = AuthorshipNormalizer.normalize(a1, teamCode);
     List<String> team2 = AuthorshipNormalizer.normalize(a2, teamCode);
     if (team1.isEmpty() || team2.isEmpty()) {
+      // two anonymous works: only authors attributed on both sides could tell them apart
+      if (a1 != null && a2 != null && a1.isAnonymous() && a2.isAnonymous()) {
+        return Equality.EQUAL;
+      }
       return Equality.UNKNOWN;
     }
     return matcher.compareTeams(new AuthorTeam(team1, a1.getYear()), new AuthorTeam(team2, a2.getYear()), ctx, mode);

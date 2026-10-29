@@ -11,7 +11,12 @@
     con.publisher AS containerPublisher,
     con.issued AS containerIssued,
     con.version AS containerVersion,
-    con.creator[:coalesce((con.settings->>'source max container authors')::int, 100)] AS containerCreator
+    <!-- releases rarely carry settings of their own, so the cap falls back to the project's -->
+    con.creator[:coalesce(
+      (con.settings->>'source max container authors')::int,
+      (SELECT (p.settings->>'source max container authors')::int FROM dataset p WHERE p.key = con.source_key),
+      3
+    )] AS containerCreator
   </sql>
 
   <sql id="SELECT_SIMPLE">
@@ -206,6 +211,19 @@
     FROM <include refid="FROM_SIMPLE"/>
     WHERE d.dataset_key = #{datasetKey}
     <include refid="PUBLISHER_CLAUSE"/>
+  </select>
+
+  <select id="countReleaseSources" parameterType="map" resultType="integer">
+    SELECT count(*)
+    FROM <include refid="FROM_SIMPLE"/>
+    WHERE d.dataset_key = #{datasetKey}
+    <include refid="PUBLISHER_CLAUSE"/>
+  </select>
+
+  <!-- the project list unions an archived and a live branch that exclude each other, so it has exactly one row per src key -->
+  <select id="countProjectSources" parameterType="map" resultType="integer">
+    <include refid="SECTOR_SUBJECT_DATASETS"/>
+    SELECT count(*) FROM src
   </select>
 
   <select id="getProjectSource" resultMap="datasetSourceProjectResultMap">

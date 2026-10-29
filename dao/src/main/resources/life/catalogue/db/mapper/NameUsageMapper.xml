@@ -65,7 +65,7 @@
   </sql>
 
   <sql id="SELECT_CONSOLIDATION_NAME">
-    u.id, n.scientific_name, n.authorship, n.type, n.rank, u.status, u.parent_id, u.sector_key
+    u.id, n.scientific_name, n.authorship, n.type, n.rank, n.code, u.status, u.parent_id, u.sector_key
   </sql>
 
   <sql id="SELECT_SIMPLE_VERBATIM">
@@ -86,6 +86,7 @@
     u.name_id,
     n.type,
     n.code,
+    n.nom_status,
     n.scientific_name,
     n.authorship,
     n.rank,
@@ -98,9 +99,14 @@
     n.basionym_authors,
     n.basionym_ex_authors,
     n.basionym_year,
+    n.basionym_anonymous,
+    n.basionym_bracketed_year,
+    n.basionym_sanctioning_author,
     n.combination_authors,
     n.combination_ex_authors,
     n.combination_year,
+    n.combination_anonymous,
+    n.combination_bracketed_year,
     n.sanctioning_author
     <!-- MISSING:
     u.name_phrase,
@@ -265,12 +271,16 @@
     <result property="classification" column="classification" typeHandler="life.catalogue.db.type2.SimpleNameArrayTypeHandler"/>
   </resultMap>
 
+  <resultMap id="synonymClassificationResultMap" type="SynonymWithClassification" autoMapping="true" extends="life.catalogue.db.mapper.SynonymMapper.synonymResultMap">
+    <result property="classification" column="classification" typeHandler="life.catalogue.db.type2.SimpleNameArrayTypeHandler"/>
+  </resultMap>
+
   <resultMap id="usageClassificationResultMap" type="NameUsageBase" autoMapping="true">
     <id property="id" column="id"/>
     <id property="datasetKey" column="dataset_key"/>
     <discriminator column="is_synonym" javaType="boolean">
       <case value="false" resultType="TaxonWithClassification" resultMap="taxonClassificationResultMap"/>
-      <case value="true" resultType="Synonym" resultMap="life.catalogue.db.mapper.SynonymMapper.synonymResultMap"/>
+      <case value="true" resultType="SynonymWithClassification" resultMap="synonymClassificationResultMap"/>
     </discriminator>
   </resultMap>
 
@@ -290,14 +300,20 @@
   <resultMap id="linneanUsageResultMap" type="LinneanNameUsage" autoMapping="true">
     <id property="id" column="id"/>
     <association property="combinationAuthorship" javaType="Authorship">
-      <result property="authors" column="combination_authors" typeHandler="life.catalogue.db.type.StringArrayTypeHandler"/>
-      <result property="exAuthors" column="combination_ex_authors" typeHandler="life.catalogue.db.type.StringArrayTypeHandler"/>
+      <result property="authors" column="combination_authors" typeHandler="life.catalogue.db.type.AuthorListTypeHandler"/>
+      <result property="exAuthors" column="combination_ex_authors" typeHandler="life.catalogue.db.type.AuthorListTypeHandler"/>
       <result property="year" column="combination_year"/>
+      <result property="anonymous" column="combination_anonymous"/>
+      <result property="bracketedYear" column="combination_bracketed_year"/>
+      <result property="sanctioningAuthor" column="sanctioning_author"/>
     </association>
     <association property="basionymAuthorship" javaType="Authorship">
-      <result property="authors" column="basionym_authors" typeHandler="life.catalogue.db.type.StringArrayTypeHandler"/>
-      <result property="exAuthors" column="basionym_ex_authors" typeHandler="life.catalogue.db.type.StringArrayTypeHandler"/>
+      <result property="authors" column="basionym_authors" typeHandler="life.catalogue.db.type.AuthorListTypeHandler"/>
+      <result property="exAuthors" column="basionym_ex_authors" typeHandler="life.catalogue.db.type.AuthorListTypeHandler"/>
       <result property="year" column="basionym_year"/>
+      <result property="anonymous" column="basionym_anonymous"/>
+      <result property="bracketedYear" column="basionym_bracketed_year"/>
+      <result property="sanctioningAuthor" column="basionym_sanctioning_author"/>
     </association>
   </resultMap>
 
@@ -538,6 +554,12 @@
     WHERE u.dataset_key = #{datasetKey} AND u.name_id=#{nameId}
   </select>
 
+  <select id="listUsageIDsByVerbatimIssue" resultType="string">
+    SELECT u.id
+    FROM name_usage u JOIN verbatim v ON v.dataset_key=u.dataset_key AND v.id=u.verbatim_key
+    WHERE u.dataset_key = #{datasetKey} AND '${issue}'::ISSUE = ANY(v.issues)
+  </select>
+
   <select id="listByCanonNIDX" resultMap="simpleCachedResultMap">
     SELECT <include refid="SELECT_SIMPLE_CACHED"/>
     FROM <include refid="FROM_NIDX_BASE"/>
@@ -575,8 +597,10 @@
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
 
+  <!-- the global names index queries are anonymous, so they never show private datasets -->
   <sql id="DATASET_PUBLIC">
     d.deleted IS NULL
+    AND NOT d.private
     AND d.origin != 'PROJECT'::DATASETORIGIN
     AND <include refid="life.catalogue.db.mapper.DatasetMapper.NOT_TEMP"/>
   </sql>
@@ -591,7 +615,7 @@
   <select id="listByUsageID" resultMap="usageResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE u.id=#{id}
+    WHERE u.id=#{id} AND u.dataset_key IN (SELECT d.key FROM dataset d WHERE NOT d.private)
     ORDER BY u.dataset_key
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
@@ -623,7 +647,7 @@
   <select id="countByUsageID" resultType="integer">
     SELECT count(*)
     FROM name_usage
-    WHERE id=#{id}
+    WHERE id=#{id} AND dataset_key IN (SELECT d.key FROM dataset d WHERE NOT d.private)
   </select>
 
   <!--
@@ -800,11 +824,30 @@
     </where>
   </select>
 
+  <!-- synonyms have no taxon_metrics row of their own. A synonyms only cursor gives them the classification of their
+       accepted taxon followed by that taxon itself, root first like the array stored in taxon_metrics.
+       A mixed cursor (synonym=null) leaves them without one. -->
   <select id="processDatasetWithClassification" parameterType="map" resultMap="usageClassificationResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
-    SELECT <include refid="SELECT_BASE"/>, tm.classification, <include refid="BASIONYM_COLS"/>
+    SELECT <include refid="SELECT_BASE"/>,
+    <choose>
+      <when test="synonym == true">
+        CASE WHEN a.id IS NOT NULL THEN array_append(tm.classification, ROW(a.id, an.rank, an.scientific_name, an.authorship)::simple_name) END AS classification,
+      </when>
+      <otherwise>tm.classification,</otherwise>
+    </choose>
+    <include refid="BASIONYM_COLS"/>
     <if test="inclCitations">, rpub.citation AS n_published_in_citation, racc.citation AS according_to</if>
     FROM <include refid="FROM_BASE"/>
-      LEFT JOIN taxon_metrics tm ON tm.dataset_key=u.dataset_key AND tm.taxon_id=u.id
+      <choose>
+        <when test="synonym == true">
+          LEFT JOIN name_usage a ON a.dataset_key=u.dataset_key AND a.id=u.parent_id AND NOT is_synonym(a.status)
+          LEFT JOIN name an ON an.dataset_key=u.dataset_key AND an.id=a.name_id
+          LEFT JOIN taxon_metrics tm ON tm.dataset_key=u.dataset_key AND tm.taxon_id=a.id
+        </when>
+        <otherwise>
+          LEFT JOIN taxon_metrics tm ON tm.dataset_key=u.dataset_key AND tm.taxon_id=u.id
+        </otherwise>
+      </choose>
       <include refid="BASIONYM_JOIN">
         <property name="dk" value="#{datasetKey}"/>
         <property name="nameIdCol" value="u.name_id"/>
@@ -826,6 +869,9 @@
       </if>
       <if test="minRank != null">
         AND n.rank &lt;= #{minRank}::rank
+      </if>
+      <if test="synonym != null">
+        AND <if test="!synonym">NOT</if> is_synonym(u.status)
       </if>
     </where>
   </select>
@@ -1018,7 +1064,17 @@
       WHERE u.dataset_key=#{param.datasetKey} AND
       <include refid="WHERE_START"/>
     UNION
-      SELECT <include refid="SELECT_BASE"/> <include refid="DEPTH_FIRST"/>, tm.classification
+      SELECT <include refid="SELECT_BASE"/> <include refid="DEPTH_FIRST"/>,
+      <choose>
+        <!-- x is the parent row, so a synonym takes the classification of its accepted taxon followed by that taxon itself -->
+        <when test="synonym == true">
+          CASE WHEN is_synonym(u.status) AND NOT x.is_synonym
+            THEN array_append(x.classification, ROW(x.id, x.n_rank, x.n_scientific_name, x.n_authorship)::simple_name)
+            ELSE tm.classification
+          END AS classification
+        </when>
+        <otherwise>tm.classification</otherwise>
+      </choose>
       FROM <include refid="FROM_BASE"/>
         LEFT JOIN taxon_metrics tm ON tm.dataset_key=u.dataset_key AND tm.taxon_id=u.id
       JOIN x ON x.id = u.parent_id
@@ -1045,6 +1101,9 @@
         <property name="dk" value="#{param.datasetKey}"/>
         <property name="idCol" value="x.according_to_id"/>
       </include>
+    </if>
+    <if test="synonym != null">
+      WHERE <if test="!synonym">NOT</if> x.is_synonym
     </if>
     <if test="depthFirst">ORDER BY x.path</if>
   </select>
@@ -1076,7 +1135,7 @@
       JOIN x ON x.id = u.parent_id
       WHERE u.dataset_key=#{startID.datasetKey} AND NOT is_synonym(u.status)
     )
-    SELECT id, scientific_name, authorship, type, rank, status, sector_key
+    SELECT id, scientific_name, authorship, type, rank, code, status, sector_key
     FROM x
     ORDER BY x.scientific_name, x.authorship
   </select>

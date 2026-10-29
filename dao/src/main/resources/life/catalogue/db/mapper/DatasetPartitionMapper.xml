@@ -55,6 +55,18 @@
     DELETE FROM ${table} WHERE dataset_key=#{key};
   </update>
 
+  <select id="canSkipTriggers" resultType="boolean">
+    SELECT has_parameter_privilege('session_replication_role', 'SET')
+  </select>
+
+  <update id="skipTriggers">
+    SET session_replication_role = replica
+  </update>
+
+  <update id="restoreTriggers">
+    SET session_replication_role = origin
+  </update>
+
   <update id="dropTable" parameterType="map">
     DROP TABLE IF EXISTS ${table}_${key} CASCADE;
     DROP SEQUENCE IF EXISTS ${table}_${key}_id_seq;
