@@ -70,12 +70,12 @@ curl -X POST -d "{'datasetKey':1000, 'priority':false}" "http://localhost:8080/i
 
 ### Multi-Module Maven Project Structure
 
-The project consists of 13 Maven modules with clear dependency relationships:
+The project consists of 16 Maven modules with clear dependency relationships:
 
 ```
-api → dao → core → importer → webservice
-  ↑     ↑     ↑        ↑
-parser, coldp, reader, reader-xls, pgcopy, metadata, doi
+api → parser → nomenclature → dao → core → importer → webservice
+  ↑                            ↑     ↑        ↑
+vocab, coldp, reference, kryo, reader, reader-xls, pgcopy, metadata, doi
 ```
 
 **Module Responsibilities:**
@@ -104,6 +104,12 @@ parser, coldp, reader, reader-xls, pgcopy, metadata, doi
   - `dw/`: Dropwizard bundles (auth, CORS, mail, etc.)
 
 - **parser**: GBIF name parser wrapper, term interpretation
+- **nomenclature**: Pure nomenclatural decisions with no storage behind them, depending on `api` and `parser` only, so
+  other projects (matching-ws, the Blixa editor) can reuse them without `dao`: `NameRelationRules` and
+  `NameRelationJudge`, `BasionymSorter`, `HomotypicGroup`, `HomotypicRules`, `AuthorComparator`, the string
+  similarities, `NameValidator`, `TaxGroupAnalyzer`, `NameIdentity`, `RankComparator`, `PublishedInIdentity` and
+  `SyncNameUsageRules`. The classes keep their packages. Anything that needs a session, a names index or a store stays
+  in `dao`/`core`. See [`docs/2026-10-29-nomenclature-module.md`](docs/2026-10-29-nomenclature-module.md).
 - **reader** / **reader-xls**: CSV and Excel file parsing
 - **coldp**: COL Data Package (COLDP) term definitions
 - **metadata**: Dataset metadata handling (EML XML, DataCite)

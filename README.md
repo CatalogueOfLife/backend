@@ -93,6 +93,7 @@ To see your application's health open the admin port at `http://localhost:8081/h
 | `reference` | Citation formatting (CSL/citeproc, BibTeX) |
 | `kryo` | Kryo binary serialisation of the API model classes |
 | `pgcopy` | Reading and writing the Postgres binary copy format |
+| `nomenclature` | Pure nomenclatural decisions, reusable without a database: name relation rules, homotypic grouping, author comparison, string similarity and name validation |
 | `doi` | DOI registration and management in DataCite |
 | `dao` | The Postgres persistence layer with MyBatis mappers, Elasticsearch and the names index |
 | `core` | Business logic not tied to the webservice: assembly & sector sync, releases, exports, matching and jobs |
