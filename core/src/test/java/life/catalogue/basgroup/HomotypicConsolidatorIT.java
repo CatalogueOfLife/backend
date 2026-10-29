@@ -79,9 +79,9 @@ public class HomotypicConsolidatorIT {
           var rel = n1.getLabel() + " " + nr.getType() + " " + n2.getLabel();
           System.out.println(rel);
           if (nr.getType() == NomRelType.SPELLING_CORRECTION) {
-            assertTrue("Spelling correction between other names: " + rel, HomotypicConsolidator.isOrthographicVariant(n1, n2));
+            assertTrue("Spelling correction between other names: " + rel, HomotypicRules.isOrthographicVariant(n1, n2));
           }
-          assertFalse("Duplicate names related: " + rel, HomotypicConsolidator.isDuplicate(n1, n2));
+          assertFalse("Duplicate names related: " + rel, HomotypicRules.isDuplicate(n1, n2));
           rels.add(rel);
         }
       }
