@@ -33,8 +33,6 @@ change, and only `dao` declares the new dependency.
 - `matching`: `Equality`, `NameValidator`, `TaxGroupAnalyzer`, `NameIdentity`, `RankComparator`, `PublishedInIdentity`
 - `matching.authorship`: `AuthorComparator`, `YearComparator`, `LongestCommonSubstring`, `SuffixArray`
 - `matching.similarity`: all nine string similarity classes
-- `assembly.SyncNameUsageRules`: the code rules applied to every merged usage (botanical autonym authorship,
-  zoological trinomial rank)
 
 **New:**
 - `basgroup.HomotypicRules` holds the spelling decisions of the homotypic grouping that used to be static helpers of
@@ -80,6 +78,11 @@ name-parser-rust. `dao` declares `gbif-api` itself, for `NameMapper`.
   matching module some day.
 - **CLB-only logic**, pure but of no use elsewhere: `IdCandidate`/`ReleasedIds`, `SectorSettingsResolver`,
   `NameBlocklist`, `ParentStack`, `MatchedParentStack`, `ChangedMatcher`.
+- **`SyncNameUsageRules`**, applied to every usage by the sector sync's `TreeBaseHandler`, its only caller. It was
+  moved at first and moved back. Only two of its rules come from the codes: a botanical autonym has no authorship, and
+  a zoological trinomial of indeterminate rank is a subspecies. The rest is sync policy: accepted manuscript names and
+  original spellings become provisionally accepted, all-caps uninomials are recapitalised, and local identifiers are
+  dropped. If an editor wants the two code rules, they can become a small class of their own in `nomenclature`.
 - **The homotypic grouping planner**, step 3 of #1682. It would take the decisions out of `HomotypicConsolidator`
   and leave the consolidator to execute a plan. It is the larger refactoring and stays open.
 

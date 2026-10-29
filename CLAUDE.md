@@ -107,9 +107,10 @@ vocab, coldp, reference, kryo, reader, reader-xls, pgcopy, metadata, doi
 - **nomenclature**: Pure nomenclatural decisions with no storage behind them, depending on `api` and `parser` only, so
   other projects (matching-ws, the Blixa editor) can reuse them without `dao`: `NameRelationRules` and
   `NameRelationJudge`, `BasionymSorter`, `HomotypicGroup`, `HomotypicRules`, `AuthorComparator`, the string
-  similarities, `NameValidator`, `TaxGroupAnalyzer`, `NameIdentity`, `RankComparator`, `PublishedInIdentity` and
-  `SyncNameUsageRules`. The classes keep their packages. Anything that needs a session, a names index or a store stays
-  in `dao`/`core`. See [`docs/2026-10-29-nomenclature-module.md`](docs/2026-10-29-nomenclature-module.md).
+  similarities, `NameValidator`, `TaxGroupAnalyzer`, `NameIdentity`, `RankComparator` and `PublishedInIdentity`.
+  The classes keep their packages. Anything that needs a session, a names index or a store stays in `dao`/`core`, and
+  so does ChecklistBank's own policy even where it is pure, like `SyncNameUsageRules` applied by the sector sync. See
+  [`docs/2026-10-29-nomenclature-module.md`](docs/2026-10-29-nomenclature-module.md).
 - **reader** / **reader-xls**: CSV and Excel file parsing
 - **coldp**: COL Data Package (COLDP) term definitions
 - **metadata**: Dataset metadata handling (EML XML, DataCite)
