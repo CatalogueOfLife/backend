@@ -9,7 +9,6 @@ import life.catalogue.api.vocab.Users;
 import life.catalogue.common.collection.CollectionUtils;
 import life.catalogue.common.collection.CountMap;
 import life.catalogue.common.tax.AuthorshipNormalizer;
-import life.catalogue.common.tax.NameFormatter;
 import life.catalogue.common.tax.SciNameNormalizer;
 import life.catalogue.common.util.LoggingUtils;
 import life.catalogue.concurrent.ExecutorUtils;
@@ -50,16 +49,11 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
-import it.unimi.dsi.fastutil.Pair;
-
 public class HomotypicConsolidator {
   private static final Logger LOG = LoggerFactory.getLogger(HomotypicConsolidator.class);
   private static final List<TaxonomicStatus> STATUS_ORDER = List.of(TaxonomicStatus.ACCEPTED, TaxonomicStatus.PROVISIONALLY_ACCEPTED, TaxonomicStatus.SYNONYM, TaxonomicStatus.AMBIGUOUS_SYNONYM);
   private static final Comparator<LinneanNameUsage> PREFERRED_STATUS_ORDER = Comparator.comparing(u -> STATUS_ORDER.indexOf(u.getStatus()));
   private static final Comparator<LinneanNameUsage> PREFERRED_STATUS_RANK_ORDER = PREFERRED_STATUS_ORDER.thenComparing(LinneanNameUsage::getRank);
-  private static final int MAX_NAME_DIFF = 1;
-  static final int MAX_GENUS_DIFF = 1;
-  static final ModifiedDamerauLevenshtein GENUS_DISTANCE = new ModifiedDamerauLevenshtein();
   // evidence against a name being the original one of its group, see DataRelations
   private static final int PENALTY_NOT_ORIGINAL = 4;
   private static final int PENALTY_UNAVAILABLE = 2;
@@ -74,49 +68,6 @@ public class HomotypicConsolidator {
   private final ToIntFunction<LinneanNameUsage> priorityFunc;
   // issues by usage id, collected by the parallel tasks and written once they are done
   private final Map<String, Set<Issue>> issues = new ConcurrentHashMap<>();
-
-  @VisibleForTesting
-  public static boolean isSameName(ConsolidationName n1, ConsolidationName n2, ModifiedDamerauLevenshtein mdl) {
-    return n1.getRank() == n2.getRank()
-      && Objects.equals(n1.getAuthorship(), n2.getAuthorship())
-      && Math.abs(n1.getName().length()-n2.getName().length()) <= MAX_NAME_DIFF
-      && mdl.getEditDistance(n1.getName(), n2.getName()) <= MAX_NAME_DIFF;
-  }
-
-  /**
-   * @return true if both names are the same name and rank spelled differently either in their terminal epithet,
-   *   e.g. Trachelosiphon colombianum and T. columbianum or Aus albus and Aus alba,
-   *   or in their genus by a single edit, e.g. Coriphaena hippurus and Coryphaena hippurus.
-   *   A subgenus is not part of the name and is ignored.
-   */
-  @VisibleForTesting
-  static boolean isOrthographicVariant(FormattableName n1, FormattableName n2) {
-    if (n1.getRank() != n2.getRank()
-      || n1.getGenus() == null || n2.getGenus() == null
-      || n1.getTerminalEpithet() == null || n2.getTerminalEpithet() == null
-      || n1.getInfraspecificEpithet() != null && !equalsIgnoreCase(n1.getSpecificEpithet(), n2.getSpecificEpithet())
-    ) {
-      return false;
-    }
-    boolean sameEpithet = n1.getTerminalEpithet().equalsIgnoreCase(n2.getTerminalEpithet());
-    if (n1.getGenus().equalsIgnoreCase(n2.getGenus())) {
-      return !sameEpithet;
-    }
-    return sameEpithet && GENUS_DISTANCE.getEditDistance(n1.getGenus().toLowerCase(), n2.getGenus().toLowerCase()) <= MAX_GENUS_DIFF;
-  }
-
-  /**
-   * @return true if both names are the same name, i.e. the same rank and canonical name.
-   *   A subgenus is not part of a species name, so Machimus erevanensis and Machimus (Machimus) erevanensis are duplicates.
-   */
-  @VisibleForTesting
-  static boolean isDuplicate(FormattableName n1, FormattableName n2) {
-    return n1.getRank() == n2.getRank() && equalsIgnoreCase(NameFormatter.canonicalName(n1), NameFormatter.canonicalName(n2));
-  }
-
-  private static boolean equalsIgnoreCase(@Nullable String s1, @Nullable String s2) {
-    return s1 == null ? s2 == null : s1.equalsIgnoreCase(s2);
-  }
 
   /**
    * @return true if the relation came with the data, not from an earlier grouping
@@ -259,7 +210,7 @@ public class HomotypicConsolidator {
     }
 
     private boolean isSameName(ConsolidationName n1, ConsolidationName n2) {
-      return HomotypicConsolidator.isSameName(n1, n2, mdl);
+      return HomotypicRules.isSameName(n1, n2, mdl);
     }
 
     @Override
@@ -330,7 +281,7 @@ public class HomotypicConsolidator {
 
       // now compare authorships for each epithet group
       for (var epithetGroup : epithets.entrySet()) {
-        var groups = basSorter.groupBasionyms(tax.getCode(), epithetGroup.getKey(), epithetGroup.getValue(), a -> a, this::flagConsolidationIssue, this::linked, evidence);
+        var groups = basSorter.groupBasionyms(tax.getCode(), epithetGroup.getKey(), epithetGroup.getValue(), a -> a, this::linked, evidence);
         // go through groups and persistent basionym relations where needed
         for (var group : groups) {
           // we only need to work on groups with at least 2 names
@@ -371,7 +322,7 @@ public class HomotypicConsolidator {
                 var hom = iter.next();
                 while (iter.hasNext()) {
                   var u = iter.next();
-                  if (!isDuplicate(u, hom) && createRelationIfNotExisting(u, hom, NomRelType.HOMOTYPIC, nrm)) {
+                  if (!HomotypicRules.isDuplicate(u, hom) && createRelationIfNotExisting(u, hom, NomRelType.HOMOTYPIC, nrm)) {
                     newHomotypicRelations++;
                   }
                 }
@@ -713,10 +664,6 @@ public class HomotypicConsolidator {
       }
     }
 
-    private void flagConsolidationIssue(Pair<LinneanNameUsage, Issue> obj) {
-      addIssue(obj.key().getId(), obj.value());
-    }
-
     /**
      * Creates a relation unless one of that type exists or the data links both names already,
      * which would only add a second, possibly contradicting claim about the same homotypic group.
@@ -760,10 +707,10 @@ public class HomotypicConsolidator {
      */
     @Nullable
     private NomRelType relateVariation(LinneanNameUsage original, LinneanNameUsage variation, NameRelationMapper mapper) {
-      if (Objects.equals(variation.getNameId(), original.getNameId()) || isDuplicate(original, variation)) {
+      if (Objects.equals(variation.getNameId(), original.getNameId()) || HomotypicRules.isDuplicate(original, variation)) {
         return null;
       }
-      if (isOrthographicVariant(original, variation)) {
+      if (HomotypicRules.isOrthographicVariant(original, variation)) {
         return createRelationIfNotExisting(original, variation, NomRelType.SPELLING_CORRECTION, mapper) ? NomRelType.SPELLING_CORRECTION : null;
       }
       return createRelationIfNotExisting(variation, original, NomRelType.HOMOTYPIC, mapper) ? NomRelType.HOMOTYPIC : null;

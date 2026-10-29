@@ -222,6 +222,7 @@
     <module>importer</module>
     <module>kryo</module>
     <module>metadata</module>
+    <module>nomenclature</module>
     <module>parser</module>
     <module>pgcopy</module>
     <module>reader</module>
@@ -334,6 +335,11 @@
       <dependency>
         <groupId>org.catalogueoflife</groupId>
         <artifactId>parser</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.catalogueoflife</groupId>
+        <artifactId>nomenclature</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>

@@ -47,11 +47,11 @@ public class BasionymSorterTest {
    * for tests only !!!
    */
   Collection<HomotypicGroup<Name>> groupBasionyms(NomCode code, String epithet, List<Name> names) {
-    return sorter.groupBasionyms(code, epithet, names, Functions.identity(), n->{});
+    return sorter.groupBasionyms(code, epithet, names, Functions.identity());
   }
 
   Collection<HomotypicGroup<Name>> groupBasionyms(NomCode code, String epithet, List<Name> names, BiPredicate<Name, Name> linked) {
-    return sorter.groupBasionyms(code, epithet, names, Functions.identity(), n->{}, linked);
+    return sorter.groupBasionyms(code, epithet, names, Functions.identity(), linked);
   }
 
   /**
