@@ -84,6 +84,7 @@ Homonyms are not guessed. What tells candidates apart is evidence only:
 - the classification;
 - the name itself over its misapplications;
 - a single accepted name among synonyms, or synonyms that all belong to one accepted name, provisional usages aside;
+- a provisional usage with exactly the queried name and authorship, if the others stay unresolved;
 - the spelling, where a query without a subgenus ignores the candidates' subgenus, so `Aphis nerii` is the accepted
   `Aphis (Aphis) nerii`.
 
