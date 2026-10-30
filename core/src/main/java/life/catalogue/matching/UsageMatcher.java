@@ -805,7 +805,10 @@ public class UsageMatcher implements AutoCloseable {
       return UsageMatch.snap(synonym, datasetKey, alt);
     }
 
-    // remove provisional usages
+    // remove provisional usages, but remember one that is exactly the queried name in case the others stay unresolved
+    final var exactProvisional = existing.stream()
+      .filter(u -> u.getStatus() == TaxonomicStatus.PROVISIONALLY_ACCEPTED && nu.hasAuthorship() && u.getLabel().equalsIgnoreCase(nu.getLabel()))
+      .findFirst();
     existing.removeIf(u -> u.getStatus() == TaxonomicStatus.PROVISIONALLY_ACCEPTED);
     if (existing.size() == 1) {
       return UsageMatch.snap(existing.getFirst(), datasetKey, alt);
@@ -857,6 +860,9 @@ public class UsageMatcher implements AutoCloseable {
       // disparate groups, have different authorships or lack one to compare. Say so instead of guessing.
       // See https://github.com/CatalogueOfLife/backend/issues/1608 and https://github.com/CatalogueOfLife/backend/issues/1651
       if (mayBeHomonyms(existing)) {
+        if (exactProvisional.isPresent()) {
+          return UsageMatch.match(exactProvisional.get(), datasetKey, alt);
+        }
         LOG.debug("{} ambiguous homonyms encountered for {} in source {}", existing.size(), nu.getLabel(), datasetKey);
         return UsageMatch.unresolvedHomonym(MatchType.AMBIGUOUS, alt, datasetKey);
       }

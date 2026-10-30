@@ -15,6 +15,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.mockito.Mockito.mock;
 
 /**
@@ -24,7 +25,7 @@ import static org.mockito.Mockito.mock;
 public class UsageMatcherSameNameTest {
   // canonical names index ids
   static final Map<String, Integer> NIDX = Map.of("Magnoliopsida", 10, "Hemiptera", 20, "Limosa limosa islandica", 30,
-    "Culex pipiens", 40);
+    "Culex pipiens", 40, "Elytrigia repens", 50);
   UsageMatcher matcher;
 
   @Before
@@ -52,6 +53,14 @@ public class UsageMatcherSameNameTest {
     // the subgenus is no part of the canonical name
     add(store, "cx", "Culex (Culex) pipiens", Rank.SPECIES, "in", "Linnaeus, 1758", TaxonomicStatus.ACCEPTED, NIDX.get("Culex pipiens"));
     add(store, "cxs", "Culex pipiens", Rank.SPECIES, "cx", "Linnaeus, 1758", TaxonomicStatus.SYNONYM);
+
+    // synonyms of two accepted names with authorships that compare different, as in release 315557
+    add(store, "pa", "Plantae", Rank.KINGDOM, null, null, TaxonomicStatus.ACCEPTED);
+    add(store, "ela", "Elymus repens", Rank.SPECIES, "pa", null, TaxonomicStatus.ACCEPTED);
+    add(store, "elb", "Elymus repens subsp. repens", Rank.SUBSPECIES, "ela", null, TaxonomicStatus.ACCEPTED);
+    add(store, "ey1", "Elytrigia repens", Rank.SPECIES, "ela", "(L.) Nevski", TaxonomicStatus.SYNONYM);
+    add(store, "ey2", "Elytrigia repens", Rank.SPECIES, "elb", "(L.) Desv. ex B.D.Jacks.", TaxonomicStatus.SYNONYM);
+    add(store, "ey3", "Elytrigia repens", Rank.SPECIES, "pa", "(L.) Desv. ex Nevski", TaxonomicStatus.PROVISIONALLY_ACCEPTED);
 
     matcher = new UsageMatcher(1, mock(NameIndex.class), store, false);
   }
@@ -103,6 +112,17 @@ public class UsageMatcherSameNameTest {
     m = match("Limosa limosa islandica", "C. L. Brehm, 1831", Rank.SUBSPECIES);
     assertEquals("lia", m.usage.getId());
     assertEquals(MatchType.EXACT, m.type);
+  }
+
+  /**
+   * The provisional usage with the very name queried is better than nothing if the others cannot be told apart.
+   */
+  @Test
+  public void exactProvisionalOverUnresolved() throws Exception {
+    assertEquals("ey3", match("Elytrigia repens", "(L.) Desv. ex Nevski", Rank.UNRANKED).usage.getId());
+    assertEquals("ey3", match("Elytrigia repens", "(L.) Desv. ex Nevski", Rank.SPECIES).usage.getId());
+    // no exact name, no pick
+    assertFalse(match("Elytrigia repens", null, Rank.SPECIES).isMatch());
   }
 
   @Test
