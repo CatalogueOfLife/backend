@@ -4,6 +4,7 @@ import life.catalogue.api.jackson.PermissiveEnumSerde;
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.VocabularyUtils;
 import life.catalogue.api.vocab.Issue;
+import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.MatchingMode;
 import life.catalogue.api.vocab.TabularFormat;
 import life.catalogue.coldp.ColdpTerm;
@@ -395,8 +396,67 @@ public abstract class AbstractMatchingJob extends DatasetJob {
       // no usable name, e.g. epithets without any genus: only the classification can be matched, never in STRICT mode
       return matcher.matchClassification(classification, mode, verbose);
     }
-    var snc = interpret(sn, classification, issues, interpreter, utils);
-    return snc.isPresent() ? matcher.match(snc.get(), mode, verbose) : UsageMatch.empty(0);
+    return matchQuery(sn, classification, issues, verbose, mode, interpreter, utils, matcher).match();
+  }
+
+  /**
+   * @param query the name as it was matched in the end, null if it cannot be parsed
+   * @param rankIgnored true if the match was only found by ignoring the given rank
+   */
+  public record QueryMatch(@Nullable QueryName query, UsageMatch match, boolean rankIgnored) {}
+
+  /**
+   * Interprets and matches a name, which needs to be given. A given rank that contradicts the name, a subspecies or a
+   * genus sent as a species, keeps the matcher from finding it, so unless the mode is STRICT such a name that was not
+   * found exactly is matched again without the rank. A rank that fits the name stays binding.
+   * See https://github.com/CatalogueOfLife/backend/issues/1649
+   * @param mode RELAXED if null
+   */
+  public static QueryMatch matchQuery(SimpleName sn, List<SimpleNameCached> classification, IssueContainer issues, boolean verbose,
+                                      @Nullable MatchingMode mode, NameInterpreter interpreter, MatchingUtils utils, UsageMatcher matcher
+  ) {
+    var query = interpret(sn, classification, issues, interpreter, utils);
+    if (query.isEmpty()) {
+      return new QueryMatch(null, UsageMatch.empty(matcher.getDatasetKey()), false);
+    }
+    var m = matcher.match(query.get(), mode, verbose);
+    if ((mode == null || mode.relaxedRanks()) && !isExactOrVariant(m) && rankContradictsName(sn.getName(), query.get().getRank())) {
+      var unranked = new SimpleName(sn);
+      unranked.setRank(null);
+      var parsed = interpret(unranked, classification, new IssueContainer.Simple(), interpreter, utils);
+      if (parsed.isPresent()) {
+        var m2 = matcher.match(parsed.get(), mode, verbose);
+        if (isExactOrVariant(m2) || (!m.isMatch() && m2.isMatch())) {
+          issues.add(Issue.INCONSISTENT_NAME);
+          return new QueryMatch(parsed.get(), m2, true);
+        }
+      }
+    }
+    return new QueryMatch(query.get(), m, false);
+  }
+
+  private static boolean isExactOrVariant(UsageMatch m) {
+    return m.isMatch() && (m.type == MatchType.EXACT || m.type == MatchType.VARIANT);
+  }
+
+  /**
+   * True if the given rank contradicts the rank the parser reads from the name alone: a trinomial or a binomial
+   * sent with another rank, or a single word sent as SPECIES or lower. A name the parser cannot rank is only
+   * contradicted by a species or lower rank.
+   */
+  @VisibleForTesting
+  static boolean rankContradictsName(String name, @Nullable Rank given) {
+    if (given == null) {
+      return false;
+    }
+    Rank parsed = NameParser.PARSER.parse(name).map(pnu -> pnu.getName().getRank()).orElse(null);
+    if (parsed == null || parsed == Rank.UNRANKED || parsed == Rank.OTHER) {
+      return given.isSpeciesOrBelow();
+    }
+    if (parsed == Rank.INFRASPECIFIC_NAME) {
+      return !given.isInfraspecific();
+    }
+    return parsed != given;
   }
 
   /**

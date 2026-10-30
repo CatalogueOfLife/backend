@@ -11,7 +11,6 @@ import life.catalogue.matching.NameAssembler;
 import life.catalogue.matching.UsageMatch;
 import life.catalogue.matching.UsageMatcher;
 import life.catalogue.matching.nidx.NameIndex;
-import life.catalogue.parser.NameParser;
 import life.catalogue.parser.RankParser;
 import life.catalogue.parser.SafeParser;
 import life.catalogue.resources.matching.AbstractNameUsageMatchingResource;
@@ -86,61 +85,14 @@ public class GbifSpeciesMatcher {
     final MatchingMode mode = strict ? MatchingMode.STRICT : MatchingMode.RELAXED;
     IssueContainer issues = new IssueContainer.Simple();
     // the assembled name carries the authorship
-    var query = interpret(name, null, code, rnk, cl, issues);
-    UsageMatch m = query == null ? UsageMatch.empty(matcher.getDatasetKey()) : matcher.match(query, mode, verbose);
-    String note = null;
-    // Provisional: a supplied rank that contradicts the name, a subspecies sent as SPECIES or a genus as SPECIES,
-    // keeps the matcher from finding the name. If so retry with the rank the parser reads from the name.
-    // The matcher itself should weigh such a rank, see the GBIF impact report. A strict match keeps the rank.
-    if (mode != MatchingMode.STRICT && query != null && !isExactOrVariant(m) && rankContradictsName(name, query.getRank())) {
-      var parsed = interpret(name, null, code, null, cl, new IssueContainer.Simple());
-      if (parsed != null) {
-        UsageMatch m2 = matcher.match(parsed, mode, verbose);
-        if (isExactOrVariant(m2) || (!m.isMatch() && m2.isMatch())) {
-          note = "taxonRank " + rnk + " ignored as it contradicts the name";
-          m = m2;
-          query = parsed;
-        }
-      }
-    }
-    var gm = GbifMatchMapper.map(query, m, verbose, System.currentTimeMillis() - start);
-    if (note != null) {
+    var sn = AbstractNameUsageMatchingResource.interpret(null, null, null, name, null, code, rnk, null, cl, issues);
+    var qm = MatchingJob.matchQuery(sn, sn.getClassification(), issues, verbose, mode, interpreter, utils, matcher);
+    var gm = GbifMatchMapper.map(qm.query(), qm.match(), verbose, System.currentTimeMillis() - start);
+    if (qm.rankIgnored()) {
+      String note = "taxonRank " + rnk + " ignored as it contradicts the name";
       gm.diagnostics.note = gm.diagnostics.note == null ? note : gm.diagnostics.note + "; " + note;
     }
     return gm;
-  }
-
-  /**
-   * True if the given rank contradicts the rank the parser reads from the name alone: a trinomial or a binomial
-   * sent with another rank, or a single word sent as SPECIES or lower. A name the parser cannot rank is only
-   * contradicted by a species or lower rank.
-   */
-  static boolean rankContradictsName(String name, @Nullable Rank given) {
-    if (given == null) {
-      return false;
-    }
-    Rank parsed = NameParser.PARSER.parse(name).map(pnu -> pnu.getName().getRank()).orElse(null);
-    if (parsed == null || parsed == Rank.UNRANKED || parsed == Rank.OTHER) {
-      return given.isSpeciesOrBelow();
-    }
-    if (parsed == Rank.INFRASPECIFIC_NAME) {
-      return !given.isInfraspecific();
-    }
-    return parsed != given;
-  }
-
-  private static boolean isExactOrVariant(UsageMatch m) {
-    return m.isMatch() && (m.type == MatchType.EXACT || m.type == MatchType.VARIANT);
-  }
-
-  /**
-   * @return the parsed name matched to the names index as the usage matcher expects it, null if it cannot be parsed
-   */
-  @Nullable
-  private SimpleNameClassified<SimpleNameCached> interpret(String name, String author, String code, @Nullable String rank,
-                                                          Classification cl, IssueContainer issues) {
-    var sn = AbstractNameUsageMatchingResource.interpret(null, null, null, name, author, code, rank, null, cl, issues);
-    return MatchingJob.interpret(sn, sn.getClassification(), issues, interpreter, utils).orElse(null);
   }
 
   /**
