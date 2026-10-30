@@ -223,6 +223,18 @@ public class AuthorComparatorTest {
     assertAuth("Pallas", Equality.UNKNOWN, "1771");
   }
 
+  /**
+   * https://github.com/CatalogueOfLife/backend/issues/1557
+   */
+  @Test
+  public void vonMueller() throws Exception {
+    assertAuth("F.Muell.", Equality.EQUAL, "F. V. Mueller");
+    assertAuth("F.Muell.", Equality.EQUAL, "F.v.Muell.");
+    assertAuth("F.Muell.", Equality.EQUAL, "F. von Mueller");
+    assertAuth("F.Muell.", Equality.EQUAL, "Ferdinand von Mueller");
+    assertAuth("F.Muell.", Equality.DIFFERENT, "J.Müll.");
+  }
+
   @Test
   public void vonBaldenstein() throws Exception {
     assertAuth("Conrad von Baldenstein, 1827", Equality.EQUAL, "Conrad von Baldenstein, 1827");
