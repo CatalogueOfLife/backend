@@ -11,6 +11,11 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2026-10-30 new Costello Marine Realms Gazetteer
+```sql
+ALTER TYPE GAZETTEER ADD VALUE 'COSTELLO' AFTER 'GI';
+```
+
 #### 2026-10-30 source contributions and finer publishedIn credits
 A source merged into a release is now credited separately for the reference, the page and the page link of a name, and
 what it gave to records of other sources is stored per release, as source metrics only counted records a sector owns:

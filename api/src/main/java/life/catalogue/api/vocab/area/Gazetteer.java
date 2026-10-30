@@ -131,6 +131,17 @@ public enum Gazetteer {
       GenericArea.class
   ),
 
+  COSTELLO("Costello Marine Realms",
+      "https://doi.org/10.1038/s41467-017-01121-2",
+      null,
+      "The 30 marine biogeographic realms of Costello et al. 2017, delineated by the distributions of ~65,000 marine species and covering the entire ocean. " +
+        "Costello MJ et al. (2017) Marine biogeographic realms and species endemicity. Nature Communications 8: 1057.",
+      false,
+      "^([1-9]|[12][0-9]|30)$",
+      null,
+      GenericArea.class
+  ),
+
   TEXT("Free Text",
     null,
     null,

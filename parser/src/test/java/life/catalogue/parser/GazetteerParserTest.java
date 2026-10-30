@@ -27,6 +27,7 @@ public class GazetteerParserTest extends ParserTestBase<Gazetteer> {
     assertParse(Gazetteer.WDPA, "pa");
     assertParse(Gazetteer.FAO, "fao");
     assertParse(Gazetteer.GI, "gie");
+    assertParse(Gazetteer.COSTELLO, "costello");
   }
 
   @Override

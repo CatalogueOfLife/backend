@@ -154,6 +154,7 @@ CREATE TYPE GAZETTEER AS ENUM (
   'TEOW',
   'WDPA',
   'GI',
+  'COSTELLO',
   'TEXT'
 );
 
