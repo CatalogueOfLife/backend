@@ -2,6 +2,8 @@ package life.catalogue.dao;
 
 import life.catalogue.api.event.DeleteSector;
 import life.catalogue.api.model.*;
+import life.catalogue.api.vocab.InfoGroup;
+import life.catalogue.db.mapper.DatasetSourceContributionMapper;
 import life.catalogue.db.mapper.SectorPublisherMapper;
 import life.catalogue.db.mapper.SectorImportMapper;
 import life.catalogue.db.mapper.SectorMapper;
@@ -85,11 +87,16 @@ public class SectorPublisherDao extends DatasetEntityDao<UUID, SectorPublisher, 
       }
       metrics.setSectorCount(sectorCounter.get());
       metrics.setDatasetCount(datasets.size());
+      if (info.origin.isRelease()) {
+        var dscm = session.getMapper(DatasetSourceContributionMapper.class);
+        metrics.setEnrichedCount(dscm.sumEnrichedByPublisher(datasetKey, id));
+        metrics.setEnrichedByInfoCount(DatasetImportDao.countMap(InfoGroup.class, dscm.countByInfoByPublisher(datasetKey, id)));
+      }
     }
     return metrics;
   }
 
-  static class PublisherMetrics extends ImportMetrics {
+  static class PublisherMetrics extends ContributionMetrics {
     private final UUID publisherKey;
     private int datasetCount;
 

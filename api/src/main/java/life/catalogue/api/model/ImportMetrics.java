@@ -100,6 +100,10 @@ public class ImportMetrics implements ImportAttempt {
   private Map<Origin, Integer> usagesByOriginCount = new HashMap<>();
   private Map<String, Integer> vernacularsByLanguageCount = new HashMap<>();
   // merging metrics
+  /**
+   * What the records of this dataset or sector received from secondary sources. For a sector or source that is not what
+   * it gave to the records of others, the enriched counts of the source metrics report that.
+   */
   private Map<InfoGroup, Integer> secondarySourceByInfoCount = new HashMap<>();
   private Map<Rank, Integer> mergedTaxaByRankCount = new HashMap<>();
   private Map<Rank, Integer> mergedSynonymsByRankCount = new HashMap<>();

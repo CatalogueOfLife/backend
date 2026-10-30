@@ -4,6 +4,7 @@ import life.catalogue.TestConfigs;
 import life.catalogue.TestUtils;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Page;
+import life.catalogue.api.model.Sector;
 import life.catalogue.api.vocab.*;
 import life.catalogue.assembly.SectorSyncIT;
 import life.catalogue.assembly.SyncFactoryRule;
@@ -15,10 +16,13 @@ import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetExportDao;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.ReferenceDao;
+import life.catalogue.db.mapper.DatasetImportMapper;
 import life.catalogue.db.mapper.DatasetMapper;
+import life.catalogue.db.mapper.DatasetSourceContributionMapper;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.NameMatchMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
+import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.db.mapper.VerbatimSourceMapper;
 import life.catalogue.es.indexing.NameUsageIndexService;
 import life.catalogue.event.EventBroker;
@@ -34,7 +38,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.nio.file.Files;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -48,6 +54,7 @@ import org.mockito.Mock;
 import jakarta.validation.Validation;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -147,6 +154,20 @@ public class XReleaseBasicIT {
       assertEquals("srcX", src.getSourceId());
       // sector from dataset 102 has prio over the 101 one, so the author update comes from that
       assertTrue(DSID.equals(DSID.of(102, "x2"), src.getSecondarySources().get(InfoGroup.AUTHORSHIP)));
+
+      // what the sources gave was recorded when the release finished and adds up to what the release received
+      var dscm = session.getMapper(DatasetSourceContributionMapper.class);
+      assertTrue(dscm.get(xrel.newDatasetKey, 102).getByInfo().get(InfoGroup.AUTHORSHIP) > 0);
+      Map<InfoGroup, Integer> given = new HashMap<>();
+      session.getMapper(SectorMapper.class).listByDataset(xrel.newDatasetKey, null, null).stream()
+        .map(Sector::getSubjectDatasetKey)
+        .distinct()
+        .map(key -> dscm.get(xrel.newDatasetKey, key))
+        .filter(Objects::nonNull)
+        .forEach(c -> c.getByInfo().forEach((k, v) -> given.merge(k, v, Integer::sum)));
+      var received = DatasetImportDao.countMap(InfoGroup.class, session.getMapper(DatasetImportMapper.class).countSecondarySourceByInfo(xrel.newDatasetKey));
+      assertFalse(received.isEmpty());
+      assertEquals(received, given);
 
       // assert metadata
       var dm = session.getMapper(DatasetMapper.class);

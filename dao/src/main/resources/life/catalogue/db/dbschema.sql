@@ -173,7 +173,9 @@ CREATE TYPE INFOGROUP AS ENUM (
   'RANK',
   'ETYMOLOGY',
   'GENDER',
-  'ENVIRONMENT'
+  'ENVIRONMENT',
+  'PUBLISHED_IN_PAGE',
+  'PUBLISHED_IN_PAGE_LINK'
 );
 
 CREATE TYPE ISSUE AS ENUM (
@@ -1020,6 +1022,16 @@ CREATE TABLE dataset_source_citation (LIKE dataset_citation INCLUDING INDEXES);
 ALTER TABLE dataset_source_citation
   ADD COLUMN release_key INTEGER REFERENCES dataset;
 CREATE INDEX ON dataset_source_citation (dataset_key, release_key);
+
+-- what a source gave to records of a release it does not own, snapshotted from verbatim_source_secondary when the release
+-- finishes so that reading source metrics never has to count the secondary sources themselves
+CREATE TABLE dataset_source_contribution (
+  dataset_key INTEGER NOT NULL REFERENCES dataset,
+  source_dataset_key INTEGER NOT NULL REFERENCES dataset,
+  enriched INTEGER NOT NULL,
+  by_info HSTORE NOT NULL,
+  PRIMARY KEY (dataset_key, source_dataset_key)
+);
 
 -- finally we also assign the primary key of the archive which is different from dataset_source - hence only here
 ALTER TABLE dataset_archive ALTER COLUMN attempt SET NOT NULL;

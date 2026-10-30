@@ -120,6 +120,14 @@ public interface DatasetSourceMapper extends DatasetAgentMapper {
                                                           @Param("inclPublisherSources") boolean inclPublisherSources);
 
   /**
+   * Lists the sources a release should keep in dataset_source once it finishes, with the same metadata as listProjectSources.
+   * On top of those it includes all sources with any other data in the dataset, e.g. reference only merge sectors, unless
+   * they belong to a sector publisher. This reads the secondary sources and must not be used to serve requests.
+   */
+  List<SourceDataset> listContributingSources(@Param("datasetKey") int datasetKey,
+                                              @Param("inclPublisherSources") boolean inclPublisherSources);
+
+  /**
    * Same as listProjectSources above, but with stripped down Dataset instances without the following properties:
    *  - description
    *  - conversion

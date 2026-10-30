@@ -95,9 +95,15 @@ public class SectorSyncPublishedInIT extends SectorSyncTestBase {
       assertEquals("https://bionames.org/references/de9e5aed56f49c4406cf87f2fbf8e620", r.getCsl().getURL());
       var vs = vsm.addSources(vsm.getByName(key));
       assertTrue(DSID.equals(DSID.of(100, "1"), vs.getSecondarySources().get(InfoGroup.PUBLISHED_IN)));
+      assertTrue(DSID.equals(DSID.of(100, "1"), vs.getSecondarySources().get(InfoGroup.PUBLISHED_IN_PAGE_LINK)));
+      // the page was there already
+      assertFalse(vs.getSecondarySources().containsKey(InfoGroup.PUBLISHED_IN_PAGE));
 
       // an author & year stub is replaced for that one name, but left alone for all others citing it
-      n = nm.get(DSID.of(Datasets.COL, "2"));
+      key = DSID.of(Datasets.COL, "2");
+      n = nm.get(key);
+      vs = vsm.addSources(vsm.getByName(key));
+      assertEquals(Set.of(InfoGroup.PUBLISHED_IN, InfoGroup.PUBLISHED_IN_PAGE, InfoGroup.PUBLISHED_IN_PAGE_LINK), vs.getSecondarySources().keySet());
       assertNotEquals("p2", n.getPublishedInId());
       r = rm.get(DSID.of(Datasets.COL, n.getPublishedInId()));
       assertEquals(s100.getId(), r.getSectorKey());

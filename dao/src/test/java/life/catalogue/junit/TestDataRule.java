@@ -431,6 +431,7 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
       session.getConnection().commit();
       st.execute("TRUNCATE verbatim CASCADE");
       st.execute("TRUNCATE verbatim_source CASCADE");
+      st.execute("TRUNCATE verbatim_source_secondary"); // no FK to verbatim_source or dataset
       session.getConnection().commit();
       st.execute("TRUNCATE dataset_archive CASCADE");
       st.execute("TRUNCATE sector, estimate, decision CASCADE");

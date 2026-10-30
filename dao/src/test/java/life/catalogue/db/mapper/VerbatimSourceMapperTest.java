@@ -59,6 +59,26 @@ public class VerbatimSourceMapperTest extends MapperTestBase<VerbatimSourceMappe
     assertEquals(iss, mapper().getIssues(v1).getIssues());
   }
 
+  /**
+   * One source per group, but a later source only takes over the groups it changed.
+   */
+  @Test
+  public void laterSourceKeepsOtherCredits() {
+    VerbatimSource v = create();
+    mapper().create(v);
+    var bhl = DSID.of(77, "bhl");
+    var bionames = DSID.of(78, "bionames");
+
+    mapper().insertSources(v, bhl, Set.of(InfoGroup.PUBLISHED_IN_PAGE, InfoGroup.PUBLISHED_IN_PAGE_LINK));
+    mapper().insertSources(v, bionames, Set.of(InfoGroup.PUBLISHED_IN, InfoGroup.PUBLISHED_IN_PAGE));
+
+    var sources = mapper().getSources(v);
+    assertEquals(3, sources.size());
+    assertEquals((Integer) 77, sources.get(InfoGroup.PUBLISHED_IN_PAGE_LINK).getDatasetKey());
+    assertEquals((Integer) 78, sources.get(InfoGroup.PUBLISHED_IN_PAGE).getDatasetKey());
+    assertEquals((Integer) 78, sources.get(InfoGroup.PUBLISHED_IN).getDatasetKey());
+  }
+
   @Test
   public void addIssue() {
     VerbatimSource v1 = create();

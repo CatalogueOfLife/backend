@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="life.catalogue.db.mapper.DatasetSourceContributionMapper">
+
+  <resultMap id="contributionResultMap" type="life.catalogue.db.mapper.DatasetSourceContributionMapper$Contribution">
+    <result property="enriched" column="enriched"/>
+    <result property="byInfo" column="by_info" typeHandler="life.catalogue.db.type2.HstoreInfoGroupCountTypeHandler"/>
+  </resultMap>
+
+  <insert id="createForRelease" parameterType="map">
+    INSERT INTO dataset_source_contribution (dataset_key, source_dataset_key, enriched, by_info)
+    SELECT #{datasetKey}, e.source_dataset_key, e.enriched, hstore(array_agg(c.type::text), array_agg(c.cnt::text))
+    FROM (
+        SELECT source_dataset_key, count(DISTINCT verbatim_source_key) AS enriched
+        FROM verbatim_source_secondary
+        WHERE dataset_key = #{datasetKey} AND source_dataset_key IS NOT NULL
+        GROUP BY 1
+      ) e
+      JOIN (
+        SELECT source_dataset_key, type, count(*) AS cnt
+        FROM verbatim_source_secondary
+        WHERE dataset_key = #{datasetKey} AND source_dataset_key IS NOT NULL
+        GROUP BY 1, 2
+      ) c ON c.source_dataset_key = e.source_dataset_key
+      JOIN dataset src ON src.key = e.source_dataset_key
+    GROUP BY e.source_dataset_key, e.enriched
+  </insert>
+
+  <select id="get" resultMap="contributionResultMap">
+    SELECT enriched, by_info
+    FROM dataset_source_contribution
+    WHERE dataset_key = #{datasetKey} AND source_dataset_key = #{sourceKey}
+  </select>
+
+  <select id="sumEnrichedByPublisher" resultType="integer">
+    SELECT coalesce(sum(c.enriched), 0)
+    FROM dataset_source_contribution c JOIN dataset d ON d.key = c.source_dataset_key
+    WHERE c.dataset_key = #{datasetKey} AND d.gbif_publisher_key = #{publisherKey}
+  </select>
+
+  <select id="countByInfoByPublisher" resultType="StringCount">
+    SELECT g.key, sum(g.value::int) AS count
+    FROM dataset_source_contribution c
+      JOIN dataset d ON d.key = c.source_dataset_key
+      CROSS JOIN LATERAL each(c.by_info) AS g
+    WHERE c.dataset_key = #{datasetKey} AND d.gbif_publisher_key = #{publisherKey}
+    GROUP BY g.key
+  </select>
+
+  <delete id="deleteByRelease" parameterType="map">
+    DELETE FROM dataset_source_contribution WHERE dataset_key = #{datasetKey}
+  </delete>
+
+</mapper>

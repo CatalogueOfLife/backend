@@ -157,8 +157,7 @@
     NOT EXISTS (SELECT TRUE FROM dataset_archive a WHERE a.key = #{key} AND a.attempt = src.attempt)
   </sql>
 
-  <select id="listProjectSources" parameterType="map" resultMap="datasetSourceProjectResultMap" resultOrdered="true" fetchSize="100" resultSetType="FORWARD_ONLY">
-    <include refid="SECTOR_SUBJECT_DATASETS"/>
+  <sql id="PROJECT_SOURCES">
     <!-- archived dataset metadata -->
     SELECT <include refid="SELECT"/>, src.sector_modes
     FROM src
@@ -178,6 +177,36 @@
     WHERE src.attempt = src.dattempt OR src.attempt IS NULL OR <include refid="ARCHIVE_MISSING"/>
 
     ORDER BY 1
+  </sql>
+
+  <select id="listProjectSources" parameterType="map" resultMap="datasetSourceProjectResultMap" resultOrdered="true" fetchSize="100" resultSetType="FORWARD_ONLY">
+    <include refid="SECTOR_SUBJECT_DATASETS"/>
+    <include refid="PROJECT_SOURCES"/>
+  </select>
+
+  <!--
+    The sources a release is to list, written to dataset_source once when it finishes. On top of the sources owning usages
+    these are all others that contributed anything, like a merge sector that only gives names of others their references.
+    The articles of an aggregating publisher are not listed unless they own usages. Tens of thousands enrich a few names
+    only, would more than double dataset_source and are reported by their publisher anyways.
+    Not for reading, this is far more expensive than SECTOR_SUBJECT_DATASETS.
+  -->
+  <select id="listContributingSources" parameterType="map" resultMap="datasetSourceProjectResultMap" resultOrdered="true" fetchSize="100" resultSetType="FORWARD_ONLY">
+    WITH src AS (
+      SELECT s.subject_dataset_key AS key, d.attempt AS dattempt, max(s.dataset_attempt) AS attempt, array_agg(DISTINCT s.mode) AS sector_modes
+      FROM sector s JOIN dataset d ON d.key=s.subject_dataset_key
+      WHERE s.dataset_key=#{datasetKey}
+        <include refid="PUBLISHER_CLAUSE"/>
+        AND (
+          EXISTS (SELECT TRUE FROM name_usage u WHERE u.sector_key=s.id AND u.dataset_key = #{datasetKey})
+          OR (
+            NOT EXISTS (SELECT TRUE FROM sector_publisher p WHERE p.id=d.gbif_publisher_key AND p.dataset_key = #{datasetKey})
+            AND <include refid="life.catalogue.db.mapper.SectorMapper.hasData"/>
+          )
+        )
+      GROUP BY 1,2
+    )
+    <include refid="PROJECT_SOURCES"/>
   </select>
 
   <select id="listProjectSourcesSimple" parameterType="map" resultMap="sourceDatasetSimpleResultMap" resultOrdered="true" fetchSize="100" resultSetType="FORWARD_ONLY">

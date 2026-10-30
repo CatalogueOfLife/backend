@@ -18,6 +18,7 @@ import life.catalogue.config.ReleaseConfig;
 import life.catalogue.dao.*;
 import life.catalogue.db.mapper.CitationMapper;
 import life.catalogue.db.mapper.DatasetMapper;
+import life.catalogue.db.mapper.DatasetSourceContributionMapper;
 import life.catalogue.db.mapper.DatasetSourceMapper;
 import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.db.mapper.VerbatimSourceMapper;
@@ -337,6 +338,9 @@ public class ProjectRelease extends AbstractProjectCopy {
     try (SqlSession session = factory.openSession(true)) {
       int del = session.getMapper(SectorMapper.class).deleteOrphans(newDatasetKey);
       LOG.info("Removed {} sectors without data in release {}", del, newDatasetKey);
+      // a release does not change anymore, so count once what reading source metrics must not have to count
+      int contributions = session.getMapper(DatasetSourceContributionMapper.class).createForRelease(newDatasetKey);
+      LOG.info("Recorded the contributions of {} source datasets to release {}", contributions, newDatasetKey);
     }
 
     updateState(ImportState.ARCHIVING);
@@ -348,7 +352,8 @@ public class ProjectRelease extends AbstractProjectCopy {
       var cm = session.getMapper(CitationMapper.class);
       // create fixed source dataset records for this release.
       // This DOES create source dataset records for aggregated publishers.
-      // It does not create source records for merge sectors without data in the release itself!
+      // It does not create source records for merge sectors without data in the release itself,
+      // and neither for sources of aggregated publishers which only enrich the records of others.
       for (var d : srcDao.listSectorBasedSources(projectKey, newDatasetKey, true)) {
         if (d.getKey() == null) {
           // a source we cannot identify has no business in dataset_source - it would fail the insert on the not null

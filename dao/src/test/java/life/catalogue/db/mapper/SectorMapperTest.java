@@ -9,6 +9,7 @@ import life.catalogue.api.model.Page;
 import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.SectorImport;
 import life.catalogue.api.model.SectorProfile;
+import life.catalogue.api.model.SectorPublisher;
 import life.catalogue.api.model.SectorSelector;
 import life.catalogue.api.model.Taxon;
 import life.catalogue.api.model.VerbatimSource;
@@ -584,6 +585,68 @@ public class SectorMapperTest extends BaseDecisionMapperTest<Sector, SectorSearc
     assertNotNull(mapper().get(DSID.of(Datasets.COL, attached.getId())));
     assertNotNull(mapper().get(DSID.of(Datasets.COL, merged.getId())));
     assertNull(mapper().get(DSID.of(Datasets.COL, empty.getId())));
+  }
+
+  /**
+   * A merge sector can enrich the records of others without owning a single row. Its credits were copied into the release
+   * while the sector was dropped. The articles of a sector publisher are left out on purpose, their sheer number is why.
+   */
+  @Test
+  public void copyDatasetKeepsSectorsOnlyCreditedAsSecondarySource() throws Exception {
+    var dm = mapper(DatasetMapper.class);
+
+    Dataset target = DatasetMapperTest.create();
+    target.setOrigin(DatasetOrigin.RELEASE);
+    target.setSourceKey(Datasets.COL);
+    dm.create(target);
+
+    UUID publisher = UUID.randomUUID();
+    SectorPublisher sp = new SectorPublisher();
+    sp.setId(publisher);
+    sp.setDatasetKey(Datasets.COL);
+    sp.setAlias("Plazi");
+    sp.setTitle("Plazi");
+    sp.applyUser(Users.TESTER);
+    mapper(SectorPublisherMapper.class).create(sp);
+
+    Sector enriching = creditedSector(null, Sector.Mode.MERGE);
+    Sector article = creditedSector(publisher, Sector.Mode.MERGE);
+    Sector attached = creditedSector(null, Sector.Mode.ATTACH);
+    commit();
+
+    mapper().copyDataset(Datasets.COL, target.getKey(), false);
+    commit();
+
+    assertNotNull(mapper().get(DSID.of(target.getKey(), enriching.getId())));
+    assertNull("a sector publisher reports its articles", mapper().get(DSID.of(target.getKey(), article.getId())));
+    assertNull("this mode gives no credits", mapper().get(DSID.of(target.getKey(), attached.getId())));
+
+    // the orphan cleanup draws the same line
+    mapper().deleteOrphans(Datasets.COL);
+    commit();
+    assertNotNull(mapper().get(DSID.of(Datasets.COL, enriching.getId())));
+    assertNull(mapper().get(DSID.of(Datasets.COL, article.getId())));
+    assertNull(mapper().get(DSID.of(Datasets.COL, attached.getId())));
+  }
+
+  /**
+   * A sector of a new dataset owning nothing in the COL project, with the dataset being credited on a record there.
+   */
+  private Sector creditedSector(@Nullable UUID publisher, Sector.Mode mode) {
+    Dataset src = DatasetMapperTest.create();
+    src.setGbifPublisherKey(publisher);
+    mapper(DatasetMapper.class).create(src);
+
+    Sector s = create(DSID.colID(UUID.randomUUID().toString()), DSID.of(src.getKey(), UUID.randomUUID().toString()));
+    s.setMode(mode);
+    s.setTarget(null);
+    mapper().create(s);
+
+    var vsm = mapper(VerbatimSourceMapper.class);
+    VerbatimSource vs = new VerbatimSource(Datasets.COL, 100000 + s.getId(), null, null, null, null);
+    vsm.create(vs);
+    vsm.insertSources(vs, DSID.of(src.getKey(), "x"), Set.of(InfoGroup.PUBLISHED_IN_PAGE_LINK));
+    return s;
   }
 
   /**

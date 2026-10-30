@@ -6,14 +6,22 @@ import life.catalogue.api.model.CitationTest;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetSettings;
+import life.catalogue.api.model.Reference;
 import life.catalogue.api.model.Sector;
+import life.catalogue.api.model.SectorPublisher;
 import life.catalogue.api.model.Taxon;
+import life.catalogue.api.model.VerbatimSource;
 import life.catalogue.api.vocab.Datasets;
+import life.catalogue.api.vocab.InfoGroup;
 import life.catalogue.api.vocab.Setting;
+import life.catalogue.api.vocab.Users;
 
 import org.gbif.nameparser.api.Rank;
 
 import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.junit.Test;
 
@@ -101,6 +109,88 @@ public class DatasetSourceMapperTest extends MapperTestBase<DatasetSourceMapper>
 
     assertNotNull(mapper().getProjectSource(source.getKey(), Datasets.COL));
     assertNotNull(mapper().getProjectSourceSimple(source.getKey(), Datasets.COL));
+  }
+
+  /**
+   * What a release lists when it finishes goes beyond the owners of usages the project lists, which has to stay cheap.
+   */
+  @Test
+  public void listContributingSources() throws Exception {
+    var dm = mapper(DatasetMapper.class);
+    var sm = mapper(SectorMapper.class);
+
+    Dataset usages = DatasetMapperTest.create();
+    usages.setGbifPublisherKey(null);
+    dm.create(usages);
+    Sector s = SectorMapperTest.create(DSID.colID("t1"), DSID.of(usages.getKey(), "x"));
+    sm.create(s);
+    Taxon t = TestEntityGenerator.newTaxon(Datasets.COL, "src1", null, Rank.SPECIES, "Abies alba");
+    t.setSectorKey(s.getId());
+    t.getName().setSectorKey(s.getId());
+    mapper(NameMapper.class).create(t.getName());
+    mapper(TaxonMapper.class).create(t);
+
+    // a reference only merge sector like BHL
+    Dataset references = DatasetMapperTest.create();
+    references.setGbifPublisherKey(null);
+    dm.create(references);
+    createReference(createMergeSector(references));
+
+    // a merge sector that owns nothing and is only credited on a record of somebody else
+    Dataset credited = DatasetMapperTest.create();
+    credited.setGbifPublisherKey(null);
+    dm.create(credited);
+    createMergeSector(credited);
+    var vsm = mapper(VerbatimSourceMapper.class);
+    VerbatimSource vs = new VerbatimSource(Datasets.COL, 100000, null, null, null, null);
+    vsm.create(vs);
+    vsm.insertSources(vs, DSID.of(credited.getKey(), "x"), Set.of(InfoGroup.PUBLISHED_IN_PAGE_LINK));
+
+    // an article of a sector publisher owning a reference, but no usage
+    UUID publisher = UUID.randomUUID();
+    SectorPublisher sp = new SectorPublisher();
+    sp.setId(publisher);
+    sp.setDatasetKey(Datasets.COL);
+    sp.setAlias("Plazi");
+    sp.setTitle("Plazi");
+    sp.applyUser(Users.TESTER);
+    mapper(SectorPublisherMapper.class).create(sp);
+    Dataset article = DatasetMapperTest.create();
+    article.setGbifPublisherKey(publisher);
+    dm.create(article);
+    createReference(createMergeSector(article));
+
+    // a sector without any data
+    Dataset empty = DatasetMapperTest.create();
+    empty.setGbifPublisherKey(null);
+    dm.create(empty);
+    createMergeSector(empty);
+    commit();
+
+    assertEquals(Set.of(usages.getKey(), references.getKey(), credited.getKey()), keys(mapper().listContributingSources(Datasets.COL, true)));
+    // reading the project is not affected
+    assertEquals(Set.of(usages.getKey()), keys(mapper().listProjectSources(Datasets.COL, true)));
+    assertEquals(1, mapper().countProjectSources(Datasets.COL, true));
+  }
+
+  private Sector createMergeSector(Dataset subject) {
+    Sector s = SectorMapperTest.create(DSID.colID("t" + subject.getKey()), DSID.of(subject.getKey(), "x"));
+    s.setMode(Sector.Mode.MERGE);
+    s.setTarget(null);
+    mapper(SectorMapper.class).create(s);
+    return s;
+  }
+
+  private void createReference(Sector s) {
+    Reference r = TestEntityGenerator.newReference("Faune de Madagascar");
+    r.setId("r" + s.getId());
+    r.setDatasetKey(Datasets.COL);
+    r.setSectorKey(s.getId());
+    mapper(ReferenceMapper.class).create(r);
+  }
+
+  private static Set<Integer> keys(List<DatasetSourceMapper.SourceDataset> sources) {
+    return sources.stream().map(Dataset::getKey).collect(Collectors.toSet());
   }
 
   @Test

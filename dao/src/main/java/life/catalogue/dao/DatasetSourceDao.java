@@ -205,7 +205,8 @@ public class DatasetSourceDao {
    * Lists all project or release sources based on the sectors in the dataset,
    * retrieving metadata either from the latest version
    * or an archived copy depending on the import attempt of the last sync stored in the sectors.
-   * It does NOT rely on dataset_source records for releases and can be used to create them.
+   * It does NOT rely on dataset_source records for releases and is what creates them, so it includes sources which
+   * contributed without owning usages and is too expensive for anything but a release that is finishing.
    *
    * @param projectKey the dataset key of the project to load patches from
    * @param datasetKey project or release key to query for source sectors
@@ -216,7 +217,7 @@ public class DatasetSourceDao {
       DatasetSourceMapper psm = session.getMapper(DatasetSourceMapper.class);
       DatasetPatchMapper pm = session.getMapper(DatasetPatchMapper.class);
       // get latest version with patch applied
-      List<DatasetSourceMapper.SourceDataset> sources = psm.listProjectSources(datasetKey, inclPublisherSources);
+      List<DatasetSourceMapper.SourceDataset> sources = psm.listContributingSources(datasetKey, inclPublisherSources);
       return sources.stream()
         .map(d -> patch(d, projectKey, pm))
         .collect(Collectors.toList());
@@ -238,7 +239,7 @@ public class DatasetSourceDao {
     return d;
   }
 
-  public static class SourceMetrics extends ImportMetrics {
+  public static class SourceMetrics extends ContributionMetrics {
     private final int sourceKey;
     // current attempt of the imported dataset
     private Integer latestAttempt;
@@ -364,6 +365,18 @@ public class DatasetSourceDao {
         }
       }
       metrics.setSectorCount(sectorCounter.get());
+      if (info.origin.isRelease()) {
+        // a source with merge and other sectors is listed twice when split and only one of them may claim the contribution
+        boolean claim = !Boolean.FALSE.equals(merged)
+          || session.getMapper(SectorMapper.class).listByDataset(datasetKey, sourceKey, Sector.Mode.MERGE).isEmpty();
+        if (claim) {
+          var contribution = session.getMapper(DatasetSourceContributionMapper.class).get(datasetKey, sourceKey);
+          if (contribution != null) {
+            metrics.setEnrichedCount(contribution.getEnriched());
+            metrics.setEnrichedByInfoCount(contribution.getByInfo());
+          }
+        }
+      }
       return metrics;
     }
   }

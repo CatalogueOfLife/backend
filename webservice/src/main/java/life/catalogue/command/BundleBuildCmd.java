@@ -279,6 +279,7 @@ public class BundleBuildCmd extends AbstractMybatisCmd {
       " SELECT %s FROM dataset_archive_citation WHERE dataset_key IN (SELECT k FROM closure WHERE k IS NOT NULL)"});
     tables.add(new String[]{"dataset_source", "SELECT %s FROM dataset_source WHERE dataset_key = " + key});
     tables.add(new String[]{"dataset_source_citation", "SELECT %s FROM dataset_source_citation WHERE release_key = " + key});
+    tables.add(new String[]{"dataset_source_contribution", "SELECT %s FROM dataset_source_contribution WHERE dataset_key = " + key});
     tables.add(new String[]{"dataset_patch", "SELECT %s FROM dataset_patch WHERE dataset_key IN (" + keyAndProject() + ")"});
     tables.add(new String[]{"dataset_import", "SELECT %s FROM dataset_import WHERE dataset_key = " + key
       + (releaseAttempt() == null ? "" : " OR (dataset_key = " + project.getKey() + " AND attempt = " + releaseAttempt() + ")")});

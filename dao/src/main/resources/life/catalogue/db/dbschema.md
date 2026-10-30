@@ -11,6 +11,45 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2026-10-30 source contributions and finer publishedIn credits
+A source merged into a release is now credited separately for the reference, the page and the page link of a name, and
+what it gave to records of other sources is stored per release, as source metrics only counted records a sector owns:
+BHL showed no names although it gave 324,695 usages of COL26.10 XR their page link.
+Run before the deploy, taxon-ws shares the db. Rows written so far keep their PUBLISHED_IN, which then covers all three.
+```sql
+ALTER TYPE INFOGROUP ADD VALUE 'PUBLISHED_IN_PAGE';
+ALTER TYPE INFOGROUP ADD VALUE 'PUBLISHED_IN_PAGE_LINK';
+
+CREATE TABLE dataset_source_contribution (
+  dataset_key INTEGER NOT NULL REFERENCES dataset,
+  source_dataset_key INTEGER NOT NULL REFERENCES dataset,
+  enriched INTEGER NOT NULL,
+  by_info HSTORE NOT NULL,
+  PRIMARY KEY (dataset_key, source_dataset_key)
+);
+```
+Run once after the deploy and off peak, it scans the secondary sources of all releases. New releases snapshot their own.
+```sql
+INSERT INTO dataset_source_contribution (dataset_key, source_dataset_key, enriched, by_info)
+SELECT e.dataset_key, e.source_dataset_key, e.enriched, hstore(array_agg(c.type::text), array_agg(c.cnt::text))
+FROM (
+    SELECT dataset_key, source_dataset_key, count(DISTINCT verbatim_source_key) AS enriched
+    FROM verbatim_source_secondary
+    WHERE source_dataset_key IS NOT NULL
+    GROUP BY 1, 2
+  ) e
+  JOIN (
+    SELECT dataset_key, source_dataset_key, type, count(*) AS cnt
+    FROM verbatim_source_secondary
+    WHERE source_dataset_key IS NOT NULL
+    GROUP BY 1, 2, 3
+  ) c ON c.dataset_key = e.dataset_key AND c.source_dataset_key = e.source_dataset_key
+  JOIN dataset r ON r.key = e.dataset_key AND r.origin IN ('RELEASE', 'XRELEASE')
+  JOIN dataset src ON src.key = e.source_dataset_key
+GROUP BY e.dataset_key, e.source_dataset_key, e.enriched
+ON CONFLICT DO NOTHING;
+```
+
 #### 2026-10-29 name relation conflicts
 Two new issues for name relations that contradict each other or merely repeat another one, e.g. WoRMS relating a
 misspelling both as basionym and as spelling correction: https://github.com/CatalogueOfLife/data/issues/1815

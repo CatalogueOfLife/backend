@@ -386,7 +386,19 @@
     OR EXISTS (SELECT true FROM distribution x WHERE x.dataset_key=#{datasetKey} AND x.sector_key = s.id)
     OR EXISTS (SELECT true FROM treatment x WHERE x.dataset_key=#{datasetKey} AND x.sector_key = s.id)
     OR EXISTS (SELECT true FROM media x WHERE x.dataset_key=#{datasetKey} AND x.sector_key = s.id)
-    OR EXISTS (SELECT true FROM taxon_property x WHERE x.dataset_key=#{datasetKey} AND x.sector_key = s.id))
+    OR EXISTS (SELECT true FROM taxon_property x WHERE x.dataset_key=#{datasetKey} AND x.sector_key = s.id)
+    <!--
+      A sector can give records of other sectors a reference, page or link and own nothing itself. Secondary sources only
+      know the source dataset, not the sector, which is why this is limited to the modes that write them. The articles of
+      an aggregating publisher are many and their metrics rolled up by publisher, so they need no sector just for that.
+      Only batch work may include this fragment: it reads the secondary sources for every sector without other data.
+    -->
+    OR (s.mode IN ('MERGE', 'HIERARCHY')
+      AND EXISTS (SELECT true FROM verbatim_source_secondary x WHERE x.dataset_key=#{datasetKey} AND x.source_dataset_key = s.subject_dataset_key)
+      AND NOT EXISTS (
+        SELECT true FROM dataset sd JOIN sector_publisher p ON p.id = sd.gbif_publisher_key AND p.dataset_key = #{datasetKey}
+        WHERE sd.key = s.subject_dataset_key
+      )))
   </sql>
 
   <!--

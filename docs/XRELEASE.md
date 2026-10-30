@@ -75,6 +75,15 @@ An existing taxon likewise only takes over the environments or the temporal rang
 recorded as an `ENVIRONMENT` or `TEMPORAL_RANGE` secondary source. The extinct flag is never merged: a source that
 flags a taxon as extinct while the existing taxon is not marks it with the `POTENTIALLY_EXTINCT` issue for review.
 
+Whatever a merge sector adds to an existing record is credited to its source per info group in
+`verbatim_source_secondary`. The reference, the page and the page link of a name are separate groups
+(`PUBLISHED_IN`, `PUBLISHED_IN_PAGE`, `PUBLISHED_IN_PAGE_LINK`). Each group has a single source: a later source takes over
+only the groups it changed. When the release finishes, these credits are counted per source into
+`dataset_source_contribution`, and source metrics report them as `enrichedCount` and `enrichedByInfoCount`. They are also
+what makes a source with no usages of its own, like the reference only BHL sector, a listed source of the release, unless
+it belongs to a sector publisher, whose metrics report it instead, see
+[2026-10-30-secondary-source-contribution.md](2026-10-30-secondary-source-contribution.md).
+
 #### 2f. `homotypicGrouping()` — Post-Merge Consolidation
 Runs on the temporary project once all sectors are merged. Wherever sources compete, `SectorPriority` ranks them:
 data managed in the project first, then the sectors of the base release, then the merge sectors by their `priority`

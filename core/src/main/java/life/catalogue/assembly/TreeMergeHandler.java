@@ -32,6 +32,8 @@ import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import static life.catalogue.common.lang.Exceptions.interruptIfCancelled;
 import static life.catalogue.common.text.StringUtils.lc;
 import static life.catalogue.common.text.StringUtils.rmWS;
@@ -1158,10 +1160,24 @@ public class TreeMergeHandler extends TreeBaseHandler {
   private void setPubInRef(Name n, Name src, Set<InfoGroup> upd) {
     Reference ref = rm.get(DSID.of(src.getDatasetKey(), src.getPublishedInId()));
     n.setPublishedInId(lookupOrCreateReference(ref));
-    n.setPublishedInPage(src.getPublishedInPage());
-    n.setPublishedInPageLink(src.getPublishedInPageLink());
     upd.add(InfoGroup.PUBLISHED_IN);
+    usePageOf(src, n, upd);
     LOG.debug("Updated {} with publishedIn", n);
+  }
+
+  /**
+   * Takes page and page link along with a reference taken from the source. A value the source does not have stays.
+   */
+  @VisibleForTesting
+  static void usePageOf(Name src, Name n, Set<InfoGroup> upd) {
+    if (src.getPublishedInPage() != null && !src.getPublishedInPage().equals(n.getPublishedInPage())) {
+      n.setPublishedInPage(src.getPublishedInPage());
+      upd.add(InfoGroup.PUBLISHED_IN_PAGE);
+    }
+    if (src.getPublishedInPageLink() != null && !src.getPublishedInPageLink().equals(n.getPublishedInPageLink())) {
+      n.setPublishedInPageLink(src.getPublishedInPageLink());
+      upd.add(InfoGroup.PUBLISHED_IN_PAGE_LINK);
+    }
   }
 
   /**
@@ -1170,7 +1186,8 @@ public class TreeMergeHandler extends TreeBaseHandler {
    * is missing, and its reference the DOI and URL of the same article. The reference is shared by other names, so it is
    * never changed on weaker evidence and its citation is kept as it is - references are looked up by their citation.
    * An existing reference that is nothing but the authors and year of the name is replaced by the source reference for
-   * this name only.
+   * this name only. The source is credited only for what it changed, so that adding a DOI does not take the credit for a
+   * page link some other source gave.
    */
   private void mergePubInRef(Name n, Name src, Set<InfoGroup> upd) {
     Reference ref = rm.get(DSID.of(targetDatasetKey, n.getPublishedInId()));
@@ -1184,24 +1201,18 @@ public class TreeMergeHandler extends TreeBaseHandler {
 
     } else if (v.stub()) {
       n.setPublishedInId(lookupOrCreateReference(srcRef));
-      if (src.getPublishedInPage() != null) {
-        n.setPublishedInPage(src.getPublishedInPage());
-      }
-      if (src.getPublishedInPageLink() != null) {
-        n.setPublishedInPageLink(src.getPublishedInPageLink());
-      }
       upd.add(InfoGroup.PUBLISHED_IN);
+      usePageOf(src, n, upd);
       LOG.debug("Replaced publishedIn stub {} of {} with {}", ref.getCitation(), n, srcRef.getCitation());
 
     } else if (v.samePage() || v.sameWork()) {
-      boolean changed = false;
       if (n.getPublishedInPage() == null && src.getPublishedInPage() != null) {
         n.setPublishedInPage(src.getPublishedInPage());
-        changed = true;
+        upd.add(InfoGroup.PUBLISHED_IN_PAGE);
       }
       if (n.getPublishedInPageLink() == null && src.getPublishedInPageLink() != null) {
         n.setPublishedInPageLink(src.getPublishedInPageLink());
-        changed = true;
+        upd.add(InfoGroup.PUBLISHED_IN_PAGE_LINK);
       }
       if (v.doi() != null) {
         if (ref.getCsl() == null) {
@@ -1213,12 +1224,8 @@ public class TreeMergeHandler extends TreeBaseHandler {
         }
         ref.applyUser(user);
         rm.update(ref);
-        changed = true;
-        LOG.debug("Added DOI {} to reference {}", v.doi(), ref.getCitation());
-      }
-      if (changed) {
         upd.add(InfoGroup.PUBLISHED_IN);
-        LOG.debug("Merged publishedIn of {} from {}", n, src);
+        LOG.debug("Added DOI {} to reference {}", v.doi(), ref.getCitation());
       }
     }
   }

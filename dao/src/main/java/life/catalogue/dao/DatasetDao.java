@@ -443,6 +443,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     session.getMapper(SectorProfileMapper.class).deleteByDataset(key);
     session.getMapper(CitationMapper.class).deleteByRelease(key);
     session.getMapper(DatasetSourceMapper.class).deleteByRelease(key);
+    session.getMapper(DatasetSourceContributionMapper.class).deleteByRelease(key);
   }
 
   @Override
@@ -533,6 +534,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
       // project source dataset archives & its citations
       LOG.info("Delete archived sources for private dataset {}", key);
       dsm.deleteByRelease(key);
+      session.getMapper(DatasetSourceContributionMapper.class).deleteByRelease(key);
       cm.deleteByRelease(key);
       // exports
       if (exportDao == null) {
