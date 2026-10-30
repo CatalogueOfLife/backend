@@ -45,6 +45,10 @@ public class NameAssembler {
     specificEpithet = clean(specificEpithet);
     infraspecificEpithet = clean(infraspecificEpithet);
     final String genus = clean(StringUtils.firstNonBlank(genericName, cl.getGenus()));
+    // the field sometimes holds the whole binomial
+    if (genus != null && specificEpithet != null && StringUtils.startsWithIgnoreCase(specificEpithet, genus + " ")) {
+      specificEpithet = clean(specificEpithet.substring(genus.length()));
+    }
 
     if (scientificName != null && useScientificName(scientificName, genericName, specificEpithet, infraspecificEpithet, cl)) {
       String name = expandAbbreviatedGenus(scientificName, genus);

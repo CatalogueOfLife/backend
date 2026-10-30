@@ -39,6 +39,8 @@ public class NameAssemblerTest {
 
     // without classification
     assertName("Lepidothrix iris L.", null, "L.", "Lepidothrix", "iris", null, cl);
+    // a whole binomial as the epithet
+    assertName("Lepidothrix iris L.", null, "L.", "Lepidothrix", "Lepidothrix iris", null, cl);
     var r = NameAssembler.build(null, "L.", "Lepidothrix", "iris", "alpina", Rank.VARIETY, cl);
     assertEquals("Lepidothrix iris var. alpina L.", r.name());
     assertEquals(Rank.VARIETY, r.rank());
