@@ -93,11 +93,16 @@ answered as NONE with the candidates as alternatives, or in RELAXED mode by the 
 `Navicula`, `Ciliophora` or `Tetilla` therefore matches nothing, and `Urtica dioica dioica` the species. See #1651.
 
 A supplied rank that contradicts the name - a subspecies or a genus sent as `SPECIES`, common in GBIF occurrences -
-keeps the matcher from finding it. Provisionally, when the first match is neither EXACT nor VARIANT and the rank
-contradicts the name - the parser reads another rank from a binomial or trinomial, or a single word comes with a
-species or lower rank - the name is matched again without the supplied rank. The second answer is taken if it
-is EXACT or VARIANT, or if the first found nothing, and `diagnostics.note` says `taxonRank <rank> ignored`.
-A `strict` match never retries.
+keeps the matcher from finding it. When the first match is neither EXACT nor VARIANT and the rank contradicts the name -
+the parser reads another rank from a binomial or trinomial, or a single word comes with a species or lower rank - the
+name is matched again without the supplied rank. The second answer is taken if it is EXACT or VARIANT, or if the first
+found nothing, and `diagnostics.note` says `taxonRank <rank> ignored`. `/match/nameusage` and matching jobs do the same,
+and flag `INCONSISTENT_NAME` instead of a note. A `strict` match never retries. See #1649.
+
+A name cited with only the author of its basionym, without brackets, matches the usage with that basionym author:
+`Stellaria media L.` is *Stellaria media* (L.) Vill., a VARIANT. This is only tried if the name finds nothing as it is
+written, so a usage with `L.` as its combination author still wins. A `strict` match and merges never do this, as
+`Aus bus Mill.` and `Aus bus (Mill.) Smith` may be homonyms. See #1660.
 
 `gbifChecklistKey` in the matching server config defaults to the `gbifKey` of the matching dataset. A release
 usually has none - the COL checklist key `7ddf754f-d193-4cc9-b351-99906754a03b` belongs to the project - so set it

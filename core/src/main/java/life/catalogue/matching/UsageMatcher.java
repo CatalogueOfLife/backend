@@ -179,6 +179,15 @@ public class UsageMatcher implements AutoCloseable {
   private UsageMatch match(SimpleNameClassified<SimpleNameCached> snc, boolean allowInserts, boolean verbose, boolean higherRank,
                            @Nullable MatchingMode mode) throws NotFoundException {
     var m = matchName(snc, allowInserts, verbose, mode);
+    if (!m.isMatch() && mode != null && mode.relaxedAuthorship()) {
+      var basionym = citingBasionymAuthor(snc);
+      if (basionym != null) {
+        var bm = matchName(basionym, false, verbose, mode);
+        if (bm.isMatch()) {
+          return bm;
+        }
+      }
+    }
     if (higherRank && !m.isMatch()) {
       var hr = matchHigherRank(snc, verbose, mode);
       if (hr.isMatch()) {
@@ -186,6 +195,31 @@ public class UsageMatcher implements AutoCloseable {
       }
     }
     return m;
+  }
+
+  /**
+   * A name is often cited with nothing but the author of its basionym, and without the brackets: Stellaria media L. for
+   * Stellaria media (L.) Vill. Read as a combination author that is a different authorship, read as what it is the two
+   * compare equal, and the different spelling makes it a variant. Only external queries try this: a merge would rather
+   * keep a duplicate, as Aus bus Mill. and Aus bus (Mill.) Smith may be homonyms.
+   * See https://github.com/CatalogueOfLife/backend/issues/1660
+   * @return a copy of the query with its authorship as the basionym authorship, null if it has no plain combination authors
+   */
+  @Nullable
+  private static SimpleNameClassified<SimpleNameCached> citingBasionymAuthor(SimpleNameClassified<SimpleNameCached> snc) {
+    if (!snc.hasAuthorship()) {
+      return null;
+    }
+    var a = NameParser.PARSER.parseAuthorship(snc.getAuthorship());
+    if (a.isEmpty() || a.get().getCombinationAuthorship() == null || !a.get().getCombinationAuthorship().hasAuthors()
+        || a.get().getBasionymAuthorship() != null && !a.get().getBasionymAuthorship().isEmpty()) {
+      return null;
+    }
+    var q = snc instanceof QueryName qn
+            ? new QueryName(snc, snc.getClassification(), qn.isUnmarkedRank())
+            : new SimpleNameClassified<SimpleNameCached>(snc, snc.getClassification());
+    q.setAuthorship("(" + snc.getAuthorship() + ")");
+    return q;
   }
 
   /**

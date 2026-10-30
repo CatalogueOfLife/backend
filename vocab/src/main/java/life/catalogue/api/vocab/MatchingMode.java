@@ -12,9 +12,11 @@ public enum MatchingMode {
    * and treats a conflicting taxonomic group of the classification as a preference rather than a veto:
    * a usage of a compatible group still wins, but a usage of another group is no longer ruled out if the query is a
    * bi- or trinomial classified only by a broad group like a kingdom, or if the two groups overlap, e.g. protists filed
-   * under animals. A different authorship always rules a usage out.
+   * under animals. A different authorship always rules a usage out, unless the query only cites the basionym author of
+   * a name not found otherwise: Stellaria media L. is Stellaria media (L.) Vill.
    * A rank given apart from an infraspecific name without a rank marker is a preference too: a usage of that rank still
-   * wins, but a usage of another infraspecific rank is no longer ruled out.
+   * wins, but a usage of another infraspecific rank is no longer ruled out. So is a rank that contradicts the name
+   * itself, a subspecies or a genus sent as a species, if the name is not found with it.
    * The duplicate search compares names exactly, as in STRICT.
    */
   RELAXED,
@@ -47,9 +49,17 @@ public enum MatchingMode {
   }
 
   /**
-   * @return true if name matching takes a rank given apart from an infraspecific name without a rank marker as a preference
+   * @return true if name matching takes a rank given apart from an infraspecific name without a rank marker,
+   *         or one contradicting the name, as a preference
    */
   public boolean relaxedRanks() {
+    return this != STRICT;
+  }
+
+  /**
+   * @return true if name matching accepts an authorship that only cites the basionym author of a usage
+   */
+  public boolean relaxedAuthorship() {
     return this != STRICT;
   }
 }
