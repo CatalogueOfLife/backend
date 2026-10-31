@@ -350,6 +350,18 @@ public class VocabResource {
   }
 
   /**
+   * A small preview image of the map of a gazetteer, 404 for gazetteers without a map.
+   * @param name the gazetteer, case insensitive
+   */
+  @GET
+  // the .png suffix is stripped by SuffixAcceptRequestFilter before matching, unlike the .svg of map.svg
+  @Path("gazetteer/{name}/map-thumb")
+  @Produces(MoreMediaTypes.IMG_PNG)
+  public Response gazetteerMapThumb(@PathParam("name") String name) {
+    return fileResponse(gazetteerPath(name).resolve("map-thumb.png"), MoreMediaTypes.IMG_PNG);
+  }
+
+  /**
    * The directory of a gazetteer in the configured gazetteer directory.
    * Only known gazetteers resolve, so that a request can't point anywhere else.
    */
