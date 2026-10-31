@@ -195,14 +195,16 @@ public class WsServerConfig extends Configuration implements ExporterConfig, Cor
   public File metricsRepo = new File("/tmp/metrics");
 
   /**
-   * Directory holding gazetteer assets used to resolve area labels and serve area GeoJSON geometries.
-   * Expected layout per gazetteer (FAO, IHO, MRGID):
+   * Directory holding gazetteer assets used to resolve area labels and serve them through the vocab API.
+   * Expected layout per gazetteer:
    * <pre>
    *   gazetteerDir/&lt;prefix&gt;/labels.tsv               # id&lt;TAB&gt;english-name
+   *   gazetteerDir/&lt;prefix&gt;/build.json               # when and how it was built, number of entries
+   *   gazetteerDir/&lt;prefix&gt;/overview.geojson         # simplified map of the whole gazetteer, if it has shapes
    *   gazetteerDir/&lt;prefix&gt;/features/&lt;id&gt;.geojson
    * </pre>
    * Produced and maintained out-of-band (see the {@code col-gazetteers} repo). May be null in which case
-   * FAO/IHO/MRGID labels fall back to the raw id and the GeoJSON endpoint returns 404.
+   * labels fall back to the raw id and the endpoints serving these files return 404.
    */
   public File gazetteerDir;
 

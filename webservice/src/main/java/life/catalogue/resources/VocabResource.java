@@ -285,19 +285,71 @@ public class VocabResource {
   @Path("area/{scheme}:{id}")
   @Produces({MoreMediaTypes.APP_GEOJSON})
   public Response areaGeojson(@PathParam("scheme") String scheme, @PathParam("id") String id) {
-    if (gazetteerDir == null || StringUtils.isBlank(scheme) || StringUtils.isBlank(id)) {
+    if (StringUtils.isBlank(id)) {
       throw new NotFoundException();
     }
-    java.nio.file.Path base = gazetteerDir.toPath()
-        .resolve(scheme.toLowerCase())
-        .resolve("features")
-        .toAbsolutePath().normalize();
+    java.nio.file.Path base = gazetteerPath(scheme).resolve("features");
     java.nio.file.Path feature = base.resolve(normalizeFilename(id) + ".geojson").toAbsolutePath().normalize();
-    if (!feature.startsWith(base) || !Files.isRegularFile(feature)) {
+    if (!feature.startsWith(base)) {
       throw new NotFoundException();
     }
-    StreamingOutput out = output -> Files.copy(feature, output);
-    return Response.ok(out, MoreMediaTypes.APP_GEOJSON).build();
+    return fileResponse(feature, MoreMediaTypes.APP_GEOJSON);
+  }
+
+  /**
+   * A simplified map of a whole gazetteer, 404 for gazetteers without shapes.
+   * @param name the gazetteer, case insensitive
+   */
+  @GET
+  // the suffixes of this and the next two are stripped by SuffixAcceptRequestFilter before matching
+  @Path("gazetteer/{name}/overview")
+  @Produces(MoreMediaTypes.APP_GEOJSON)
+  public Response gazetteerOverview(@PathParam("name") String name) {
+    return fileResponse(gazetteerPath(name).resolve("overview.geojson"), MoreMediaTypes.APP_GEOJSON);
+  }
+
+  /**
+   * How and when the files of a gazetteer were built, with the number of its entries and shapes.
+   * @param name the gazetteer, case insensitive
+   */
+  @GET
+  @Path("gazetteer/{name}/build")
+  public Response gazetteerBuild(@PathParam("name") String name) {
+    return fileResponse(gazetteerPath(name).resolve("build.json"), MediaType.APPLICATION_JSON);
+  }
+
+  /**
+   * All entries of a gazetteer as id and label, as a file as it is compact and some have hundreds of thousands.
+   * @param name the gazetteer, case insensitive
+   */
+  @GET
+  @Path("gazetteer/{name}/labels")
+  @Produces(MoreMediaTypes.TEXT_TSV)
+  public Response gazetteerLabels(@PathParam("name") String name) {
+    return fileResponse(gazetteerPath(name).resolve("labels.tsv"), MoreMediaTypes.TEXT_TSV);
+  }
+
+  /**
+   * The directory of a gazetteer in the configured gazetteer directory.
+   * Only known gazetteers resolve, so that a request can't point anywhere else.
+   */
+  private java.nio.file.Path gazetteerPath(String name) {
+    if (gazetteerDir == null || StringUtils.isBlank(name)) {
+      throw new NotFoundException();
+    }
+    try {
+      return gazetteerDir.toPath().resolve(Gazetteer.of(name).prefix()).toAbsolutePath().normalize();
+    } catch (IllegalArgumentException e) {
+      throw new NotFoundException();
+    }
+  }
+
+  private static Response fileResponse(java.nio.file.Path file, String mediaType) {
+    if (!Files.isRegularFile(file)) {
+      throw new NotFoundException();
+    }
+    StreamingOutput out = output -> Files.copy(file, output);
+    return Response.ok(out, mediaType).build();
   }
 
   /**

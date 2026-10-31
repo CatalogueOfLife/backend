@@ -89,6 +89,57 @@ public class VocabResourceTest {
     }
   }
 
+  @Test
+  public void areaGeojsonOnlyReadsKnownGazetteers() throws Exception {
+    File dir = tmp.newFolder("gazetteers", "dir");
+    Path outside = dir.toPath().resolve("../other/features/1.geojson");
+    Files.createDirectories(outside.getParent());
+    Files.writeString(outside, SAMPLE);
+
+    var r = new VocabResource(dir, null);
+    assertThrows(NotFoundException.class, () -> r.areaGeojson("../other", "1"));
+    assertThrows(NotFoundException.class, () -> r.areaGeojson("other", "1"));
+  }
+
+  @Test
+  public void gazetteerFilesAreServed() throws Exception {
+    File dir = tmp.newFolder();
+    Path iso = dir.toPath().resolve("iso");
+    Files.createDirectories(iso);
+    Files.writeString(iso.resolve("overview.geojson"), SAMPLE);
+    Files.writeString(iso.resolve("build.json"), "{\"label_count\":1}");
+    Files.writeString(iso.resolve("labels.tsv"), "DE\tGermany\n");
+
+    var r = new VocabResource(dir, null);
+    try (Response resp = r.gazetteerOverview("iso")) {
+      assertEquals("application/geo+json", resp.getMediaType().toString());
+      assertEquals(SAMPLE, new String(writeEntity(resp)));
+    }
+    try (Response resp = r.gazetteerBuild("ISO")) {
+      assertEquals("application/json", resp.getMediaType().toString());
+      assertEquals("{\"label_count\":1}", new String(writeEntity(resp)));
+    }
+    try (Response resp = r.gazetteerLabels("iso")) {
+      assertEquals("text/tsv", resp.getMediaType().toString());
+      assertEquals("DE\tGermany\n", new String(writeEntity(resp)));
+    }
+  }
+
+  @Test
+  public void gazetteerFilesMissingAre404() throws Exception {
+    File dir = tmp.newFolder();
+    Files.createDirectories(dir.toPath().resolve("wdpa"));
+    Files.writeString(dir.toPath().resolve("wdpa/build.json"), "{}");
+
+    var r = new VocabResource(dir, null);
+    assertEquals(200, r.gazetteerBuild("wdpa").getStatus());
+    assertThrows(NotFoundException.class, () -> r.gazetteerOverview("wdpa"));
+    assertThrows(NotFoundException.class, () -> r.gazetteerBuild("text"));
+    assertThrows(NotFoundException.class, () -> r.gazetteerLabels("nope"));
+    assertThrows(NotFoundException.class, () -> r.gazetteerLabels("../wdpa"));
+    assertThrows(NotFoundException.class, () -> new VocabResource((File) null, null).gazetteerBuild("wdpa"));
+  }
+
   private VocabResource resourceWithLabels() throws Exception {
     File dir = tmp.newFolder();
     Files.createDirectories(dir.toPath().resolve("tdwg"));
