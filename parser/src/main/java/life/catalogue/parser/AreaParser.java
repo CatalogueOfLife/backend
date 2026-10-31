@@ -74,10 +74,16 @@ public class AreaParser extends ParserBase<Area> {
       if (value.length() > 3 && value.contains("-")) {
         return parseIsoSubRegions(value);
       }
-      return CountryParser.PARSER.parse(value.trim());
-
-    } else if (scheme.equalsIgnoreCase(Gazetteer.REALM.name())) {
-      return RealmParser.PARSER.parse(value.trim());
+      try {
+        return CountryParser.PARSER.parse(value.trim());
+      } catch (UnparsableException e) {
+        // historic ISO 3166-3 codes like YU are not in the country vocabulary, but the gazetteer has them
+        var id = value.trim().toUpperCase();
+        if (labelLookup != null && labelLookup.hasLabel(Gazetteer.ISO, id)) {
+          return Optional.of(new GenericArea(Gazetteer.ISO, id, labelLookup.findLabel(Gazetteer.ISO, id)));
+        }
+        throw e;
+      }
 
     } else if (scheme.equalsIgnoreCase("http") || scheme.equalsIgnoreCase("https") || scheme.equalsIgnoreCase("urn")) {
       // deal with known domains, others will become free text
@@ -102,7 +108,9 @@ public class AreaParser extends ParserBase<Area> {
       if (gaz != null) {
         value = gaz.normalize(value.trim());
         var m2 = gaz.getRegex().matcher(value);
-        if (m2.matches()) {
+        // the regex matches any word for realms, so their list decides if we have one
+        boolean unknownRealm = gaz == Gazetteer.REALM && labelLookup != null && labelLookup.isUnknown(gaz, value);
+        if (m2.matches() && !unknownRealm) {
           var label = labelLookup == null ? null : labelLookup.findLabel(gaz, value);
           return Optional.of(new GenericArea(gaz, value, label));
         }

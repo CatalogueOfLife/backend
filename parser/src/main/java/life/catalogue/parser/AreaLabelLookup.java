@@ -21,9 +21,9 @@ import org.slf4j.LoggerFactory;
 /**
  * Resolves an English label for an area id according to a known gazetteer.
  *
- * ISO is served by the {@link Country} vocabulary bundled in the api module.
- * All other gazetteers are loaded once at construction from a configurable on-disk gazetteer
- * directory laid out as:
+ * ISO 3166-1 countries are served by the {@link Country} vocabulary bundled in the api module.
+ * All other labels, including the ISO 3166-2 subdivisions, are loaded once at construction from a
+ * configurable on-disk gazetteer directory laid out as:
  * <pre>
  *   &lt;gazetteerDir&gt;/&lt;gazetteer-prefix&gt;/labels.tsv     # id&lt;TAB&gt;english-name
  *   &lt;gazetteerDir&gt;/&lt;gazetteer-prefix&gt;/features/&lt;id&gt;.geojson
@@ -46,7 +46,6 @@ public class AreaLabelLookup {
         LOG.warn("Configured gazetteer dir {} does not exist", gazetteerDir);
       } else {
         for (Gazetteer g : Gazetteer.values()) {
-          if (g == Gazetteer.ISO) continue;
           Map<String, String> m = loadLabels(gazetteerDir, g);
           if (m != null) {
             all.put(g, m);
@@ -85,6 +84,18 @@ public class AreaLabelLookup {
 
   public Map<String, String> listLabels(Gazetteer gazetteer) {
     return labels.get(gazetteer);
+  }
+
+  public boolean hasLabel(Gazetteer gazetteer, String id) {
+    return labels.containsKey(gazetteer) && labels.get(gazetteer).containsKey(id);
+  }
+
+  /**
+   * @return true if the gazetteer has a list of labels and the id is not on it.
+   *         Without a list we cannot tell, and the id is not considered unknown.
+   */
+  public boolean isUnknown(Gazetteer gazetteer, String id) {
+    return hasLabels(gazetteer) && !hasLabel(gazetteer, id);
   }
 
   public String findLabel(Gazetteer gazetteer, String id) {

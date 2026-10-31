@@ -2,6 +2,8 @@ package life.catalogue.api.vocab.area;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.net.URI;
 import java.util.function.Function;
 import java.util.regex.Pattern;
@@ -54,7 +56,7 @@ public enum Gazetteer {
     "FAO Major Fishing Areas",
       true,
       "^[0-9]{2}(?:\\.(?:[0-9]+|[A-Z])(?:\\.(?:[0-9]+|[A-Za-z])){0,3})?$",
-      String::toLowerCase,
+      Gazetteer::normalizeFao,
     GenericArea.class
   ),
 
@@ -72,10 +74,10 @@ public enum Gazetteer {
   REALM("Biogeographic Realms",
     "https://en.wikipedia.org/wiki/Biogeographic_realm",
     null,
-    "Enumeration of 8 traditional terrestrial biogeographic realms dividing the Earth's land surface based on distributional patterns of terrestrial organisms.",
+    "The 8 traditional terrestrial biogeographic realms and 11 marine realms grouped from the Costello realms, together partitioning the globe.",
       false,
-      "^[A-Z][a-z]+$",
-      String::toLowerCase,
+      "^[A-Z][a-zA-Z]+$",
+      Gazetteer::normalizeRealm,
       GenericArea.class
   ),
 
@@ -240,6 +242,27 @@ public enum Gazetteer {
    */
   public String locationID(String area) {
     return prefix() + ":" + area;
+  }
+
+  /**
+   * The case of a letter in a FAO id depends on its position. Letters directly below the major area and the
+   * divisions of area 21 are upper case, all others lower case: 47.A.0, 21.3.M, 21.3.P.n, 27.12.c, 58.4.3.a
+   */
+  private static String normalizeFao(String id) {
+    String[] levels = id.split("\\.", -1);
+    for (int i = 1; i < levels.length; i++) {
+      boolean upper = i == 1 || (i == 2 && levels[0].equals("21"));
+      levels[i] = upper ? levels[i].toUpperCase() : levels[i].toLowerCase();
+    }
+    return String.join(".", levels);
+  }
+
+  /**
+   * Realm ids are camel case. Only a single word can be recovered from input without any case to go by:
+   * NEOTROPIC and neotropic become Neotropic, while TemperateSouthAmerica stays.
+   */
+  private static String normalizeRealm(String id) {
+    return StringUtils.capitalize(StringUtils.isMixedCase(id) ? id : id.toLowerCase());
   }
 
   public static Gazetteer of(String prefix) throws IllegalArgumentException {

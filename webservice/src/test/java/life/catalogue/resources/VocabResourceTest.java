@@ -3,6 +3,12 @@ package life.catalogue.resources;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
+
+import life.catalogue.api.vocab.area.Country;
+import life.catalogue.api.vocab.area.Gazetteer;
+import life.catalogue.api.vocab.area.GenericArea;
+import life.catalogue.parser.AreaLabelLookup;
 
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.Response;
@@ -12,6 +18,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
@@ -79,6 +86,76 @@ public class VocabResourceTest {
     // uppercase prefix and `/` in the id portion must normalize to the on-disk filename
     try (Response resp = r.areaGeojson("FAO", "37/4/1")) {
       assertEquals(200, resp.getStatus());
+    }
+  }
+
+  private VocabResource resourceWithLabels() throws Exception {
+    File dir = tmp.newFolder();
+    Files.createDirectories(dir.toPath().resolve("tdwg"));
+    Files.writeString(dir.toPath().resolve("tdwg/labels.tsv"), "1\tEurope\n");
+    Files.createDirectories(dir.toPath().resolve("iso"));
+    Files.writeString(dir.toPath().resolve("iso/labels.tsv"), "DE\tGermany\nDE-BE\tBerlin\nYU\tYugoslavia\n");
+    Files.createDirectories(dir.toPath().resolve("realm"));
+    Files.writeString(dir.toPath().resolve("realm/labels.tsv"), "Neotropic\tNeotropic\nTropicalAtlantic\tTropical Atlantic\n");
+    return new VocabResource(dir, new AreaLabelLookup(dir));
+  }
+
+  @Test
+  public void areaKnown() throws Exception {
+    var r = resourceWithLabels();
+    assertTrue(r.area("tdwg", "1").isPresent());
+    assertTrue(r.area("iso", "DE").isPresent());
+    assertTrue(r.area("iso", "DE-BE").isPresent());
+    assertTrue(r.area("realm", "Neotropic").isPresent());
+    assertTrue(r.area("realm", "TropicalAtlantic").isPresent());
+    // bundled countries do not need a label file
+    assertTrue(r.area("iso", "XZ").isPresent());
+    // no labels means we cannot tell
+    assertTrue(r.area("iho", "999").isPresent());
+    assertTrue(r.area("text", "somewhere").isPresent());
+  }
+
+  @Test
+  public void areaUnknownIs404() throws Exception {
+    var r = resourceWithLabels();
+    // an empty optional is a 404
+    assertTrue(r.area("tdwg", "99").isEmpty());
+    assertTrue(r.area("iso", "DE-XX").isEmpty());
+    assertThrows(NotFoundException.class, () -> r.area("iso", "ZZ"));
+    assertThrows(NotFoundException.class, () -> r.area("foo", "1"));
+    assertThrows(NotFoundException.class, () -> r.area("teow", "PA0445"));
+    assertTrue(r.area("realm", "shipwreck").isEmpty());
+  }
+
+  @Test
+  public void areaListIsoIncludesSubdivisions() throws Exception {
+    var withoutLabels = new VocabResource((File) null, null).areas(Gazetteer.ISO);
+    assertEquals(Country.values().length, withoutLabels.size());
+
+    var areas = resourceWithLabels().areas(Gazetteer.ISO);
+    // labels of a bundled country are not listed twice
+    assertEquals(Country.values().length + 2, areas.size());
+    assertEquals(List.of(new GenericArea(Gazetteer.ISO, "DE-BE", "Berlin"), new GenericArea(Gazetteer.ISO, "YU", "Yugoslavia")),
+      areas.stream().filter(a -> a instanceof GenericArea).toList());
+  }
+
+  @Test
+  public void areaListRealm() throws Exception {
+    assertEquals(List.of(new GenericArea(Gazetteer.REALM, "Neotropic", "Neotropic"), new GenericArea(Gazetteer.REALM, "TropicalAtlantic", "Tropical Atlantic")),
+      resourceWithLabels().areas(Gazetteer.REALM));
+    assertThrows(NotFoundException.class, () -> new VocabResource((File) null, null).areas(Gazetteer.REALM));
+  }
+
+  @Test
+  public void listedVocabsResolve() throws Exception {
+    var r = new VocabResource((File) null, null);
+    assertTrue(r.list().contains("term"));
+    assertFalse(r.list().contains("terms"));
+    for (String vocab : r.list()) {
+      // language, geotime and term have their own methods
+      if (!List.of("language", "geotime", "term").contains(vocab)) {
+        assertFalse(vocab, r.values(vocab).isEmpty());
+      }
     }
   }
 

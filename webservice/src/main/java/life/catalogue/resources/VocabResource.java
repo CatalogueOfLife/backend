@@ -95,7 +95,7 @@ public class VocabResource {
     List<String> names = new ArrayList<>(enums.keySet());
     names.add("language");
     names.add("geotime");
-    names.add("terms");
+    names.add("term");
     Collections.sort(names);
     vocabNames = List.copyOf(names);
   }
@@ -228,13 +228,25 @@ public class VocabResource {
     }
     // we only support a few gazetteers now
     return switch (gazetteer) {
-      case ISO -> enumList(Country.class);
-      case REALM -> enumList(BioGeoRealm.class);
+      case ISO -> isoAreas();
       default -> labels(gazetteer);
     };
   }
 
-  private Collection<?> labels(Gazetteer gazetteer) throws NotFoundException {
+  /**
+   * The countries as the full vocabulary, followed by the subdivisions and historic codes only known by their label.
+   */
+  private List<Object> isoAreas() throws IllegalAccessException {
+    List<Object> areas = new ArrayList<>(enumList(Country.class));
+    if (areaLabelLookup != null && areaLabelLookup.hasLabels(Gazetteer.ISO)) {
+      labels(Gazetteer.ISO).stream()
+          .filter(a -> Country.fromIsoCode(a.getId()).isEmpty())
+          .forEach(areas::add);
+    }
+    return areas;
+  }
+
+  private List<GenericArea> labels(Gazetteer gazetteer) throws NotFoundException {
     if (areaLabelLookup != null && areaLabelLookup.hasLabels(gazetteer)) {
       return areaLabelLookup.listLabels(gazetteer).entrySet().stream()
           .map(e -> new GenericArea(gazetteer, e.getKey(), e.getValue()))
@@ -247,9 +259,18 @@ public class VocabResource {
   @GET
   @VaryAccept
   @Path("area/{scheme}:{id}")
-  public Optional<?> area(@PathParam("scheme") String scheme, @PathParam("id") String id) throws UnparsableException {
-    return AreaParser.PARSER.parse(scheme, id)
-      .map(a -> a instanceof Enum ? enumFields((Enum) a) : a);
+  public Optional<?> area(@PathParam("scheme") String scheme, @PathParam("id") String id) {
+    try {
+      return AreaParser.PARSER.parse(scheme, id)
+        .filter(this::notUnknown)
+        .map(a -> a instanceof Enum ? enumFields((Enum) a) : a);
+    } catch (UnparsableException e) {
+      throw new NotFoundException(e.getMessage());
+    }
+  }
+
+  private boolean notUnknown(Area area) {
+    return area instanceof Enum || areaLabelLookup == null || !areaLabelLookup.isUnknown(area.getGazetteer(), area.getId());
   }
 
   /**

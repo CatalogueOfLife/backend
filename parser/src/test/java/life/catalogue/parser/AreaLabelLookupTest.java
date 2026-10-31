@@ -11,7 +11,9 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 public class AreaLabelLookupTest {
 
@@ -41,6 +43,35 @@ public class AreaLabelLookupTest {
     assertEquals("Atlantic, Northeast", lookup.findLabel(Gazetteer.FAO, "27"));
     // unknown id falls back to id itself
     assertEquals("99.99", lookup.findLabel(Gazetteer.FAO, "99.99"));
+  }
+
+  @Test
+  public void isoFromDir() throws Exception {
+    File dir = tmp.newFolder();
+    writeLabels(dir.toPath().resolve("iso/labels.tsv"),
+      "DE\tGermany from labels\n" +
+      "DE-BE\tBerlin\n" +
+      "YU\tYugoslavia\n");
+
+    var lookup = new AreaLabelLookup(dir);
+    assertEquals("Berlin", lookup.findLabel(Gazetteer.ISO, "DE-BE"));
+    assertEquals("Yugoslavia", lookup.findLabel(Gazetteer.ISO, "YU"));
+    // the bundled countries win
+    assertEquals("Germany", lookup.findLabel(Gazetteer.ISO, "DE"));
+    assertEquals("DE-XX", lookup.findLabel(Gazetteer.ISO, "DE-XX"));
+  }
+
+  @Test
+  public void isUnknown() throws Exception {
+    File dir = tmp.newFolder();
+    writeLabels(dir.toPath().resolve("tdwg/labels.tsv"), "1\tEurope\n");
+
+    var lookup = new AreaLabelLookup(dir);
+    assertFalse(lookup.isUnknown(Gazetteer.TDWG, "1"));
+    assertTrue(lookup.isUnknown(Gazetteer.TDWG, "99"));
+    // no list, no way to tell
+    assertFalse(lookup.isUnknown(Gazetteer.FAO, "99"));
+    assertFalse(new AreaLabelLookup().isUnknown(Gazetteer.TDWG, "99"));
   }
 
   @Test
