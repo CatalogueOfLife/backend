@@ -109,7 +109,7 @@ public class DuplicateDao {
     /**
      * @param entity the entity to look out for. Must be NAME or NAME_USAGE nothing else
      * @param mode the matching mode to detect duplicates - strict or fuzzy
-     * @param query optional prefix query string
+     * @param query optional, case-sensitive name prefix. Matched literally, not as a regular expression
      * @param minSize minimum number of duplicate names to exist. Defaults to 2
      * @param datasetKey the dataset to be analyzed
      * @param sourceDatasetKey the source dataset within a project to analyze. Requires datasetKey to be a project or release

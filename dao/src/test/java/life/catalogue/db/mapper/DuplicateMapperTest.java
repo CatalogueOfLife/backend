@@ -270,5 +270,30 @@ public class DuplicateMapperTest {
       new Page(0, 5));
     assertEquals(1, dups.size());
   }
+
+  /**
+   * The name prefix comes straight from the public API and must be bound as a literal,
+   * never interpreted as SQL, a regular expression or a LIKE pattern.
+   */
+  @Test
+  public void queryIsLiteralPrefix() {
+    for (String q : List.of("Achillea' OR '1'='1", "Achillea'; SELECT 1; --", "O'Brien", "Achill.a", "Achillea.*", "[A-Z]", "%", "_", "\\")) {
+      assertEquals(q, 0, mapper.duplicates(MatchingMode.STRICT, q, 2, datasetKey, null, null, null, NameCategory.BINOMIAL,
+        null, null, true, null, null, null, null, Datasets.COL, new Page(0, 5)).size());
+      assertEquals(q, (Integer) 0, mapper.count(MatchingMode.STRICT, q, 2, datasetKey, null, null, null, NameCategory.BINOMIAL,
+        null, null, true, null, null, null, null, Datasets.COL));
+      assertEquals(q, 0, mapper.duplicateNames(MatchingMode.STRICT, q, 2, datasetKey, NameCategory.BINOMIAL,
+        null, true, null, null, new Page(0, 5)).size());
+      assertEquals(q, (Integer) 0, mapper.countNames(MatchingMode.STRICT, q, 2, datasetKey, NameCategory.BINOMIAL,
+        null, true, null, null));
+    }
+    // a plain prefix still matches, case-sensitively
+    assertEquals(2, mapper.duplicates(MatchingMode.STRICT, "Achillea", 2, datasetKey, null, null, null, NameCategory.BINOMIAL,
+      null, null, true, null, null, null, null, Datasets.COL, new Page(0, 5)).size());
+    assertEquals((Integer) 2, mapper.count(MatchingMode.STRICT, "Achillea", 2, datasetKey, null, null, null, NameCategory.BINOMIAL,
+      null, null, true, null, null, null, null, Datasets.COL));
+    assertEquals(0, mapper.duplicates(MatchingMode.STRICT, "achillea", 2, datasetKey, null, null, null, NameCategory.BINOMIAL,
+      null, null, true, null, null, null, null, Datasets.COL, new Page(0, 5)).size());
+  }
   
 }

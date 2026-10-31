@@ -105,7 +105,9 @@
 
   <sql id="commonWhereClause">
     <if test="query != null">
-      AND n.scientific_name ~ '^${query}'
+      <!-- literal, bound name prefix: never inline it as raw text, it comes straight from the public API.
+           starts_with uses the (dataset_key, scientific_name text_pattern_ops) index just like an anchored regex -->
+      AND starts_with(n.scientific_name, #{query})
     </if>
     <if test="category != null">
       <if test="category.highest != null">
