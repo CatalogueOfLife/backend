@@ -201,6 +201,7 @@ public class WsServerConfig extends Configuration implements ExporterConfig, Cor
    *   gazetteerDir/&lt;prefix&gt;/labels.tsv               # id&lt;TAB&gt;english-name
    *   gazetteerDir/&lt;prefix&gt;/build.json               # when and how it was built, number of entries
    *   gazetteerDir/&lt;prefix&gt;/overview.geojson         # simplified map of the whole gazetteer, if it has shapes
+   *   gazetteerDir/&lt;prefix&gt;/map.svg                  # drawn world map with clickable areas, only some have one
    *   gazetteerDir/&lt;prefix&gt;/features/&lt;id&gt;.geojson
    * </pre>
    * Produced and maintained out-of-band (see the {@code col-gazetteers} repo). May be null in which case

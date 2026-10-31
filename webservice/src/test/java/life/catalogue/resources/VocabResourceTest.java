@@ -109,6 +109,7 @@ public class VocabResourceTest {
     Files.writeString(iso.resolve("overview.geojson"), SAMPLE);
     Files.writeString(iso.resolve("build.json"), "{\"label_count\":1}");
     Files.writeString(iso.resolve("labels.tsv"), "DE\tGermany\n");
+    Files.writeString(iso.resolve("map.svg"), "<svg/>");
 
     var r = new VocabResource(dir, null);
     try (Response resp = r.gazetteerOverview("iso")) {
@@ -123,6 +124,10 @@ public class VocabResourceTest {
       assertEquals("text/tsv", resp.getMediaType().toString());
       assertEquals("DE\tGermany\n", new String(writeEntity(resp)));
     }
+    try (Response resp = r.gazetteerMap("iso")) {
+      assertEquals("image/svg+xml", resp.getMediaType().toString());
+      assertEquals("<svg/>", new String(writeEntity(resp)));
+    }
   }
 
   @Test
@@ -134,6 +139,7 @@ public class VocabResourceTest {
     var r = new VocabResource(dir, null);
     assertEquals(200, r.gazetteerBuild("wdpa").getStatus());
     assertThrows(NotFoundException.class, () -> r.gazetteerOverview("wdpa"));
+    assertThrows(NotFoundException.class, () -> r.gazetteerMap("wdpa"));
     assertThrows(NotFoundException.class, () -> r.gazetteerBuild("text"));
     assertThrows(NotFoundException.class, () -> r.gazetteerLabels("nope"));
     assertThrows(NotFoundException.class, () -> r.gazetteerLabels("../wdpa"));

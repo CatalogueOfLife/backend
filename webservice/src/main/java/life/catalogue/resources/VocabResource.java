@@ -330,6 +330,17 @@ public class VocabResource {
   }
 
   /**
+   * A drawn world map of a gazetteer with an id on each of its areas, 404 for the many gazetteers without one.
+   * @param name the gazetteer, case insensitive
+   */
+  @GET
+  @Path("gazetteer/{name}/map.svg")
+  @Produces(MoreMediaTypes.IMG_SVG)
+  public Response gazetteerMap(@PathParam("name") String name) {
+    return fileResponse(gazetteerPath(name).resolve("map.svg"), MoreMediaTypes.IMG_SVG);
+  }
+
+  /**
    * The directory of a gazetteer in the configured gazetteer directory.
    * Only known gazetteers resolve, so that a request can't point anywhere else.
    */
