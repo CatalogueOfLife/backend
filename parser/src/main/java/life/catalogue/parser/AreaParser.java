@@ -39,7 +39,10 @@ public class AreaParser extends ParserBase<Area> {
     if (ISO_PREFIXES.contains(scheme)) {
       return Gazetteer.ISO.name().toLowerCase();
 
-    } else if (scheme.equalsIgnoreCase("realm") || scheme.equalsIgnoreCase("bio")) {
+    } else if (scheme.equalsIgnoreCase("realm") ||
+               scheme.equalsIgnoreCase("bio") ||
+               scheme.equalsIgnoreCase("biogeo")
+    ) {
       return Gazetteer.REALM.name().toLowerCase();
     }
     return scheme;

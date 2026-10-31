@@ -101,6 +101,7 @@ public class AreaParserTest extends ParserTestBase<Area> {
 
     p.setLabelLookup(new AreaLabelLookup(dir));
     assertEquals(new GenericArea(Gazetteer.REALM, "Neotropic", "Neotropic"), p.parse("bio:NEOTROPIC").orElseThrow());
+    assertEquals(new GenericArea(Gazetteer.REALM, "Neotropic", "Neotropic"), p.parse("biogeo:NEOTROPIC").orElseThrow());
     assertEquals(new GenericArea(Gazetteer.REALM, "TropicalAtlantic", "Tropical Atlantic"), p.parse("realm:TropicalAtlantic").orElseThrow());
     assertThrows(UnparsableException.class, () -> p.parse("realm:shipwreck"));
     // only realms are restricted to the list, the labels of other gazetteers are not used for validation
