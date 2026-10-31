@@ -87,7 +87,9 @@ public class VocabResource {
           Sector.AuthorshipUpdate.class)) {
         add(enums, clazz);
       }
-      
+      // manually hide enums which also exist as gazetteers
+      remove(enums, Continent.class);
+
     } catch (IOException e) {
       LOG.error("Failed to init enum class map", e);
     }
@@ -116,7 +118,14 @@ public class VocabResource {
       }
     }
   }
-  
+
+  private static void remove(Map<String, Class<Enum>> enums, Class<?> clazz) {
+    if (clazz.isEnum()) {
+      LOG.debug("Removing enum {} from vocabularies", clazz.getSimpleName());
+      enums.remove(binaryName(clazz));
+    }
+  }
+
   @GET
   public List<String> list() {
     return vocabNames;
