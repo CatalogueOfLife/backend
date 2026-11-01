@@ -8,196 +8,159 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
-import java.util.function.Function;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
-import org.apache.jena.query.Dataset;
-import org.apache.jena.query.QueryExecution;
-import org.apache.jena.query.ResultSet;
-import org.apache.jena.rdf.model.RDFNode;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.riot.RDFLanguages;
 import org.apache.jena.riot.RDFParser;
 import org.apache.jena.riot.system.ErrorHandlerFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.univocity.parsers.csv.CsvWriter;
 import com.univocity.parsers.csv.CsvWriterSettings;
 
 /**
- * Converts the ISC RDF Turtle source file into a simple CSV file for the GeoTimeFactory resources.
+ * Converts the RDF Turtle file of the International Chronostratigraphic Chart into a simple CSV file,
+ * which is placed into /vocab/geotime/geotime.csv resources so it is picked up during builds.
  * The conversion should be triggered manually whenever the turtle file is updated from
- * https://github.com/CGI-IUGS/timescale-data/tree/master/rdf
- *
- * and placed into /vocab/geotime/geotime.csv resources so it is picked up during builds.
+ * https://github.com/i-c-stratigraphy/chart
+ * or the patches or legacy labels change. See readme.md next to the files.
  */
 public class GeoTimeIscConverter {
-  
-  private static final Logger LOG = LoggerFactory.getLogger(GeoTimeIscConverter.class);
-  private static String ISC_RESOURCE = "vocab/geotime/isc2020.ttl";
-  private static String COLOR_RESOURCE = "vocab/geotime/colors.csv";
-  // "younger bound -315.2 +|-0.2 Ma"
-  // "younger bound -0.0 Ma"
-  // "older bound -0.0117 Ma"
 
-  private static Pattern BOUNDS = Pattern.compile("(young|old)(?:er)? +bound +-?([0-9.]+) [^a-z]*Ma", Pattern.CASE_INSENSITIVE);
+  private static final String CHART_RESOURCE = "vocab/geotime/chart-2026-06.ttl";
+  private static final String PATCH_RESOURCE = "vocab/geotime/patch.csv";
+  private static final String LEGACY_LABEL_RESOURCE = "vocab/geotime/legacy-labels.csv";
+
+  private static final String GTSD = "https://data.stratigraphy.org/data/gts/";
+  private static final String GTS = "http://resource.geosciml.org/ontology/timescale/gts#";
+  private static final String TIME = "http://www.w3.org/2006/time#";
+  private static final String SKOS = "http://www.w3.org/2004/02/skos/core#";
+  private static final String SCHEMA = "https://schema.org/";
 
   static class GTItem {
-    public final Resource resource;
-    public final String id;
-    public String rank;
-    public List<String> labels = new ArrayList<>();
-    public String broader;
-    public List<String> comment = new ArrayList<>();
-    public String color;
+    final String id;
+    GeoTimeType type;
+    Double start;
+    Double end;
+    String broader;
+    String color;
+    final Set<String> labels = new TreeSet<>();
 
-    public GTItem(Resource resource) {
-      this.resource = resource;
-      this.id = resource.getLocalName();
-    }
-
-    GeoTime toGeotime(Function<String, GeoTime> parentFunc) {
-      GeoTime parent = null;
-      if (parentFunc != null && broader != null) {
-        // lookup in provided map
-        parent = parentFunc.apply(broader);
-        if (parent == null) {
-          throw new IllegalStateException("parent "+broader+" missing");
-        }
-      }
-      Double[] bounds = new Double[2];
-      if (comment != null) {
-        for (String c : comment) {
-          Matcher m = BOUNDS.matcher(c);
-          if (m.find()) {
-            int idx = m.group(1).startsWith("y") ? 1 : 0;
-            Double ma = Double.parseDouble(m.group(2));
-            bounds[idx] = ma;
-          }
-        }
-      }
-      var type = GeoTimeType.valueOf(rank.toUpperCase().replaceAll("-", ""));
-      return new GeoTime(id, type, bounds[0], bounds[1], parent, color);
+    GTItem(String id) {
+      this.id = id;
     }
   }
 
+  private static String id(Resource r) {
+    if (!r.getURI().startsWith(GTSD)) {
+      throw new IllegalStateException("Unexpected namespace in " + r);
+    }
+    return r.getURI().substring(GTSD.length());
+  }
+
+  private static Double bound(Model model, Resource r, String boundary) {
+    var b = r.getPropertyResourceValue(model.createProperty(TIME, boundary));
+    return b.getRequiredProperty(model.createProperty(GTSD, "inMYA")).getDouble();
+  }
+
+  private static List<GTItem> read(Model model) {
+    Property rank = model.createProperty(GTS, "rank");
+    Property prefLabel = model.createProperty(SKOS, "prefLabel");
+    Property broader = model.createProperty(SKOS, "broader");
+    Property color = model.createProperty(SCHEMA, "color");
+
+    List<GTItem> items = new ArrayList<>();
+    for (Resource r : model.listSubjectsWithProperty(rank).toList()) {
+      GTItem item = new GTItem(id(r));
+      // Pridoli has 2 ranks as an epoch that is not divided into ages. The higher one tells what it is
+      item.type = r.listProperties(rank).toList().stream()
+                   .map(s -> GeoTimeType.valueOf(s.getResource().getLocalName().toUpperCase().replaceAll("-", "")))
+                   .min(Comparator.naturalOrder())
+                   .orElseThrow();
+      item.start = bound(model, r, "hasBeginning");
+      item.end = bound(model, r, "hasEnd");
+      item.color = r.getRequiredProperty(color).getString();
+      var parent = r.getPropertyResourceValue(broader);
+      item.broader = parent == null ? null : id(parent);
+      r.listProperties(prefLabel).forEach(s -> item.labels.add(s.getString()));
+      items.add(item);
+    }
+    return items;
+  }
+
+  private static GTItem find(Map<String, GTItem> items, String name, String resource) {
+    var item = items.get(name);
+    if (item == null) {
+      throw new IllegalStateException("Unknown geotime " + name + " in " + resource);
+    }
+    return item;
+  }
+
+  private static void addLegacyLabels(Map<String, GTItem> items) {
+    CSVUtils.parse(Resources.stream(LEGACY_LABEL_RESOURCE), 1).forEach(row -> {
+      find(items, row.get(0), LEGACY_LABEL_RESOURCE).labels.addAll(List.of(row.get(1).split("\\|")));
+    });
+  }
+
+  private static Double patched(Double current, String value, GTItem item) {
+    Double patch = Double.valueOf(value);
+    if (patch.equals(current)) {
+      throw new IllegalStateException(item.id + " is correct in the chart, remove the patch");
+    }
+    return patch;
+  }
+
+  private static void applyPatches(Map<String, GTItem> items) {
+    CSVUtils.parse(Resources.stream(PATCH_RESOURCE), 1).forEach(row -> {
+      var item = find(items, row.get(0), PATCH_RESOURCE);
+      String value = row.get(2);
+      switch (row.get(1)) {
+        case "start" -> item.start = patched(item.start, value, item);
+        case "end" -> item.end = patched(item.end, value, item);
+        case "removeLabel" -> {
+          if (!item.labels.remove(value)) {
+            throw new IllegalStateException(item.id + " has no label " + value + ", remove the patch");
+          }
+        }
+        default -> throw new IllegalStateException("Unknown patch field " + row.get(1));
+      }
+    });
+  }
+
   public void convert(File fo) throws IOException {
-    Dataset dataset;
-    try (InputStream in = Resources.stream(ISC_RESOURCE)) {
-      dataset = RDFParser.create()
+    Model model;
+    try (InputStream in = Resources.stream(CHART_RESOURCE)) {
+      model = RDFParser.create()
                  .source(in)
                  .lang(RDFLanguages.TTL)
                  .errorHandler(ErrorHandlerFactory.errorHandlerStrict)
-                 .base("http://resource.geosciml.org/vocabulary/timescale/gts2020")
-                 .toDataset();
+                 .toDataset()
+                 .getDefaultModel();
     }
-    String PREFIXES ="PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> "
-                   + "PREFIX gts: <http://resource.geosciml.org/ontology/timescale/gts#> "
-                   + "PREFIX isc: <http://resource.geosciml.org/classifier/ics/ischart/> "
-                   + "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> "
-                   + "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> "
-                   + "PREFIX dct: <http://purl.org/dc/terms/> ";
+    final Map<String, GTItem> items = read(model).stream().collect(Collectors.toMap(i -> i.id, i -> i));
+    addLegacyLabels(items);
+    applyPatches(items);
 
-    String query = PREFIXES + "SELECT ?s {?s rdf:type gts:GeochronologicEra}";
-    List<RDFNode> nodes = new ArrayList<>();
-    try(QueryExecution qExec = QueryExecution.dataset(dataset).query(query).build() ) {
-      ResultSet rs = qExec.execSelect() ;
-      while (rs.hasNext()) {
-        var qs = rs.next();
-        nodes.add(qs.get("s"));
-      }
-    }
-
-    final List<GTItem> items = new ArrayList<>();
-    for (var n : nodes) {
-      System.out.println(n.asResource().getLocalName());
-      GTItem item = new GTItem(n.asResource());
-      items.add(item);
-
-      query = PREFIXES + "SELECT ?o { isc:" + item.id + " rdfs:comment ?o}";
-      try(QueryExecution qExec = QueryExecution.dataset(dataset).query(query).build() ) {
-        ResultSet rs = qExec.execSelect() ;
-        while (rs.hasNext()) {
-          var qs = rs.next();
-          String comment = qs.getLiteral("o").getString();
-          item.comment.add(comment);
-        }
-      }
-
-      query = PREFIXES + "SELECT ?o { isc:" + item.id + " gts:rank ?o}";
-      try(QueryExecution qExec = QueryExecution.dataset(dataset).query(query).build() ) {
-        ResultSet rs = qExec.execSelect() ;
-        while (rs.hasNext()) {
-          var qs = rs.next();
-          Resource rank = qs.getResource("o");
-          item.rank = rank.getLocalName();
-        }
-      }
-
-      query = PREFIXES + "SELECT ?o { isc:" + item.id + " skos:prefLabel ?o}";
-      try(QueryExecution qExec = QueryExecution.dataset(dataset).query(query).build() ) {
-        ResultSet rs = qExec.execSelect() ;
-        while (rs.hasNext()) {
-          var qs = rs.next();
-          String label = qs.getLiteral("o").getString();
-          item.labels.add(label);
-        }
-      }
-
-      query = PREFIXES + "SELECT ?o { isc:" + item.id + " skos:altLabel ?o}";
-      try(QueryExecution qExec = QueryExecution.dataset(dataset).query(query).build() ) {
-        ResultSet rs = qExec.execSelect() ;
-        while (rs.hasNext()) {
-          var qs = rs.next();
-          String label = qs.getLiteral("o").getString();
-          item.labels.add(label);
-        }
-      }
-
-      query = PREFIXES + "SELECT ?s { ?s dct:isReplacedBy isc:" + item.id + "}";
-      try(QueryExecution qExec = QueryExecution.dataset(dataset).query(query).build() ) {
-        ResultSet rs = qExec.execSelect() ;
-        while (rs.hasNext()) {
-          var qs = rs.next();
-          String label = qs.getResource("s").getLocalName();
-          item.labels.add(label);
-        }
-      }
-
-      query = PREFIXES + "SELECT ?o { isc:" + item.id + " skos:broader ?o}";
-      try(QueryExecution qExec = QueryExecution.dataset(dataset).query(query).build() ) {
-        ResultSet rs = qExec.execSelect() ;
-        while (rs.hasNext()) {
-          var qs = rs.next();
-          item.broader = qs.getResource("o").getLocalName();
-        }
-      }
-    }
-
-    // the turtle file has no colours
-    var colors = CSVUtils.parse(Resources.stream(COLOR_RESOURCE)).skip(1)
-                         .collect(Collectors.toMap(row -> row.get(0), row -> row.get(1)));
-    for (var item : items) {
-      item.color = colors.get(item.id);
-      if (item.color == null) {
-        throw new IllegalStateException("colour missing for " + item.id);
-      }
-    }
-
-    // way too much maps, but I cant think of a more elegant way right now
-    var itMap = items.stream().collect(Collectors.toMap(g -> g.id, Function.identity()));
     var gtMap = new HashMap<String, GeoTime>();
     // sorts by unit, then time so we can find parents in one go
-    var times = items.stream().map(i -> i.toGeotime(null)).sorted().collect(Collectors.toList());
+    var times = items.values().stream()
+                     .map(i -> new GeoTime(i.id, i.type, i.start, i.end, null, i.color))
+                     .sorted()
+                     .collect(Collectors.toList());
     for (GeoTime src : times) {
-      var item = itMap.get(src.getName());
-      GeoTime gt = new GeoTime(src, gtMap.get(item.broader));
-      gtMap.put(gt.getName(), gt);
+      var item = items.get(src.getName());
+      if (item.broader != null && !gtMap.containsKey(item.broader)) {
+        throw new IllegalStateException("parent " + item.broader + " missing");
+      }
+      gtMap.put(src.getName(), new GeoTime(src, gtMap.get(item.broader)));
     }
 
     CsvWriterSettings SETTINGS = new CsvWriterSettings();
@@ -205,24 +168,15 @@ public class GeoTimeIscConverter {
       CsvWriter csv = new CsvWriter(writer, SETTINGS);
       writer.write("name,type,start,end,parent,labels,color\n");
       for (var gt : gtMap.values().stream().sorted().collect(Collectors.toList())) {
-        var item = itMap.get(gt.getName());
+        var item = items.get(gt.getName());
         csv.writeRow(new String[]{
-          gt.getName(), str(gt.getType()), str(gt.getStart()), str(gt.getEnd()), gt.getParent()==null?"":gt.getParent().getName(), str(item.labels), gt.getColor()
+          gt.getName(), gt.getType().name(), gt.getStart().toString(), gt.getEnd().toString(),
+          gt.getParent()==null?"":gt.getParent().getName(), String.join("|", item.labels), gt.getColor()
         });
       }
     }
   }
 
-  private static String str(Enum<?> x) {
-    return x == null ? "" : x.name();
-  }
-  private static String str(Double x) {
-    return x == null ? "" : x.toString();
-  }
-  private static String str(List<String> x) {
-    return x == null || x.isEmpty() ? "" : String.join("|", x);
-  }
-  
   public static void main(String[] args) throws Exception {
     var conv = new GeoTimeIscConverter();
     conv.convert(new File("/Users/markus/code/col/backend/api/src/main/resources/vocab/geotime/geotime.csv"));

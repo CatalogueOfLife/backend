@@ -1,0 +1,4 @@
+name,field,value,reason
+Aquitanian,start,23.04,"The chart has 23.03, but Miocene, Neogene, Chattian, Oligocene and Paleogene all have 23.04"
+Ludlow,end,422.7,"The chart has 419.62, the end of Pridoli. Its youngest age Ludfordian and Pridoli meet at 422.7"
+Archean,removeLabel,Hadeano,"A label of Hadean, which would otherwise be parsed as Archean"

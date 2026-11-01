@@ -36,6 +36,13 @@ public class GeoTimeParserTest extends ParserTestBase<GeoTime> {
     assertParse("UpperCretaceous", "Späte Kreide");
     assertParse("UpperCretaceous", "Oberkreide");
 
+    // the name in the 2020 chart
+    assertParse("Chibanian", "MiddlePleistocene");
+    assertParse("Chibanian", "Middle Pleistocene");
+    assertParse("Chibanian", "Chibanian");
+    // also a label of Archean in the 2026 chart
+    assertParse("Hadean", "Hadeano");
+
     assertParse("Burdigalian", "17Ma");
     assertParse("Burdigalian", "17 Ma");
     assertParse("Burdigalian", "17.1 Ma");
