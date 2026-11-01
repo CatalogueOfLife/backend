@@ -2,6 +2,7 @@ package life.catalogue.api.vocab;
 
 import life.catalogue.common.io.Resources;
 import life.catalogue.common.io.UTF8IoUtils;
+import life.catalogue.common.text.CSVUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -39,6 +40,7 @@ public class GeoTimeIscConverter {
   
   private static final Logger LOG = LoggerFactory.getLogger(GeoTimeIscConverter.class);
   private static String ISC_RESOURCE = "vocab/geotime/isc2020.ttl";
+  private static String COLOR_RESOURCE = "vocab/geotime/colors.csv";
   // "younger bound -315.2 +|-0.2 Ma"
   // "younger bound -0.0 Ma"
   // "older bound -0.0117 Ma"
@@ -52,6 +54,7 @@ public class GeoTimeIscConverter {
     public List<String> labels = new ArrayList<>();
     public String broader;
     public List<String> comment = new ArrayList<>();
+    public String color;
 
     public GTItem(Resource resource) {
       this.resource = resource;
@@ -79,7 +82,7 @@ public class GeoTimeIscConverter {
         }
       }
       var type = GeoTimeType.valueOf(rank.toUpperCase().replaceAll("-", ""));
-      return new GeoTime(id, type, bounds[0], bounds[1], parent);
+      return new GeoTime(id, type, bounds[0], bounds[1], parent, color);
     }
   }
 
@@ -176,6 +179,16 @@ public class GeoTimeIscConverter {
       }
     }
 
+    // the turtle file has no colours
+    var colors = CSVUtils.parse(Resources.stream(COLOR_RESOURCE)).skip(1)
+                         .collect(Collectors.toMap(row -> row.get(0), row -> row.get(1)));
+    for (var item : items) {
+      item.color = colors.get(item.id);
+      if (item.color == null) {
+        throw new IllegalStateException("colour missing for " + item.id);
+      }
+    }
+
     // way too much maps, but I cant think of a more elegant way right now
     var itMap = items.stream().collect(Collectors.toMap(g -> g.id, Function.identity()));
     var gtMap = new HashMap<String, GeoTime>();
@@ -190,11 +203,11 @@ public class GeoTimeIscConverter {
     CsvWriterSettings SETTINGS = new CsvWriterSettings();
     try (var writer = UTF8IoUtils.writerFromFile(fo)) {
       CsvWriter csv = new CsvWriter(writer, SETTINGS);
-      writer.write("name,type,start,end,parent,labels\n");
+      writer.write("name,type,start,end,parent,labels,color\n");
       for (var gt : gtMap.values().stream().sorted().collect(Collectors.toList())) {
         var item = itMap.get(gt.getName());
         csv.writeRow(new String[]{
-          gt.getName(), str(gt.getType()), str(gt.getStart()), str(gt.getEnd()), gt.getParent()==null?"":gt.getParent().getName(), str(item.labels)
+          gt.getName(), str(gt.getType()), str(gt.getStart()), str(gt.getEnd()), gt.getParent()==null?"":gt.getParent().getName(), str(item.labels), gt.getColor()
         });
       }
     }

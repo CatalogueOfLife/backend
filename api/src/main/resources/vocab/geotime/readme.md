@@ -3,3 +3,5 @@ taken from IUGS's github repository at https://github.com/CGI-IUGS/timescale-dat
 
 ISC also publishes [experimental RDF](https://stratigraphy.org/ICSchart/data/ChronostratChart2023-09.ttl) directly: https://stratigraphy.org/chart
 
+colors.csv has the official colours of the chart, which the converter adds to the csv. They follow the Commission for the Geological Map of the World
+and are taken from chart.ttl at https://github.com/i-c-stratigraphy/chart, which calls MiddlePleistocene Chibanian.

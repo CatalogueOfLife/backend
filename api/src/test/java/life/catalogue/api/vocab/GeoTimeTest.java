@@ -12,6 +12,7 @@ public class GeoTimeTest {
     for (GeoTime t : GeoTime.TIMES.values()) {
       assertNotNull(t.getName());
       assertNotNull(t.getType());
+      assertTrue(t.getName(), t.getColor().matches("#[0-9A-F]{6}"));
       if (t.getStart() == null && t.getEnd() != null  ||  t.getStart()!= null && t.getEnd() == null) {
         fail("Unclosed GeoTime "+t);
       }

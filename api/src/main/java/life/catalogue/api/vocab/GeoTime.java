@@ -49,7 +49,7 @@ public class GeoTime implements Comparable<GeoTime> {
         header = false;
         continue;
       }
-      GeoTime gt = new GeoTime(row.get(0), GeoTimeType.valueOf(row.get(1)), dbl(row.get(2)), dbl(row.get(3)), map.get(norm(row.get(4))));
+      GeoTime gt = new GeoTime(row.get(0), GeoTimeType.valueOf(row.get(1)), dbl(row.get(2)), dbl(row.get(3)), map.get(norm(row.get(4))), row.get(6));
       map.put(norm(gt.getName()), gt);
     }
     return map;
@@ -96,16 +96,27 @@ public class GeoTime implements Comparable<GeoTime> {
   @JsonIgnore
   private final GeoTime parent;
 
+  /**
+   * Official colour of the International Chronostratigraphic Chart as a RGB hex code, following the
+   * Commission for the Geological Map of the World.
+   */
+  private final String color;
+
   GeoTime(GeoTime gt, GeoTime parent) {
-    this(gt.getName(), gt.getType(), gt.getStart(), gt.getEnd(), parent);
+    this(gt.getName(), gt.getType(), gt.getStart(), gt.getEnd(), parent, gt.getColor());
   }
 
   GeoTime(String name, GeoTimeType type, Double start, Double end, GeoTime parent) {
+    this(name, type, start, end, parent, null);
+  }
+
+  GeoTime(String name, GeoTimeType type, Double start, Double end, GeoTime parent, String color) {
     this.name = Preconditions.checkNotNull(name, "missing name for geotime");
     this.type = Preconditions.checkNotNull(type, "missing type for " + name);
     this.start = start;
     this.end = end;
     this.parent = parent;
+    this.color = color;
   }
   
   public String getName() {
@@ -122,6 +133,10 @@ public class GeoTime implements Comparable<GeoTime> {
   
   public Double getEnd() {
     return end;
+  }
+
+  public String getColor() {
+    return color;
   }
 
   /**
