@@ -223,7 +223,7 @@ public class MatchingWsServiceTest extends MatchingWsTestBase {
     assertMatch("Elytrigia repens Karimba", cl, 7826764, MatchType.HIGHERRANK);
 
     // basionym author is right, but otherwise the authorship differs clearly. Match to genus only
-    assertMatch("Elytrigia repens (L.) Karimba", cl, 7826764, MatchType.HIGHERRANK);
+    known(Known.BASIONYM_AUTHOR); assertMatch("Elytrigia repens (L.) Karimba", cl, 7826764, MatchType.HIGHERRANK);
   }
 
   /**

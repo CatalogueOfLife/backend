@@ -46,7 +46,8 @@ public abstract class MatchingWsTestBase {
     GENUS_GROUP(true, "the genus group ranks stay strict, a subgenus is no genus, CatalogueOfLife/backend#1661"),
     RANK_RETRY(true, "a binomial sent as an aggregate is matched again with its parsed rank and finds the species"),
     INDET(true, "indet marks an indetermined name and is no epithet"),
-    YEAR_ONLY(true, "a year-only authorship needs a candidate with a year");
+    YEAR_ONLY(true, "a year-only authorship needs a candidate with a year"),
+    BASIONYM_AUTHOR(true, "the same basionym author with another combination author matches in RELAXED mode, CatalogueOfLife/backend#1660");
 
     final boolean deliberate;
     final String reason;

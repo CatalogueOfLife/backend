@@ -24,11 +24,13 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
- * A name cited with only the author of its basionym is matched by external queries, merges stay strict.
+ * A name cited with only the author of its basionym, or with that author and another combination author, is matched by
+ * external queries, merges stay strict.
  * See https://github.com/CatalogueOfLife/backend/issues/1660
  */
 public class UsageMatcherBasionymAuthorTest {
-  static final Map<String, Integer> NIDX = Map.of("Stellaria", 1, "Stellaria media", 2, "Abies", 3, "Abies alba", 4);
+  static final Map<String, Integer> NIDX = Map.of("Stellaria", 1, "Stellaria media", 2, "Abies", 3, "Abies alba", 4,
+    "Picea", 5, "Picea abies", 6, "Larix", 7, "Larix alba", 8);
   UsageMatcher matcher;
 
   @Before
@@ -41,6 +43,12 @@ public class UsageMatcherBasionymAuthorTest {
     add(store, "ab", "Abies", "Mill.", Rank.GENUS, null, TaxonomicStatus.ACCEPTED);
     add(store, "aa", "Abies alba", "Mill.", Rank.SPECIES, "ab", TaxonomicStatus.ACCEPTED);
     add(store, "aa2", "Abies alba", "(Mill.) Smith", Rank.SPECIES, "ab", TaxonomicStatus.SYNONYM);
+    add(store, "pi", "Picea", "A.Dietr.", Rank.GENUS, null, TaxonomicStatus.ACCEPTED);
+    add(store, "pa", "Picea abies", "(L.) H.Karst.", Rank.SPECIES, "pi", TaxonomicStatus.ACCEPTED);
+    add(store, "pa2", "Picea abies", "(L.) Britton", Rank.SPECIES, "pi", TaxonomicStatus.SYNONYM);
+    add(store, "la", "Larix", "Mill.", Rank.GENUS, null, TaxonomicStatus.ACCEPTED);
+    add(store, "la1", "Larix alba", "(L.) Smith", Rank.SPECIES, "la", TaxonomicStatus.ACCEPTED);
+    add(store, "la2", "Larix alba", "(L.) Jones", Rank.SPECIES, "la", TaxonomicStatus.ACCEPTED);
 
     var ni = mock(NameIndex.class);
     when(ni.match(any(SimpleName.class), anyBoolean(), anyBoolean())).thenAnswer(inv -> {
@@ -99,6 +107,42 @@ public class UsageMatcherBasionymAuthorTest {
     assertEquals("acc", m.usage.getId());
     m = matcher.match(query("Stellaria media", "(Smith) Jones", Rank.SPECIES), MatchingMode.RELAXED, false);
     assertEquals(MatchType.HIGHERRANK, m.type);
+    // without a rank an authorship that merely cannot be compared is no match either
+    m = matcher.match(query("Stellaria media", "Smith", Rank.UNRANKED), MatchingMode.RELAXED, false);
+    assertEquals(MatchType.HIGHERRANK, m.type);
+    assertEquals("st", m.usage.getId());
+    m = matcher.match(query("Stellaria media", "(Smith) Jones", Rank.UNRANKED), MatchingMode.RELAXED, false);
+    assertEquals(MatchType.HIGHERRANK, m.type);
+    assertEquals("st", m.usage.getId());
+  }
+
+  @Test
+  public void sameBasionymOtherCombinationAuthor() throws Exception {
+    assertVariant("acc", matcher.match(query("Stellaria media", "(L.) Pers.", Rank.SPECIES), MatchingMode.RELAXED, false));
+    assertVariant("acc", matcher.match(query("Stellaria media", "(L.) Pers.", Rank.UNRANKED), MatchingMode.RELAXED, false));
+    assertVariant("acc", matcher.match(query("Stellaria media", "(L.) Pers.", Rank.SPECIES), null, false));
+    assertVariant("acc", matcher.match(query("Stellaria media", "(Linnaeus, 1753) Persoon, 1805", Rank.SPECIES), MatchingMode.RELAXED, false));
+    assertVariant("acc", matcher.match(query("Stellaria media", "(L.) Desv. ex Nevski, 1934", Rank.SPECIES), MatchingMode.RELAXED, false));
+  }
+
+  @Test
+  public void sameBasionymStrictAndMerges() throws Exception {
+    assertFalse(matcher.match(query("Stellaria media", "(L.) Pers.", Rank.SPECIES), MatchingMode.STRICT, false).isMatch());
+    assertFalse(matcher.match(new SimpleNameClassified<>(query("Stellaria media", "(L.) Pers.", Rank.SPECIES)), false, false).isMatch());
+  }
+
+  @Test
+  public void sameBasionymResolvesAmongCandidates() throws Exception {
+    // the accepted combination wins over a synonym with the same basionym author
+    assertVariant("pa", matcher.match(query("Picea abies", "(L.) Pers.", Rank.SPECIES), MatchingMode.RELAXED, false));
+    // the real combination author still wins
+    var m = matcher.match(query("Picea abies", "(L.) Britton", Rank.SPECIES), MatchingMode.RELAXED, false);
+    assertEquals("pa2", m.usage.getId());
+    assertEquals(MatchType.EXACT, m.type);
+    // two accepted combinations are not picked from
+    m = matcher.match(query("Larix alba", "(L.) Pers.", Rank.SPECIES), MatchingMode.RELAXED, false);
+    assertEquals(MatchType.HIGHERRANK, m.type);
+    assertEquals("la", m.usage.getId());
   }
 
   @Test

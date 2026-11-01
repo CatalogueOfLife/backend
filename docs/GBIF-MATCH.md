@@ -101,9 +101,13 @@ found nothing, and `diagnostics.note` says `taxonRank <rank> ignored`. `/match/n
 and flag `INCONSISTENT_NAME` instead of a note. A `strict` match never retries. See #1649.
 
 A name cited with only the author of its basionym, without brackets, matches the usage with that basionym author:
-`Stellaria media L.` is *Stellaria media* (L.) Vill., a VARIANT. This is only tried if the name finds nothing as it is
-written, so a usage with `L.` as its combination author still wins. A `strict` match and merges never do this, as
-`Aus bus Mill.` and `Aus bus (Mill.) Smith` may be homonyms. See #1660.
+`Stellaria media L.` is *Stellaria media* (L.) Vill. So does a name with the same basionym author but another combination
+author: `Erigeron annuus (L.) Desf.` is *Erigeron annuus* (L.) Pers. The matcher calls both a VARIANT, which is what
+`/match/nameusage` answers, while this adapter reports EXACT like any match of the same name. This is only tried if the
+name finds nothing as it is written, so a usage with `L.` as its combination author, or with the very combination author,
+still wins. The authorship has to compare equal, an author that merely cannot be compared is not enough. If several usages
+share the basionym author a single accepted one is picked, and two accepted ones stay unresolved. A `strict` match and
+merges never do this, as `Aus bus Mill.` and `Aus bus (Mill.) Smith` may be homonyms. See #1660.
 
 `gbifChecklistKey` in the matching server config defaults to the `gbifKey` of the matching dataset. A release
 usually has none - the COL checklist key `7ddf754f-d193-4cc9-b351-99906754a03b` belongs to the project - so set it

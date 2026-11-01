@@ -180,10 +180,11 @@ public class UsageMatcher implements AutoCloseable {
                            @Nullable MatchingMode mode) throws NotFoundException {
     var m = matchName(snc, allowInserts, verbose, mode);
     if (!m.isMatch() && mode != null && mode.relaxedAuthorship()) {
-      var basionym = citingBasionymAuthor(snc);
+      var basionym = basionymAuthorOnly(snc);
       if (basionym != null) {
         var bm = matchName(basionym, false, verbose, mode);
-        if (bm.isMatch()) {
+        // without a rank the matcher also accepts authorships it cannot compare, which proves nothing here
+        if (bm.isMatch() && equalAuthorship(bm.usage, basionym)) {
           return bm;
         }
       }
@@ -200,25 +201,31 @@ public class UsageMatcher implements AutoCloseable {
   /**
    * A name is often cited with nothing but the author of its basionym, and without the brackets: Stellaria media L. for
    * Stellaria media (L.) Vill. Read as a combination author that is a different authorship, read as what it is the two
-   * compare equal, and the different spelling makes it a variant. Only external queries try this: a merge would rather
-   * keep a duplicate, as Aus bus Mill. and Aus bus (Mill.) Smith may be homonyms.
+   * compare equal, and the different spelling makes it a variant. A shared basionym author also outweighs another
+   * combination author, as both name the same epithet moved into the same genus and the combination author is often
+   * miscited: Erigeron annuus (L.) Desf. is Erigeron annuus (L.) Pers. Only external queries try this: a merge would
+   * rather keep a duplicate, as Aus bus Mill. and Aus bus (Mill.) Smith may be homonyms.
    * See https://github.com/CatalogueOfLife/backend/issues/1660
-   * @return a copy of the query with its authorship as the basionym authorship, null if it has no plain combination authors
+   * @return a copy of the query with nothing but a basionym authorship, null if it has no combination authors to drop
    */
   @Nullable
-  private static SimpleNameClassified<SimpleNameCached> citingBasionymAuthor(SimpleNameClassified<SimpleNameCached> snc) {
+  private static SimpleNameClassified<SimpleNameCached> basionymAuthorOnly(SimpleNameClassified<SimpleNameCached> snc) {
     if (!snc.hasAuthorship()) {
       return null;
     }
     var a = NameParser.PARSER.parseAuthorship(snc.getAuthorship());
-    if (a.isEmpty() || a.get().getCombinationAuthorship() == null || !a.get().getCombinationAuthorship().hasAuthors()
-        || a.get().getBasionymAuthorship() != null && !a.get().getBasionymAuthorship().isEmpty()) {
+    if (a.isEmpty() || a.get().getCombinationAuthorship() == null || !a.get().getCombinationAuthorship().hasAuthors()) {
+      return null;
+    }
+    var basionym = a.get().getBasionymAuthorship();
+    final boolean hasBasionym = basionym != null && !basionym.isEmpty();
+    if (hasBasionym && !basionym.hasAuthors()) {
       return null;
     }
     var q = snc instanceof QueryName qn
             ? new QueryName(snc, snc.getClassification(), qn.isUnmarkedRank())
             : new SimpleNameClassified<SimpleNameCached>(snc, snc.getClassification());
-    q.setAuthorship("(" + snc.getAuthorship() + ")");
+    q.setAuthorship("(" + (hasBasionym ? basionym : snc.getAuthorship()) + ")");
     return q;
   }
 
