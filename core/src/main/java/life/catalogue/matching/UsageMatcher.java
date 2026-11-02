@@ -50,6 +50,8 @@ public class UsageMatcher implements AutoCloseable {
   private static final Pattern RANK_MARKER = Pattern.compile("(?<=\\s)[a-z]{1,12}\\.(?=\\s)");
   // the subgenus in brackets right after the genus of a bi- or trinomial
   private static final Pattern SUBGENUS = Pattern.compile("^(\\S+)\\s+\\([^)]*\\)(?=\\s+\\S)");
+  // what separates alternatives in the phrase of an informal name
+  private static final Pattern ALTERNATIVES = Pattern.compile("/|\\bor\\b");
   // lenient publication-year tolerance when disambiguating homonyms by a year-only authorship:
   // years within this many years of each other are treated as the same (dates are often cited off by one)
   private final static int YEAR_DIFF_ALLOWED = 1;
@@ -179,6 +181,9 @@ public class UsageMatcher implements AutoCloseable {
   private UsageMatch match(SimpleNameClassified<SimpleNameCached> snc, boolean allowInserts, boolean verbose, boolean higherRank,
                            @Nullable MatchingMode mode) throws NotFoundException {
     var m = matchName(snc, allowInserts, verbose, mode);
+    if (mode != null && m.type == MatchType.VARIANT && isAlternativesAnchor(snc, m.usage)) {
+      return higherRank ? UsageMatch.match(MatchType.HIGHERRANK, m.usage, datasetKey, m.alternatives) : UsageMatch.empty(datasetKey, MatchType.NONE);
+    }
     if (!m.isMatch() && mode != null && mode.relaxedAuthorship()) {
       var basionym = basionymAuthorOnly(snc);
       if (basionym != null) {
@@ -196,6 +201,19 @@ public class UsageMatcher implements AutoCloseable {
       }
     }
     return m;
+  }
+
+  /**
+   * The names index only knows the anchor of an informal name, so Tachybaptus ruficollis tricolor/vulcanorum finds
+   * Tachybaptus ruficollis as if it was spelled differently. The alternatives are names within that taxon, not variants
+   * of it. Other phrases can be the taxon itself, a broken authorship like Larus fuscus Linnaeus, 175 ends up in one too.
+   * @return true if the query lists alternatives and the usage is the taxon they are anchored on
+   */
+  private static boolean isAlternativesAnchor(SimpleNameClassified<SimpleNameCached> snc, SimpleName usage) {
+    var opt = NameParser.PARSER.parse(snc);
+    return opt.isPresent() && opt.get().getName().getType() == NameType.INFORMAL
+      && opt.get().getName().getUnparsed() != null && ALTERNATIVES.matcher(opt.get().getName().getUnparsed()).find()
+      && usage.getName().equalsIgnoreCase(anchorName(opt.get().getName()));
   }
 
   /**
@@ -303,8 +321,8 @@ public class UsageMatcher implements AutoCloseable {
    * Fallback that tries to match a higher rank usage when the name itself did not match any usage.
    * It collects candidate higher names from both the explicit classification of the source and the
    * genus (and species for infraspecific names) derived from a bi- or trinomial name, then walks up
-   * the ranks from lowest to highest and returns the first confident single usage found, flagged as
-   * a {@link MatchType#HIGHERRANK} match. Higher ranks that stay ambiguous are skipped and the walk
+   * the ranks from lowest to highest and returns the first usage found, flagged as
+   * a {@link MatchType#HIGHERRANK} match. Higher ranks that stay unresolved homonyms are skipped and the walk
    * continues upwards. Never inserts names into the names index.
    *
    * @return a HIGHERRANK match or an empty NONE match if no higher rank usage could be matched
@@ -320,8 +338,9 @@ public class UsageMatcher implements AutoCloseable {
         continue; // not in the names index, try the next higher rank
       }
       var match = matchName(q, false, verbose, mode);
-      // keep walking upwards if the higher rank itself is unmatched or ambiguous
-      if (match.isMatch() && match.type != MatchType.AMBIGUOUS) {
+      // keep walking upwards if the higher rank itself is unmatched or an unresolved homonym, which has no usage.
+      // An ambiguous match with a usage was told apart by the classification or picked among duplicates of one name
+      if (match.isMatch()) {
         LOG.debug("Matched {} {} to higher rank {} {}", snc.getRank(), snc.getLabel(), match.usage.getRank(), match.usage.getLabel());
         return UsageMatch.match(MatchType.HIGHERRANK, match.usage, datasetKey, match.alternatives);
       }
@@ -358,7 +377,8 @@ public class UsageMatcher implements AutoCloseable {
       return null;
     }
     var m = matchName(q, false, verbose, mode);
-    if (m.isMatch() && m.type != MatchType.AMBIGUOUS && isHigher(m.usage.getRank(), snc.getRank())) {
+    // merges snap to it, they rather keep a name out than attach it to a pick among candidates
+    if (m.isMatch() && (mode != null || m.type != MatchType.AMBIGUOUS) && isHigher(m.usage.getRank(), snc.getRank())) {
       LOG.debug("Matched {} {} to the {} {} it is anchored on", snc.getRank(), snc.getLabel(), m.usage.getRank(), m.usage.getLabel());
       return UsageMatch.match(MatchType.HIGHERRANK, m.usage, datasetKey, m.alternatives);
     }
@@ -424,8 +444,9 @@ public class UsageMatcher implements AutoCloseable {
 
   /**
    * Derives the genus and, for infraspecific names, the species from a bi- or trinomial name,
-   * also from indetermined ones like Xysticus sp. or Panthera pardus ssp., and the genus of an infrageneric name
-   * like Chaetoceros (Hyalochaete).
+   * also from indetermined ones like Xysticus sp. or Panthera pardus ssp., the genus of an infrageneric name
+   * like Chaetoceros (Hyalochaete), and what the alternatives of an informal name share, the genus of
+   * Festuca rubra/arenaria and the species of Tachybaptus ruficollis tricolor/vulcanorum.
    * @return a map of rank to the derived uninomial/binomial name, empty if the name is not a bi/trinomial
    */
   private Map<Rank, SimpleNameCached> derivedHigherNames(SimpleNameClassified<SimpleNameCached> snc) {
@@ -439,9 +460,10 @@ public class UsageMatcher implements AutoCloseable {
       boolean indet = n.getRank() != null && n.getRank().isSpeciesOrBelow()
         && (n.getSpecificEpithet() == null || n.getRank().isInfraspecific() && n.getInfraspecificEpithet() == null);
       boolean infrageneric = n.getInfragenericEpithet() != null && n.getSpecificEpithet() == null;
-      if (n.getGenus() != null && (n.getSpecificEpithet() != null || indet || infrageneric)) {
+      boolean informal = n.getType() == NameType.INFORMAL;
+      if (n.getGenus() != null && (n.getSpecificEpithet() != null || indet || infrageneric || informal)) {
         Map<Rank, SimpleNameCached> map = new HashMap<>();
-        if (n.getSpecificEpithet() != null && (n.getInfraspecificEpithet() != null || indet)) {
+        if (n.getSpecificEpithet() != null && (n.getInfraspecificEpithet() != null || indet || informal)) {
           map.put(Rank.SPECIES, derivedName(n.getGenus() + " " + n.getSpecificEpithet(), Rank.SPECIES, snc.getCode()));
         }
         map.put(Rank.GENUS, derivedName(n.getGenus(), Rank.GENUS, snc.getCode()));

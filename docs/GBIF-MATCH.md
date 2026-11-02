@@ -73,6 +73,17 @@ An indetermined name states its rank by the marker that stands in for the missin
 `Chaetoceros (Hyalochaete) spp.` are species, `Panthera pardus ssp.` a subspecies. They never match the genus or
 species they share a canonical name with as if it were the same name, only as a HIGHERRANK match in RELAXED mode, as GBIF does.
 
+Alternatives are no identification of the first one named. The parser reads them as an informal name anchored on what
+they share, and that anchor is a HIGHERRANK match in RELAXED mode and nothing in STRICT: `Festuca rubra/arenaria` and
+`Bombus terrestris or lucorum` give the genus, `Tachybaptus ruficollis tricolor/vulcanorum` the species. GBIF takes the
+first species here. Alternatives of two genera, `Uria aalge / Alca torda`, are unparsable and only reach what the
+classification offers, without one the answer is NONE. Other informal names can be the taxon itself, a broken year as in
+`Larus fuscus Linnaeus, 175` ends up in the phrase too, so they stay a VARIANT of what they are anchored on.
+
+The higher rank fallback takes a higher name the classification tells apart: `Myosotis xxyyzz` in Boraginaceae is
+*Myosotis* L., not the synonym *Myosotis* Mill., just as a bare `Myosotis` is. Only an unresolved homonym is skipped for
+the next higher rank.
+
 An authorship cited with the work the name was published in, `X in Y`, is the name of X and is also cited by Y alone:
 *Pipistrellus kuhlii* (Natterer in Kuhl, 1817) matches *Pipistrellus kuhlii* (Kuhl, 1817), in merges and stable ids
 too. The years have to agree within one year then, as Y may have named the same epithet himself later on, and two

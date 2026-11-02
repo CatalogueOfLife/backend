@@ -452,13 +452,13 @@ public class MatchingWsServiceTest extends MatchingWsTestBase {
     cl.setKingdom("Animalia");
     cl.setFamily("Chrysomelidae");
     assertMatch("Oreina", cl, 6757727);
-    known(Known.HOMONYMS); assertMatch("Oreina elegans", cl, 6757727);
+    assertMatch("Oreina elegans", cl, 6757727);
 
     cl.setPhylum("Arthropoda");
     cl.setClass_("Insecta");
     cl.setOrder("Coleoptera");
     assertMatch("Oreina", cl, 6757727);
-    known(Known.HOMONYMS); assertMatch("Oreina elegans", cl, 6757727, MatchType.HIGHERRANK);
+    assertMatch("Oreina elegans", cl, 6757727, MatchType.HIGHERRANK);
   }
 
   /**
