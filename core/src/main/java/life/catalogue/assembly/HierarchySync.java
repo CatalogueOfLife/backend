@@ -13,6 +13,7 @@ import life.catalogue.api.model.SimpleNameVerbatim;
 import life.catalogue.api.model.Synonym;
 import life.catalogue.api.model.Taxon;
 import life.catalogue.api.model.VerbatimSource;
+import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.EntityType;
 import life.catalogue.api.vocab.ImportState;
@@ -66,6 +67,8 @@ import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import org.apache.ibatis.cursor.Cursor;
 import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
@@ -105,7 +108,9 @@ import org.slf4j.LoggerFactory;
  *       For every match the source's status is loaded and compared to the project usage. Cases:
  *       both accepted is a no-op (handled by phase 1); accepted→synonym demotes via
  *       {@link NameUsageMapper#updateParentAndStatus} with parent set to the project's equivalent
- *       of the source's accepted parent; synonym→accepted promotes the same way; both-synonym
+ *       of the source's accepted parent, moving the demoted usage's synonyms and children along to that parent and
+ *       flagging accepted children whose name no longer fits it {@link Issue#PARENT_NAME_MISMATCH};
+ *       synonym→accepted promotes the same way; both-synonym
  *       retargets the parent (and aligns the synonym subtype) to match the source. Unresolvable
  *       cases (source's parent has no project equivalent) are logged and left untouched.</li>
  *   <li><b>Phase 3 — synonymy copy.</b>
@@ -1070,7 +1075,7 @@ public class HierarchySync extends SectorRunnable {
       NameUsageMapper num = s.getMapper(NameUsageMapper.class);
       VerbatimSourceMapper vsm = s.getMapper(VerbatimSourceMapper.class);
       for (String projectId : toFlag) {
-        flagNamePlacement(projectKey, projectId, num, vsm);
+        flagIssue(projectKey, projectId, Issue.MATCHING_HIGHERRANK, num, vsm);
       }
     }
     LOG.info("Hierarchy sector {}: name-match placement done - placed={}, unchanged={}, unresolved={}, cycle-blocked={}",
@@ -1078,11 +1083,11 @@ public class HierarchySync extends SectorRunnable {
   }
 
   /**
-   * Adds {@link Issue#MATCHING_HIGHERRANK} to the usage's verbatim source, creating a sector-less
+   * Adds an issue to the usage's verbatim source, creating a sector-less
    * verbatim source if the usage has none (so {@code deleteBySector} never wipes this pre-existing
    * project data). Idempotent: the issue is only added when not already present.
    */
-  private void flagNamePlacement(int projectKey, String usageId, NameUsageMapper num, VerbatimSourceMapper vsm) {
+  private void flagIssue(int projectKey, String usageId, Issue issue, NameUsageMapper num, VerbatimSourceMapper vsm) {
     Integer vsKey = vsm.getVSKeyByUsage(DSID.of(projectKey, usageId));
     if (vsKey == null) {
       VerbatimSource v = new VerbatimSource(projectKey, vsIdGen++, null, null, null, null);
@@ -1091,8 +1096,8 @@ public class HierarchySync extends SectorRunnable {
       vsKey = v.getId();
     }
     VerbatimSource issuesV = vsm.getIssues(DSID.of(projectKey, vsKey));
-    if (issuesV == null || issuesV.getIssues() == null || !issuesV.getIssues().contains(Issue.MATCHING_HIGHERRANK)) {
-      vsm.addIssue(DSID.of(projectKey, vsKey), Issue.MATCHING_HIGHERRANK);
+    if (issuesV == null || issuesV.getIssues() == null || !issuesV.getIssues().contains(issue)) {
+      vsm.addIssue(DSID.of(projectKey, vsKey), issue);
     }
   }
 
@@ -1106,7 +1111,8 @@ public class HierarchySync extends SectorRunnable {
    *       parent_id adjusted to point at the project's representation of the source's accepted
    *       taxon when resolvable</li>
    *   <li>project accepted, source synonym: project usage demoted to the source's synonym status,
-   *       parent_id rewritten to the project's representation of the source's accepted taxon</li>
+   *       parent_id rewritten to the project's representation of the source's accepted taxon, which also receives
+   *       the demoted usage's synonyms and children, see {@link #moveDependents}</li>
    *   <li>project synonym, source accepted: project usage promoted to the source's accepted status,
    *       parent_id rewritten to the project's representation of the source's parent (the
    *       above-genus ancestor imported in phase 1, or another matched project usage)</li>
@@ -1122,7 +1128,9 @@ public class HierarchySync extends SectorRunnable {
       return;
     }
     final int projectKey = sectorKey.getDatasetKey();
-    int demoted = 0, promoted = 0, synonymRetargeted = 0, unchanged = 0, unresolved = 0, cycleBlocked = 0;
+    int demoted = 0, promoted = 0, synonymRetargeted = 0, unchanged = 0, unresolved = 0, cycleBlocked = 0, moved = 0;
+    // accepted usages moved to a demoted usage's accepted name whose name belongs to another genus or species
+    final List<String> parentNameMismatches = new ArrayList<>();
     // source labels of the usages that could not be demoted or promoted, for the sync warnings
     final List<String> undemoted = new ArrayList<>();
     final List<String> unpromoted = new ArrayList<>();
@@ -1181,6 +1189,7 @@ public class HierarchySync extends SectorRunnable {
               cycleBlocked++;
               continue;
             }
+            moved += moveDependents(projectKey, projectId, newProjectParent, writeNum, parentNameMismatches);
             writeNum.updateParentAndStatus(DSID.of(projectKey, projectId), newProjectParent, tStatus, user);
             projectStatuses.put(projectId, tStatus);
             projectParents.put(projectId, newProjectParent);
@@ -1238,11 +1247,70 @@ public class HierarchySync extends SectorRunnable {
       }
       batch.commit();
     }
+    // flag in a separate autocommit session (read-then-write per usage); idempotent
+    try (SqlSession s = factory.openSession(true)) {
+      NameUsageMapper num = s.getMapper(NameUsageMapper.class);
+      VerbatimSourceMapper vsm = s.getMapper(VerbatimSourceMapper.class);
+      for (String id : parentNameMismatches) {
+        flagIssue(projectKey, id, Issue.PARENT_NAME_MISMATCH, num, vsm);
+      }
+    }
     warnUnresolved("demoted to a synonym", undemoted);
     warnUnresolved("promoted to accepted", unpromoted);
     LOG.info("Hierarchy sector {}: phase 2 done - demoted={}, promoted={}, synonyms retargeted/realigned={}, unchanged={}, unresolved={}, " +
-        "not demoted={}, not promoted={}, cycle-blocked={}",
-      sectorKey, demoted, promoted, synonymRetargeted, unchanged, unresolved, undemoted.size(), unpromoted.size(), cycleBlocked);
+        "not demoted={}, not promoted={}, cycle-blocked={}, moved with a demoted usage={}, of which parent name mismatches={}",
+      sectorKey, demoted, promoted, synonymRetargeted, unchanged, unresolved, undemoted.size(), unpromoted.size(), cycleBlocked,
+      moved, parentNameMismatches.size());
+  }
+
+  /**
+   * Moves the synonyms and children of a usage about to be demoted to its new accepted name. A synonym cannot have
+   * synonyms or children of its own: leaving them behind made synonyms of synonyms and accepted names under a synonym,
+   * see https://github.com/CatalogueOfLife/backend/issues/1689
+   * Accepted children keep their names, so a species of the demoted genus ends up in another genus. Those are
+   * collected for {@link Issue#PARENT_NAME_MISMATCH}, the same issue the release raises for them.
+   *
+   * <p>Reads through the batch session, which flushes its pending statements first: an earlier demotion of this run
+   * may have moved usages to this one already.
+   *
+   * @return number of usages moved
+   */
+  private int moveDependents(int projectKey, String projectId, String newParentId, NameUsageMapper batchNum, List<String> parentNameMismatches) {
+    List<NameUsageBase> dependents = batchNum.children(DSID.of(projectKey, projectId), null);
+    if (dependents.isEmpty()) {
+      return 0;
+    }
+    batchNum.updateParentIds(projectKey, projectId, newParentId, null, user);
+    NameUsageBase newParent = null;
+    for (NameUsageBase u : dependents) {
+      projectParents.put(u.getId(), newParentId);
+      if (u.isTaxon()) {
+        if (newParent == null) {
+          newParent = batchNum.get(DSID.of(projectKey, newParentId));
+        }
+        if (newParent != null && parentNameMismatch(u.getName(), newParent.getName())) {
+          parentNameMismatches.add(u.getId());
+        }
+      }
+    }
+    LOG.debug("Hierarchy sector {}: moved {} usages of demoted {} to {}", sectorKey, dependents.size(), projectId, newParentId);
+    return dependents.size();
+  }
+
+  /**
+   * Does a name below genus belong to another genus or species than its direct parent? Mirrors the release's check,
+   * but only for a parent ranked genus or species - other parents are not part of the name.
+   */
+  @VisibleForTesting
+  static boolean parentNameMismatch(Name n, Name parent) {
+    if (n == null || parent == null || !n.isParsed() || !parent.isParsed() || n.getGenus() == null) return false;
+    if (parent.getRank() == Rank.GENUS) {
+      return !Objects.equals(n.getGenus(), ObjectUtils.coalesce(parent.getUninomial(), parent.getGenus()));
+    }
+    if (parent.getRank() == Rank.SPECIES && n.getRank() != null && n.getRank().isInfraspecific()) {
+      return !Objects.equals(n.getGenus(), parent.getGenus()) || !Objects.equals(n.getSpecificEpithet(), parent.getSpecificEpithet());
+    }
+    return false;
   }
 
   /**

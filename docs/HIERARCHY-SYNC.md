@@ -204,6 +204,16 @@ of `projectMatches`. If neither resolves, the project usage is left untouched - 
 record than orphan it. Such demotions and promotions are logged at WARN, counted separately, and
 summarised with a few example names as a warning of the sector sync.
 
+A demoted usage takes nothing with it. Before it is demoted, all its synonyms and children - of any
+sector - move to its new accepted name (`updateParentIds`), because a synonym can have neither. Left
+behind they were synonyms of synonyms and accepted names under a synonym, which no read of the usage
+can map ([backend#1689](https://github.com/CatalogueOfLife/backend/issues/1689)). Accepted children
+keep their names, so the species of a demoted genus end up in another genus (*Eupagurus bernhardus*
+under *Pagurus*). Such a child is flagged `PARENT_NAME_MISMATCH` right away, the same issue the release
+raises for it: a binomial whose genus differs from a genus parent, or a trinomial whose species differs
+from a species parent. Like `MATCHING_HIGHERRANK` the flag goes on the usage's verbatim source, or on
+a new sector-less one if it has none.
+
 Each successful update writes back into the in-memory `projectStatuses` so phase 3 can read the
 post-realignment status without a re-query.
 

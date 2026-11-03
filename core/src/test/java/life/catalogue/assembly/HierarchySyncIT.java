@@ -204,6 +204,56 @@ public class HierarchySyncIT {
   }
 
   /**
+   * A demoted usage takes nothing with it: its synonyms and accepted children move to its new accepted name, even
+   * where their names belong to the demoted genus. Leaving them behind made synonyms of synonyms, which no read of
+   * the usage can map, and the extended text tree of an Archis release failed with
+   * "Taxa cannot have a SYNONYM status". The accepted children are flagged PARENT_NAME_MISMATCH by the release.
+   * https://github.com/CatalogueOfLife/backend/issues/1689
+   */
+  @Test
+  public void demotionMovesSynonymsAndChildren() throws Exception {
+    final String P_Caracal = "p_Caracal";
+    final String P_Lynx_lynx = "p_Lynx_lynx";
+    final String P_Felis_rufus = "p_Felis_rufus";
+    insertSynonym(PROJECT_KEY, P_Caracal, P_Lynx, Rank.GENUS, "Caracal");
+    insertTaxon(PROJECT_KEY, P_Lynx_lynx, P_Lynx, Rank.SPECIES, "Lynx lynx");
+    // already named in the genus it moves to
+    insertTaxon(PROJECT_KEY, P_Felis_rufus, P_Lynx, Rank.SPECIES, "Felis rufus");
+
+    runHierarchySync();
+    assertDemotedLynxDependents(P_Caracal, P_Lynx_lynx, P_Felis_rufus);
+
+    // a re-run finds Lynx a synonym already and leaves everything where it is
+    runHierarchySync();
+    assertDemotedLynxDependents(P_Caracal, P_Lynx_lynx, P_Felis_rufus);
+  }
+
+  private static void assertDemotedLynxDependents(String caracalId, String lynxLynxId, String felisRufusId) {
+    NameUsageBase lynx = getByID(PROJECT_KEY, P_Lynx);
+    assertTrue("Lynx should now be a synonym", lynx.getStatus().isSynonym());
+    assertEquals(P_Felis, lynx.getParentId());
+
+    NameUsageBase caracal = getByID(PROJECT_KEY, caracalId);
+    assertTrue(caracal.getStatus().isSynonym());
+    assertEquals("the synonym of the demoted Lynx must follow it to Felis", P_Felis, caracal.getParentId());
+
+    NameUsageBase lynxLynx = getByID(PROJECT_KEY, lynxLynxId);
+    assertTrue(lynxLynx.getStatus().isTaxon());
+    assertEquals("the accepted child of the demoted Lynx must move to Felis", P_Felis, lynxLynx.getParentId());
+    assertHasVerbatimIssue(PROJECT_KEY, lynxLynxId, Issue.PARENT_NAME_MISMATCH);
+
+    NameUsageBase felisRufus = getByID(PROJECT_KEY, felisRufusId);
+    assertEquals(P_Felis, felisRufus.getParentId());
+    assertEquals(0, verbatimIssueCount(PROJECT_KEY, felisRufusId, Issue.PARENT_NAME_MISMATCH));
+
+    // no usage of the project may hang off a synonym
+    try (SqlSession s = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      NameUsageMapper num = s.getMapper(NameUsageMapper.class);
+      assertTrue(num.childrenIds(DSID.of(PROJECT_KEY, P_Lynx)).isEmpty());
+    }
+  }
+
+  /**
    * Regression for the Sabulina parent-cycle bug. Project sec X has an inverted synonymy compared
    * to the target: A is accepted with B as its synonym in the project, but the target has B
    * accepted with A as its synonym. Phase 2 must not produce the 2-cycle A ↔ B (which the old
