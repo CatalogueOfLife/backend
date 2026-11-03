@@ -201,14 +201,18 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
   @Override
   public Stats indexSector(DSID<Integer> sectorKey) {
     Stats stats = new Stats();
-    try (SqlSession session = factory.openSession()) {
+    try {
       LoggingUtils.setSectorMDC(sectorKey);
-      Sector s = session.getMapper(SectorMapper.class).get(sectorKey);
+      // every session here is scoped to its own query: indexing the usages of a large sector like Mollusca
+      // outlasts the idle-in-transaction timeout of the server, which kills any transaction left open meanwhile, see #1690
+      final Sector s;
+      try (SqlSession session = factory.openSession(true)) {
+        s = session.getMapper(SectorMapper.class).get(sectorKey);
+      }
       if (s == null) throw NotFoundException.notFound(Sector.class, sectorKey);
 
       NameUsageIndexer indexer = new NameUsageIndexer(client, esConfig.index.name);
       deleteSector(s);
-      NameUsageWrapperMapper mapper = session.getMapper(NameUsageWrapperMapper.class);
 
       try (BatchConsumer<NameUsageWrapper> handler = new BatchConsumer<>(indexer, BATCH_SIZE)) {
         LOG.info("Indexing usages from sector {}", s.getKey());
@@ -217,8 +221,12 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
       stats.usages = indexer.documentsIndexed();
       indexer.reset();
 
-      LOG.info("Indexing bare names from sector {}", s.getKey());
-      index(mapper.processDatasetBareNames(s.getDatasetKey(), s.getId()), indexer);
+      // the cursor needs autocommit off to stream
+      try (SqlSession session = factory.openSession()) {
+        LOG.info("Indexing bare names from sector {}", s.getKey());
+        NameUsageWrapperMapper mapper = session.getMapper(NameUsageWrapperMapper.class);
+        index(mapper.processDatasetBareNames(s.getDatasetKey(), s.getId()), indexer);
+      }
 
       EsUtil.refreshIndex(client, esConfig.index.name);
       stats.names = indexer.documentsIndexed();
