@@ -1,5 +1,6 @@
 package life.catalogue.concurrent;
 
+import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.JobResult;
 import life.catalogue.api.model.User;
@@ -381,6 +382,21 @@ public abstract class BackgroundJob implements Runnable {
   @VisibleForTesting
   public void setError(Throwable error) {
     this.error = error;
+  }
+
+  /**
+   * The message of a request error that failed the job, e.g. a missing column in a matching upload,
+   * so the user sees what to fix without reading the stacktrace.
+   * Null for any other error and if the job did not fail.
+   */
+  @JsonIgnore
+  public String getErrorReason() {
+    for (Throwable t = error; t != null; t = t.getCause() == t ? null : t.getCause()) {
+      if (t instanceof IllegalArgumentException || t instanceof NotFoundException) {
+        return t.getMessage();
+      }
+    }
+    return null;
   }
 
   public String getErrorStackTrace() {

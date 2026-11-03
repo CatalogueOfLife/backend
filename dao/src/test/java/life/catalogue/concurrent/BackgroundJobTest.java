@@ -1,5 +1,6 @@
 package life.catalogue.concurrent;
 
+import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.common.util.LoggingUtils;
 
@@ -90,6 +91,28 @@ public class BackgroundJobTest {
     inner.run();
     assertEquals(inner.getKey().toString(), inner.jobMdc);
     assertMdcEmpty();
+  }
+
+  /**
+   * A request error deep in the cause chain is the reason, like the IllegalArgumentException
+   * a MyBatis result mapping wraps together with its whole SQL.
+   */
+  @Test
+  public void errorReason() {
+    var job = new Inner(false);
+    assertNull(job.getErrorReason());
+
+    job.setError(new RuntimeException("### Error querying database. ### SQL: SELECT ...",
+      new IllegalStateException("Could not set property 'status'",
+        new IllegalArgumentException("Taxa cannot have a SYNONYM status"))));
+    assertEquals("Taxa cannot have a SYNONYM status", job.getErrorReason());
+
+    job.setError(new NotFoundException("Root taxon x does not exist"));
+    assertEquals("Root taxon x does not exist", job.getErrorReason());
+
+    // internal errors have no reason meant for the user
+    job.setError(new NullPointerException("npe"));
+    assertNull(job.getErrorReason());
   }
 
   private static void assertMdcEmpty() {

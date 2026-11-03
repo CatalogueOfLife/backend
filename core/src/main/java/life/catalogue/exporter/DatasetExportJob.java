@@ -202,8 +202,10 @@ public abstract class DatasetExportJob extends DatasetBlockingJob {
   protected void onFinishLocked() throws Exception {
     // first update the export instance
     if (getError() != null) {
-      String msg = Exceptions.getFirstMessage(getError());
-      export.setError(msg);
+      // the reason the failure email gives, so the download page can show it too.
+      // Other errors keep their first message, which can be long, e.g. a MyBatis error with its SQL
+      String reason = getErrorReason();
+      export.setError(reason != null ? reason : Exceptions.getFirstMessage(getError()));
     }
     export.setFinished(getFinished());
     export.setSynonymCount(counter.getSynCounter().get());
