@@ -1189,7 +1189,11 @@ public class HierarchySync extends SectorRunnable {
               cycleBlocked++;
               continue;
             }
-            moved += moveDependents(projectKey, projectId, newProjectParent, writeNum, parentNameMismatches);
+            // the accepted name of an ambiguous synonym is one of several, so its accepted children stay in the old parent
+            String childrenParent = tStatus == TaxonomicStatus.AMBIGUOUS_SYNONYM
+                                    ? oldParent(projectKey, projectId, readNum)
+                                    : newProjectParent;
+            moved += moveDependents(projectKey, projectId, newProjectParent, childrenParent, writeNum, parentNameMismatches);
             writeNum.updateParentAndStatus(DSID.of(projectKey, projectId), newProjectParent, tStatus, user);
             projectStatuses.put(projectId, tStatus);
             projectParents.put(projectId, newProjectParent);
@@ -1199,7 +1203,11 @@ public class HierarchySync extends SectorRunnable {
           }
 
           if (pStatus.isSynonym() && tStatus.isTaxon()) {
-            // synonym -> accepted (promote)
+            // synonym -> accepted (promote). The source parent can be missing in the project, a subgenus above all:
+            // phase 1 imports nothing below genus. The nearest ancestor the project has takes it then
+            if (newProjectParent == null) {
+              newProjectParent = nearestProjectAncestor(source);
+            }
             if (newProjectParent == null) {
               LOG.warn("Hierarchy sector {}: cannot promote {} to accepted - source parent {} not found in project", sectorKey, projectId, source.getParent());
               unpromoted.add(source.getLabel());
@@ -1264,37 +1272,83 @@ public class HierarchySync extends SectorRunnable {
   }
 
   /**
-   * Moves the synonyms and children of a usage about to be demoted to its new accepted name. A synonym cannot have
-   * synonyms or children of its own: leaving them behind made synonyms of synonyms and accepted names under a synonym,
+   * Moves the synonyms and children of a usage about to be demoted. A synonym cannot have synonyms or children of its
+   * own: leaving them behind made synonyms of synonyms and accepted names under a synonym,
    * see https://github.com/CatalogueOfLife/backend/issues/1689
+   * Synonyms go to the new accepted name, accepted children to {@code childrenParentId}. That is the new accepted name
+   * too, unless the usage becomes an ambiguous synonym: its accepted name is then only one of the taxa the name covers,
+   * and moving the order Collembola of the ambiguous synonym Entognatha into the class Protura is wrong.
    * Accepted children keep their names, so a species of the demoted genus ends up in another genus. Those are
    * collected for {@link Issue#PARENT_NAME_MISMATCH}, the same issue the release raises for them.
    *
    * <p>Reads through the batch session, which flushes its pending statements first: an earlier demotion of this run
    * may have moved usages to this one already.
    *
+   * @param childrenParentId the new parent of the accepted children, null for the root
    * @return number of usages moved
    */
-  private int moveDependents(int projectKey, String projectId, String newParentId, NameUsageMapper batchNum, List<String> parentNameMismatches) {
+  private int moveDependents(int projectKey, String projectId, String newParentId, @Nullable String childrenParentId,
+                             NameUsageMapper batchNum, List<String> parentNameMismatches) {
     List<NameUsageBase> dependents = batchNum.children(DSID.of(projectKey, projectId), null);
     if (dependents.isEmpty()) {
       return 0;
     }
-    batchNum.updateParentIds(projectKey, projectId, newParentId, null, user);
-    NameUsageBase newParent = null;
+    if (Objects.equals(newParentId, childrenParentId)) {
+      batchNum.updateParentIds(projectKey, projectId, newParentId, null, user);
+    }
+    NameUsageBase childrenParent = null;
     for (NameUsageBase u : dependents) {
-      projectParents.put(u.getId(), newParentId);
-      if (u.isTaxon()) {
-        if (newParent == null) {
-          newParent = batchNum.get(DSID.of(projectKey, newParentId));
+      final String parentId = u.isSynonym() ? newParentId : childrenParentId;
+      if (!Objects.equals(newParentId, childrenParentId)) {
+        batchNum.updateParentId(DSID.of(projectKey, u.getId()), parentId, user);
+      }
+      projectParents.put(u.getId(), parentId);
+      if (u.isTaxon() && childrenParentId != null) {
+        if (childrenParent == null) {
+          childrenParent = batchNum.get(DSID.of(projectKey, childrenParentId));
         }
-        if (newParent != null && parentNameMismatch(u.getName(), newParent.getName())) {
+        if (childrenParent != null && parentNameMismatch(u.getName(), childrenParent.getName())) {
           parentNameMismatches.add(u.getId());
         }
       }
     }
-    LOG.debug("Hierarchy sector {}: moved {} usages of demoted {} to {}", sectorKey, dependents.size(), projectId, newParentId);
+    LOG.debug("Hierarchy sector {}: moved {} usages of demoted {} to {}, accepted ones to {}", sectorKey, dependents.size(),
+      projectId, newParentId, childrenParentId);
     return dependents.size();
+  }
+
+  /**
+   * The current parent of a project usage, from the cache or the db.
+   */
+  private @Nullable String oldParent(int projectKey, String projectId, NameUsageMapper readNum) {
+    if (projectParents.containsKey(projectId)) {
+      return projectParents.get(projectId);
+    }
+    NameUsageBase u = readNum.get(DSID.of(projectKey, projectId));
+    String parent = u == null ? null : u.getParentId();
+    projectParents.put(projectId, parent);
+    return parent;
+  }
+
+  /**
+   * The project usage closest above the source's parent, walking the source classification up from its grandparent.
+   * The direct parent was resolved by the caller already.
+   */
+  private @Nullable String nearestProjectAncestor(SimpleNameCached source) {
+    List<SimpleNameCached> chain;
+    try {
+      chain = sourceCache.getClassification(source.getId(), sourceLoader);
+    } catch (NotFoundException e) {
+      return null;
+    }
+    // the chain starts with the source itself, followed by its parent
+    for (int i = 2; i < chain.size(); i++) {
+      String pid = resolveProjectIdForSource(chain.get(i).getId());
+      if (pid != null) {
+        return pid;
+      }
+    }
+    return null;
   }
 
   /**

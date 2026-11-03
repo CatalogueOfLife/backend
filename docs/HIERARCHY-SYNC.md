@@ -195,7 +195,7 @@ demotion needs may only exist as a project synonym that is about to be promoted.
 |---|---|---|
 | accepted | accepted | no-op (phase 1 already rewired) |
 | accepted | synonym | demote — `updateParentAndStatus(projectId, projectEquivOf(target.parentId), target.status)` |
-| synonym | accepted | promote — `updateParentAndStatus(projectId, projectEquivOf(target.parentId), target.status)` |
+| synonym | accepted | promote — `updateParentAndStatus(projectId, projectEquivOf(target.parentId) ?? nearest project ancestor, target.status)` |
 | synonym | synonym | retarget the synonym's accepted parent (and align subtype if it differs) |
 
 `projectEquivOf(targetId)` first checks `targetToProject` (newly imported ancestors, including
@@ -204,8 +204,15 @@ of `projectMatches`. If neither resolves, the project usage is left untouched - 
 record than orphan it. Such demotions and promotions are logged at WARN, counted separately, and
 summarised with a few example names as a warning of the sector sync.
 
+A promotion whose source parent has no project equivalent walks up the source classification to the
+nearest ancestor the project has. Phase 1 imports nothing below genus, so a source parent ranked
+subgenus is never in the project: COL has *Pitymys subterraneus* as a synonym of *Microtus
+(Terricola) subterraneus*, and a project with the two inverted kept them inverted, the promotion
+skipped and the demotion then blocked as a cycle. The project's *Microtus subterraneus* now goes into
+the genus *Microtus*.
+
 A demoted usage takes nothing with it. Before it is demoted, all its synonyms and children - of any
-sector - move to its new accepted name (`updateParentIds`), because a synonym can have neither. Left
+sector - move to its new accepted name, because a synonym can have neither. Left
 behind they were synonyms of synonyms and accepted names under a synonym, which no read of the usage
 can map ([backend#1689](https://github.com/CatalogueOfLife/backend/issues/1689)). Accepted children
 keep their names, so the species of a demoted genus end up in another genus (*Eupagurus bernhardus*
@@ -213,6 +220,11 @@ under *Pagurus*). Such a child is flagged `PARENT_NAME_MISMATCH` right away, the
 raises for it: a binomial whose genus differs from a genus parent, or a trinomial whose species differs
 from a species parent. Like `MATCHING_HIGHERRANK` the flag goes on the usage's verbatim source, or on
 a new sector-less one if it has none.
+
+The one exception is a demotion to an **ambiguous synonym**: its accepted name is only one of the
+taxa the name covers, so only its synonyms move there and its accepted children stay in the demoted
+usage's old parent. COL has the class Entognatha as an ambiguous synonym attached to Protura, and the
+order Collembola does not belong into the class Protura.
 
 Each successful update writes back into the in-memory `projectStatuses` so phase 3 can read the
 post-realignment status without a re-query.

@@ -254,6 +254,74 @@ public class HierarchySyncIT {
   }
 
   /**
+   * The accepted name of an ambiguous synonym is just one of several, so a demotion to one keeps the accepted children
+   * in the old parent. Only the synonyms follow, a synonym must point at an accepted name. COL has the class
+   * Entognatha as a pro parte synonym of Protura, and moving the order Collembola into Protura was wrong.
+   * https://github.com/CatalogueOfLife/backend/issues/1689
+   */
+  @Test
+  public void ambiguousSynonymDemotionKeepsChildrenInOldParent() throws Exception {
+    final String T_Pantheridae = "T_Pantheridae";
+    final String P_Carnivora = "p_Carnivora";
+    final String P_Pantheridae = "p_Pantheridae";
+    final String P_Panthera = "p_Panthera";
+    final String P_Leonidae = "p_Leonidae";
+    insertSynonym(targetKey, T_Pantheridae, T_Felidae, Rank.FAMILY, "Pantheridae", TaxonomicStatus.AMBIGUOUS_SYNONYM);
+    insertTaxon(PROJECT_KEY, P_Carnivora, null, Rank.ORDER, "Carnivora");
+    insertTaxonWithIdentifier(PROJECT_KEY, P_Pantheridae, P_Carnivora, Rank.FAMILY, "Pantheridae", T_Pantheridae);
+    insertTaxon(PROJECT_KEY, P_Panthera, P_Pantheridae, Rank.GENUS, "Panthera");
+    insertSynonym(PROJECT_KEY, P_Leonidae, P_Pantheridae, Rank.FAMILY, "Leonidae");
+
+    runHierarchySync();
+
+    NameUsageBase felidae = getByName(PROJECT_KEY, Rank.FAMILY, "Felidae");
+    NameUsageBase pantheridae = getByID(PROJECT_KEY, P_Pantheridae);
+    assertEquals(TaxonomicStatus.AMBIGUOUS_SYNONYM, pantheridae.getStatus());
+    assertEquals(felidae.getId(), pantheridae.getParentId());
+
+    NameUsageBase panthera = getByID(PROJECT_KEY, P_Panthera);
+    assertTrue(panthera.getStatus().isTaxon());
+    assertEquals("the accepted child of an ambiguous synonym stays in its old parent", P_Carnivora, panthera.getParentId());
+    assertEquals(0, verbatimIssueCount(PROJECT_KEY, P_Panthera, Issue.PARENT_NAME_MISMATCH));
+
+    NameUsageBase leonidae = getByID(PROJECT_KEY, P_Leonidae);
+    assertTrue(leonidae.getStatus().isSynonym());
+    assertEquals("a synonym must point at an accepted name", felidae.getId(), leonidae.getParentId());
+  }
+
+  /**
+   * A promotion places the usage under the nearest ancestor of its source parent the project has. Phase 1 imports
+   * nothing below genus, so a source parent ranked subgenus was never found: COL has Pitymys subterraneus as a synonym of
+   * Microtus (Terricola) subterraneus, and in a project with the two inverted the promotion was skipped and the demotion
+   * blocked as a cycle, leaving them inverted.
+   * https://github.com/CatalogueOfLife/backend/issues/1689
+   */
+  @Test
+  public void promotionUnderMissingSubgenusUsesNearestProjectAncestor() throws Exception {
+    final String T_Catolynx = "T_Catolynx";
+    final String T_Felis_chaus = "T_Felis_chaus";
+    final String T_Catolynx_chaus = "T_Catolynx_chaus";
+    final String P_Felis_chaus = "p_Felis_chaus";
+    final String P_Catolynx_chaus = "p_Catolynx_chaus";
+    insertTaxon(targetKey, T_Catolynx, T_Felis, Rank.SUBGENUS, "Catolynx");
+    insertTaxon(targetKey, T_Felis_chaus, T_Catolynx, Rank.SPECIES, "Felis chaus");
+    insertSynonym(targetKey, T_Catolynx_chaus, T_Felis_chaus, Rank.SPECIES, "Catolynx chaus");
+    // inverted in the project
+    insertTaxonWithIdentifier(PROJECT_KEY, P_Catolynx_chaus, P_Felis, Rank.SPECIES, "Catolynx chaus", T_Catolynx_chaus);
+    insertSynonymWithIdentifier(PROJECT_KEY, P_Felis_chaus, P_Catolynx_chaus, Rank.SPECIES, "Felis chaus", T_Felis_chaus);
+
+    runHierarchySync();
+
+    NameUsageBase felisChaus = getByID(PROJECT_KEY, P_Felis_chaus);
+    assertTrue("Felis chaus is accepted in the source and must be promoted", felisChaus.getStatus().isTaxon());
+    assertEquals("the source parent Catolynx is missing, so the genus Felis takes it", P_Felis, felisChaus.getParentId());
+
+    NameUsageBase catolynxChaus = getByID(PROJECT_KEY, P_Catolynx_chaus);
+    assertTrue("Catolynx chaus is a synonym in the source and must be demoted", catolynxChaus.getStatus().isSynonym());
+    assertEquals(P_Felis_chaus, catolynxChaus.getParentId());
+  }
+
+  /**
    * Regression for the Sabulina parent-cycle bug. Project sec X has an inverted synonymy compared
    * to the target: A is accepted with B as its synonym in the project, but the target has B
    * accepted with A as its synonym. Phase 2 must not produce the 2-cycle A ↔ B (which the old
@@ -1529,6 +1597,11 @@ public class HierarchySyncIT {
   }
 
   private static void insertSynonym(int datasetKey, String id, String acceptedId, Rank rank, String scientificName) {
+    insertSynonym(datasetKey, id, acceptedId, rank, scientificName, TaxonomicStatus.SYNONYM);
+  }
+
+  private static void insertSynonym(int datasetKey, String id, String acceptedId, Rank rank, String scientificName,
+                                    TaxonomicStatus status) {
     try (SqlSession s = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       Name n = buildName(datasetKey, id, scientificName, rank);
       s.getMapper(NameMapper.class).create(n);
@@ -1536,7 +1609,7 @@ public class HierarchySyncIT {
       syn.setDatasetKey(datasetKey);
       syn.setId(id);
       syn.setName(n);
-      syn.setStatus(TaxonomicStatus.SYNONYM);
+      syn.setStatus(status);
       syn.setParentId(acceptedId);
       syn.setOrigin(life.catalogue.api.vocab.Origin.SOURCE);
       syn.applyUser(USER);
