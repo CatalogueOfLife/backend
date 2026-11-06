@@ -41,7 +41,7 @@ public class ImportArticleJob extends GlobalBlockingJob {
   }
 
   @Override
-  public void execute() {
+  public void execute() throws InterruptedException {
     DatasetSearchRequest dreq = new DatasetSearchRequest();
     dreq.setType(List.of(DatasetType.ARTICLE));
     dreq.setOrigin(List.of(DatasetOrigin.EXTERNAL));
@@ -69,8 +69,9 @@ public class ImportArticleJob extends GlobalBlockingJob {
         }
 
       } catch (InterruptedException e) {
-        LOG.warn("Scheduling article imports interrupted", e);
-        break;
+        // rethrow, so the job ends as cancelled and not as finished
+        LOG.warn("Scheduling article imports interrupted after {} of {} datasets", counter, total);
+        throw e;
       }
     }
     LOG.info("Scheduled {} datasets for importing", counter);
