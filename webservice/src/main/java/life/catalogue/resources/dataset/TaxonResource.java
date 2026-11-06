@@ -4,7 +4,6 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.Language;
 import life.catalogue.api.vocab.TreatmentFormat;
-import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.common.util.LoggingUtils;
 import life.catalogue.common.ws.MoreMediaTypes;
 import life.catalogue.dao.TaxonDao;
@@ -13,12 +12,10 @@ import life.catalogue.db.mapper.*;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.dw.jersey.filter.ProjectOnly;
 import life.catalogue.dw.jersey.filter.VaryAccept;
-import life.catalogue.printer.JsonTreePrinter;
 
 import org.gbif.nameparser.api.Rank;
 
 import java.io.InputStream;
-import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Set;
@@ -33,7 +30,6 @@ import org.slf4j.LoggerFactory;
 import io.dropwizard.auth.Auth;
 import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
@@ -194,39 +190,19 @@ public class TaxonResource extends AbstractDatasetScopedResource<String, Taxon, 
   }
 
   /**
-   * Two shapes: without any parameter the breakdown object, which carries the taxon, its counts by rank, the count rank
-   * and ring ranks decided by the backend, the total and a tree with remainder nodes. With level or countRank given the
-   * legacy array of nested nodes, each counted under a property named after the count rank, which every client passes
-   * today and which pinned portal-components versions keep relying on.
+   * The breakdown of the taxon's subtree for a chart: the taxon, its accepted descendants by rank, the rank the nodes
+   * are counted at and the one or two ring ranks the tree is built of, both decided here, the total and the tree with
+   * remainder nodes for what sits in no node of a ring. Replaced the array of nested nodes on 2026-11-06.
    */
   @GET
   @Path("{id}/breakdown")
-  public Response breakdown(@PathParam("key") int datasetKey,
-                            @PathParam("id") String id,
-                            @QueryParam("level")
-                            @Parameter(description = "Depth of the legacy breakdown array. Only level 1 or 2 are supported. "
-                                                   + "Given alone it defaults countRank to species.",
-                                       schema = @Schema(type = "integer", allowableValues = {"1", "2"}))
-                            Integer level,
-                            @QueryParam("countRank")
-                            @Parameter(description = "Rank to count for each node of the legacy breakdown array, emitted as a property "
-                                                   + "of that name. Given alone it defaults level to 1. "
-                                                   + "Leave both out for the breakdown object, which decides the count rank and ring ranks itself.")
-                            Rank countRank
+  public TaxonBreakdown breakdown(@PathParam("key") int datasetKey,
+                                  @PathParam("id") String id,
+                                  @QueryParam("countRank")
+                                  @Parameter(description = "Rank to count the nodes at. Defaults to species, or to genus "
+                                                         + "when genera outnumber species more than twofold.")
+                                  Rank countRank
   ) {
-    if (level == null && countRank == null) {
-      return Response.ok(dao.taxonBreakdown(datasetKey, id)).build();
-    }
-    final int lvl = level == null ? 1 : level;
-    final Rank cr = countRank == null ? Rank.SPECIES : countRank;
-    StreamingOutput stream = os -> {
-      try (Writer writer = UTF8IoUtils.writerFromStream(os);
-           JsonTreePrinter printer = dao.childrenBreakdownPrinter(datasetKey, id, lvl, cr, writer)
-      ) {
-        printer.print();
-        writer.flush();
-      }
-    };
-    return Response.ok(stream).build();
+    return dao.taxonBreakdown(datasetKey, id, countRank);
   }
 }

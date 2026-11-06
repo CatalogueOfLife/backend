@@ -367,37 +367,6 @@ public class TaxonDaoIT extends DaoTestBase {
     return datasetKey;
   }
 
-  @Test
-  public void childrenBreakdownCollector() throws IOException {
-    final int datasetKey = setupTestTreeDataset();
-
-    var breakdown = tDao.childrenBreakdownCollector(datasetKey, "t2", 2);
-    int cnt = breakdown.print();
-    assertEquals(1, breakdown.getRoot().size());
-    assertEquals(3, cnt);
-    assertEquals(2, breakdown.getRoot().getFirst().children.size());
-    assertEquals(0, breakdown.getRoot().getFirst().synonyms.size());
-    assertEquals(7, breakdown.getRoot().getFirst().count);
-
-    breakdown = tDao.childrenBreakdownCollector(datasetKey, "t3", 2);
-    cnt = breakdown.print();
-    assertEquals(2, breakdown.getRoot().size());
-    assertEquals(2, cnt);
-    assertEquals(0, breakdown.getRoot().getFirst().children.size());
-    assertEquals(0, breakdown.getRoot().getFirst().synonyms.size());
-    assertEquals(3, breakdown.getRoot().getFirst().count);
-  }
-
-  @Test
-  public void childrenBreakdownPrinter() throws IOException {
-    final int datasetKey = setupTestTreeDataset();
-    var writer = new StringWriter();
-    var breakdown = tDao.childrenBreakdownPrinter(datasetKey, "t2", 2, writer);
-    int cnt = breakdown.print();
-    System.out.println(writer);
-    assertEquals(3, cnt);
-  }
-
   private static TaxonBreakdown.Node child(List<TaxonBreakdown.Node> nodes, String id) {
     return nodes.stream().filter(n -> id.equals(n.getName().getId())).findFirst().orElseThrow();
   }
@@ -496,21 +465,20 @@ public class TaxonDaoIT extends DaoTestBase {
     assertTrue(bd.getChildren().isEmpty());
   }
 
+  /**
+   * A caller can override the count rank. Counting orders in Arthropoda the one ring is its class, the second ring
+   * would be the count rank itself, and Insecta holds the two orders.
+   */
   @Test
-  public void childrenBreakdownPrinterCountRank() throws IOException {
+  public void taxonBreakdownCountRank() throws Exception {
     final int datasetKey = setupTestTreeDataset();
-    var writer = new StringWriter();
-    // count a non-default rank: each node reports how many orders it contains,
-    // emitted under a property named after that rank (groups without species
-    // can use this to fall back to e.g. genus counts).
-    var breakdown = tDao.childrenBreakdownPrinter(datasetKey, "t2", 2, Rank.ORDER, writer);
-    breakdown.print();
-    String json = writer.toString();
-    System.out.println(json);
-    // Insecta (t3) holds two orders: Coleoptera (t4) and Lepidoptera (t5)
-    assertTrue(json.contains("\"order\":2"));
-    // the count is emitted under the rank name, not the default "species"
-    assertFalse(json.contains("\"species\":"));
+    var bd = tDao.taxonBreakdown(datasetKey, "t2", Rank.ORDER);
+    assertEquals(Rank.ORDER, bd.getCountRank());
+    assertEquals(List.of(Rank.CLASS), bd.getRanks());
+    assertEquals(2, bd.getTotal());
+    assertEquals(1, bd.getChildren().size());
+    assertEquals(2, child(bd.getChildren(), "t3").getCount());
+    assertTrue(child(bd.getChildren(), "t3").getChildren().isEmpty());
   }
 
   @Test(expected = IllegalArgumentException.class)

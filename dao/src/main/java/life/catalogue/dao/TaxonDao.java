@@ -19,7 +19,6 @@ import life.catalogue.matching.TaxGroupAnalyzer;
 import life.catalogue.parser.AreaLabelLookup;
 import life.catalogue.printer.AbstractPrinter;
 import life.catalogue.printer.JsonTreeCollector;
-import life.catalogue.printer.JsonTreePrinter;
 import life.catalogue.printer.PrinterFactory;
 
 import org.gbif.nameparser.api.Rank;
@@ -835,25 +834,25 @@ public class TaxonDao extends NameUsageBaseDao<Taxon, TaxonMapper> implements Ta
     return null;
   }
 
-  public JsonTreeCollector childrenBreakdownCollector(int datasetKey, String id) {
-    return childrenBreakdownCollector(datasetKey, id, 1);
-  }
-  public JsonTreeCollector childrenBreakdownCollector(int datasetKey, String id, int levels) {
-    var wrapper = childrenBreakdown(JsonTreeCollector.class, datasetKey, id, levels, Rank.SPECIES, new StringWriter());
-    wrapper.printer.setTaxon(wrapper.taxon);
-    return wrapper.printer;
-  }
-
   /**
    * The breakdown of a taxon's subtree as one object for a chart: counts by rank, the count rank and ring ranks decided
    * by {@link BreakdownRules} and the tree with remainder nodes.
    */
   public TaxonBreakdown taxonBreakdown(int datasetKey, String id) {
+    return taxonBreakdown(datasetKey, id, null);
+  }
+
+  /**
+   * @param countRank the rank to count the nodes at, overriding the rule
+   */
+  public TaxonBreakdown taxonBreakdown(int datasetKey, String id, @Nullable Rank countRank) {
     var key = DSID.of(datasetKey, id);
     var tax = getSimpleOr404(key);
     var rank = breakdownRank(key, tax);
     var counts = rankCounts(key);
-    var countRank = BreakdownRules.countRank(counts);
+    if (countRank == null) {
+      countRank = BreakdownRules.countRank(counts);
+    }
     var ranks = BreakdownRules.ringRanks(rank, counts, countRank);
 
     var bd = new TaxonBreakdown();
@@ -926,51 +925,6 @@ public class TaxonDao extends NameUsageBaseDao<Taxon, TaxonMapper> implements Ta
     }
     var metrics = getMetrics(key);
     return metrics == null || metrics.getTaxaByRankCount() == null ? Map.of() : metrics.getTaxaByRankCount();
-  }
-
-  public JsonTreePrinter childrenBreakdownPrinter(int datasetKey, String id, Writer writer) {
-    return childrenBreakdownPrinter(datasetKey, id, 1, Rank.SPECIES, writer);
-  }
-  public JsonTreePrinter childrenBreakdownPrinter(int datasetKey, String id, int level, Writer writer) {
-    return childrenBreakdownPrinter(datasetKey, id, level, Rank.SPECIES, writer);
-  }
-  public JsonTreePrinter childrenBreakdownPrinter(int datasetKey, String id, int level, @Nullable Rank countRank, Writer writer) {
-    return childrenBreakdown(JsonTreePrinter.class, datasetKey, id, level, countRank, writer).printer;
-  }
-
-  private static class PrinterWrapper<T> {
-    T printer;
-    SimpleName taxon;
-
-    public PrinterWrapper(T printer, SimpleName taxon) {
-      this.printer = printer;
-      this.taxon = taxon;
-    }
-  }
-
-  /**
-   * @param level number of nesting levels for major Linnean ranks to return.
-   *               Currently only 1 or 2 is supported, e.g. orders and families.
-   */
-  private <T extends AbstractPrinter> PrinterWrapper<T> childrenBreakdown(Class<T> clazz, int datasetKey, String id, int level, @Nullable Rank countRank, Writer writer) {
-    if (level != 1 && level != 2) {
-      throw new IllegalArgumentException("Breakdown level has to be 1 or 2, not " + level);
-    }
-    if (countRank == null) {
-      countRank = Rank.SPECIES;
-    }
-    var key = DSID.of(datasetKey, id);
-    var tax = getSimpleOr404(key);
-    var rank = breakdownRank(key, tax);
-    // figure out the next lower 2 linnean ranks to breakdown to
-    Set<Rank> ranks = new HashSet<>();
-    var nextRank = RankUtils.nextLowerLinneanRank(rank);
-    ranks.add(nextRank);
-    // for families and alike just show the genera and stop at the first level
-    if (level>1 && nextRank != Rank.GENUS) {
-      ranks.add(RankUtils.nextLowerLinneanRank(nextRank));
-    }
-    return new PrinterWrapper<>(childrenBreakdown(clazz, key, ranks, countRank, writer), tax);
   }
 
   /**
