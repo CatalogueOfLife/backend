@@ -832,13 +832,93 @@ public class JobExecutorTest {
     var ex = singleThreaded();
     ex.start();
     ex.pause();
-    ex.submit(new MarkJob(1, 0));
+    var parked = new MarkJob(1, 0);
+    ex.submit(parked);
+    awaitTakenFromQueue(ex);
 
     // a worker takes the job and parks on the gate; stop() has to let it go or it would wait MILLIS_TO_DIE
     long start = System.currentTimeMillis();
     ex.stop();
     long took = System.currentTimeMillis() - start;
     assertTrue("stop took " + took + "ms with a worker parked on the pause gate", took < 5000);
+    // and letting it go must not start the job it holds, only for shutdownNow to interrupt it
+    assertTrue(MarkJob.RAN.isEmpty());
+    assertEquals(JobStatus.CANCELED, parked.getStatus());
+  }
+
+  /**
+   * A job that asks to be resubmitted keeps its WAITING row when the executor stops, so the next start finds it among
+   * the stale jobs. Other queued jobs are still cancelled. A blue-green deploy used to cancel every queued sector sync,
+   * and the stale job handler that should have resubmitted them never saw one.
+   */
+  @Test
+  public void stopKeepsResubmittableJobsWaiting() throws Exception {
+    MarkJob.RAN.clear();
+    Map<UUID, List<JobStatus>> persisted = new ConcurrentHashMap<>();
+    var ex = persistingExecutor(1, persisted);
+    occupyTheWorker(ex, 300);
+    var kept = new ResubmitJob(2);
+    var cancelled = new MarkJob(3, 0);
+    ex.submit(kept);
+    ex.submit(cancelled);
+
+    ex.stop();
+
+    assertEquals(List.of(1), MarkJob.RAN);
+    assertEquals(JobStatus.WAITING, kept.getStatus());
+    // only the WAITING row written on submit, nothing that would hide it from the next start
+    assertEquals(List.of(JobStatus.WAITING), persisted.get(kept.getKey()));
+    // its upfront state is still cleaned up, as for any job that never ran
+    assertTrue(kept.cleanedUp);
+    assertEquals(JobStatus.CANCELED, cancelled.getStatus());
+    assertEquals(JobStatus.CANCELED, persisted.get(cancelled.getKey()).getLast());
+  }
+
+  /**
+   * The same for a resubmittable job a worker already holds on the pause gate: it stays waiting and never runs.
+   */
+  @Test
+  public void stopKeepsParkedResubmittableJobsWaiting() throws Exception {
+    MarkJob.RAN.clear();
+    Map<UUID, List<JobStatus>> persisted = new ConcurrentHashMap<>();
+    var ex = persistingExecutor(1, persisted);
+    ex.pause();
+    var kept = new ResubmitJob(1);
+    ex.submit(kept);
+    awaitTakenFromQueue(ex);
+
+    ex.stop();
+
+    assertTrue(MarkJob.RAN.isEmpty());
+    assertEquals(JobStatus.WAITING, kept.getStatus());
+    assertEquals(List.of(JobStatus.WAITING), persisted.get(kept.getKey()));
+  }
+
+  static class ResubmitJob extends MarkJob {
+    volatile boolean cleanedUp;
+
+    ResubmitJob(int num) {
+      super(num, 0);
+    }
+
+    @Override
+    public boolean resubmitAfterStop() {
+      return true;
+    }
+
+    @Override
+    protected void onCancelBeforeStart() {
+      cleanedUp = true;
+    }
+  }
+
+  /**
+   * Gives the idle single worker time to take the submitted job onto the pause gate. ThreadPoolExecutor hands the
+   * first task of a new worker over directly, and the executor's queue API counts a parked task as queued on
+   * purpose, so there is nothing to poll for.
+   */
+  private void awaitTakenFromQueue(JobExecutor ex) throws InterruptedException {
+    TimeUnit.MILLISECONDS.sleep(200);
   }
 
   @Test

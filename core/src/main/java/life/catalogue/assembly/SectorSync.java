@@ -549,5 +549,14 @@ public class SectorSync extends SectorRunnable {
       }
     }
   }
-  
+
+  /**
+   * A sync still queued when the server stops stays WAITING, so the next start resubmits it through
+   * SyncManager.rescheduleInterrupted. Cancelling it here, as the executor does with other queued jobs, meant
+   * that a blue-green deploy silently dropped every queued sync.
+   */
+  @Override
+  public boolean resubmitAfterStop() {
+    return true;
+  }
 }

@@ -227,6 +227,16 @@ public abstract class BackgroundJob implements Runnable {
   }
 
   /**
+   * Whether a job still queued when the executor stops is left WAITING in the job table instead of being
+   * cancelled, so that the next start finds it among the stale jobs and its owner can resubmit it through
+   * {@link JobExecutor#onStaleJobs}. Only worth it for jobs such a handler actually resubmits: anything else
+   * left waiting is merely cancelled one start later. {@link #onCancelBeforeStart()} is called either way.
+   */
+  public boolean resubmitAfterStop() {
+    return false;
+  }
+
+  /**
    * Method to override if you want the job executor to reject duplicate jobs on submit that are already present in the queue
    * or are running already. By default jobs are compared by their key which is unique to every job instance.
    * @return true if its a duplicate that should be rejected

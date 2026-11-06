@@ -182,7 +182,11 @@ invokes from `start()` (`JobExecutor.onStaleJobs`). Every path that hands a task
 single `dispatch()`.
 The executor has two ways down, and they are not the same. `stop()` (the `Managed` verb, what `stop-all` and
 a blue-green deploy use) rejects submissions, interrupts what runs and discards the queue, recording the
-discarded jobs as CANCELED. `pause()`/`resume()` is the maintenance verb: workers wait in `beforeExecute`, so
+discarded jobs as CANCELED - except a job whose `resubmitAfterStop()` is true, `SectorSync` alone, which keeps its
+WAITING row so the next `start()` hands it to `SyncManager.rescheduleInterrupted` through `onStaleJobs`. Cancelling
+them there meant a deploy silently dropped every queued sync, as the handler only ever sees rows still waiting.
+Tasks a worker already took but has not run - parked on the pause gate - are cancelled before the gate opens, so
+stopping a paused executor starts nothing on its way down. `pause()`/`resume()` is the maintenance verb: workers wait in `beforeExecute`, so
 running jobs finish, nothing new starts, the queue survives and submissions are still accepted.
 `POST /admin/jobs/pause?await=<seconds>` blocks until nothing runs and answers 409 if a job outlives the
 deadline - that is how a names index swap quiesces the server. `isQuiesced()` (no job executing) is therefore

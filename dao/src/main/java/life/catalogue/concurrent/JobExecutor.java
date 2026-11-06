@@ -14,11 +14,14 @@ import life.catalogue.dao.UserCrudDao;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.*;
 import java.util.function.Consumer;
@@ -116,21 +119,35 @@ public class JobExecutor implements Managed, Idle, SomeExecutor {
       // take the queued jobs out before the pools go down so we can give them a final state.
       // shutdownNow() would drain them into a list that is thrown away, leaving their rows running forever.
       // Emptying the gate first also means a job finishing during the shutdown promotes nothing.
-      // release anything blocked on the pause gate first, or shutdownNow cannot get those workers back
-      resume();
       var discarded = drainQueued();
+      // A worker may already hold a task it has not run: parked on the pause gate, or just taken from its queue.
+      // Cancel those too while the gate is still shut. A cancelled FutureTask runs nothing, so opening the gate
+      // below lets the worker go without starting a job that shutdownNow would interrupt straight away.
+      Set<ComparableFutureTask> drained = Collections.newSetFromMap(new IdentityHashMap<>());
+      drained.addAll(discarded);
+      for (var f : futures.values()) {
+        if (!drained.contains(f) && f.task.getStatus() == JobStatus.WAITING) {
+          discarded.add(f);
+        }
+      }
+      // a task that already began running cannot be cancelled here, it ends via run() like any running job
+      discarded.removeIf(f -> !f.cancel(false));
+      // release anything blocked on the pause gate, or shutdownNow cannot get those workers back
+      resume();
       for (var exec : execs.values()) {
         ExecutorUtils.shutdownNow(exec, ExecutorUtils.MILLIS_TO_DIE, TimeUnit.MILLISECONDS);
       }
       execs = null;
       DatasetLock.removeListener(unlockListener);
       // a queued job never reached run(), so nothing else will ever record an end for it
+      int kept = 0;
       for (var ftask : discarded) {
-        cancelBeforeStart(ftask);
+        if (endBeforeStart(ftask)) kept++;
       }
       // running jobs ended themselves via afterExecute; anything left is from a job that never started
       futures.clear();
-      LOG.info("Job executor stopped, discarding {} queued jobs", discarded.size());
+      LOG.info("Job executor stopped, discarding {} queued jobs of which {} stay waiting to be resubmitted by the next start",
+        discarded.size(), kept);
     }
   }
 
@@ -152,6 +169,25 @@ public class JobExecutor implements Managed, Idle, SomeExecutor {
       lockParked.clear();
     }
     return drained;
+  }
+
+  /**
+   * Ends a job that was still queued when the executor stopped. A job that wants to be resubmitted keeps its
+   * WAITING (or BLOCKED) row, which the next start() hands to the stale job handlers; any other is cancelled.
+   * @return true if the job was left waiting
+   */
+  private boolean endBeforeStart(ComparableFutureTask ftask) {
+    BackgroundJob job = ftask.task;
+    if (!job.resubmitAfterStop()) {
+      cancelBeforeStart(ftask);
+      return false;
+    }
+    try {
+      job.onCancelBeforeStart();
+    } catch (RuntimeException e) {
+      LOG.error("Failed to clean up queued job {}", job.getKey(), e);
+    }
+    return true;
   }
 
   /**
