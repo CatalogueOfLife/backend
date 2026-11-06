@@ -22,9 +22,15 @@ public interface NameUsageIndexService {
       return usages + names;
     }
 
-    public void add(Stats other) {
-      usages += other.usages;
-      names += other.names;
+    /**
+     * Adds the counts of another stats instance, if there is any.
+     * Synchronized, as several indexing threads add to one total.
+     */
+    public synchronized void add(Stats other) {
+      if (other != null) {
+        usages += other.usages;
+        names += other.names;
+      }
     }
   }
 

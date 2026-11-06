@@ -73,7 +73,7 @@ public class LineReader implements Iterable<String>, AutoCloseable {
           if (skipBlank && StringUtils.isBlank(next)) {
             continue;
           }
-          if (skipComments && next.startsWith("#")) {
+          if (skipComments && next != null && next.startsWith("#")) {
             continue;
           }
           break;

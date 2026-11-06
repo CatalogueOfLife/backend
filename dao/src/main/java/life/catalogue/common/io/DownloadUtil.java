@@ -143,7 +143,7 @@ public class DownloadUtil {
   private boolean exec(ClassicHttpRequest get, final URI url, final File downloadTo) throws DownloadException, RedirectException {
     try (CloseableHttpResponse response = hc.execute(get)) {
       final int status = response.getCode();
-      System.out.println(String.format("%s -> %s", status, get));
+      LOG.debug("{} -> {}", status, get);
       if (status == HttpStatus.SC_NOT_MODIFIED) {
         LOG.debug("Content not modified since last request");
         return false;

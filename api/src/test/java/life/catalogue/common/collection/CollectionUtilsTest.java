@@ -54,7 +54,7 @@ public class CollectionUtilsTest {
     o2[4] = null;
     assertFalse(CollectionUtils.equals(o1, o2));
 
-    o2 = CollectionUtils.compact(o2);
+    o2 = java.util.Arrays.stream(o2).filter(java.util.Objects::nonNull).toArray(String[]::new);
     assertTrue(CollectionUtils.equals(o1, o2));
     assertEquals(4, o2.length);
   }

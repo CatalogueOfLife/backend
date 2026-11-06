@@ -290,44 +290,38 @@ public class AuthorComparator {
    */
   @VisibleForTesting
   static Equality compare(final Author a1, final Author a2, final int minCommonStart, final int jaroDistance) {
-    if (a1.equals(a2.fullname)) {
-      // we can stop here, authors are equal, thats enough
-      return Equality.EQUAL;
-      
-    } else {
-
-      String common = StringUtils.getCommonPrefix(a1.surname, a2.surname);
-      if (surnamesMatch(a1.surname, a2.surname, minCommonStart, jaroDistance)) {
-        // do both names have a single initial which is different?
-        // this is often the case when authors are relatives like brothers or son & father
-        if (a1.initialsOrSuffixDiffer(a2)) {
-          return Equality.DIFFERENT;
-        } else {
-          return Equality.EQUAL;
-        }
-
-      } else if (!a1.initialsOrSuffixDiffer(a2) && (a1.surname.equals(common) && (a2.surname.startsWith(common))
-          || a2.surname.equals(common) && (a1.surname.startsWith(common)))
-          ) {
-        // short common surname, matching in full to one of them
-        // and in addition existing and not conflicting initials
-        return Equality.EQUAL;
-        
-      } else if (a1.fullname.equals(common) && (a2.surname.startsWith(common))
-          || a2.fullname.equals(common) && (a1.surname.startsWith(common))
-          ) {
-        // the smallest common substring is the same as one of the inputs
-        // if it also matches the start of the first longer surname then we are ok as the entire string is the best match we can have
-        // likey a short abbreviation
-        return Equality.EQUAL;
-
-      } else if (!a1.initialsOrSuffixDiffer(a2) && compoundSurnamesMatch(a1, a2, minCommonStart, jaroDistance)) {
-        // compound surnames like "Bory de Saint-Vincent" or "Kerner von Marilaun" are often cited by
-        // their first part alone, which the last word based surname comparison above cannot see.
-        // Still requires non conflicting initials so relatives stay apart.
-        // https://github.com/CatalogueOfLife/backend/issues/1595
+    // no shortcut on equal full names: authors built from their parts can share a full name and still differ in their suffix
+    String common = StringUtils.getCommonPrefix(a1.surname, a2.surname);
+    if (surnamesMatch(a1.surname, a2.surname, minCommonStart, jaroDistance)) {
+      // do both names have a single initial which is different?
+      // this is often the case when authors are relatives like brothers or son & father
+      if (a1.initialsOrSuffixDiffer(a2)) {
+        return Equality.DIFFERENT;
+      } else {
         return Equality.EQUAL;
       }
+
+    } else if (!a1.initialsOrSuffixDiffer(a2) && (a1.surname.equals(common) && (a2.surname.startsWith(common))
+        || a2.surname.equals(common) && (a1.surname.startsWith(common)))
+        ) {
+      // short common surname, matching in full to one of them
+      // and in addition existing and not conflicting initials
+      return Equality.EQUAL;
+      
+    } else if (a1.fullname.equals(common) && (a2.surname.startsWith(common))
+        || a2.fullname.equals(common) && (a1.surname.startsWith(common))
+        ) {
+      // the smallest common substring is the same as one of the inputs
+      // if it also matches the start of the first longer surname then we are ok as the entire string is the best match we can have
+      // likey a short abbreviation
+      return Equality.EQUAL;
+
+    } else if (!a1.initialsOrSuffixDiffer(a2) && compoundSurnamesMatch(a1, a2, minCommonStart, jaroDistance)) {
+      // compound surnames like "Bory de Saint-Vincent" or "Kerner von Marilaun" are often cited by
+      // their first part alone, which the last word based surname comparison above cannot see.
+      // Still requires non conflicting initials so relatives stay apart.
+      // https://github.com/CatalogueOfLife/backend/issues/1595
+      return Equality.EQUAL;
     }
     return Equality.DIFFERENT;
   }

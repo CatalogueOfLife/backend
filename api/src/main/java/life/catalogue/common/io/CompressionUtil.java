@@ -149,10 +149,12 @@ public class CompressionUtil {
 
   static List<File> listFiles(File root) throws IOException {
     var rootPath = root.toPath();
-    return Files.walk(rootPath)
-      .filter(p -> !p.equals(rootPath))
-      .map(Path::toFile)
-      .collect(Collectors.toList());
+    try (var paths = Files.walk(rootPath)) {
+      return paths
+        .filter(p -> !p.equals(rootPath))
+        .map(Path::toFile)
+        .collect(Collectors.toList());
+    }
   }
 
   /**
@@ -354,9 +356,12 @@ public class CompressionUtil {
       File root = rootFiles[0];
       if (root.isDirectory()) {
         LOG.debug("Removing single root folder {} found in decompressed archive", root.getAbsoluteFile());
+        final Path rootPath = root.toPath();
+        final Path dirPath = directory.toPath();
         for (File f : org.apache.commons.io.FileUtils.listFilesAndDirs(root, TrueFileFilter.TRUE, TrueFileFilter.TRUE)) {
           if (!f.equals(root)) {
-            File f2 = new File(f.getAbsolutePath().replaceFirst(root.getAbsolutePath(), directory.getAbsolutePath()));
+            // resolve the path relative to the root, the root path used to be taken as a regex
+            File f2 = dirPath.resolve(rootPath.relativize(f.toPath())).toFile();
             f.renameTo(f2);
           }
         }

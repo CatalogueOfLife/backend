@@ -80,22 +80,24 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
     final Stats total = new Stats();
 
     final AtomicInteger counter = new AtomicInteger(0);
+    final AtomicInteger failed = new AtomicInteger(0);
     ExecutorService exec = Executors.newFixedThreadPool(esConfig.indexingThreads, new NamedThreadFactory("ES-Indexer"));
     for (Integer datasetKey : keys) {
       CompletableFuture.supplyAsync(() -> indexDatasetInternal(datasetKey, clearIndex), exec)
-        .exceptionally(ex -> {
-          counter.incrementAndGet();
-          LOG.error("Error indexing dataset {}", datasetKey, ex.getCause());
-          return null;
-        }).thenAccept(st -> {
-          total.add(st);
-          LOG.info("Indexed {}/{} dataset {}. Total usages {}", counter.incrementAndGet(), keys.size(), datasetKey, total.usages);
+        .whenComplete((st, ex) -> {
+          if (ex != null) {
+            failed.incrementAndGet();
+            LOG.error("Error indexing dataset {}", datasetKey, ex.getCause());
+          } else {
+            total.add(st);
+            LOG.info("Indexed {}/{} dataset {}. Total usages {}", counter.incrementAndGet(), keys.size(), datasetKey, total.usages);
+          }
         });
     }
     ExecutorUtils.shutdown(exec);
 
-    LOG.info("Successfully indexed {} datasets. Index: {}. Usages: {}. Bare names: {}. Total: {}.",
-      counter, esConfig.index.name, total.usages, total.names, total.total());
+    LOG.info("Successfully indexed {} datasets, {} failed. Index: {}. Usages: {}. Bare names: {}. Total: {}.",
+      counter, failed, esConfig.index.name, total.usages, total.names, total.total());
     return total;
   }
 

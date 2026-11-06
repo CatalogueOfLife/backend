@@ -9,6 +9,8 @@ public class DistanceUtilsTest {
 
   @Test
   public void testConvertEditDistanceToSimilarity() throws Exception {
+    // no edits are always 100%, also for two empty strings
+    assertEquals(100d, DistanceUtils.convertEditDistanceToSimilarity(0, "", ""), delta);
     assertEquals(100d, DistanceUtils.convertEditDistanceToSimilarity(0, "1234567890", "1234567890"), delta);
     assertEquals(67.0d, DistanceUtils.convertEditDistanceToSimilarity(2, "12345678", "12345678"), delta);
     assertEquals(42.0d, DistanceUtils.convertEditDistanceToSimilarity(3, "12345678", "12345678"), delta);

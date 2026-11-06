@@ -140,6 +140,9 @@ public class OptimizedUtilsEquivalenceTest {
           sb.append(' ');
           stackedSpace--;
         }
+      } else if (trim) {
+        // the original moved leading spaces into the first gap of the value, a bug fixed since
+        stackedSpace = 0;
       }
       switch(ch) {
         case '\\':  { sb.append("\\\\"); break; }

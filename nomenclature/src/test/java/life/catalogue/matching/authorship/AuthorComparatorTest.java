@@ -694,6 +694,18 @@ public class AuthorComparatorTest {
     assertEquals(Equality.EQUAL, comp.compare(p2, p3));
   }
 
+  /**
+   * Two authors with the same full name are equal, whatever their surname or initials parse to
+   */
+  @Test
+  public void sameFullname() {
+    for (String a : List.of("l", "dc", "j b smith", "smith f", "bory de saint vincent", "o kuntze")) {
+      var a1 = new AuthorshipNormalizer.Author(a);
+      var a2 = new AuthorshipNormalizer.Author(a);
+      assertEquals(a, Equality.EQUAL, AuthorComparator.compare(a1, a2, 4, 80));
+    }
+  }
+
   @Test
   public void testZoologicalDoesNotExpandBotanicalAbbrev() {
     // "DC." would expand to "Augustin Pyramus de Candolle" under botany; under zoology it must be treated as a plain, unexpanded token.

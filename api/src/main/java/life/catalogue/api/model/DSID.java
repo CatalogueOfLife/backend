@@ -48,7 +48,7 @@ public interface DSID<K> extends DatasetScoped, Entity<DSID<K>>, HasID<K> {
    * @return true when the DSID has an ID value
    */
   default boolean hasId() {
-    return getId() == null;
+    return getId() != null;
   }
 
   /**

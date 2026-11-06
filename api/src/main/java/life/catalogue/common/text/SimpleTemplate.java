@@ -68,7 +68,8 @@ public class SimpleTemplate {
         if (matcher.group(1) != null && value != null) {
           value = URLEncoder.encode(value, StandardCharsets.UTF_8);
         }
-        matcher.appendReplacement(buffer, value);
+        // the value is text, a $ or backslash in it is no group reference
+        matcher.appendReplacement(buffer, value == null ? null : Matcher.quoteReplacement(value));
       }
       matcher.appendTail(buffer);
       return buffer.toString();

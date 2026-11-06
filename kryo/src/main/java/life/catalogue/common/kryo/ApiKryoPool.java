@@ -33,11 +33,14 @@ import com.esotericsoftware.kryo.util.Pool;
  */
 public class ApiKryoPool extends Pool<Kryo> {
 
+  // no soft references: they cost a new SoftReference for every object freed to the pool, and under memory pressure
+  // the garbage collector dropped pooled Kryos which then had to be created and configured again.
+  // A pool never holds more Kryos than were in use at the same time.
   public ApiKryoPool() {
-    super(true, true);
+    super(true, false);
   }
   public ApiKryoPool(int maximumCapacity) {
-    super(true, true, maximumCapacity);
+    super(true, false, maximumCapacity);
   }
 
   @Override
