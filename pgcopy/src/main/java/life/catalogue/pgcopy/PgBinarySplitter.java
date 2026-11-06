@@ -74,7 +74,7 @@ public class PgBinarySplitter {
         if (buffer.length < length) {
           buffer = new byte[length];
         }
-        in.read(buffer, 0, length);
+        in.readFully(buffer, 0, length);
         out.getBuffer().write(buffer, 0, length);
       }
     }

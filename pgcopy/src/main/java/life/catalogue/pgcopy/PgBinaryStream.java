@@ -1,5 +1,6 @@
 package life.catalogue.pgcopy;
 
+import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -9,8 +10,12 @@ import java.io.InputStream;
  */
 public class PgBinaryStream extends DataInputStream {
 
+  /**
+   * @param in the stream to read, buffered unless it is a BufferedInputStream already.
+   *           Every field is read with a few small reads, each of which is a system call on a plain file stream.
+   */
   public PgBinaryStream(InputStream in) throws IOException {
-    super(in);
+    super(in instanceof BufferedInputStream ? in : new BufferedInputStream(in, 64 * 1024));
     readHeader();
   }
 

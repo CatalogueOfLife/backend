@@ -4,7 +4,10 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 public class PgBinaryReader implements AutoCloseable {
@@ -71,17 +74,25 @@ public class PgBinaryReader implements AutoCloseable {
     return lookupEnum(x, clazz);
   }
 
-  private static <T extends Enum<?>> T lookupEnum(String name, Class<T> vocab) {
-    T[] values = vocab.getEnumConstants();
-    if (values != null) {
-      for (T val : values) {
-        if (name.equals(val.name())) {
-          return val;
+  // the constants of each enum class by name, as getEnumConstants() copies the array on every call
+  private static final ClassValue<Map<String, Object>> ENUMS = new ClassValue<>() {
+    @Override
+    protected Map<String, Object> computeValue(Class<?> type) {
+      Object[] values = type.getEnumConstants();
+      Map<String, Object> map = new HashMap<>();
+      if (values != null) {
+        for (Object val : values) {
+          map.put(((Enum<?>) val).name(), val);
         }
       }
+      return Collections.unmodifiableMap(map);
     }
-    return null;
+  };
+
+  private static <T extends Enum<?>> T lookupEnum(String name, Class<T> vocab) {
+    return vocab.cast(ENUMS.get(vocab).get(name));
   }
+
 
   /**
    * @return true if null, false if good to read
