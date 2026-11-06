@@ -67,3 +67,12 @@ single source, and a later source only takes over the groups it changed.
 - A source with several merge sectors keeps all of them in a release once it is credited, even one that gave nothing.
 - Hierarchy sectors with a project subject store their authorship credit under the release they read, while the source is
   listed under the project, so it does not show up in `enrichedCount`.
+
+## Outcome
+
+- 2026-11-06, [#1697](https://github.com/CatalogueOfLife/backend/issues/1697): the expectation that a base release gains
+  no sectors, sources or authors did not hold. A credit names a source dataset, not a sector, and the COL project credits
+  ITIS and the CL-Patch on records of other sectors, so `hasData` kept their XR-only merge sectors in the draft base release
+  and its source list showed them as merged sources. Merge sectors now count credits only in an `XRELEASE` dataset (the
+  extended release and its temporary merge project). Hierarchy sectors sync in the project and keep counting them everywhere.
+  A project that syncs an enrich-only merge sector itself no longer lists it in its base release, as before this change.

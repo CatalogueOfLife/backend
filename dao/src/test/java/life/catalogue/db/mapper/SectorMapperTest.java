@@ -590,15 +590,22 @@ public class SectorMapperTest extends BaseDecisionMapperTest<Sector, SectorSearc
   /**
    * A merge sector can enrich the records of others without owning a single row. Its credits were copied into the release
    * while the sector was dropped. The articles of a sector publisher are left out on purpose, their sheer number is why.
+   * Only an extended release merges though. The merge sectors a base release copies from its project never ran there, so a
+   * credit to their source dataset was given by another sector and keeps none of them (#1697).
    */
   @Test
   public void copyDatasetKeepsSectorsOnlyCreditedAsSecondarySource() throws Exception {
     var dm = mapper(DatasetMapper.class);
 
-    Dataset target = DatasetMapperTest.create();
-    target.setOrigin(DatasetOrigin.RELEASE);
-    target.setSourceKey(Datasets.COL);
-    dm.create(target);
+    Dataset xrelease = DatasetMapperTest.create();
+    xrelease.setOrigin(DatasetOrigin.XRELEASE);
+    xrelease.setSourceKey(Datasets.COL);
+    dm.create(xrelease);
+
+    Dataset release = DatasetMapperTest.create();
+    release.setOrigin(DatasetOrigin.RELEASE);
+    release.setSourceKey(Datasets.COL);
+    dm.create(release);
 
     UUID publisher = UUID.randomUUID();
     SectorPublisher sp = new SectorPublisher();
@@ -612,21 +619,59 @@ public class SectorMapperTest extends BaseDecisionMapperTest<Sector, SectorSearc
     Sector enriching = creditedSector(null, Sector.Mode.MERGE);
     Sector article = creditedSector(publisher, Sector.Mode.MERGE);
     Sector attached = creditedSector(null, Sector.Mode.ATTACH);
+    Sector hierarchy = creditedSector(null, Sector.Mode.HIERARCHY);
     commit();
 
-    mapper().copyDataset(Datasets.COL, target.getKey(), false);
+    mapper().copyDataset(Datasets.COL, xrelease.getKey(), false);
+    mapper().copyDataset(Datasets.COL, release.getKey(), false);
     commit();
 
-    assertNotNull(mapper().get(DSID.of(target.getKey(), enriching.getId())));
-    assertNull("a sector publisher reports its articles", mapper().get(DSID.of(target.getKey(), article.getId())));
-    assertNull("this mode gives no credits", mapper().get(DSID.of(target.getKey(), attached.getId())));
+    assertNotNull(mapper().get(DSID.of(xrelease.getKey(), enriching.getId())));
+    assertNull("a sector publisher reports its articles", mapper().get(DSID.of(xrelease.getKey(), article.getId())));
+    assertNull("this mode gives no credits", mapper().get(DSID.of(xrelease.getKey(), attached.getId())));
+    assertNotNull(mapper().get(DSID.of(xrelease.getKey(), hierarchy.getId())));
 
-    // the orphan cleanup draws the same line
-    mapper().deleteOrphans(Datasets.COL);
+    assertNull("a base release merges nothing", mapper().get(DSID.of(release.getKey(), enriching.getId())));
+    assertNull(mapper().get(DSID.of(release.getKey(), article.getId())));
+    assertNull(mapper().get(DSID.of(release.getKey(), attached.getId())));
+    assertNotNull("a hierarchy sector syncs in the project", mapper().get(DSID.of(release.getKey(), hierarchy.getId())));
+
+    // the orphan cleanup draws the same line: it reads the credits of the release, which it copied from the project
+    for (var s : List.of(enriching, article, attached, hierarchy)) {
+      s.setDatasetKey(release.getKey());
+      if (!mapper().exists(s)) {
+        mapper().createWithID(s);
+      }
+      s.setDatasetKey(xrelease.getKey());
+      if (!mapper().exists(s)) {
+        mapper().createWithID(s);
+      }
+    }
+    copyCredits(release.getKey());
+    copyCredits(xrelease.getKey());
     commit();
-    assertNotNull(mapper().get(DSID.of(Datasets.COL, enriching.getId())));
-    assertNull(mapper().get(DSID.of(Datasets.COL, article.getId())));
-    assertNull(mapper().get(DSID.of(Datasets.COL, attached.getId())));
+
+    mapper().deleteOrphans(xrelease.getKey());
+    mapper().deleteOrphans(release.getKey());
+    commit();
+    assertNotNull(mapper().get(DSID.of(xrelease.getKey(), enriching.getId())));
+    assertNull(mapper().get(DSID.of(xrelease.getKey(), article.getId())));
+    assertNull(mapper().get(DSID.of(xrelease.getKey(), attached.getId())));
+    assertNotNull(mapper().get(DSID.of(xrelease.getKey(), hierarchy.getId())));
+
+    assertNull(mapper().get(DSID.of(release.getKey(), enriching.getId())));
+    assertNull(mapper().get(DSID.of(release.getKey(), article.getId())));
+    assertNull(mapper().get(DSID.of(release.getKey(), attached.getId())));
+    assertNotNull(mapper().get(DSID.of(release.getKey(), hierarchy.getId())));
+  }
+
+  /**
+   * Copies the sector publishers and secondary sources of the COL project into a release, as the release copy does.
+   */
+  private void copyCredits(int releaseKey) {
+    mapper(SectorPublisherMapper.class).copyDataset(Datasets.COL, releaseKey, false);
+    mapper(VerbatimSourceMapper.class).copyDataset(Datasets.COL, releaseKey, false);
+    mapper(VerbatimSourceSecondaryMapper.class).copyDataset(Datasets.COL, releaseKey, false);
   }
 
   /**

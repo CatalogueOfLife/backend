@@ -11,6 +11,7 @@ import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.SectorPublisher;
 import life.catalogue.api.model.Taxon;
 import life.catalogue.api.model.VerbatimSource;
+import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.InfoGroup;
 import life.catalogue.api.vocab.Setting;
@@ -146,6 +147,15 @@ public class DatasetSourceMapperTest extends MapperTestBase<DatasetSourceMapper>
     vsm.create(vs);
     vsm.insertSources(vs, DSID.of(credited.getKey(), "x"), Set.of(InfoGroup.PUBLISHED_IN_PAGE_LINK));
 
+    // a hierarchy sector that owns nothing and gave the authorship of a record of somebody else
+    Dataset hierarchy = DatasetMapperTest.create();
+    hierarchy.setGbifPublisherKey(null);
+    dm.create(hierarchy);
+    createSector(hierarchy, Sector.Mode.HIERARCHY);
+    VerbatimSource vs2 = new VerbatimSource(Datasets.COL, 100001, null, null, null, null);
+    vsm.create(vs2);
+    vsm.insertSources(vs2, DSID.of(hierarchy.getKey(), "x"), Set.of(InfoGroup.AUTHORSHIP));
+
     // an article of a sector publisher owning a reference, but no usage
     UUID publisher = UUID.randomUUID();
     SectorPublisher sp = new SectorPublisher();
@@ -167,15 +177,34 @@ public class DatasetSourceMapperTest extends MapperTestBase<DatasetSourceMapper>
     createMergeSector(empty);
     commit();
 
-    assertEquals(Set.of(usages.getKey(), references.getKey(), credited.getKey()), keys(mapper().listContributingSources(Datasets.COL, true)));
+    // only an extended release merges: the merge sectors a base release copied from its project are there for the next
+    // extended release and never ran, so a credit to their source, given by another sector, is none of theirs (#1697)
+    for (DatasetOrigin origin : new DatasetOrigin[]{DatasetOrigin.PROJECT, DatasetOrigin.RELEASE}) {
+      setOrigin(Datasets.COL, origin);
+      assertEquals(origin.name(), Set.of(usages.getKey(), references.getKey(), hierarchy.getKey()),
+        keys(mapper().listContributingSources(Datasets.COL, true)));
+    }
+    setOrigin(Datasets.COL, DatasetOrigin.XRELEASE);
+    assertEquals(Set.of(usages.getKey(), references.getKey(), credited.getKey(), hierarchy.getKey()),
+      keys(mapper().listContributingSources(Datasets.COL, true)));
     // reading the project is not affected
     assertEquals(Set.of(usages.getKey()), keys(mapper().listProjectSources(Datasets.COL, true)));
     assertEquals(1, mapper().countProjectSources(Datasets.COL, true));
   }
 
+  private void setOrigin(int datasetKey, DatasetOrigin origin) throws Exception {
+    try (var st = connection().createStatement()) {
+      st.execute("UPDATE dataset SET origin = '" + origin.name() + "' WHERE key = " + datasetKey);
+    }
+  }
+
   private Sector createMergeSector(Dataset subject) {
+    return createSector(subject, Sector.Mode.MERGE);
+  }
+
+  private Sector createSector(Dataset subject, Sector.Mode mode) {
     Sector s = SectorMapperTest.create(DSID.colID("t" + subject.getKey()), DSID.of(subject.getKey(), "x"));
-    s.setMode(Sector.Mode.MERGE);
+    s.setMode(mode);
     s.setTarget(null);
     mapper(SectorMapper.class).create(s);
     return s;

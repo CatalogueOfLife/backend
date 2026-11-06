@@ -201,7 +201,7 @@
           EXISTS (SELECT TRUE FROM name_usage u WHERE u.sector_key=s.id AND u.dataset_key = #{datasetKey})
           OR (
             NOT EXISTS (SELECT TRUE FROM sector_publisher p WHERE p.id=d.gbif_publisher_key AND p.dataset_key = #{datasetKey})
-            AND <include refid="life.catalogue.db.mapper.SectorMapper.hasData"/>
+            AND <include refid="life.catalogue.db.mapper.SectorMapper.hasData"><property name="targetKey" value="#{datasetKey}"/></include>
           )
         )
       GROUP BY 1,2

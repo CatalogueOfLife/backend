@@ -82,7 +82,9 @@ only the groups it changed. When the release finishes, these credits are counted
 `dataset_source_contribution`, and source metrics report them as `enrichedCount` and `enrichedByInfoCount`. They are also
 what makes a source with no usages of its own, like the reference only BHL sector, a listed source of the release, unless
 it belongs to a sector publisher, whose metrics report it instead, see
-[2026-10-30-secondary-source-contribution.md](2026-10-30-secondary-source-contribution.md).
+[2026-10-30-secondary-source-contribution.md](2026-10-30-secondary-source-contribution.md). A credit keeps a merge sector
+in an extended release only: the base release copies the merge sectors of its project, which never ran there, and a credit
+to their source dataset there was given by one of its other sectors.
 
 #### 2f. `homotypicGrouping()` — Post-Merge Consolidation
 Runs on the temporary project once all sectors are merged. Wherever sources compete, `SectorPriority` ranks them:

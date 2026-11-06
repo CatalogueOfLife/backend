@@ -372,6 +372,8 @@
     True if sector s has any data in dataset #{datasetKey}, i.e. a row in one of the tables with a foreign key to sector.
     copyDataset and deleteOrphans must draw the same line. A merge sector can own no name at all and still have data,
     e.g. vernacular names it added to usages of other sectors, see https://github.com/CatalogueOfLife/checklistbank/issues/1728
+    Requires the include property targetKey, the dataset the sector is kept in: #{datasetKey} itself, or the release
+    copyDataset writes to.
   -->
   <sql id="hasData">
     (EXISTS (SELECT true FROM name_usage x WHERE x.dataset_key=#{datasetKey} AND x.sector_key = s.id)
@@ -392,8 +394,12 @@
       know the source dataset, not the sector, which is why this is limited to the modes that write them. The articles of
       an aggregating publisher are many and their metrics rolled up by publisher, so they need no sector just for that.
       Only batch work may include this fragment: it reads the secondary sources for every sector without other data.
+      Only an extended release merges. A base release copies the merge sectors of its project for the next extended release,
+      they never ran there and a credit to their source dataset was given by another sector, e.g. ITIS attach sectors (#1697).
+      Hierarchy sectors sync in the project, so their credits count in any dataset.
     -->
-    OR (s.mode IN ('MERGE', 'HIERARCHY')
+    OR ((s.mode = 'HIERARCHY'
+        OR s.mode = 'MERGE' AND EXISTS (SELECT true FROM dataset xr WHERE xr.key = ${targetKey} AND xr.origin = 'XRELEASE'))
       AND EXISTS (SELECT true FROM verbatim_source_secondary x WHERE x.dataset_key=#{datasetKey} AND x.source_dataset_key = s.subject_dataset_key)
       AND NOT EXISTS (
         SELECT true FROM dataset sd JOIN sector_publisher p ON p.id = sd.gbif_publisher_key AND p.dataset_key = #{datasetKey}
@@ -429,7 +435,7 @@
       LIMIT 1
     ) src ON true
     WHERE s.dataset_key=#{datasetKey}
-      AND <include refid="hasData"/>
+      AND <include refid="hasData"><property name="targetKey" value="#{newDatasetKey}"/></include>
   </insert>
 
   <update id="update" parameterType="Sector">
@@ -611,7 +617,7 @@
 
   <delete id="deleteOrphans" parameterType="map">
     DELETE FROM sector s
-    WHERE dataset_key = #{datasetKey} AND NOT <include refid="hasData"/>
+    WHERE dataset_key = #{datasetKey} AND NOT <include refid="hasData"><property name="targetKey" value="#{datasetKey}"/></include>
   </delete>
 
   <select id="listOutdatedSectors" resultMap="sectorResultMap">
