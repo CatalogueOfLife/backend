@@ -47,7 +47,7 @@
   <select id="search" resultMap="publisherResultMap">
     SELECT key,<include refid="COLS"/>
     FROM publisher
-    WHERE doc @@ plainto_tsquery('dataset', f_unaccent($Grtz5$%${q}%$Grtz5$))
+    WHERE doc @@ plainto_tsquery('dataset', f_unaccent(#{q}))
     ORDER BY ts_rank_cd('{0.1, 1.0}'::float4[], doc, plainto_tsquery('dataset', f_unaccent(#{q}))) DESC, title
     <include refid="life.catalogue.db.Common.limit"/>
   </select>

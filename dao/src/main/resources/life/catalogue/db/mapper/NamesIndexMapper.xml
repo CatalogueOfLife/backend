@@ -100,7 +100,7 @@
   <select id="listByRegex" parameterType="map" resultMap="nameResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE scientific_name ~ '^${regex}'
+    WHERE scientific_name ~ ('^' || #{regex})
     ORDER BY scientific_name, id
     <include refid="life.catalogue.db.Common.limit"/>
   </select>

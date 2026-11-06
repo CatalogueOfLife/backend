@@ -402,6 +402,13 @@ Rules:
 - Java interfaces in `dao/db/mapper/*.java`
 - Use `<sql id="...">` fragments for reusable SQL blocks
 - Dynamic SQL with `<if>`, `<choose>`, `<foreach>`
+- Every value coming from a request is bound with `#{}`. `${}` pastes text into the statement and is reserved for
+  fragment properties (`${alias}`, `${table}`), integer dataset keys and java enum names (`${issue.name()}`,
+  `${role}`). Wildcards and anchors are concatenated around the bound parameter: `ILIKE '%' || #{q} || '%'`,
+  `~ ('^' || #{regex})`; a `Term` is bound with `typeHandler=life.catalogue.db.type.TermTypeHandler`, a jsonb
+  filter is built with `jsonb_build_object(#{term, ...}, #{val})`. The dollar quoted `$Grtz5$%${q}%$Grtz5$` form
+  that used to wrap search strings only hid the quote problem of interpolation; it was an injection
+  (backend#1692) and `SqlInjectionMapperTest` guards every search mapper against its return.
 
 ### Adding a New Entity Type
 1. Create model class in `api/src/main/java/life/catalogue/api/model/`

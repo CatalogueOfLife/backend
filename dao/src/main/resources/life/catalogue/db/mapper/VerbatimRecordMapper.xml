@@ -53,13 +53,13 @@
         <choose>
           <when test="termOp.name() == 'OR'">
             <foreach item="val" index="term" collection="termValues" open="(" separator=" OR " close=")">
-              v.terms @> '{"${term}": "${val}"}'
+              v.terms @> jsonb_build_object(#{term, typeHandler=life.catalogue.db.type.TermTypeHandler}, #{val})
             </foreach>
           </when>
           <otherwise>
             v.terms @>
-            <foreach item="val" index="term" collection="termValues" open="'{" separator="," close="}'">
-              "${term}": "${val}"
+            <foreach item="val" index="term" collection="termValues" open="(" separator=" || " close=")">
+              jsonb_build_object(#{term, typeHandler=life.catalogue.db.type.TermTypeHandler}, #{val})
             </foreach>
           </otherwise>
         </choose>
@@ -68,7 +68,7 @@
         <bind name="operator" value="' ' + termOp.name() + ' '" />
         AND (
         <foreach item="term" collection="terms" index="idx">
-          <if test="idx > 0"> ${operator} </if>v.terms ?? '${term}'
+          <if test="idx > 0"> ${operator} </if>v.terms ?? #{term, typeHandler=life.catalogue.db.type.TermTypeHandler}
         </foreach>
         )
       </if>
