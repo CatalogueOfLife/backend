@@ -907,7 +907,7 @@ public class JobExecutorTest {
     }
 
     @Override
-    protected void onCancelBeforeStart() {
+    protected void onStopBeforeStart() {
       cleanedUp = true;
     }
   }

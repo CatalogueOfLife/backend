@@ -183,7 +183,7 @@ public class JobExecutor implements Managed, Idle, SomeExecutor {
       return false;
     }
     try {
-      job.onCancelBeforeStart();
+      job.onStopBeforeStart();
     } catch (RuntimeException e) {
       LOG.error("Failed to clean up queued job {}", job.getKey(), e);
     }

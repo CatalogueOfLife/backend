@@ -257,6 +257,25 @@ public class ImportJob extends DatasetBlockingJob {
   }
 
   /**
+   * An import still queued when the server stops stays WAITING, so the next start resubmits it through
+   * ImportManager.rescheduleInterrupted. Uploads included: their file waits in the scratch dir, which only the
+   * import itself or the deletion of its dataset removes.
+   */
+  @Override
+  public boolean resubmitAfterStop() {
+    return true;
+  }
+
+  /**
+   * Unlike a real cancel this fires no callback: the resubmitted import calls it once it has ended, and a client
+   * like the GBIF validator takes canceled as final.
+   */
+  @Override
+  protected void onStopBeforeStart() {
+    // nothing to clean up, there is no attempt before the import runs
+  }
+
+  /**
    * A job cancelled while it was still queued never runs, so onFinish never fires and the completion
    * callback would be dropped for exactly the case a waiting client cares about - the GBIF validator
    * treats canceled as terminal. See https://github.com/CatalogueOfLife/backend/issues/1552

@@ -2,6 +2,7 @@ package life.catalogue.importer;
 
 import java.net.URI;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.Objects;
@@ -10,6 +11,7 @@ import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
 
 /**
  *
@@ -43,6 +45,38 @@ public class ImportRequest implements Comparable<ImportRequest> {
     ImportRequest req = new ImportRequest(datasetKey, createdBy, true, true, null, upload);
     req.callback = callback;
     return req;
+  }
+
+  /**
+   * Rebuilds the request of an import job from the params it persisted in the job table, which is the request
+   * itself serialized. Unlike the JSON creator this restores the upload and reimport flags, so it must only ever
+   * read params the server wrote itself, never a request body.
+   *
+   * @param createdBy the user of the job, used when the params lack one
+   * @return null if the params do not describe an import request
+   */
+  @Nullable
+  public static ImportRequest fromParams(@Nullable JsonNode params, @Nullable Integer createdBy) {
+    if (params == null || !params.hasNonNull("datasetKey")) {
+      return null;
+    }
+    int datasetKey = params.get("datasetKey").asInt();
+    Integer user = params.hasNonNull("createdBy") ? Integer.valueOf(params.get("createdBy").asInt()) : createdBy;
+    Integer reimport = params.hasNonNull("reimportAttempt") ? params.get("reimportAttempt").asInt() : null;
+    Path upload = params.hasNonNull("upload") ? toPath(params.get("upload").asText()) : null;
+    var req = new ImportRequest(datasetKey, user,
+      params.path("force").asBoolean(false), params.path("priority").asBoolean(false), reimport, upload);
+    if (params.hasNonNull("callback")) {
+      req.callback = URI.create(params.get("callback").asText());
+    }
+    return req;
+  }
+
+  /**
+   * Jackson writes a Path as a file URI, but accept a plain path too.
+   */
+  private static Path toPath(String value) {
+    return value.startsWith("file:") ? Paths.get(URI.create(value)) : Paths.get(value);
   }
 
   public static ImportRequest external(int datasetKey, int createdBy){

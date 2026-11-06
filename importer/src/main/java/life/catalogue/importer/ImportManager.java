@@ -55,6 +55,7 @@ import org.slf4j.LoggerFactory;
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 
 import jakarta.validation.Validator;
@@ -361,18 +362,51 @@ public class ImportManager implements DatasetListener, AutoCloseable {
         if (!ImportJob.class.getSimpleName().equals(stale.getJob())) {
           continue;
         }
-        DatasetImport di = dim.getByJobKey(stale.getKey());
-        if (di != null) {
-          try {
-            requests.add(ImportRequest.reimport(di.getDatasetKey(), di.getAttempt(), di.getCreatedBy()));
-          } catch (IllegalArgumentException e) {
-            // swallow
-          }
+        var req = interruptedRequest(stale, dim.getByJobKey(stale.getKey()));
+        if (req != null) {
+          requests.add(req);
         }
       }
     }
-    requests.forEach(this::submit);
-    LOG.info("Resubmitted {} interrupted imports.", requests.size());
+    int queued = 0;
+    for (var req : requests) {
+      try {
+        submit(req);
+        queued++;
+      } catch (RuntimeException e) {
+        // one import that cannot be queued must not cost us the rest of the batch, nor the server start
+        LOG.warn("Failed to resubmit the interrupted import of dataset {}", req.datasetKey, e);
+      }
+    }
+    LOG.info("Resubmitted {} of {} interrupted imports.", queued, requests.size());
+  }
+
+  /**
+   * The request to resubmit a stale import with. An import that got far enough to store its source archive is
+   * reimported from it. Anything else - above all an import still queued when the last server stopped, which has
+   * no attempt yet - is rebuilt from the request the job persisted as its params: a download fetches the source
+   * again, an upload reads its file from the scratch dir if it is still there.
+   */
+  @VisibleForTesting
+  @Nullable
+  ImportRequest interruptedRequest(JobInfo stale, @Nullable DatasetImport di) {
+    if (di != null && nCfg.archive(di.getDatasetKey(), di.getAttempt()).exists()) {
+      return ImportRequest.reimport(di.getDatasetKey(), di.getAttempt(), di.getCreatedBy());
+    }
+    ImportRequest req = ImportRequest.fromParams(stale.getParams(), stale.getCreatedBy());
+    if (req == null) {
+      LOG.warn("Cannot resubmit interrupted import job {} without a request in its params", stale.getKey());
+      return null;
+    }
+    if (req.reimportAttempt != null && !nCfg.archive(req.datasetKey, req.reimportAttempt).exists()) {
+      LOG.warn("Cannot resubmit interrupted reimport of dataset {}: archive of attempt {} is gone", req.datasetKey, req.reimportAttempt);
+      return null;
+    }
+    if (req.hasUpload() && !Files.exists(req.upload)) {
+      LOG.warn("Cannot resubmit interrupted upload of dataset {}: file {} is gone", req.datasetKey, req.upload);
+      return null;
+    }
+    return req;
   }
 
   @Override

@@ -182,9 +182,13 @@ invokes from `start()` (`JobExecutor.onStaleJobs`). Every path that hands a task
 single `dispatch()`.
 The executor has two ways down, and they are not the same. `stop()` (the `Managed` verb, what `stop-all` and
 a blue-green deploy use) rejects submissions, interrupts what runs and discards the queue, recording the
-discarded jobs as CANCELED - except a job whose `resubmitAfterStop()` is true, `SectorSync` alone, which keeps its
-WAITING row so the next `start()` hands it to `SyncManager.rescheduleInterrupted` through `onStaleJobs`. Cancelling
-them there meant a deploy silently dropped every queued sync, as the handler only ever sees rows still waiting.
+discarded jobs as CANCELED - except a job whose `resubmitAfterStop()` is true, `SectorSync` and `ImportJob`, which
+keeps its WAITING row (and gets `onStopBeforeStart` instead of `onCancelBeforeStart`) so the next `start()` hands it
+to `SyncManager`/`ImportManager.rescheduleInterrupted` through `onStaleJobs`. Cancelling them there meant a deploy
+silently dropped every queued sync and import, as the handlers only ever see rows still waiting. A queued import
+has no attempt yet, so it is rebuilt from the `ImportRequest` it persisted as its `params` (`ImportRequest.fromParams`),
+an upload from its file in the scratch dir, while an import that already stored its source archive is reimported from
+it. A kept import fires no completion callback: the GBIF validator takes canceled as final.
 Tasks a worker already took but has not run - parked on the pause gate - are cancelled before the gate opens, so
 stopping a paused executor starts nothing on its way down. `pause()`/`resume()` is the maintenance verb: workers wait in `beforeExecute`, so
 running jobs finish, nothing new starts, the queue survives and submissions are still accepted.

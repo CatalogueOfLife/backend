@@ -230,10 +230,20 @@ public abstract class BackgroundJob implements Runnable {
    * Whether a job still queued when the executor stops is left WAITING in the job table instead of being
    * cancelled, so that the next start finds it among the stale jobs and its owner can resubmit it through
    * {@link JobExecutor#onStaleJobs}. Only worth it for jobs such a handler actually resubmits: anything else
-   * left waiting is merely cancelled one start later. {@link #onCancelBeforeStart()} is called either way.
+   * left waiting is merely cancelled one start later. Such a job gets {@link #onStopBeforeStart()} instead of
+   * {@link #onCancelBeforeStart()}.
    */
   public boolean resubmitAfterStop() {
     return false;
+  }
+
+  /**
+   * Called by the executor instead of {@link #onCancelBeforeStart()} when it stops with this job still queued and
+   * {@link #resubmitAfterStop()} left it waiting for the next start. Cleans up like a cancel by default; override
+   * for anything that must only happen once the job really ended, as the resubmitted job will end again.
+   */
+  protected void onStopBeforeStart() {
+    onCancelBeforeStart();
   }
 
   /**

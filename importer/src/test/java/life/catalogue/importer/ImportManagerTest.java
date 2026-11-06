@@ -3,7 +3,10 @@ package life.catalogue.importer;
 import life.catalogue.TestConfigs;
 import life.catalogue.TestUtils;
 import life.catalogue.api.TestEntityGenerator;
+import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.Dataset;
+import life.catalogue.api.model.DatasetImport;
+import life.catalogue.api.model.JobInfo;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.Datasets;
@@ -27,7 +30,9 @@ import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -69,6 +74,7 @@ public class ImportManagerTest {
 
   ImportManager manager;
   JobExecutor jobExecutor;
+  TestConfigs cfg;
   int datasetKey;
 
   CloseableHttpClient hc;
@@ -103,7 +109,7 @@ public class ImportManagerTest {
     DatasetDao datasetDao = new DatasetDao(SqlSessionFactoryRule.getSqlSessionFactory(), null,diDao, validator, broker);
 
     MetricRegistry metrics = new MetricRegistry();
-    final TestConfigs cfg = TestConfigs.build();
+    cfg = TestConfigs.build();
     hc = HttpClients.createDefault();
     doReturn(TestEntityGenerator.USER_ADMIN).when(udao).get(any());
     JobConfig jobCfg = JobConfig.withThreads(2);
@@ -121,6 +127,76 @@ public class ImportManagerTest {
     manager.close();
     jobExecutor.stop();
     hc.close();
+  }
+
+  /**
+   * An import still queued when the last server stopped has no attempt yet and is rebuilt from the request it persisted
+   * as its job params, which is what the job table holds once JobDao.buildInfo serialized it.
+   */
+  @Test
+  public void interruptedRequestFromParams() throws Exception {
+    var stale = new JobInfo();
+    stale.setKey(UUID.randomUUID());
+    stale.setJob(ImportJob.class.getSimpleName());
+    stale.setCreatedBy(Users.TESTER);
+
+    // a plain download keeps its flags and callback
+    var ext = ImportRequest.external(datasetKey, Users.TESTER, true, true);
+    ext.callback = URI.create("https://example.org/hook");
+    stale.setParams(ApiModule.MAPPER.valueToTree(ext));
+    var req = manager.interruptedRequest(stale, null);
+    assertEquals(datasetKey, req.datasetKey);
+    assertTrue(req.force);
+    assertTrue(req.priority);
+    assertFalse(req.hasUpload());
+    assertNull(req.reimportAttempt);
+    assertEquals(Users.TESTER, (int) req.createdBy);
+    assertEquals(ext.callback, req.callback);
+
+    // an upload reads its file from the scratch dir, as long as it is still there
+    var file = cfg.normalizer.scratchFile(datasetKey, "upload-42.zip").toPath();
+    Files.createDirectories(file.getParent());
+    Files.writeString(file, "data");
+    stale.setParams(ApiModule.MAPPER.valueToTree(ImportRequest.upload(datasetKey, Users.TESTER, file)));
+    req = manager.interruptedRequest(stale, null);
+    assertEquals(file, req.upload);
+    assertTrue(req.force);
+    assertTrue(req.priority);
+    Files.delete(file);
+    assertNull(manager.interruptedRequest(stale, null));
+
+    // params that are no import request at all
+    stale.setParams(null);
+    assertNull(manager.interruptedRequest(stale, null));
+  }
+
+  /**
+   * An import that got as far as storing its source archive is reimported from it, whatever its params say.
+   */
+  @Test
+  public void interruptedRequestFromArchive() throws Exception {
+    var stale = new JobInfo();
+    stale.setKey(UUID.randomUUID());
+    stale.setJob(ImportJob.class.getSimpleName());
+    stale.setParams(ApiModule.MAPPER.valueToTree(ImportRequest.external(datasetKey, Users.TESTER)));
+    var di = new DatasetImport();
+    di.setDatasetKey(datasetKey);
+    di.setAttempt(3);
+    di.setCreatedBy(Users.TESTER);
+
+    var archive = cfg.normalizer.archive(datasetKey, 3);
+    archive.getParentFile().mkdirs();
+    Files.writeString(archive.toPath(), "data");
+    try {
+      var req = manager.interruptedRequest(stale, di);
+      assertEquals(3, (int) req.reimportAttempt);
+    } finally {
+      Files.delete(archive.toPath());
+    }
+    // no archive, e.g. interrupted during the download: start over from the request
+    var req = manager.interruptedRequest(stale, di);
+    assertNull(req.reimportAttempt);
+    assertFalse(req.hasUpload());
   }
 
   /**
