@@ -9,7 +9,6 @@ import org.gbif.nameparser.api.Rank;
 import org.gbif.nameparser.util.UnicodeUtils;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
@@ -19,7 +18,6 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Joiner;
 
 import static org.gbif.nameparser.util.NameFormatter.appendAuthorship;
 /**
@@ -31,18 +29,18 @@ public class NameFormatter {
   /** The plus sign before the genus of a graft-chimaera, + Crataegomespilus. */
   public static final char GRAFT_MARKER = '+';
   private static final String NOTHO_PREFIX = "notho";
-  private static final Joiner AUTHORSHIP_JOINER = Joiner.on(", ").skipNulls();
-  private static final Pattern AL = Pattern.compile("^al\\.?$");
+  // a hybrid marker with the whitespace around it
+  private static final Pattern HYBRID_SPLIT = Pattern.compile("\\s*" + HYBRID_MARKER + "\\s*");
   // an unparsed/phrase portion that itself starts with a rank marker of a species or below ("species 1", "spp.",
   // "f. aggregata") or a species aggregate ("complex"), so the synthetic rank marker must not be prepended a second
   // time ("Xyris sp. species 1", "Aa sp. spp.", "Rinodina archaea f. f. aggregata"), see #1620
   private static final Pattern UNPARSED_RANK_MARKER = buildUnparsedRankMarker();
-  private static Pattern RANK_MATCHER = Pattern.compile("^(.+[a-z]) ((?:notho)?(?:infra|super|sub)?(?:gx|natio|morph|klepton|lusus|strain|chemoform|(?:subsp|f\\. ?sp|[a-z]{1,4})\\.|[a-z]{3,6}var\\.?))( [a-z][^ ]*?)?( .+)?$");
+  private static final Pattern RANK_MATCHER = Pattern.compile("^(.+[a-z]) ((?:notho)?(?:infra|super|sub)?(?:gx|natio|morph|klepton|lusus|strain|chemoform|(?:subsp|f\\. ?sp|[a-z]{1,4})\\.|[a-z]{3,6}var\\.?))( [a-z][^ ]*?)?( .+)?$");
   //private static Pattern RANK_MATCHER = Pattern.compile("^(.+[a-z]) ((?:notho|infra)?(?:gx|natio|morph|[a-z]{3,6}var\\.?|chemoform|f\\. ?sp\\.|strain|[a-z]{1,7}\\.))( [a-z][^ ]*?)?( .+)?$");
   // matches only uninomials or binomials without any authorship
-  private static String EPITHET = "[a-z0-9ïëöüäåéèčáàæœ-]+";
+  private static final String EPITHET = "[a-z0-9ïëöüäåéèčáàæœ-]+";
   @VisibleForTesting
-  static Pattern LINNEAN_NAME_NO_AUTHOR = Pattern.compile("^(?:[×+] )?[A-ZÆŒ]"+EPITHET        // (notho)genus or graft-chimaera
+  static final Pattern LINNEAN_NAME_NO_AUTHOR = Pattern.compile("^(?:[×+] )?[A-ZÆŒ]"+EPITHET        // (notho)genus or graft-chimaera
                                                           + "(?: \\([A-ZÆŒ]"+EPITHET+"\\))?"  // infrageneric
                                                           + "(?: (?:× )?"+EPITHET             // (notho)species
                                                               +"(?: (?:× )?"+EPITHET+")?"     // (notho)subspecies
@@ -163,7 +161,7 @@ public class NameFormatter {
       return inItalics(x);
     }
     // split around the hybrid marker (ignoring surrounding whitespace) and italicize the name parts only
-    String[] parts = x.split("\\s*" + HYBRID_MARKER + "\\s*", -1);
+    String[] parts = HYBRID_SPLIT.split(x, -1);
     StringBuilder sb = new StringBuilder();
     for (int i = 0; i < parts.length; i++) {
       if (i > 0) {
@@ -415,24 +413,6 @@ public class NameFormatter {
     }
     sb.append(n.getGenus());
     return sb;
-  }
-
-  private static String joinAuthors(List<String> authors, boolean abbrevWithEtAl) {
-    if (abbrevWithEtAl && authors.size() > 2) {
-      return AUTHORSHIP_JOINER.join(authors.subList(0, 1)) + " et al.";
-
-    } else if (authors.size() > 1) {
-      String end;
-      if (AL.matcher(authors.get(authors.size() - 1)).find()) {
-        end = " et al.";
-      } else {
-        end = " & " + authors.get(authors.size() - 1);
-      }
-      return AUTHORSHIP_JOINER.join(authors.subList(0, authors.size() - 1)) + end;
-
-    } else {
-      return AUTHORSHIP_JOINER.join(authors);
-    }
   }
 
   /**

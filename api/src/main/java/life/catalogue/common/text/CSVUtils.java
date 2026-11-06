@@ -30,13 +30,13 @@ public class CSVUtils {
       return result;
     }
     
-    StringBuffer curVal = new StringBuffer();
+    // one builder for all columns, add() copies its content before it is cleared
+    StringBuilder curVal = new StringBuilder();
     boolean inQuotes = false;
     boolean startCollectChar = false;
     
-    char[] chars = line.toCharArray();
-    
-    for (char ch : chars) {
+    for (int i = 0; i < line.length(); i++) {
+      final char ch = line.charAt(i);
       
       if (inQuotes) {
         startCollectChar = true;
@@ -59,7 +59,7 @@ public class CSVUtils {
   
           add(result, curVal);
           
-          curVal = new StringBuffer();
+          curVal.setLength(0);
           startCollectChar = false;
           
         } else if (ch == '\r') {
@@ -113,7 +113,7 @@ public class CSVUtils {
     return br.lines().skip(skip).map(line -> CSVUtils.parseLine(line, delimiter));
   }
   
-  private static void add(List<String> row, StringBuffer col){
+  private static void add(List<String> row, StringBuilder col){
     row.add(col.length()==0 ? null : col.toString());
   }
 }

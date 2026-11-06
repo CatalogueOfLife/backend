@@ -5,7 +5,6 @@ import life.catalogue.common.io.Resources;
 
 import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.NomCode;
-import org.gbif.nameparser.util.UnicodeUtils;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -179,7 +178,7 @@ public class AuthorshipNormalizer {
       return null;
     }
     // fold to ascii
-    x = UnicodeUtils.foldToAscii(x);
+    x = life.catalogue.common.text.StringUtils.foldToAscii(x);
     // simplify umlauts transliterated properly with additional e
     x = TRANSLITERATIONS.matcher(x).replaceAll("$1");
     // replace all punctuation but commas
@@ -189,7 +188,11 @@ public class AuthorshipNormalizer {
     // move initials to front
     var m = TRAILING_INITIALS.matcher(x);
     if (m.find() && !m.group(2).trim().equals("f")) {
-      x = m.replaceFirst("$2 $1").trim();
+      // same as m.replaceFirst("$2 $1"), without matching a second time
+      StringBuilder sb = new StringBuilder(x.length() + 1);
+      m.appendReplacement(sb, "$2 $1");
+      m.appendTail(sb);
+      x = sb.toString().trim();
     }
     // normalize filius
     x = FIL.matcher(x).replaceAll("$1 filius");
@@ -294,7 +297,8 @@ public class AuthorshipNormalizer {
      *         or null if there is no such particle or it starts the surname already
      */
     private static String compoundSurnamePrefix(String a) {
-      if (a == null) return null;
+      // a particle needs a word before and after it, so a single word never has one
+      if (a == null || a.indexOf(' ') < 0) return null;
       String[] words = StringUtils.split(a.toLowerCase(), ' ');
       // skip leading initials
       int start = 0;

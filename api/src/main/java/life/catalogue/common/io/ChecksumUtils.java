@@ -29,7 +29,7 @@ public class ChecksumUtils {
     //Get file input stream for reading the file content
     try (FileInputStream fis = new FileInputStream(file)) {
       //Create byte array to read data in chunks
-      byte[] byteArray = new byte[1024];
+      byte[] byteArray = new byte[64 * 1024];
       int bytesCount = 0;
 
       //Read file data and update in message digest

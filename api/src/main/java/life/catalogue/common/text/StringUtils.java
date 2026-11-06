@@ -68,7 +68,11 @@ public class StringUtils {
   public static boolean equalsDigitOrAsciiLettersIgnoreCase(String s1, String s2) {
     s1 = digitOrAsciiLetters(s1);
     s2 = digitOrAsciiLetters(s2);
-    return equalsIgnoreCaseAndSpace(s1, s2);
+    if (s1 == null || s2 == null) {
+      return Objects.equals(s1, s2);
+    }
+    // digitOrAsciiLetters leaves no whitespace other than single ASCII spaces, so no regex is needed to remove it
+    return s1.replace(" ", "").equalsIgnoreCase(s2.replace(" ", ""));
   }
 
   /**
@@ -232,9 +236,27 @@ public class StringUtils {
     if (x == null)
       return null;
     x = NON_DIGITLETTER.trimAndCollapseFrom(x, ' ');
-    x = UnicodeUtils.foldToAscii(x);
+    x = foldToAscii(x);
     x = x.toUpperCase();
     return Strings.emptyToNull(x);
+  }
+
+  /**
+   * Same as {@link UnicodeUtils#foldToAscii(String)}, but returns a pure ASCII string straight away.
+   * The name parser's folding copies the string, normalizes it to NFD and runs a regex over it even when there is
+   * nothing to fold, and ASCII is what almost every name and author string is.
+   */
+  public static String foldToAscii(String x) {
+    return x == null || isAscii(x) ? x : UnicodeUtils.foldToAscii(x);
+  }
+
+  private static boolean isAscii(String x) {
+    for (int i = 0; i < x.length(); i++) {
+      if (x.charAt(i) >= 0x80) {
+        return false;
+      }
+    }
+    return true;
   }
 
   public static String removePunctWS(String x) {
@@ -331,11 +353,23 @@ public class StringUtils {
     if(text == null || (trim && text.isEmpty())) {
       return null;
     }
+    // most values need no escaping: return them as they are, or without their trailing spaces when trimming.
+    // Leading spaces take the long way below.
+    if (!needsPgCopyEscaping(text) && (!trim || text.charAt(0) != ' ')) {
+      if (!trim) {
+        return text;
+      }
+      int end = text.length();
+      while (text.charAt(end - 1) == ' ') {
+        end--;
+      }
+      return text.substring(0, end);
+    }
 
     int stackedSpace = 0;
     int numChars = text.length();
     char ch;
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder(numChars + 16);
     for(int i = 0; i < numChars; i++) {
       ch = text.charAt(i);
 
@@ -406,14 +440,34 @@ public class StringUtils {
     return String.format("%.1f %cB", bytes / 1000.0, ci.current());
   }
 
+  private static boolean needsPgCopyEscaping(String text) {
+    for (int i = 0; i < text.length(); i++) {
+      switch (text.charAt(i)) {
+        case '\\', '\b', '\f', '\n', '\r', '\t', '\u000b':
+          return true;
+      }
+    }
+    return false;
+  }
+
   public static String cleanInvisible(String value) {
-    if (value == null)
+    if (value == null || !hasCharAtOrAbove(value, '\u00A0'))
+      // nothing below the no-break space is matched by any of the patterns
       return value;
     return INVISIBLE.matcher(
       SOFT_HYPHEN_CAPITAL.matcher(
         SPACE.matcher(value).replaceAll(" ")
       ).replaceAll("-")
     ).replaceAll("");
+  }
+
+  private static boolean hasCharAtOrAbove(String x, char min) {
+    for (int i = 0; i < x.length(); i++) {
+      if (x.charAt(i) >= min) {
+        return true;
+      }
+    }
+    return false;
   }
 
   public static String lc(String value) {
