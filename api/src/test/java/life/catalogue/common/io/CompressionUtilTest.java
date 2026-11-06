@@ -56,6 +56,23 @@ public class CompressionUtilTest {
     return byPath;
   }
 
+  /**
+   * A single root folder is removed and its content moved up, also when its name holds characters with a meaning in a regex
+   */
+  @Test
+  public void removeRootFolderWithRegexChars() throws IOException {
+    try (var src = TempFile.directory(); var zip = new TempFile(); var dir = TempFile.directory()) {
+      File root = new File(src.file, "data (v2)+[x]$");
+      Files.createDirectories(new File(root, "sub").toPath());
+      Files.writeString(new File(root, "taxa.csv").toPath(), "ID,name\n1,Abies\n");
+      Files.writeString(new File(root, "sub/names.csv").toPath(), "ID,name\n2,Pinus\n");
+      CompressionUtil.zipDir(src.file, zip.file, true);
+
+      CompressionUtil.decompressFile(dir.file, zip.file);
+      assertEquals(Map.of("taxa.csv", "ID,name\n1,Abies\n", "sub/names.csv", "ID,name\n2,Pinus\n"), relativeContents(dir.file));
+    }
+  }
+
   @Test
   public void unzipFile() throws IOException {
     for (String fn : List.of("bdj.archive", "mac.zip", "single.gz", "single.zip", "subdir.tar", "subdir.tgz", "subdir.zip")) {
