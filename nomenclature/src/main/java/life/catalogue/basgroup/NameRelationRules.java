@@ -84,7 +84,7 @@ public class NameRelationRules {
     final List<Verdict> verdicts = new ArrayList<>();
 
     // 1. implausible spelling corrections
-    if (!isPlausibleSpellingCorrection(n1, n2)) {
+    if (has(rels, NomRelType.SPELLING_CORRECTION) && !isPlausibleSpellingCorrection(n1, n2)) {
       remove(rels, verdicts, Issue.SPELLING_CORRECTION_IMPLAUSIBLE, r -> r.type() == NomRelType.SPELLING_CORRECTION);
     }
 
@@ -292,6 +292,8 @@ public class NameRelationRules {
     c1 = c1.toLowerCase();
     c2 = c2.toLowerCase();
     int maxEdits = Math.max(MIN_SPELLING_EDITS, Math.max(c1.length(), c2.length()) / 5);
-    return SPELLING_DISTANCE.getEditDistance(c1, c2) <= maxEdits;
+    // the length difference is the least number of edits needed
+    return Math.abs(c1.length() - c2.length()) <= maxEdits
+      && SPELLING_DISTANCE.getEditDistance(c1, c2) <= maxEdits;
   }
 }

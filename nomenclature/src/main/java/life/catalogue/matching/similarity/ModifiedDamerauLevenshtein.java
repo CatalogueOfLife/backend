@@ -4,37 +4,36 @@ package life.catalogue.matching.similarity;
 // Copied and adapted from ALA:
 // https://ala-nsl.googlecode.com/svn/taxamatch/trunk/src/au/org/biodiversity/services/taxamatch/impl/ModifiedDamerauLevenshtein.java
 
-import java.util.Arrays;
-
+/**
+ * A Damerau-Levenshtein edit distance that also counts the transposition of whole blocks of up to {@code limit}
+ * characters as cheap edits, as used by taxamatch.
+ * <p>
+ * Strings of any length are supported: only the rows of the matrix the recurrence still reads are kept,
+ * so the memory used grows with the length of the second string and the block limit, never with the product of both
+ * lengths. Instances are immutable and thread safe.
+ */
 public class ModifiedDamerauLevenshtein implements StringSimilarity {
   private final int pBlockLimit;
-  
-  // this variable holds a shared array, to reduce heap use
-  // we use a little synchronisation to manage the space, but
-  // synchronisation is reasonably quick these days.
-  
-  private static volatile int[] a_matrix = new int[64 * 64];
-  private static final Object mutex = new Object();
-  
+
   /**
    * A default MDL with a block limit of just 2 edits.
    */
   public ModifiedDamerauLevenshtein() {
     this.pBlockLimit = 2;
   }
-  
+
   /**
    * @param limit the maximum allowed distance
    */
   public ModifiedDamerauLevenshtein(int limit) {
     this.pBlockLimit = limit;
   }
-  
+
   @Override
   public double getSimilarity(String x1, String x2) {
     return DistanceUtils.convertEditDistanceToSimilarity(getEditDistance(x1, x2), x1, x2);
   }
-  
+
   public final int getEditDistance(final String s1, final String s2) {
     if (s1.equals(s2)) {
       return 0;
@@ -44,125 +43,80 @@ public class ModifiedDamerauLevenshtein implements StringSimilarity {
       return 1;
     }
 
-		final char[] t1;
-		final char[] t2;
+    // strip the common prefix and suffix, they cost nothing
+    int start = 0;
+    int end1 = s1.length();
+    int end2 = s2.length();
+    while (start < end1 && start < end2 && s1.charAt(start) == s2.charAt(start)) {
+      start++;
+    }
+    while (end1 > start && end2 > start && s1.charAt(end1 - 1) == s2.charAt(end2 - 1)) {
+      end1--;
+      end2--;
+    }
+    final int len1 = end1 - start;
+    final int len2 = end2 - start;
+    if (len1 == 0 || len2 == 0) {
+      return Math.max(len1, len2);
+    } else if (len1 == 1 && len2 == 1) {
+      return 1;
+    }
+    final char[] t1 = s1.substring(start, end1).toCharArray();
+    final char[] t2 = s2.substring(start, end2).toCharArray();
 
-		{
-			StringBuilder sb1 = new StringBuilder(s1);
-			StringBuilder sb2 = new StringBuilder(s2);
+    // the longest block that can be transposed, it does not change within a call
+    final int maxBlock = Math.max(Math.min(len1 / 2, Math.min(len2 / 2, Math.max(pBlockLimit, 1))), 1);
+    // a block transposition reads the row 2 * maxBlock above the current one, so that many rows plus the current one
+    // are all we keep: row i lives at (i % rows) * width
+    final int rows = 2 * maxBlock + 1;
+    final int width = len2 + 1;
+    final int[] matrix = new int[rows * width];
 
-			// these hold the index of the last character.
-			int l1 = sb1.length()-1;
-			int l2 = sb2.length()-1;
+    for (int j = 0; j <= len2; j++) {
+      matrix[j] = j;
+    }
 
-			while (l1>=0 && l2>=0 && sb1.charAt(0) == sb2.charAt(0)) {
-				sb1.deleteCharAt(0);
-				sb2.deleteCharAt(0);
-				l1--;
-				l2--;
-			}
+    for (int i = 1; i <= len1; i++) {
+      final int row = (i % rows) * width;
+      final int prev = ((i - 1) % rows) * width;
+      matrix[row] = i;
+      for (int j = 1; j <= len2; j++) {
+        final int cost = t1[i - 1] == t2[j - 1] ? 0 : 1;
 
-			while (l1>=0 && l2>=0 && sb1.charAt(l1) == sb2.charAt(l2)) {
-				sb1.deleteCharAt(l1--);
-				sb2.deleteCharAt(l2--);
-			}
+        int blockLength = maxBlock;
+        while (blockLength >= 1) {
+          final int sub1 = i - ((blockLength * 2) - 1);
+          final int sub2 = j - (blockLength - 1);
+          final int sub3 = i - (blockLength - 1);
+          final int sub4 = j - ((blockLength * 2) - 1);
 
-			l1++;
-			l2++;
-			if (l1 == 0 || l2 == 0)
-				return Math.max(l1, l2);
-			else if (l1 == 1 && l2 == 1) return 1;
+          if (i >= (blockLength * 2) && j >= (blockLength * 2)
+              && substreq(t1, sub1, t2, sub2, blockLength)
+              && substreq(t1, sub3, t2, sub4, blockLength)) {
 
-			t1 = sb1.toString().toCharArray();
-			t2 = sb2.toString().toCharArray();
-		}
+            final int ins = matrix[row + j - 1] + 1;
+            final int del = matrix[prev + j] + 1;
+            final int tran = matrix[((i - blockLength * 2) % rows) * width + j - blockLength * 2]
+                + cost + (blockLength - 1);
+            matrix[row + j] = minimum(ins, del, tran);
 
-		final int temp1Len = t1.length;
-		final int temp2Len = t2.length;
+            blockLength = 0;
 
-		// using a 1-dimensional array with bit fiddling to getUsage to the elements
-		// saves about 12-15% off the running time.
-		// so, we replace matrix[a][b] with matrix[((a)<<6)|(b)]
-		// this limits us to 64-character words, which should be plenty. I hope.
+          } else if (blockLength == 1) {
 
-		final int[] matrix;
-		synchronized (mutex) {
-			if (a_matrix == null) {
-				matrix = new int[64 * 64];
-			}
-			else {
-				matrix = a_matrix;
-				a_matrix = null;
-				Arrays.fill(matrix, 0);
-			}
-		}
+            final int del = matrix[prev + j] + 1;
+            final int ins = matrix[row + j - 1] + 1;
+            final int sub = matrix[prev + j - 1] + cost;
 
-		for (int i = 0; i <= temp1Len; i++) {
-			matrix[i << 6] = i;
-		}
+            matrix[row + j] = minimum(ins, del, sub);
+          }
+          blockLength--;
+        }
+      }
+    }
 
-		for (int i = 0; i <= temp2Len; i++) {
-			matrix[i] = i;
-		}
-
-		for (int i = 1; i <= temp1Len; i++) {
-			matrix[i << 6] = i;
-			for (int j = 1; j <= temp2Len; j++) {
-				int cost;
-				if (t1[i - 1] == t2[j - 1]) {
-					cost = 0;
-				}
-				else {
-					cost = 1;
-				}
-
-				int temp_block_length = Math.max(//
-						Math.min(temp1Len / 2, //
-								Math.min(temp2Len / 2, //
-										Math.max(pBlockLimit, 1))), //
-						1);
-
-				while (temp_block_length >= 1) {
-
-					final int sub1 = i - ((temp_block_length * 2) - 1);
-					final int sub2 = j - (temp_block_length - 1);
-					final int sub3 = i - (temp_block_length - 1);
-					final int sub4 = j - ((temp_block_length * 2) - 1);
-
-					if (i >= (temp_block_length * 2) && j >= (temp_block_length * 2)
-							&& substreq(t1, sub1, t2, sub2, temp_block_length)
-							&& substreq(t1, sub3, t2, sub4, temp_block_length)) {
-
-						final int ins = matrix[((i) << 6) | (j - 1)] + 1;
-						final int del = matrix[((i - 1) << 6) | j] + 1;
-						final int tran = matrix[((i - (temp_block_length * 2)) << 6) | (j - (temp_block_length * 2))]
-								+ cost + (temp_block_length - 1);
-						matrix[(i << 6) | j] = minimum(ins, del, tran);
-
-						temp_block_length = 0;
-
-					}
-					else if (temp_block_length == 1) {
-
-						final int del = matrix[((i - 1) << 6) | j] + 1;
-						final int ins = matrix[(i << 6) | (j - 1)] + 1;
-						final int sub = matrix[((i - 1) << 6) | (j - 1)] + cost;
-
-						matrix[(i << 6) | j] = minimum(ins, del, sub);
-					}
-					temp_block_length--;
-				}
-
-			}
-		}
-
-		int ret = matrix[(temp1Len << 6) | temp2Len];
-
-		a_matrix = matrix; // does not need to be synchronized, it is atomic
-
-		return ret;
-
-	}
+    return matrix[(len1 % rows) * width + len2];
+  }
 
 	// The compiler inlines these, I think.
 

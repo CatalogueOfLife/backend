@@ -42,6 +42,24 @@ public class NameRelationRulesTest {
     assertPlausible("Tilapia sparrmanii Smith, 1840", "Chromis sparrmanni (Smith, 1840)", false);
   }
 
+  /**
+   * Long unparsed names used to fail the edit distance and with it the import of WoRMS Isopoda, dataset 1094.
+   */
+  @Test
+  public void longNames() throws Exception {
+    var n1 = unparsed("n1", "Porcellio (Mesoporcellio_Sektio_Proporcellio) politus var. ubliensis " + "Verhoeff, 1901 ".repeat(10));
+    var n2 = unparsed("n2", "Protracheoniscus ubliensis ubliensis " + "Budde-Lund & Verhoeff in Budde-Lund, 1885 ".repeat(5));
+    assertFalse(NameRelationRules.isPlausibleSpellingCorrection(n1, n2));
+    assertFalse(NameRelationRules.isPlausibleSpellingCorrection(n2, n1));
+    var n3 = unparsed("n3", n1.getScientificName().replace("politus", "polites"));
+    assertTrue(NameRelationRules.isPlausibleSpellingCorrection(n1, n3));
+    assertTrue(NameRelationRules.isPlausibleSpellingCorrection(n3, n1));
+    assertVerdicts(n1, n2, List.of(rel(SPELLING_CORRECTION, n1, n2)),
+      "remove SPELLING_CORRECTION n1>n2 SPELLING_CORRECTION_IMPLAUSIBLE");
+    // only spelling corrections are judged by their spelling
+    assertVerdicts(n1, n2, List.of(rel(BASIONYM, n2, n1)));
+  }
+
   @Test
   public void isPlausibleBasionym() throws Exception {
     assertTrue(NameRelationRules.isPlausibleBasionym(sp("Chromis sparrmanii (Smith, 1840)"), sp("Tilapia sparrmanii Smith, 1840")));
@@ -175,6 +193,16 @@ public class NameRelationRulesTest {
   static Name name(String id, String name, Rank rank) throws Exception {
     var n = NameParser.PARSER.parse(name, rank, null, VerbatimRecord.VOID).get().getName();
     n.setId(id);
+    return n;
+  }
+
+  /**
+   * @return a name without any atoms, so its canonical name is its scientific name
+   */
+  static Name unparsed(String id, String name) {
+    var n = new Name();
+    n.setId(id);
+    n.setScientificName(name);
     return n;
   }
 
