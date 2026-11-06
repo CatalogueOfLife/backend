@@ -18,9 +18,12 @@ import org.gbif.dwc.terms.Term;
 import org.gbif.dwc.terms.TermFactory;
 import org.gbif.dwc.terms.UnknownTerm;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -101,18 +104,29 @@ public final class VocabularyUtils {
     if (Strings.isNullOrEmpty(name)) {
       return null;
     }
-    final String normedType = name.toUpperCase().replaceAll("[. _-]", "");
-    T[] values = vocab.getEnumConstants();
-    if (values != null) {
-      for (T val : values) {
-        final String normedVal = val.name().toUpperCase().replaceAll("[. _-]", "");
-        if (normedType.equals(normedVal)) {
-          return val;
+    return vocab.cast(NORMED_CONSTANTS.get(vocab).get(normEnumName(name)));
+  }
+
+  private static final Pattern ENUM_NAME_IGNORED = Pattern.compile("[. _-]");
+
+  private static String normEnumName(String name) {
+    return ENUM_NAME_IGNORED.matcher(name.toUpperCase()).replaceAll("");
+  }
+
+  // the constants of each enum class by their normalized name. If several share one, the first declared wins
+  private static final ClassValue<Map<String, Object>> NORMED_CONSTANTS = new ClassValue<>() {
+    @Override
+    protected Map<String, Object> computeValue(Class<?> type) {
+      Object[] values = type.getEnumConstants();
+      Map<String, Object> map = new HashMap<>();
+      if (values != null) {
+        for (Object val : values) {
+          map.putIfAbsent(normEnumName(((Enum<?>) val).name()), val);
         }
       }
+      return Collections.unmodifiableMap(map);
     }
-    return null;
-  }
+  };
   
   /**
    * Looks up an enumeration by class name. One can get the classname using the likes of:

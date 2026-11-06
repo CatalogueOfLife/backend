@@ -12,7 +12,9 @@
  */
 package life.catalogue.api.vocab.area;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -1370,13 +1372,27 @@ public enum Country implements Area {
   public static Optional<Country> fromIsoCode(String code) {
     if (!Strings.isNullOrEmpty(code)) {
       String codeUpper = code.toUpperCase().trim();
+      return Optional.ofNullable(IsoCodes.COUNTRIES.get(codeUpper));
+    }
+    return Optional.empty();
+  }
+
+  /**
+   * All 2 and 3 letter codes, mapped to the first country declared with that code as either of them.
+   * A holder class, so the map is only built once all constants exist.
+   */
+  private static class IsoCodes {
+    private static final Map<String, Country> COUNTRIES = new HashMap<>();
+    static {
       for (Country c : Country.values()) {
-        if (codeUpper.equals(c.getIso2LetterCode()) || codeUpper.equals(c.getIso3LetterCode())) {
-          return Optional.of(c);
+        if (c.getIso2LetterCode() != null) {
+          COUNTRIES.putIfAbsent(c.getIso2LetterCode(), c);
+        }
+        if (c.getIso3LetterCode() != null) {
+          COUNTRIES.putIfAbsent(c.getIso3LetterCode(), c);
         }
       }
     }
-    return Optional.empty();
   }
   
   /**

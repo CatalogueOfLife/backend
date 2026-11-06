@@ -56,7 +56,8 @@ public class  DSIDValue<T> implements DSID<T> {
   
   @Override
   public int hashCode() {
-    return Objects.hash(datasetKey, id);
+    // same value as Objects.hash(datasetKey, id), without allocating a varargs array for every hash key lookup
+    return 31 * (31 + Objects.hashCode(datasetKey)) + Objects.hashCode(id);
   }
   
   @Override

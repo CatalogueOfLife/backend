@@ -1,5 +1,7 @@
 package life.catalogue.common.id;
 
+import java.util.Arrays;
+
 import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,8 +20,9 @@ public class IdConverter {
   public static final IdConverter LATIN29 = new IdConverter("23456789BCDFGHJKLMNPQRSTVWXYZ");
 
   private final char[] chars;
-  private final byte[] values; // lookup matrix of char byte -> real byte value
+  private final byte[] values; // lookup matrix of char byte -> real byte value, -1 for chars not in the alphabet
   private final int radix;
+  private final double logRadix;
   private final char prefix; // optional prefix char to scope the ids
   private final boolean usePrefix;
 
@@ -41,11 +44,13 @@ public class IdConverter {
       max = max>c ? max : c;
     }
     values = new byte[max+1];
+    Arrays.fill(values, (byte) -1);
     byte val = 0;
     for (char c : this.chars) {
       values[c] = val++;
     }
     radix = chars.length();
+    logRadix = Math.log(radix);
     LOG.debug("Created new IdConverter with base {} and chars {}", radix, chars);
   }
 
@@ -57,37 +62,38 @@ public class IdConverter {
    * @param id unsigned integer, zero to Integer.MAX_VALUE
    */
   public String encode(int id) {
-    byte[] bytes;
-    if (id==0) {
-      bytes = new byte[1];
-      bytes[0] = 0;
-    } else {
-      int strLen = (int) Math.ceil(logb(id==Integer.MAX_VALUE ? Integer.MAX_VALUE : id+1, radix));
-      bytes = new byte[strLen];
-      int idx = strLen;
-      while (id > 0) {
-        int quot = id % radix;
-        bytes[--idx] = (byte) quot;
-        id = id / radix;
-      }
+    // the number of digits stays the floating point estimate it always was, which pads some ids with a leading zero digit,
+    // e.g. LATIN36 encodes 46655 as 0ZZZ
+    final int strLen = id == 0 ? 1 : (int) Math.ceil(Math.log(id==Integer.MAX_VALUE ? Integer.MAX_VALUE : id+1) / logRadix);
+    if (strLen < 0) {
+      // negative ids are not supported, -1 used to fail allocating the digits
+      throw new NegativeArraySizeException(String.valueOf(strLen));
     }
-    return encode(bytes);
+    final int off = usePrefix ? 1 : 0;
+    final char[] buf = new char[off + strLen];
+    if (usePrefix) {
+      buf[0] = prefix;
+    }
+    Arrays.fill(buf, off, buf.length, chars[0]);
+    int idx = buf.length;
+    while (id > 0) {
+      if (--idx < off) {
+        throw new ArrayIndexOutOfBoundsException(idx - off);
+      }
+      buf[idx] = chars[id % radix];
+      id = id / radix;
+    }
+    return new String(buf);
   }
   
   public int decode(String id) {
     try {
-      boolean first = true;
       int num = 0;
-      char[] chars = id.toCharArray();
-      int length = chars.length-(usePrefix ? 2 : 1);
-      int power = (int) Math.pow(radix, length);
-      for (char c : chars) {
-        if (usePrefix && first) {
-          first = false;
-          continue;
-        }
+      int power = (int) Math.pow(radix, id.length() - (usePrefix ? 2 : 1));
+      for (int i = usePrefix ? 1 : 0; i < id.length(); i++) {
+        final char c = id.charAt(i);
         // check if character is allowed
-        if (!ArrayUtils.contains(this.chars, c)) {
+        if (c >= values.length || values[c] < 0) {
           throw new IllegalArgumentException("Unsupported character "+c);
         }
         num += values[c] * power;
@@ -97,22 +103,6 @@ public class IdConverter {
     } catch (ArrayIndexOutOfBoundsException e) {
       throw new IllegalArgumentException("Cannot decode invalid ID " + id);
     }
-  }
-  
-  /**
-   * Converts each byte as a single character.
-   * Only the lower bits are used, upper ones above radix ignored.
-   */
-  private String encode(byte[] bytes) {
-    int length = bytes.length + (usePrefix ? 1 : 0);
-    StringBuilder sb = new StringBuilder(length);
-    if (usePrefix) {
-      sb.append(prefix);
-    }
-    for (byte idx : bytes) {
-      sb.append(chars[idx]);
-    }
-    return sb.toString();
   }
   
   public static double logb( int a, int b ) {
