@@ -68,7 +68,9 @@ public class TabReader implements IterableResult<String[], ParsingContext>, Auto
     cfg.setReadInputOnSeparateThread(false);
     cfg.setNullValue(null);
     cfg.setMaxColumns(256);
-    cfg.setMaxCharsPerColumn(64 * 1024 * 1024);
+    // univocity allocates the whole limit up front for every parser: 64M chars took 128 MiB for each of the parser
+    // dictionaries read at startup, whose longest line has some 1500 characters
+    cfg.setMaxCharsPerColumn(1024 * 1024);
     return new TabReader(newParser(cfg), in, charset, skip, minColumns);
   }
 
