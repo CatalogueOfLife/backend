@@ -15,6 +15,8 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
+import org.apache.hc.client5.http.config.ConnectionConfig;
+import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.ssl.ClientTlsStrategyBuilder;
 import org.apache.hc.client5.http.ssl.NoopHostnameVerifier;
 import org.apache.hc.core5.http.message.BasicHeader;
@@ -41,6 +43,19 @@ public class EsClientFactory {
   }
 
   /**
+   * The socket timeout has to be set here and not only as the response timeout: the rest5 client defaults it to 30s and,
+   * once a search sits in elastic longer than that, marks the node dead and replays the request on the next node.
+   */
+  static void configureConnection(EsConfig cfg, ConnectionConfig.Builder b) {
+    b.setConnectTimeout(Timeout.ofMilliseconds(cfg.connectTimeout))
+     .setSocketTimeout(Timeout.ofMilliseconds(cfg.socketTimeout));
+  }
+
+  static void configureRequest(EsConfig cfg, RequestConfig.Builder b) {
+    b.setResponseTimeout(Timeout.ofMilliseconds(cfg.socketTimeout));
+  }
+
+  /**
    * Creates an ElasticsearchClient using the ES 9.x Rest5Client builder API.
    */
   public ElasticsearchClient createClient() {
@@ -56,8 +71,8 @@ public class EsClientFactory {
 
     Rest5ClientBuilder builder = Rest5Client.builder(uris.toArray(URI[]::new))
       .setCompressionEnabled(true)
-      .setConnectionConfigCallback(b -> b.setConnectTimeout(Timeout.ofMilliseconds(cfg.connectTimeout)))
-      .setRequestConfigCallback(b -> b.setResponseTimeout(Timeout.ofMilliseconds(cfg.socketTimeout)));
+      .setConnectionConfigCallback(b -> configureConnection(cfg, b))
+      .setRequestConfigCallback(b -> configureRequest(cfg, b));
 
     if (cfg.ssl) {
       SSLContext sslContext = buildTrustAllSslContext();
