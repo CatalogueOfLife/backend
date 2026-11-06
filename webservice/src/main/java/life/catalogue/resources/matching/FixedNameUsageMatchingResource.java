@@ -7,6 +7,7 @@ import jakarta.ws.rs.core.*;
 
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.User;
+import life.catalogue.common.util.LoggingUtils;
 import life.catalogue.common.ws.MoreMediaTypes;
 import life.catalogue.config.MatchingConfig;
 import life.catalogue.jobs.ReindexSchedulerJob;
@@ -59,6 +60,9 @@ public class FixedNameUsageMatchingResource extends AbstractNameUsageMatchingRes
         job.execute();
       } catch (Exception e) {
         throw new MappableException(e); // jersey unwraps this before applying exception mappings
+      } finally {
+        // the job runs on the request thread, not through BackgroundJob.run() which would clear the MDC it set
+        LoggingUtils.removeDatasetMDC();
       }
     };
     return Response
