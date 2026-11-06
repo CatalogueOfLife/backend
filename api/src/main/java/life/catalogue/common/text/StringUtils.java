@@ -227,27 +227,9 @@ public class StringUtils {
     if (x == null)
       return null;
     x = NON_DIGITLETTER.trimAndCollapseFrom(x, ' ');
-    x = foldToAscii(x);
+    x = UnicodeUtils.foldToAscii(x);
     x = x.toUpperCase();
     return Strings.emptyToNull(x);
-  }
-
-  /**
-   * Same as {@link UnicodeUtils#foldToAscii(String)}, but returns a pure ASCII string straight away.
-   * The name parser's folding copies the string, normalizes it to NFD and runs a regex over it even when there is
-   * nothing to fold, and ASCII is what almost every name and author string is.
-   */
-  public static String foldToAscii(String x) {
-    return x == null || isAscii(x) ? x : UnicodeUtils.foldToAscii(x);
-  }
-
-  private static boolean isAscii(String x) {
-    for (int i = 0; i < x.length(); i++) {
-      if (x.charAt(i) >= 0x80) {
-        return false;
-      }
-    }
-    return true;
   }
 
   public static String removePunctWS(String x) {

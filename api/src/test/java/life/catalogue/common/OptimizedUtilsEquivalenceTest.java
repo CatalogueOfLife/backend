@@ -94,12 +94,6 @@ public class OptimizedUtilsEquivalenceTest {
       "Miranda­Ribeiro", "abc", "a b");
   }
 
-  @Test
-  public void foldToAscii() {
-    assertSame(UnicodeUtils::foldToAscii, StringUtils::foldToAscii, "aZ09 .-'\u007F\u0080éøßæŁſ́ﬁ", 10,
-      "Abies alba", "Linnæus", "Mill.");
-  }
-
   private static final Pattern WHITESPACE = Pattern.compile("\\s+");
 
   private static boolean oldEqualsDigitOrAsciiLettersIgnoreCase(String s1, String s2) {
