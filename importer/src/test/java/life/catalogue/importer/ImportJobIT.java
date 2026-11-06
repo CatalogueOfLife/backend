@@ -180,6 +180,33 @@ public class ImportJobIT {
   }
 
   /**
+   * An import cancelled right after it started, before it created its attempt, still notifies its callback.
+   * The cancel interrupts the job thread, which the job sees when it checks for a cancel at the start of execute.
+   * That reported nothing at all, as there was no DatasetImport yet, and left the client waiting for good:
+   * ImportManagerTest.cancelledUploadCallback failed whenever its cancel landed in that window.
+   */
+  @Test
+  public void callbackForCancelBeforeAttempt() {
+    var notifier = mock(ImportCallbackNotifier.class);
+    createDataset(DataFormat.DWCA, nginxRule.getArchive(DataFormat.DWCA));
+    Thread.currentThread().interrupt();
+    try {
+      run(false, notifier);
+    } finally {
+      // clear the flag in case the job never looked at it
+      Thread.interrupted();
+    }
+    assertEquals(JobStatus.CANCELED, job.getStatus());
+
+    var di = captureCallback(notifier);
+    assertEquals(JobStatus.CANCELED, di.getStatus());
+    assertEquals(d.getKey(), di.getDatasetKey());
+    assertEquals(job.getKey(), di.getJobKey());
+    // no attempt was created, like for an import cancelled while queued
+    assertEquals(0, (int) di.getAttempt());
+  }
+
+  /**
    * The metrics computed at the end of a successful import have to reach the dataset_import row.
    * The only thing that persisted them was the final updateState(FINISHED); once that was dropped
    * the row kept the empty metrics written by updateState(ANALYZING) and never got a finished date.

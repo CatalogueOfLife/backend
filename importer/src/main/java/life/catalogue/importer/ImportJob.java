@@ -282,27 +282,24 @@ public class ImportJob extends DatasetBlockingJob {
    */
   @Override
   protected void onCancelBeforeStart() {
-    if (di == null) {
-      // no attempt was ever created, so report the bare minimum the callback needs to identify the import
-      di = new DatasetImport();
-      di.setDatasetKey(datasetKey);
-      di.setJobKey(getKey());
-      di.setCreatedBy(getUserKey());
-    }
     fireCallback();
   }
 
   /**
    * Notifies the optional completion callback URL of the request with the final DatasetImport, if one was given.
+   * An import that ended before it created its attempt - cancelled while queued, or cancelled or failed right after it
+   * started - still notifies, with the bare minimum the callback needs to identify the import.
+   * Dropping it left a client like the GBIF validator waiting for good.
    */
   private void fireCallback() {
     if (req.callback == null || callbackNotifier == null) {
       return;
     }
     if (di == null) {
-      // the job died before it even got an attempt, so there is no DatasetImport to report
-      LOG.warn("No import metrics to notify callback {} with for dataset {}", req.callback, datasetKey);
-      return;
+      di = new DatasetImport();
+      di.setDatasetKey(datasetKey);
+      di.setJobKey(getKey());
+      di.setCreatedBy(getUserKey());
     }
     // status, step and error are columns of the job record, not of dataset_import - GET /dataset/{key}/import
     // reads them by joining the two. Our in memory DatasetImport still carries the WAITING it was created with,
