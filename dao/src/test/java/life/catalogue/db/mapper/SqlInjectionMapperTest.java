@@ -140,21 +140,31 @@ public class SqlInjectionMapperTest extends MapperTestBase<DatasetMapper> {
     assertEquals(0, um.searchCount(HOSTILE, null));
   }
 
+  /**
+   * Several identifiers at once must all arrive, each bound on its own: a bind inside the foreach would hand every
+   * placeholder the last value, so the hostile one and a plain one are added together.
+   */
   @Test
   public void nameIdentifiers() {
     var nm = mapper(NameMapper.class);
     var key = DSID.of(appleKey, NAME1.getId());
-    var id = new Identifier("local", HOSTILE);
-    nm.addIdentifier(key, List.of(id));
-    assertTrue(nm.get(key).getIdentifier().contains(id));
+    var hostile = new Identifier("local", HOSTILE);
+    var tsn = new Identifier("tsn", "12345");
+    nm.addIdentifier(key, List.of(hostile, tsn));
+    var stored = nm.get(key).getIdentifier();
+    assertTrue(stored.contains(hostile));
+    assertTrue(stored.contains(tsn));
   }
 
   @Test
   public void usageIdentifiers() {
     var um = mapper(NameUsageMapper.class);
     var key = DSID.of(appleKey, TAXON1.getId());
-    var id = new Identifier("local", HOSTILE);
-    um.addIdentifier(key, List.of(id));
-    assertTrue(um.get(key).getIdentifier().contains(id));
+    var hostile = new Identifier("local", HOSTILE);
+    var tsn = new Identifier("tsn", "12345");
+    um.addIdentifier(key, List.of(hostile, tsn));
+    var stored = um.get(key).getIdentifier();
+    assertTrue(stored.contains(hostile));
+    assertTrue(stored.contains(tsn));
   }
 }

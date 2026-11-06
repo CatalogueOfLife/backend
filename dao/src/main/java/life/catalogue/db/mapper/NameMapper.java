@@ -152,9 +152,9 @@ public interface NameMapper extends CRUD<DSID<String>, Name>, DatasetProcessable
    */
   default void addIdentifier(DSID<String> key, List<Identifier> identifiers) {
     if (identifiers != null && !identifiers.isEmpty()) {
-      _addIdentifier(key, identifiers);
+      _addIdentifier(key, identifiers.stream().map(Identifier::toString).toList());
     }
   }
 
-  void _addIdentifier(@Param("key") DSID<String> key, @Param("ids") List<Identifier> identifiers);
+  void _addIdentifier(@Param("key") DSID<String> key, @Param("ids") List<String> identifiers);
 }
