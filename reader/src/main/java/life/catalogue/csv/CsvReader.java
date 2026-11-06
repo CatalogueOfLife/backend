@@ -323,15 +323,16 @@ public class CsvReader implements AutoCloseable {
     candidates.add(univoc);
     
     // find best settings, default to autodetection if all others fail
+    final String sample = LINE_JOIN.join(lines);
     CommonParserSettings<?> best = univoc;
     int maxCols = 0;
     int minTotalLength = 0;
     for (CommonParserSettings<?> cfg : candidates) {
       try {
-        AbstractParser<?> parser = newParser(cfg);
+        AbstractParser<?> parser = newSampleParser(cfg, sample);
         int cols = 0;
         int totalLength = 0;
-        for (String[] row : parser.parseAll(new StringReader(LINE_JOIN.join(lines)))) {
+        for (String[] row : parser.parseAll(new StringReader(sample))) {
           if (isAllNull(row)) continue;
           
           if (cols == 0) {
@@ -361,6 +362,23 @@ public class CsvReader implements AutoCloseable {
     return best;
   }
   
+  /**
+   * Builds a parser for a sample of a file only. Univocity allocates the full maxCharsPerColumn as a char array for every
+   * parser it builds, 128 MiB for our 64M limit, and sniffing the format of a single data file builds 16 parsers.
+   * No column of the sample can be longer than the sample itself, so a limit just above its length never triggers.
+   * The limit is only read when the parser is constructed, and it is restored straight after so the settings keep the
+   * real limit for parsing the whole file.
+   */
+  private static AbstractParser<?> newSampleParser(CommonParserSettings<?> cfg, String sample) {
+    final int max = cfg.getMaxCharsPerColumn();
+    cfg.setMaxCharsPerColumn(sample.length() + 1);
+    try {
+      return newParser(cfg);
+    } finally {
+      cfg.setMaxCharsPerColumn(max);
+    }
+  }
+
   private static int nullsafeLength(String x) {
     return x == null ? 0 : x.length();
   }
@@ -394,8 +412,9 @@ public class CsvReader implements AutoCloseable {
         } else {
           CommonParserSettings<?> set = discoverFormat(lines);
           
-          AbstractParser<?> parser = newParser(set);
-          parser.beginParsing(new StringReader(LINE_JOIN.join(lines)));
+          final String sample = LINE_JOIN.join(lines);
+          AbstractParser<?> parser = newSampleParser(set, sample);
+          parser.beginParsing(new StringReader(sample));
           String[] header = parser.parseNext();
           parser.stopParsing();
           
@@ -847,9 +866,29 @@ public class CsvReader implements AutoCloseable {
     }
   }
 
+  /**
+   * Cheap precondition of {@link #NULL_PATTERN} that saves running the regex on almost every value:
+   * every alternative of the anchored pattern starts with a backslash, N or n after optional whitespace.
+   */
+  @VisibleForTesting
+  static boolean mayBeNull(String x) {
+    for (int i = 0; i < x.length(); i++) {
+      char c = x.charAt(i);
+      switch (c) {
+        case ' ', '\t', '\n', '\u000B', '\f', '\r':
+          continue; // the \s of the pattern
+        case '\\', 'N', 'n':
+          return true;
+        default:
+          return false;
+      }
+    }
+    return false;
+  }
+
   @VisibleForTesting
   static String clean(String x) {
-    if (Strings.isNullOrEmpty(x) || NULL_PATTERN.matcher(x).find()) {
+    if (Strings.isNullOrEmpty(x) || mayBeNull(x) && NULL_PATTERN.matcher(x).find()) {
       return null;
     }
     x = SPACE_MATCHER.trimAndCollapseFrom(x, ' ');
