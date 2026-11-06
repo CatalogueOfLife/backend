@@ -5,6 +5,7 @@ import life.catalogue.common.io.Resources;
 
 import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.NomCode;
+import org.gbif.nameparser.util.UnicodeUtils;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -178,7 +179,7 @@ public class AuthorshipNormalizer {
       return null;
     }
     // fold to ascii
-    x = life.catalogue.common.text.StringUtils.foldToAscii(x);
+    x = UnicodeUtils.foldToAscii(x);
     // simplify umlauts transliterated properly with additional e
     x = TRANSLITERATIONS.matcher(x).replaceAll("$1");
     // replace all punctuation but commas
