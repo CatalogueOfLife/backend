@@ -194,15 +194,24 @@ public class XRelease extends ProjectRelease {
     // runs in parallel to the rest of the prep phase below
     Runnable matchMissingTask = new RematchMissing(factory, ni, null, baseReleaseKey, getUserKey());
     final var thread = ExecutorUtils.runInNewThread(matchMissingTask);
+    try {
+      // add new publisher sectors
+      updatePublisherSectors();
 
-    // add new publisher sectors
-    updatePublisherSectors();
+      // load all merge sectors from project as they do not exist in the base release
+      loadMergeSectors();
 
-    // load all merge sectors from project as they do not exist in the base release
-    loadMergeSectors();
+      // make sure the missing matching is completed before we deal with the real data
+      thread.join();
 
-    // make sure the missing matching is completed before we deal with the real data
-    thread.join();
+    } finally {
+      if (thread.isAlive()) {
+        // the release failed or was cancelled before the rematch finished: nothing waits for it anymore,
+        // so it must not carry on writing to the db on its own
+        LOG.warn("Stop rematching base release {} as the release ended early", baseReleaseKey);
+        thread.interrupt();
+      }
+    }
 
     // copy base release to tmp project - we keep all identifiers
     final int xreleaseDatasetKey = newDatasetKey;
