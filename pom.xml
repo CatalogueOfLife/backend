@@ -174,7 +174,7 @@
     </repository>
     <!-- the gbif group above serves no snapshot metadata at all -->
     <repository>
-      <id>gbif-snapshots</id>
+      <id>gbif-snapshot</id>
       <url>https://repository-snapshots.gbif.org/repository/snapshots</url>
       <releases>
         <enabled>false</enabled>
