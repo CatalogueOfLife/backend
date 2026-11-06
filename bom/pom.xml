@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>org.catalogueoflife</groupId>
+  <artifactId>clb-bom</artifactId>
+  <version>1.7.0-SNAPSHOT</version>
+  <packaging>pom</packaging>
+
+  <name>CLB BOM</name>
+  <description>
+    Versions of the ChecklistBank library modules and the name parser they are built with, for projects outside this
+    repository (like Blixa) to import into their dependencyManagement. It works next to any parent, Spring Boot's included.
+  </description>
+
+  <!--
+    This pom is the parent of the backend's root pom (motherpom), not a child of it. A BOM is imported with its
+    effective dependencyManagement, so a BOM inheriting from the root would hand every consumer all the Dropwizard,
+    Jackson and Jetty versions the root manages. The other way round the root inherits the versions below, and they
+    are written down once.
+
+    Only CoL artifacts and the name parser pair belong here, never third party libraries: a consumer has its own
+    platform (Spring Boot, Dropwizard) to manage those, and a version pinned here would fight it. Bump the name parser
+    here: the root and all modules read these two properties.
+
+    The rust parser's native jars are listed per platform, because a classifier is part of the managed key and
+    ${os.detected.classifier} is not set in a consumer's build.
+  -->
+  <properties>
+    <name-parser.version>6.0.0-SNAPSHOT</name-parser.version>
+    <name-parser-rust.version>0.4.1-SNAPSHOT</name-parser-rust.version>
+  </properties>
+
+  <!-- inherited by the root pom and so by every module -->
+  <distributionManagement>
+    <repository>
+      <id>gbif-release</id>
+      <url>https://repository.gbif.org/content/repositories/releases</url>
+    </repository>
+    <snapshotRepository>
+      <id>gbif-snapshot</id>
+      <url>https://repository-snapshots.gbif.org/repository/snapshots</url>
+    </snapshotRepository>
+  </distributionManagement>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.catalogueoflife</groupId>
+        <artifactId>api</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.catalogueoflife</groupId>
+        <artifactId>coldp</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.catalogueoflife</groupId>
+        <artifactId>doi</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.catalogueoflife</groupId>
+        <artifactId>kryo</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.catalogueoflife</groupId>
+        <artifactId>metadata</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.catalogueoflife</groupId>
+        <artifactId>nomenclature</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.catalogueoflife</groupId>
+        <artifactId>parser</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.catalogueoflife</groupId>
+        <artifactId>pgcopy</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.catalogueoflife</groupId>
+        <artifactId>reader</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.catalogueoflife</groupId>
+        <artifactId>reader-xls</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.catalogueoflife</groupId>
+        <artifactId>reference</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.catalogueoflife</groupId>
+        <artifactId>vocab</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.gbif</groupId>
+        <artifactId>name-parser-api</artifactId>
+        <version>${name-parser.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.gbif.nameparser</groupId>
+        <artifactId>name-parser-rust</artifactId>
+        <version>${name-parser-rust.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.gbif.nameparser</groupId>
+        <artifactId>name-parser-rust</artifactId>
+        <version>${name-parser-rust.version}</version>
+        <classifier>linux-x86_64</classifier>
+      </dependency>
+      <dependency>
+        <groupId>org.gbif.nameparser</groupId>
+        <artifactId>name-parser-rust</artifactId>
+        <version>${name-parser-rust.version}</version>
+        <classifier>osx-aarch_64</classifier>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+</project>

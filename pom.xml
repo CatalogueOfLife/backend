@@ -3,6 +3,14 @@
 
   <modelVersion>4.0.0</modelVersion>
 
+  <!-- The BOM published for other projects. It owns the name parser versions and distributionManagement, see there. -->
+  <parent>
+    <groupId>org.catalogueoflife</groupId>
+    <artifactId>clb-bom</artifactId>
+    <version>1.7.0-SNAPSHOT</version>
+    <relativePath>bom/pom.xml</relativePath>
+  </parent>
+
   <groupId>org.catalogueoflife</groupId>
   <artifactId>motherpom</artifactId>
   <version>1.7.0-SNAPSHOT</version>
@@ -95,8 +103,7 @@
     <mapdb.version>3.1.0</mapdb.version>
     <mockito.version>5.23.0</mockito.version>
     <mybatis.version>3.5.19</mybatis.version>
-    <name-parser.version>6.0.0-SNAPSHOT</name-parser.version>
-    <name-parser-rust.version>0.4.1-SNAPSHOT</name-parser-rust.version>
+    <!-- name-parser.version and name-parser-rust.version are set in bom/pom.xml -->
     <newick-io.version>1.0.6</newick-io.version>
     <poi.version>5.5.1</poi.version>
     <pollexor.version>3.0.0</pollexor.version>
@@ -215,6 +222,7 @@
 
   <modules>
     <module>api</module>
+    <module>bom</module>
     <module>coldp</module>
     <module>core</module>
     <module>dao</module>
@@ -232,16 +240,7 @@
     <module>webservice</module>
   </modules>
 
-  <distributionManagement>
-    <repository>
-      <id>gbif-release</id>
-      <url>https://repository.gbif.org/content/repositories/releases</url>
-    </repository>
-    <snapshotRepository>
-      <id>gbif-snapshot</id>
-      <url>https://repository-snapshots.gbif.org/repository/snapshots</url>
-    </snapshotRepository>
-  </distributionManagement>
+  <!-- distributionManagement is inherited from bom/pom.xml -->
 
   <dependencyManagement>
     <dependencies>
