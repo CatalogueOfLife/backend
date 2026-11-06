@@ -1401,22 +1401,26 @@ public class Normalizer implements Callable<Boolean> {
         default:
           throw new NormalizationFailedException("Unsupported data format " + format);
       }
-      // first metadata, the key will be preserved by the store
-      inserter.readMetadata().ifPresent(d -> DatasetDao.patchMetadata(dataset, d.getDataset(), validator));
-      // data
-      inserter.insertAll();
-      meta = inserter.getMappingFlags();
-      interpreter = inserter.interpreter().orElse(null);
-      store.reportDuplicates();
-      inserter.reportBadFks();
-      // lookout for local logo file
-      inserter.logo().ifPresent(l -> {
-        try {
-          imgService.putDatasetLogo(datasetKey, ImageServiceFS.read(Files.newInputStream(l)));
-        } catch (IOException e) {
-          LOG.warn("Failed to read local logo file {}", l);
-        }
-      });
+      // closing the inserter releases source files a cancelled or failed insert left open
+      try (inserter) {
+        // first metadata, the key will be preserved by the store
+        inserter.readMetadata().ifPresent(d -> DatasetDao.patchMetadata(dataset, d.getDataset(), validator));
+        // data
+        inserter.insertAll();
+        meta = inserter.getMappingFlags();
+        interpreter = inserter.interpreter().orElse(null);
+        store.reportDuplicates();
+        inserter.reportBadFks();
+        // lookout for local logo file
+        inserter.logo().ifPresent(l -> {
+          // ImageIO never closes the stream it reads from
+          try (var in = Files.newInputStream(l)) {
+            imgService.putDatasetLogo(datasetKey, ImageServiceFS.read(in));
+          } catch (IOException e) {
+            LOG.warn("Failed to read local logo file {}", l, e);
+          }
+        });
+      }
 
     } catch (NotUniqueRuntimeException e) {
       throw new NormalizationFailedException(e.getProperty() + " values not unique: " + e.getKey(), e);

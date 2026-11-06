@@ -47,6 +47,19 @@ public class DwcaExtendedExport extends ArchiveExport {
     additionalWriter(defineSpeciesProfile());
   }
 
+  @Override
+  protected void closeOpenWriters() {
+    if (writer2 != null) {
+      try {
+        writer2.close();
+      } catch (IOException | RuntimeException e) {
+        LOG.warn("Failed to close the species profile writer", e);
+      }
+      writer2 = null;
+    }
+    super.closeOpenWriters();
+  }
+
   private void additionalWriter(Term[] terms) {
     try {
       if (writer2 != null) {
