@@ -273,6 +273,7 @@ public class WsServer extends Application<WsServerConfig> {
     DatasetInfoCache.CACHE.warmUp();
 
     HttpUtils http = new HttpUtils();
+    env.lifecycle().manage(ManagedUtils.from(http));
 
     // event broker - starts immediately
     var broker = new EventBroker(cfg.broker);

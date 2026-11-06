@@ -145,7 +145,8 @@ public class TaxonomicAlignJob extends BackgroundJob {
 
     } finally {
       LOG.info("Removing container {}", container.getId());
-      client.removeContainerCmd(container.getId()).exec();
+      // a cancelled job leaves a running container behind, which a plain remove refuses to delete
+      client.removeContainerCmd(container.getId()).withForce(true).exec();
     }
   }
 
