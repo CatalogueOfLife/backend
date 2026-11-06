@@ -15,6 +15,8 @@ import javax.annotation.Nullable;
 public final class BreakdownRules {
   /** A second ring with more members than this is not drawn. */
   public static final int MAX_GRAND_CHILDREN = 1000;
+  /** The most rings a chart can ask for. */
+  public static final int MAX_LEVEL = 2;
 
   private BreakdownRules() {
   }
@@ -69,5 +71,19 @@ public final class BreakdownRules {
       rank = RankUtils.nextLowerLinneanRank(rank);
     }
     return child == null ? List.of() : List.of(child);
+  }
+
+  /**
+   * The ring ranks as {@link #ringRanks(Rank, Map, Rank)} decides them, capped at the number of rings the chart asks for.
+   *
+   * @param level the most rings to draw, 1 or 2
+   * @throws IllegalArgumentException for any other level
+   */
+  public static List<Rank> ringRanks(Rank taxonRank, Map<Rank, Integer> counts, @Nullable Rank countRank, int level) {
+    if (level < 1 || level > MAX_LEVEL) {
+      throw new IllegalArgumentException("level must be 1 or " + MAX_LEVEL + ", not " + level);
+    }
+    var ranks = ringRanks(taxonRank, counts, countRank);
+    return ranks.size() > level ? ranks.subList(0, level) : ranks;
   }
 }

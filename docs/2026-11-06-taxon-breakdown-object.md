@@ -1,8 +1,9 @@
 # The taxon breakdown decides its own chart
 
 Date: 2026-11-06
-Status: implemented on `feat/breakdown-tree`, not yet deployed. A breaking API change: the clients (portal-components,
-checklistbank) move to the object before the deploy, and the two known external users of the endpoint were told.
+Status: merged to master with #1696 on 2026-11-06, `level` returned as a ring cap the same day, not yet deployed. A
+breaking API change: the clients (portal-components, checklistbank) understand only the object, so they go live together
+with the backend on each environment, and the two known external users of the endpoint were told.
 
 ## Problem
 
@@ -48,3 +49,11 @@ taxon pages, about 30k from people and crawlers rendering ours or embedded porta
 - A new path for the object. Same reason, and nothing to protect.
 - Keeping the per rank count property name (`"species": 41`) in the object. `countRank` says it once; a fixed `count`
   lets a client stay rank agnostic.
+
+## Outcome
+
+- `level` came back the same day, with a new meaning: the most rings to build, 1 (the default) or 2, anything else a
+  400. The rules still pick the ranks and may leave a second ring out, so the shape does not depend on it. The
+  clients' 1/2 ring switch needed it, and asking for one ring spares the backend collecting the grandchildren.
+  Defaulting to one ring keeps a bare call cheap; a client wanting two asks for `level=2`.
+- The clients accept only the object, with no fallback to the array, so backend and UIs deploy together.

@@ -192,7 +192,8 @@ public class TaxonResource extends AbstractDatasetScopedResource<String, Taxon, 
   /**
    * The breakdown of the taxon's subtree for a chart: the taxon, its accepted descendants by rank, the rank the nodes
    * are counted at and the one or two ring ranks the tree is built of, both decided here, the total and the tree with
-   * remainder nodes for what sits in no node of a ring. Replaced the array of nested nodes on 2026-11-06.
+   * remainder nodes for what sits in no node of a ring. Replaced the array of nested nodes on 2026-11-06. The level
+   * only caps the rings, the shape of the response stays the same.
    */
   @GET
   @Path("{id}/breakdown")
@@ -201,8 +202,13 @@ public class TaxonResource extends AbstractDatasetScopedResource<String, Taxon, 
                                   @QueryParam("countRank")
                                   @Parameter(description = "Rank to count the nodes at. Defaults to species, or to genus "
                                                          + "when genera outnumber species more than twofold.")
-                                  Rank countRank
+                                  Rank countRank,
+                                  @QueryParam("level")
+                                  @DefaultValue("1")
+                                  @Parameter(description = "The most rings to build, 1 or 2. A second ring is still left "
+                                                         + "out when it would be the count rank or hold more than 1000 taxa.")
+                                  int level
   ) {
-    return dao.taxonBreakdown(datasetKey, id, countRank);
+    return dao.taxonBreakdown(datasetKey, id, countRank, level);
   }
 }

@@ -33,6 +33,18 @@ public class BreakdownRulesTest {
   }
 
   @Test
+  public void levelCapsTheRings() {
+    var counts = Map.of(ORDER, 1, FAMILY, 17, GENUS, 131, SPECIES, 301);
+    assertEquals(List.of(FAMILY), BreakdownRules.ringRanks(ORDER, counts, SPECIES, 1));
+    assertEquals(List.of(FAMILY, GENUS), BreakdownRules.ringRanks(ORDER, counts, SPECIES, 2));
+    // a level of two does not force a second ring the rules leave out
+    assertEquals(List.of(SPECIES), BreakdownRules.ringRanks(ORDER, Map.of(SPECIES, 4), SPECIES, 2));
+    assertEquals(List.of(), BreakdownRules.ringRanks(ORDER, Map.of(FAMILY, 3), null, 1));
+    assertThrows(IllegalArgumentException.class, () -> BreakdownRules.ringRanks(ORDER, counts, SPECIES, 0));
+    assertThrows(IllegalArgumentException.class, () -> BreakdownRules.ringRanks(ORDER, counts, SPECIES, 3));
+  }
+
+  @Test
   public void twoRingsOfTheNextLinneanRanks() {
     var counts = Map.of(ORDER, 1, FAMILY, 17, GENUS, 131, SPECIES, 301);
     assertEquals(List.of(FAMILY, GENUS), BreakdownRules.ringRanks(ORDER, counts, SPECIES));

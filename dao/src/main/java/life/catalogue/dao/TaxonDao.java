@@ -836,16 +836,17 @@ public class TaxonDao extends NameUsageBaseDao<Taxon, TaxonMapper> implements Ta
 
   /**
    * The breakdown of a taxon's subtree as one object for a chart: counts by rank, the count rank and ring ranks decided
-   * by {@link BreakdownRules} and the tree with remainder nodes.
+   * by {@link BreakdownRules} and the tree with remainder nodes. One ring at most, like the API by default.
    */
   public TaxonBreakdown taxonBreakdown(int datasetKey, String id) {
-    return taxonBreakdown(datasetKey, id, null);
+    return taxonBreakdown(datasetKey, id, null, 1);
   }
 
   /**
    * @param countRank the rank to count the nodes at, overriding the rule
+   * @param level the most rings to build, 1 or 2; the rules may still decide on fewer
    */
-  public TaxonBreakdown taxonBreakdown(int datasetKey, String id, @Nullable Rank countRank) {
+  public TaxonBreakdown taxonBreakdown(int datasetKey, String id, @Nullable Rank countRank, int level) {
     var key = DSID.of(datasetKey, id);
     var tax = getSimpleOr404(key);
     var rank = breakdownRank(key, tax);
@@ -853,7 +854,7 @@ public class TaxonDao extends NameUsageBaseDao<Taxon, TaxonMapper> implements Ta
     if (countRank == null) {
       countRank = BreakdownRules.countRank(counts);
     }
-    var ranks = BreakdownRules.ringRanks(rank, counts, countRank);
+    var ranks = BreakdownRules.ringRanks(rank, counts, countRank, level);
 
     var bd = new TaxonBreakdown();
     tax.setParent(null);
