@@ -367,6 +367,47 @@ public class NameUsageSearchServiceEsIT extends EsTestBase {
     assertNotNull(facets.get(AUTHORSHIP));
   }
 
+  /**
+   * The taxon page request: filters on other parameters, a facet without its own filter. The counts are those of the
+   * query, whichever aggregation shape the translator picks.
+   */
+  @Test
+  public void testFacetWithoutOwnFilterCountsWithinFilters() {
+    NameUsageSearchRequest req = new NameUsageSearchRequest();
+    req.addFilter(DATASET_KEY, String.valueOf(DS2));
+    req.addFilter(STATUS, TaxonomicStatus.ACCEPTED);
+    req.addFacet(RANK);
+    req.setFacetLimit(20);
+
+    NameUsageSearchResponse resp = search(req, 0);
+    assertEquals("DS2 has 10 accepted usages", 10, resp.getTotal());
+
+    Set<FacetValue<?>> rankFacet = resp.getFacets().get(RANK);
+    assertNotNull(rankFacet);
+    Map<Rank, Integer> counts = new HashMap<>();
+    for (FacetValue<?> v : rankFacet) {
+      counts.put((Rank) v.getValue(), v.getCount());
+    }
+    assertEquals(Map.of(Rank.KINGDOM, 1, Rank.GENUS, 1, Rank.SPECIES, 8), counts);
+  }
+
+  @Test
+  public void testFacetIncludeSelfCountsWithinOwnFilter() {
+    NameUsageSearchRequest req = new NameUsageSearchRequest();
+    req.addFilter(DATASET_KEY, String.valueOf(DS2));
+    req.addFacet(DATASET_KEY);
+    req.setFacetIncludeSelf(true);
+    req.setFacetLimit(20);
+
+    NameUsageSearchResponse resp = search(req, 0);
+
+    Set<FacetValue<?>> dsFacet = resp.getFacets().get(DATASET_KEY);
+    assertNotNull(dsFacet);
+    assertEquals("only the filtered dataset when the facet includes its own filter", 1, dsFacet.size());
+    assertEquals(DS2, dsFacet.iterator().next().getValue());
+    assertEquals(11, dsFacet.iterator().next().getCount());
+  }
+
   // -----------------------------------------------------------------------
   // Test: sort options
   // -----------------------------------------------------------------------

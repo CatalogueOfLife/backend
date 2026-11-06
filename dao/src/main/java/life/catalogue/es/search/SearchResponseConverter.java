@@ -57,13 +57,21 @@ class SearchResponseConverter {
     return nuw;
   }
 
+  /**
+   * Facets arrive in one of the two shapes FacetsTranslator emits: plain top level terms aggregations named after the
+   * facet when they were computed in the query context, or global -> filter -> facet filter -> terms when a facet had
+   * to ignore its own filter.
+   */
   private Map<NameUsageSearchParameter, Set<FacetValue<?>>> generateFacets() {
     if (esResponse.aggregations() == null || esResponse.aggregations().isEmpty()) {
       return Collections.emptyMap();
     }
 
     Aggregate globalAgg = esResponse.aggregations().get(FacetsTranslator.GLOBAL_AGG_LABEL);
-    if (globalAgg == null || !globalAgg.isGlobal()) {
+    if (globalAgg == null) {
+      return facetsFromTerms(esResponse.aggregations(), Function.identity());
+    }
+    if (!globalAgg.isGlobal()) {
       return Collections.emptyMap();
     }
 
@@ -73,9 +81,18 @@ class SearchResponseConverter {
       return Collections.emptyMap();
     }
 
-    Map<String, Aggregate> facetAggs = filterAgg.filter().aggregations();
-    Map<NameUsageSearchParameter, Set<FacetValue<?>>> result = new EnumMap<>(NameUsageSearchParameter.class);
+    return facetsFromTerms(filterAgg.filter().aggregations(),
+      facetFilterAgg -> facetFilterAgg.isFilter() ? facetFilterAgg.filter().aggregations().get(FacetsTranslator.FACET_AGG_LABEL) : null
+    );
+  }
 
+  /**
+   * @param facetAggs aggregations keyed by facet parameter name
+   * @param termsOf   finds the terms aggregation inside a facet's aggregation, null if there is none
+   */
+  private Map<NameUsageSearchParameter, Set<FacetValue<?>>> facetsFromTerms(Map<String, Aggregate> facetAggs,
+                                                                             Function<Aggregate, Aggregate> termsOf) {
+    Map<NameUsageSearchParameter, Set<FacetValue<?>>> result = new EnumMap<>(NameUsageSearchParameter.class);
     for (Map.Entry<String, Aggregate> entry : facetAggs.entrySet()) {
       String paramName = entry.getKey();
       if (Character.isLowerCase(paramName.codePointAt(0))) {
@@ -88,10 +105,7 @@ class SearchResponseConverter {
         continue;
       }
 
-      Aggregate facetFilterAgg = entry.getValue();
-      if (!facetFilterAgg.isFilter()) continue;
-
-      Aggregate termsAgg = facetFilterAgg.filter().aggregations().get(FacetsTranslator.FACET_AGG_LABEL);
+      Aggregate termsAgg = termsOf.apply(entry.getValue());
       if (termsAgg == null) continue;
 
       result.put(param, extractBuckets(param, termsAgg, facetOffset));

@@ -291,6 +291,18 @@ Afterwards `add()` throws; changed data means a rebuild into a temp dir that is 
 without walking their parents and only the survivors of the cheap filters resolve a classification
 (`LazyClassifiedUsage`).
 
+**Name usage search facets:**
+`FacetsTranslator` aggregates a facet in the query context, as a top level terms aggregation named after the facet
+parameter, unless the request filters on that very parameter without `facetIncludeSelf`. Only then do the counts have to
+ignore the facet's own filter, which needs the `global` context (global → filter → per facet filter → terms), and all
+facets of that request take it. A global aggregation visits every document of every shard whatever the query - 390M docs
+on prod - so it is never the default: the taxon page request (`TAXON_ID` and status filters, a rank facet) used to pay for
+it on every page view, which is what let a page crawler saturate the ES search pools on 2026-11-06.
+`SearchResponseConverter` reads both shapes. The ES client applies `EsConfig.socketTimeout` as socket and response
+timeout; when it elapses the rest5 client marks the node dead and replays the request on the next node, so it has to be
+longer than any search the server is expected to answer. See
+[`docs/2026-11-06-facets-in-query-context.md`](docs/2026-11-06-facets-in-query-context.md).
+
 **Extended Release (XRelease):**
 The most complex pipeline in the codebase. Builds an extended release by merging external datasets (via sectors) into a base public release. 
 Uses a two-phase copy: base release → temporary project (for merging) → final release (with stable ID mapping). Key classes in `core/release/` and `core/assembly/`. 

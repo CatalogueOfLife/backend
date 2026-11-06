@@ -40,8 +40,13 @@ public class EsConfig {
 
   /**
    * Defines the RESTClient socket timeout in milliseconds, which is the timeout for waiting for data or, put differently,
-   * a maximum period inactivity between two consecutive data packets). See
+   * a maximum period inactivity between two consecutive data packets). It is applied both as the socket timeout of the
+   * connection and as the response timeout of every request. See
    * https://www.elastic.co/guide/en/elasticsearch/client/java-rest/current/_timeouts.html
+   *
+   * When it elapses the client marks the node dead and replays the request on the next node, so it must be longer than
+   * any search the server is expected to answer. The read only server, which serves searches only, can use a shorter
+   * value than the main server, which also runs bulk indexing.
    *
    * Defaults here to 15 minutes = 900.000ms
    */
