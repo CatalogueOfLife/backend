@@ -507,7 +507,7 @@
                             AND ed.subject_id = u.id
     </if>
     WHERE u.dataset_key = #{datasetKey}
-      AND n.scientific_name ~ '^${regex}'
+      AND n.scientific_name ~ ('^' || #{regex})
     <if test="rank != null">
       AND n.rank = #{rank}::RANK
     </if>
@@ -1395,7 +1395,7 @@
 
   <update id="_addIdentifier" parameterType="map">
     UPDATE name_usage
-    SET identifier = array_cat(identifier, ARRAY[<foreach item="id" collection="ids" separator=",">'${id}'</foreach>])
+    SET identifier = array_cat(identifier, ARRAY[<foreach item="id" collection="ids" separator=",">#{id}</foreach>]::text[])
     WHERE dataset_key = #{key.datasetKey} AND id = #{key.id}
   </update>
 

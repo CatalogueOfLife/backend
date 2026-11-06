@@ -407,7 +407,7 @@
         AND nm.index_id IS <if test="req.hasMatch">NOT</if> NULL
       </if>
       <if test="req.namePrefix != null">
-        AND n.scientific_name ~ '^${req.namePrefix}'
+        AND n.scientific_name ~ ('^' || #{req.namePrefix})
       </if>
     </if>
     <include refid="life.catalogue.db.Common.limit"/>
@@ -480,7 +480,7 @@
 
   <update id="_addIdentifier" parameterType="map">
     UPDATE name
-    SET identifier = array_cat(identifier, ARRAY[<foreach item="id" collection="ids" separator=",">'${id}'</foreach>])
+    SET identifier = array_cat(identifier, ARRAY[<foreach item="id" collection="ids" separator=",">#{id}</foreach>]::text[])
     WHERE dataset_key = #{key.datasetKey} AND id = #{key.id}
   </update>
 

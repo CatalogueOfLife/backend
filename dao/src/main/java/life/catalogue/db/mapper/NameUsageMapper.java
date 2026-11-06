@@ -721,11 +721,11 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
    */
   default void addIdentifier(DSID<String> key, List<Identifier> identifiers) {
     if (identifiers != null && !identifiers.isEmpty()) {
-      _addIdentifier(key, identifiers);
+      _addIdentifier(key, identifiers.stream().map(Identifier::toString).toList());
     }
   }
 
-  void _addIdentifier(@Param("key") DSID<String> key, @Param("ids") List<Identifier> identifiers);
+  void _addIdentifier(@Param("key") DSID<String> key, @Param("ids") List<String> identifiers);
 
   /**
    * The name and usage identifiers of a single name usage together with the scientific name of its parent,

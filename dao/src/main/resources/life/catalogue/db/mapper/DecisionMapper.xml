@@ -124,7 +124,7 @@
           AND ed.subject_rank = #{req.rank}::RANK
         </if>
         <if test="req.name != null">
-          AND ed.subject_name ILIKE '%${req.name}%'
+          AND ed.subject_name ILIKE '%' || #{req.name} || '%'
         </if>
         <if test="req.modifiedBy != null">
           AND ed.modified_by = #{req.modifiedBy}

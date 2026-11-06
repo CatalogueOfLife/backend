@@ -118,8 +118,7 @@
         AND d.deleted IS NULL
       </if>
       <if test="req.q != null">
-        <!-- we use dollar quoted strings with a token ($Grtz5$) to avoid escaping quotes -->
-        AND d.doc @@ plainto_tsquery('dataset', f_unaccent($Grtz5$%${req.q}%$Grtz5$))
+        AND d.doc @@ plainto_tsquery('dataset', f_unaccent(#{req.q}))
       </if>
       <if test="req.privat != null">
         AND d.private = #{req.privat}
@@ -231,7 +230,7 @@
         AND d.issued &lt; #{req.issuedBefore}
       </if>
       <if test="req.rowType != null and !req.rowType.isEmpty()">
-        <foreach item="rt" collection="req.rowType" separator=""> AND exist(di.verbatim_by_term_count, '${rt}')</foreach>
+        <foreach item="rt" collection="req.rowType" separator=""> AND exist(di.verbatim_by_term_count, #{rt, typeHandler=life.catalogue.db.type.TermTypeHandler})</foreach>
       </if>
       <if test="req.minSize != null">
         AND <include refid="size"/> >= #{req.minSize}
@@ -415,10 +414,9 @@
         AND d.key = #{key}
       </if>
       <if test="q != null">
-        <!-- we use dollar quoted strings with a token ($gbif$) to avoid escaping quotes -->
-        AND (f_unaccent(alias) ILIKE f_unaccent($gbif$%${q}%$gbif$) OR f_unaccent(title) ILIKE f_unaccent($gbif$%${q}%$gbif$))
+        AND (f_unaccent(alias) ILIKE f_unaccent('%' || #{q} || '%') OR f_unaccent(title) ILIKE f_unaccent('%' || #{q} || '%'))
       </if>
-    ORDER BY (f_unaccent(alias) ILIKE f_unaccent($gbif$%${q}%$gbif$)) DESC, alias NULLS LAST, title
+    ORDER BY <if test="q != null">(f_unaccent(alias) ILIKE f_unaccent('%' || #{q} || '%')) DESC,</if> alias NULLS LAST, title
     LIMIT #{limit}
   </select>
 
