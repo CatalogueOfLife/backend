@@ -36,9 +36,13 @@ import java.util.Arrays;
  */
 public class JaroWinkler implements StringSimilarity {
   
-  private static float threshold = 0.7f;
-  
-  private static int[] matches(String s1, String s2) {
+  private static final float threshold = 0.7f;
+
+  /**
+   * @return the number of matching characters, half the transpositions, the length of the common prefix
+   *         and the length of the longer string
+   */
+  static int[] matches(String s1, String s2) {
     String max, min;
     if (s1.length() > s2.length()) {
       max = s1;
@@ -63,24 +67,17 @@ public class JaroWinkler implements StringSimilarity {
         }
       }
     }
-    char[] ms1 = new char[matches];
-    char[] ms2 = new char[matches];
-    for (int i = 0, si = 0; i < min.length(); i++) {
-      if (matchIndexes[i] != -1) {
-        ms1[si] = min.charAt(i);
-        si++;
-      }
-    }
-    for (int i = 0, si = 0; i < max.length(); i++) {
-      if (matchFlags[i]) {
-        ms2[si] = max.charAt(i);
-        si++;
-      }
-    }
+    // compare the matched characters of both strings in their order, walking both in step
     int transpositions = 0;
-    for (int mi = 0; mi < ms1.length; mi++) {
-      if (ms1[mi] != ms2[mi]) {
-        transpositions++;
+    for (int i = 0, k = 0; i < min.length(); i++) {
+      if (matchIndexes[i] != -1) {
+        while (!matchFlags[k]) {
+          k++;
+        }
+        if (min.charAt(i) != max.charAt(k)) {
+          transpositions++;
+        }
+        k++;
       }
     }
     int prefix = 0;

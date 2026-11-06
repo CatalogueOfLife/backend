@@ -31,7 +31,9 @@ public class ScientificNameSimilarity implements StringSimilarity {
     // Compare the whole name if they don't have the same number of tokens.
     if (x1s.length != x2s.length) {
       double sim = mdl3.getSimilarity(x1, x2);
-      LOG.debug("'{}' is {}% like '{}' (but lengths differ)", x1, sim, x2);
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("'{}' is {}% like '{}' (but lengths differ)", x1, sim, x2);
+      }
       return sim;
     }
     
@@ -55,7 +57,9 @@ public class ScientificNameSimilarity implements StringSimilarity {
       overallSim = 5;
     }
     
-    LOG.debug("'{}' is {}% like '{}'", x1, overallSim, x2);
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("'{}' is {}% like '{}'", x1, overallSim, x2);
+    }
     return overallSim;
   }
   
@@ -76,7 +80,9 @@ public class ScientificNameSimilarity implements StringSimilarity {
 
     // First letter must match
     if (x1.charAt(0) != x2.charAt(0)) {
-      LOG.debug("'{}' is not at all like '{}' ('{}'≠'{}')", x1, x2, x1.charAt(0), x2.charAt(0));
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("'{}' is not at all like '{}' ('{}'≠'{}')", x1, x2, x1.charAt(0), x2.charAt(0));
+      }
       return 0;
     }
 
@@ -94,7 +100,9 @@ public class ScientificNameSimilarity implements StringSimilarity {
     int dist = mdl1.getEditDistance(x1head, x2head);
     final boolean headDiffers = dist > 1;
     if (genus && headDiffers) {
-      LOG.debug("genus '{}' is nothing like '{}' ('{}'≠'{}', dist={})", x1, x2, x1head, x2head, dist);
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("genus '{}' is nothing like '{}' ('{}'≠'{}', dist={})", x1, x2, x1head, x2head, dist);
+      }
       return 0;
     }
 
@@ -108,7 +116,9 @@ public class ScientificNameSimilarity implements StringSimilarity {
       r = (dist == 0 ? 100 : (dist == 1 ? 90 : (dist <= 2 ? 80 : 0)));
     }
 
-    LOG.debug("'{}' is {}% like '{}'", x1, r, x2);
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("'{}' is {}% like '{}'", x1, r, x2);
+    }
     return r;
   }
 //

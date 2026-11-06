@@ -61,8 +61,10 @@ public class ModifiedDamerauLevenshtein implements StringSimilarity {
     } else if (len1 == 1 && len2 == 1) {
       return 1;
     }
-    final char[] t1 = s1.substring(start, end1).toCharArray();
-    final char[] t2 = s2.substring(start, end2).toCharArray();
+    final char[] t1 = new char[len1];
+    final char[] t2 = new char[len2];
+    s1.getChars(start, end1, t1, 0);
+    s2.getChars(start, end2, t2, 0);
 
     // the longest block that can be transposed, it does not change within a call
     final int maxBlock = Math.max(Math.min(len1 / 2, Math.min(len2 / 2, Math.max(pBlockLimit, 1))), 1);

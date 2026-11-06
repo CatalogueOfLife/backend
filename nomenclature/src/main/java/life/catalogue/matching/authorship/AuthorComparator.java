@@ -259,10 +259,14 @@ public class AuthorComparator {
       
     } else {
       // compare all authors to each other - a single match is good enough!
+      // The authors of the second team are parsed once on first use and reused for every author of the first team
+      final Author[] authors2 = new Author[authorTeam2.size()];
       for (String author1 : authorTeam1) {
         Author a1 = new Author(author1);
+        int idx = 0;
         for (String author2 : authorTeam2) {
-          Author a2 = new Author(author2);
+          Author a2 = authors2[idx] == null ? (authors2[idx] = new Author(author2)) : authors2[idx];
+          idx++;
           if (Equality.EQUAL == compare(a1, a2, minCommonStart, jaroDistance)) {
             return Equality.EQUAL;
           }
