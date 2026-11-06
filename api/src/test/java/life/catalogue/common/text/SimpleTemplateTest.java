@@ -61,6 +61,17 @@ public class SimpleTemplateTest {
     assertEquals(sdf.format(new Date()), SimpleTemplate.render("{date,yy.M}", d));
   }
 
+  /**
+   * A dollar sign or backslash in a value is text, not a group reference of the regex replacement
+   */
+  @Test
+  public void renderDollarAndBackslash() {
+    Dataset d = new Dataset();
+    d.setTitle("Species 2000 $1 & C:\\data\\");
+    assertEquals("Species 2000 $1 & C:\\data\\ (2000)", SimpleTemplate.render("{title} (2000)", d));
+    assertEquals("$5", SimpleTemplate.render("{x}", Map.of("x", "$5")));
+  }
+
   @Test
   public void renderSpecialDay() {
     LocalDateTime d = LocalDateTime.of(2020, 6, 21,1,1);
