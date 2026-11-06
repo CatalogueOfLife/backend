@@ -20,9 +20,12 @@ public class UTF8IoUtils {
     return new ZipOutputStream(bos);
   }
 
+  private static final int GZIP_BUFFER = 64 * 1024;
+
   public static BufferedWriter writerFromGzipFile(File f) throws IOException {
     Files.createParentDirs(f);
-    return writerFromStream(new GZIPOutputStream(new FileOutputStream(f)));
+    // the default buffer of 512 bytes means a write call for every 512 compressed bytes
+    return writerFromStream(new GZIPOutputStream(new FileOutputStream(f), GZIP_BUFFER));
   }
 
   public static BufferedWriter writerFromFile(File f) throws IOException {
@@ -40,7 +43,7 @@ public class UTF8IoUtils {
   }
   
   public static BufferedReader readerFromGzipFile(File f) throws IOException {
-    return readerFromStream(new GZIPInputStream(new FileInputStream(f)));
+    return readerFromStream(new GZIPInputStream(new FileInputStream(f), GZIP_BUFFER));
   }
 
   public static BufferedReader readerFromPath(Path p) throws IOException {

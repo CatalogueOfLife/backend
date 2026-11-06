@@ -80,15 +80,23 @@ public class CsvReaderTest {
       assertEquals("1", tr.get(AcefTerm.HasModern));
     });
     assertEquals(3, counter.get());
+    reader.close();
   }
 
   @Test
   public void html() throws Exception {
-    var lines = Resources.lines("csv/doctype.html").collect(Collectors.toList());
-    assertTrue(CsvReader.containsNonTabularData(lines));
+    assertTrue(CsvReader.containsNonTabularData(lines("csv/doctype.html")));
+    assertFalse(CsvReader.containsNonTabularData(lines("csv/15-CommonNames.txt")));
+  }
 
-    lines = Resources.lines("csv/15-CommonNames.txt").collect(Collectors.toList());
-    assertFalse(CsvReader.containsNonTabularData(lines));
+  /**
+   * Reads all lines of a resource and closes it. The stream of Resources.lines never closes its file,
+   * which leaves a handle to the garbage collector and skews the count of partialReadDoesNotLeakFileHandles.
+   */
+  private static List<String> lines(String resource) throws IOException {
+    try (BufferedReader br = Resources.reader(resource)) {
+      return br.lines().collect(Collectors.toList());
+    }
   }
 
   @Test
@@ -153,14 +161,17 @@ public class CsvReaderTest {
     row = reader.readFirstRow(AcefTerm.SourceDatabase);
     // this somehow works, puzzling but ok ...
     //assertFalse(row.isPresent());
+    // the partial reads above keep their data files open until the reader is closed
+    reader.close();
   }
   
   private CsvParserSettings assertCsvFormat(String resource, char delimiter, char quote) throws IOException {
-    CommonParserSettings<?> settings = CsvReader.discoverFormat(
-        new BufferedReader(new InputStreamReader(ClassLoader.getSystemResource(resource).openStream(), Charsets.UTF_8))
-            .lines()
-            .collect(Collectors.toList())
-    );
+    // close the resource, an open handle left for the garbage collector skews the file handle count of partialReadDoesNotLeakFileHandles
+    List<String> lines;
+    try (var br = new BufferedReader(new InputStreamReader(ClassLoader.getSystemResource(resource).openStream(), Charsets.UTF_8))) {
+      lines = br.lines().collect(Collectors.toList());
+    }
+    CommonParserSettings<?> settings = CsvReader.discoverFormat(lines);
     assertTrue(settings instanceof CsvParserSettings);
     var csv = (CsvParserSettings) settings;
 
@@ -196,6 +207,7 @@ public class CsvReaderTest {
     assertTrue(ids.contains("303988"));
     assertTrue(ids.contains("303984"));
     assertTrue(ids.contains("23341")); // padded with empty columns
+    reader.close();
   }
 
   /**

@@ -1,6 +1,5 @@
 package life.catalogue.common.kryo.map;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 import org.apache.commons.lang3.NotImplementedException;
@@ -35,13 +34,11 @@ public class MapDbObjectSerializer<T> extends GroupSerializerObjectArray<T> {
   @Override
   public void serialize(DataOutput2 out, T value) throws IOException {
     Pools.run(pool, kryo -> {
-      ByteArrayOutputStream buffer = new ByteArrayOutputStream(bufferSize);
-      Output output = new Output(buffer, bufferSize);
+      // a growable buffer without a stream behind it, written out directly. Same bytes, no copies
+      Output output = new Output(bufferSize, -1);
       kryo.writeObject(output, value);
-      output.close();
-      byte[] bytes = buffer.toByteArray();
-      DataIO.packInt(out, bytes.length);
-      out.write(bytes);
+      DataIO.packInt(out, output.position());
+      out.write(output.getBuffer(), 0, output.position());
     });
   }
 

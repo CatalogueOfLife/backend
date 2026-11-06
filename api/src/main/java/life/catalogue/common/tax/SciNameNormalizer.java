@@ -2,8 +2,8 @@ package life.catalogue.common.tax;
 
 import java.util.regex.Pattern;
 
+import static life.catalogue.common.text.StringUtils.foldToAscii;
 import static org.apache.commons.lang3.StringUtils.trimToNull;
-import static org.gbif.nameparser.util.UnicodeUtils.foldToAscii;
 
 
 /**
@@ -33,9 +33,7 @@ public class SciNameNormalizer {
   private static final Pattern removeRepeatedLetter = Pattern.compile("(\\p{L})\\1+");
   public static final Pattern removeHybridSignGenus = Pattern.compile("^\\s*[×xX]\\s*([A-Z])");
   public static final Pattern removeHybridSignEpithet = Pattern.compile("(?:^|\\s)(?:×\\s*|[xX]\\s+)([^A-Z])");
-  private static final Pattern empty = Pattern.compile("[?!\"'`_-]");
-  private static final Pattern punct = Pattern.compile("[,.:;]");
-  private static final Pattern white = Pattern.compile("\\s{2,}");
+  private static final Pattern SPACES = Pattern.compile(" +");
   // ††️‡
   public final static Pattern dagger = Pattern.compile("[\\u2020\\u2021\\u271D]");
 
@@ -76,8 +74,7 @@ public class SciNameNormalizer {
     s = foldToAscii(s);
     
     // normalize hyphens, apostrophes, punctuation and whitespace
-    s = empty.matcher(s).replaceAll("");
-    return normalizeWhitespaceAndPunctuation(s);
+    return normalizePunctuation(s, true);
   }
 
   /**
@@ -85,10 +82,49 @@ public class SciNameNormalizer {
    */
   public static String normalizeWhitespaceAndPunctuation(String s) {
     if (s == null) return null;
-    // normalize whitespace
-    s = punct.matcher(s).replaceAll(" ");
-    s = white.matcher(s).replaceAll(" ");
-    return s.trim();
+    return normalizePunctuation(s, false);
+  }
+
+  /**
+   * A single pass doing what used to be three regex replacements, in this order:
+   * removing the characters [?!"'`_-] if dropQuotesAndHyphens is true, replacing [,.:;] with a space and
+   * replacing runs of two or more whitespace characters (the regex \s, so [ \t\n\x0B\f\r]) with a single space.
+   * A single whitespace character is kept as it is. The result is finally trimmed.
+   */
+  private static String normalizePunctuation(String s, boolean dropQuotesAndHyphens) {
+    final char[] out = new char[s.length()];
+    int len = 0;
+    int whitespace = 0; // length of the current whitespace run
+    char firstWhitespace = ' ';
+    for (int idx = 0; idx < s.length(); idx++) {
+      char c = s.charAt(idx);
+      switch (c) {
+        case '?', '!', '"', '\'', '`', '_', '-':
+          if (dropQuotesAndHyphens) {
+            continue; // removed before whitespace is collapsed, so it does not interrupt a whitespace run
+          }
+          break;
+        case ',', '.', ':', ';':
+          c = ' ';
+          break;
+        default:
+      }
+      if (c == ' ' || c == '\t' || c == '\n' || c == '\u000B' || c == '\f' || c == '\r') {
+        if (whitespace++ == 0) {
+          firstWhitespace = c;
+        }
+        continue;
+      }
+      if (whitespace > 0) {
+        out[len++] = whitespace == 1 ? firstWhitespace : ' ';
+        whitespace = 0;
+      }
+      out[len++] = c;
+    }
+    if (whitespace > 0) {
+      out[len++] = whitespace == 1 ? firstWhitespace : ' ';
+    }
+    return new String(out, 0, len).trim();
   }
 
   /**
@@ -117,7 +153,7 @@ public class SciNameNormalizer {
     
     // by default only for bi/trinomials, otherwise we mix up ranks.
     if (s.indexOf(' ') > 2) {
-      String[] parts = s.split(" +");
+      String[] parts = SPACES.split(s);
       StringBuilder sb = new StringBuilder();
       if (normMonomials) {
         sb.append(normStrongly(parts[0], stemming));

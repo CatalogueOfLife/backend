@@ -51,8 +51,22 @@ public class PermissiveEnumSerde {
   static final Predicate<Class> PREDICATE = Predicates.<Class>not(ENUM_CLASSES_SPECIAL::contains)
     .and(Predicates.not(cl -> cl.isAssignableFrom(EnumValue.class)));
 
+  // the value names of each enum class by ordinal, so they are not rebuilt with a regex for every value written
+  private static final ClassValue<String[]> VALUE_NAMES = new ClassValue<>() {
+    @Override
+    protected String[] computeValue(Class<?> type) {
+      Object[] constants = type.getEnumConstants();
+      String[] names = new String[constants.length];
+      for (int i = 0; i < constants.length; i++) {
+        names[i] = ((Enum<?>) constants[i]).name().toLowerCase().replaceAll("_+", " ");
+      }
+      return names;
+    }
+  };
+
   public static String enumValueName(Enum<?> val) {
-    return val.name().toLowerCase().replaceAll("_+", " ");
+    // the declaring class, as a constant with a body of its own is an instance of an anonymous subclass
+    return VALUE_NAMES.get(val.getDeclaringClass())[val.ordinal()];
   }
 
   public static class PermissiveEnumSerializers extends Serializers.Base {

@@ -27,7 +27,6 @@ public class DefaultMap<K, V> extends HashMap<K, V> {
   
   @Override
   public V get(Object key) {
-    computeIfAbsent((K) key, k -> defaultSupplier.get());
-    return super.get(key);
+    return computeIfAbsent((K) key, k -> defaultSupplier.get());
   }
 }

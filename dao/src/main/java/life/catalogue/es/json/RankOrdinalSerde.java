@@ -12,13 +12,15 @@ import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 
 public class RankOrdinalSerde {
+  // Rank.class.getEnumConstants() copies the array on every call
+  private static final Rank[] RANKS = Rank.values();
 
   public static class Deserializer extends JsonDeserializer<Rank> {
     public Deserializer() {
     }
 
     public Rank deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
-      return p != null && p.getTextLength() > 0 ? Rank.class.getEnumConstants()[p.getIntValue()] : null;
+      return p != null && p.getTextLength() > 0 ? RANKS[p.getIntValue()] : null;
     }
   }
 

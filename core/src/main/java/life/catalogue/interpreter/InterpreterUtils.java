@@ -19,6 +19,8 @@ import javax.annotation.Nullable;
 import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Jsoup;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import static life.catalogue.matching.NameValidator.MAX_YEAR;
 import static life.catalogue.matching.NameValidator.MIN_YEAR;
 
@@ -34,7 +36,16 @@ public class InterpreterUtils {
    */
   public static String replaceHtml(String x, boolean useMarkdownLinks) {
     if (StringUtils.isBlank(x)) return null;
+    if (StringUtils.containsNone(x, '<', '&', '\0', '\r')) {
+      // Jsoup only treats < & and NUL specially in text and turns \r into \n, so plain text comes out as it went in.
+      // Spare it building a whole document for every text value
+      return x.trim();
+    }
+    return parseHtml(x, useMarkdownLinks);
+  }
 
+  @VisibleForTesting
+  static String parseHtml(String x, boolean useMarkdownLinks) {
     var doc = Jsoup.parse(x);
     if (useMarkdownLinks) {
       var links = doc.select("a");

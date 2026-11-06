@@ -50,6 +50,7 @@ public final class ShortUUID {
   public static class Builder {
     private final char[] alphabet;
     private final int alphabetSize;
+    private final BigInteger alphaSize;
     private final double factor;
     private final double length;
 
@@ -64,6 +65,7 @@ public final class ShortUUID {
       this.alphabet = alphabet.toCharArray();
       Arrays.sort(this.alphabet);
       this.alphabetSize = this.alphabet.length;
+      this.alphaSize = BigInteger.valueOf(alphabetSize);
       this.factor = Math.log(25d) / Math.log(alphabetSize);
       this.length = Math.ceil(factor * 16);
     }
@@ -73,7 +75,10 @@ public final class ShortUUID {
     }
 
     public ShortUUID build(UUID uuid) {
-      String uuidStr = uuid.toString().replaceAll("-", "");
+      if (alphabetSize == 64) {
+        return new ShortUUID(encode64(uuid.getMostSignificantBits(), uuid.getLeastSignificantBits(), (int) length));
+      }
+      String uuidStr = uuid.toString().replace("-", "");
 
       BigInteger number = new BigInteger(uuidStr, 16);
       String encoded = encode(number, alphabet, (int) length);
@@ -81,13 +86,29 @@ public final class ShortUUID {
       return new ShortUUID(encoded);
     }
 
+    /**
+     * Same as {@link #encode(BigInteger, char[], int)} for an alphabet of 64 characters, without any BigInteger:
+     * the UUID is the unsigned 128 bit number hi:lo, and dividing it by 64 is shifting it by 6 bits.
+     */
+    private String encode64(long hi, long lo, final int padToLen) {
+      StringBuilder shortUuid = new StringBuilder(23);
+      while ((hi | lo) != 0) {
+        shortUuid.append(alphabet[(int) (lo & 63)]);
+        lo = (lo >>> 6) | (hi << 58);
+        hi >>>= 6;
+      }
+      while (shortUuid.length() < padToLen) {
+        shortUuid.append(alphabet[0]);
+      }
+      return shortUuid.toString();
+    }
+
     public String decode(String shortUuid) {
       return decode(shortUuid.toCharArray(), alphabet);
     }
 
     private String encode(final BigInteger bigInt, final char[] alphabet, final int padToLen) {
-      BigInteger value = new BigInteger(bigInt.toString());
-      BigInteger alphaSize = BigInteger.valueOf(alphabetSize);
+      BigInteger value = bigInt;
       StringBuilder shortUuid = new StringBuilder();
 
       while (value.compareTo(BigInteger.ZERO) > 0) {
