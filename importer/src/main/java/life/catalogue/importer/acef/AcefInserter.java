@@ -38,7 +38,6 @@ import static com.google.common.base.Strings.emptyToNull;
  *
  */
 public class AcefInserter extends DataCsvInserter {
-  private static final Map<String, List<String>> proParteAccIds = new HashMap<>();
   private static final Logger LOG = LoggerFactory.getLogger(AcefInserter.class);
   private static final Splitter COMMA_SPLITTER = Splitter.on(',').trimResults().omitEmptyStrings();
   
@@ -96,21 +95,6 @@ public class AcefInserter extends DataCsvInserter {
     );
 
     reader.stream(AcefTerm.NameReferencesLinks).forEach(this::addReferenceLink);
-
-    LOG.info("Create additional pro parte synonyms for {} usages", proParteAccIds.size());
-    for (Map.Entry<String, List<String>> syn : proParteAccIds.entrySet()) {
-      if (!syn.getValue().isEmpty()) {
-        UsageData synU = store.usages().objByID(syn.getKey());
-        // remove the first which we generate normally
-        syn.getValue().remove(0);
-        // now create additional pro parte synonym relations for the rest
-        for (String accID : syn.getValue()) {
-          var s = synU.asSynonym();
-          s.setParentId(accID);
-          store.usages().create(synU);
-        }
-      }
-    }
   }
 
   public boolean createSynonymNameUsage(NameUsageData u) {

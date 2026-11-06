@@ -499,15 +499,6 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
   void removeFromTemp(@Param("nameID") String nameID);
 
   /**
-   * Does a recursive delete to remove an entire subtree including synonyms and cascading to all associated data.
-   * The method does not remove name records, but returns a list of all name ids so they can be removed if needed.
-   *
-   * @param key root node of the subtree to delete
-   * @return list of all name ids associated with the deleted taxa
-   */
-  List<String> deleteSubtree(@Param("key") DSID<String> key);
-
-  /**
    * List all usages from a sector different to the one given including nulls,
    * which are direct children of a taxon from the given sector key.
    *
