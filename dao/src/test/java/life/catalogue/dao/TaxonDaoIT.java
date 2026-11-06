@@ -2,8 +2,11 @@ package life.catalogue.dao;
 
 import life.catalogue.api.BeanPrinter;
 import life.catalogue.api.TestEntityGenerator;
+import life.catalogue.api.exception.NotFoundException;
+import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.NomRelType;
 import life.catalogue.api.vocab.Origin;
@@ -28,6 +31,8 @@ import org.gbif.nameparser.api.Rank;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -391,6 +396,104 @@ public class TaxonDaoIT extends DaoTestBase {
     int cnt = breakdown.print();
     System.out.println(writer);
     assertEquals(3, cnt);
+  }
+
+  private static TaxonBreakdown.Node child(List<TaxonBreakdown.Node> nodes, String id) {
+    return nodes.stream().filter(n -> id.equals(n.getName().getId())).findFirst().orElseThrow();
+  }
+
+  private static TaxonBreakdown.Node remainder(List<TaxonBreakdown.Node> nodes) {
+    return nodes.stream().filter(TaxonBreakdown.Node::isRemainder).findFirst().orElseThrow();
+  }
+
+  /**
+   * The chart object: counts by rank from the metrics, the count rank and ring ranks decided here, and a tree with
+   * remainder nodes for what sits in no node of a ring.
+   */
+  @Test
+  public void taxonBreakdown() throws Exception {
+    final int datasetKey = setupTestTreeDataset();
+
+    // Arthropoda: 2 species of its own, Insecta with Coleoptera (3 species) and Lepidoptera (4)
+    var bd = tDao.taxonBreakdown(datasetKey, "t2");
+    assertEquals("t2", bd.getTaxon().getId());
+    assertEquals(Rank.PHYLUM, bd.getTaxon().getRank());
+    assertNull(bd.getTaxon().getParent());
+    // the metrics count the descendants, not the taxon itself
+    assertEquals(Map.of(Rank.CLASS, 1, Rank.ORDER, 2, Rank.SPECIES, 9), bd.getCounts());
+    assertEquals(Rank.SPECIES, bd.getCountRank());
+    assertEquals(List.of(Rank.CLASS, Rank.ORDER), bd.getRanks());
+    assertEquals(9, bd.getTotal());
+    assertEquals(2, bd.getChildren().size());
+    var insecta = child(bd.getChildren(), "t3");
+    assertEquals(Rank.CLASS, insecta.getName().getRank());
+    assertEquals(7, insecta.getCount());
+    assertEquals(2, insecta.getChildren().size());
+    assertEquals(3, child(insecta.getChildren(), "t4").getCount());
+    assertEquals(4, child(insecta.getChildren(), "t5").getCount());
+    assertTrue(child(insecta.getChildren(), "t4").getChildren().isEmpty());
+    var rest = remainder(bd.getChildren());
+    assertEquals(Rank.CLASS, rest.getName().getRank());
+    assertEquals(2, rest.getCount());
+    assertTrue(rest.getChildren().isEmpty());
+
+    // Insecta: one ring of orders, there are no families or genera below
+    bd = tDao.taxonBreakdown(datasetKey, "t3");
+    assertEquals(Map.of(Rank.ORDER, 2, Rank.SPECIES, 7), bd.getCounts());
+    assertEquals(List.of(Rank.ORDER), bd.getRanks());
+    assertEquals(7, bd.getTotal());
+    assertEquals(2, bd.getChildren().size());
+    assertEquals(3, child(bd.getChildren(), "t4").getCount());
+    assertEquals(4, child(bd.getChildren(), "t5").getCount());
+
+    // Animalia: a species of its own next to Arthropoda, which has its own remainder in the second ring
+    bd = tDao.taxonBreakdown(datasetKey, "t1");
+    assertEquals(List.of(Rank.PHYLUM, Rank.CLASS), bd.getRanks());
+    assertEquals(10, bd.getTotal());
+    assertEquals(2, bd.getChildren().size());
+    var arthropoda = child(bd.getChildren(), "t2");
+    assertEquals(9, arthropoda.getCount());
+    assertEquals(7, child(arthropoda.getChildren(), "t3").getCount());
+    assertEquals(2, remainder(arthropoda.getChildren()).getCount());
+    assertEquals(Rank.CLASS, remainder(arthropoda.getChildren()).getName().getRank());
+    assertEquals(1, remainder(bd.getChildren()).getCount());
+    assertEquals(Rank.PHYLUM, remainder(bd.getChildren()).getName().getRank());
+
+    // Coleoptera: nothing but species, which become the only ring
+    bd = tDao.taxonBreakdown(datasetKey, "t4");
+    assertEquals(Rank.SPECIES, bd.getCountRank());
+    assertEquals(List.of(Rank.SPECIES), bd.getRanks());
+    assertEquals(3, bd.getTotal());
+    assertEquals(3, bd.getChildren().size());
+    assertEquals(1, bd.getChildren().get(0).getCount());
+
+    // the names are unwrapped into the nodes, a remainder node has only its rank and count
+    String json = ApiModule.MAPPER.writeValueAsString(tDao.taxonBreakdown(datasetKey, "t2"));
+    assertTrue(json, json.contains("\"id\":\"t3\""));
+    assertTrue(json, json.contains("\"countRank\":\"species\""));
+    assertTrue(json, json.contains("{\"rank\":\"class\",\"count\":2}"));
+  }
+
+  @Test(expected = NotFoundException.class)
+  public void taxonBreakdownGenus() throws Exception {
+    final int datasetKey = setupTestTreeDataset();
+    tDao.taxonBreakdown(datasetKey, "t100");
+  }
+
+  /**
+   * A project has no metrics and counts through elastic, which the test does not have: the object says there is
+   * nothing to chart instead of failing.
+   */
+  @Test
+  public void taxonBreakdownProject() throws Exception {
+    MybatisTestUtils.populateDraftTree(session());
+    var bd = tDao.taxonBreakdown(Datasets.COL, "t2");
+    assertEquals("t2", bd.getTaxon().getId());
+    assertTrue(bd.getCounts().isEmpty());
+    assertNull(bd.getCountRank());
+    assertTrue(bd.getRanks().isEmpty());
+    assertEquals(0, bd.getTotal());
+    assertTrue(bd.getChildren().isEmpty());
   }
 
   @Test

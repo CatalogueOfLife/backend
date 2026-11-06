@@ -193,22 +193,35 @@ public class TaxonResource extends AbstractDatasetScopedResource<String, Taxon, 
     return txtTreeDao.insertTxtree(datasetKey, id, user, txtree, replace);
   }
 
+  /**
+   * Two shapes: without any parameter the breakdown object, which carries the taxon, its counts by rank, the count rank
+   * and ring ranks decided by the backend, the total and a tree with remainder nodes. With level or countRank given the
+   * legacy array of nested nodes, each counted under a property named after the count rank, which every client passes
+   * today and which pinned portal-components versions keep relying on.
+   */
   @GET
   @Path("{id}/breakdown")
   public Response breakdown(@PathParam("key") int datasetKey,
                             @PathParam("id") String id,
-                            @QueryParam("level") @DefaultValue("1")
-                            @Parameter(description = "Depth of the breakdown tree. Only level 1 or 2 are supported.",
-                                       schema = @Schema(type = "integer", allowableValues = {"1", "2"}, defaultValue = "1"))
-                            int level,
-                            @QueryParam("countRank") @DefaultValue("species")
-                            @Parameter(description = "Rank to count for each node, emitted as a property of that name. "
-                                                   + "Defaults to species; use e.g. genus for groups without species.")
+                            @QueryParam("level")
+                            @Parameter(description = "Depth of the legacy breakdown array. Only level 1 or 2 are supported. "
+                                                   + "Given alone it defaults countRank to species.",
+                                       schema = @Schema(type = "integer", allowableValues = {"1", "2"}))
+                            Integer level,
+                            @QueryParam("countRank")
+                            @Parameter(description = "Rank to count for each node of the legacy breakdown array, emitted as a property "
+                                                   + "of that name. Given alone it defaults level to 1. "
+                                                   + "Leave both out for the breakdown object, which decides the count rank and ring ranks itself.")
                             Rank countRank
   ) {
+    if (level == null && countRank == null) {
+      return Response.ok(dao.taxonBreakdown(datasetKey, id)).build();
+    }
+    final int lvl = level == null ? 1 : level;
+    final Rank cr = countRank == null ? Rank.SPECIES : countRank;
     StreamingOutput stream = os -> {
       try (Writer writer = UTF8IoUtils.writerFromStream(os);
-           JsonTreePrinter printer = dao.childrenBreakdownPrinter(datasetKey, id, level, countRank, writer)
+           JsonTreePrinter printer = dao.childrenBreakdownPrinter(datasetKey, id, lvl, cr, writer)
       ) {
         printer.print();
         writer.flush();
