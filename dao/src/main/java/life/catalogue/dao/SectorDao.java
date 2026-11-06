@@ -49,16 +49,15 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
       if (request.isNested()) {
         // find nested sectors by searching for the usage and then look for all sectors underneath!
         var num = session.getMapper(NameUsageMapper.class);
-        List<SimpleName> usages = null;
+        List<SimpleName> usages = new ArrayList<>(); // we want a mutable list
         if (request.getId() != null) {
           var sn = num.getSimple(DSID.of(request.getDatasetKey(), request.getId()));
           if (sn != null) {
-            usages = new ArrayList<>(); // we want a mutable list
             usages.add(sn);
           }
 
         } else if (request.getName() != null) {
-          usages = num.findSimple(request.getDatasetKey(), null, null, request.getRank(), request.getName());
+          usages.addAll(num.findSimple(request.getDatasetKey(), null, null, request.getRank(), request.getName()));
 
         } else {
           throw new IllegalArgumentException("A nested sector search requires either an ID or NAME parameter");
@@ -70,7 +69,8 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
           Set<Integer> nestedSectorsKeys = new HashSet<>();
           final var key = DSID.<String>root(request.getDatasetKey());
           for (var u : usages) {
-            nestedSectorsKeys.addAll( sm.listDescendantSectorKeys(key.id(u.getId())) );
+            // the sectors targeting the usage itself are regular hits already
+            nestedSectorsKeys.addAll( sm.listDescendantSectorKeys(key.id(u.getId()), false) );
           }
           if (!nestedSectorsKeys.isEmpty()) {
             // nested sectors do exist!
@@ -79,25 +79,27 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
             final int nestedCnt = nestedSectorsKeys.size();
             LOG.info("Found {} nested sectors in addition to {} regular sectors for {} {}", nestedCnt, regularCnt, request.getRank(), request.getName());
             if (regularCnt < p.getLimitWithOffset()) {
-              // we need to add nested results
-              final Page nestedPage = new Page(Math.max(0, p.getOffset()-regularCnt), p.getLimit() - result.size());
+              // we need to add nested results, which are paged after all regular hits
+              final int nestedOffset = Math.max(0, p.getOffset() - regularCnt);
               List<Integer> nestedKeys = nestedSectorsKeys.stream()
                 .sorted()
                 .collect(Collectors.toList());
-              // we might need to apply request filters to the sectors, so we cannot just load the first page
-              List<Sector> nestedSectors = new ArrayList<>();
+              // we might need to apply request filters to the sectors, so we cannot just load the requested page:
+              // skip the first nestedOffset sectors passing the filters, then fill up the page
+              int skipped = 0;
               for (var sKey : nestedKeys) {
-                if (nestedSectors.size() >= nestedPage.getLimit()) {
+                if (result.size() >= p.getLimit()) {
                   break;
                 }
                 var s = sm.get(DSID.of(request.getDatasetKey(), sKey));
-                if (filterSector(s, request)) {
-                  nestedSectors.add(s);
+                if (s != null && filterSector(s, request)) {
+                  if (skipped < nestedOffset) {
+                    skipped++;
+                  } else {
+                    result.add(s);
+                  }
                 }
               }
-              result.addAll(
-                nestedSectors.subList(nestedPage.getOffset(), Math.min(nestedSectorsKeys.size(), nestedPage.getLimitWithOffset()))
-              );
             }
             return new ResultPage<>(p, regularCnt+nestedCnt, result);
           }

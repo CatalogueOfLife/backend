@@ -278,6 +278,59 @@ public class SectorDaoTest extends DaoTestBase {
     }
   }
 
+  /**
+   * Nested sectors are paged after the regular hits. A page starting beyond the regular hits used to fail with an
+   * IndexOutOfBoundsException, an unknown id with a NullPointerException, and the sectors attached to the queried
+   * taxon itself were listed twice.
+   */
+  @Test
+  public void nestedSearch() {
+    try (SqlSession session = factory().openSession(true)) {
+      MybatisTestUtils.populateDraftTree(session);
+      MybatisTestUtils.populateTestTree(12, session);
+    }
+    // t1 > t2 > t3 > t4, t5 in the project
+    int regular = attachSector("t2", "t2");
+    int n3 = attachSector("t3", "t3");
+    int n4 = attachSector("t4", "t4");
+    int n5 = attachSector("t5", "t5");
+
+    var req = SectorSearchRequest.byProject(Datasets.COL);
+    req.setId("t2");
+    req.setNested(true);
+
+    var resp = dao.search(req, new Page(0, 10));
+    assertEquals(4, resp.getTotal());
+    assertEquals(List.of(regular, n3, n4, n5), resp.getResult().stream().map(Sector::getId).toList());
+
+    // the first page ends within the nested sectors
+    resp = dao.search(req, new Page(0, 2));
+    assertEquals(List.of(regular, n3), resp.getResult().stream().map(Sector::getId).toList());
+
+    // a page beyond the regular hits
+    resp = dao.search(req, new Page(2, 2));
+    assertEquals(4, resp.getTotal());
+    assertEquals(List.of(n4, n5), resp.getResult().stream().map(Sector::getId).toList());
+
+    resp = dao.search(req, new Page(3, 5));
+    assertEquals(List.of(n5), resp.getResult().stream().map(Sector::getId).toList());
+
+    // an id that does not exist
+    req.setId("nope");
+    resp = dao.search(req, new Page());
+    assertEquals(0, resp.getTotal());
+    assertTrue(resp.getResult().isEmpty());
+  }
+
+  private int attachSector(String subjectID, String targetID) {
+    Sector s = SectorMapperTest.create();
+    s.setSubjectDatasetKey(12);
+    s.getSubject().setId(subjectID);
+    s.getTarget().setId(targetID);
+    s.setMode(Sector.Mode.ATTACH);
+    return dao.create(s, user).getId();
+  }
+
   static Sector hierarchySector() {
     Sector s = mergeSector(12, null);
     s.setMode(Sector.Mode.HIERARCHY);
