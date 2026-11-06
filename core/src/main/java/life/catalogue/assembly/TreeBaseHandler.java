@@ -163,27 +163,70 @@ public abstract class TreeBaseHandler implements TreeHandler {
     }
 
     // we open up a separate batch session that we can write to so we do not disturb the open main cursor for processing with this handler
-    session = factory.openSession(true);
-    numRO = session.getMapper(NameUsageMapper.class);
-    vrmRO = session.getMapper(VerbatimRecordMapper.class);
-    // load target taxon
-    target = session.getMapper(TaxonMapper.class).get(targetKey.id(sector.getTargetID()));
-    targetUsage = usage(target, null, null);
-    // load source dataset
-    source = session.getMapper(DatasetMapper.class).get(sector.getSubjectDatasetKey());
+    // Both are pooled connections: a constructor that fails after opening them must close them, nobody else can.
+    SqlSession readSession = null;
+    SqlSession writeSession = null;
+    try {
+      readSession = factory.openSession(true);
+      numRO = readSession.getMapper(NameUsageMapper.class);
+      vrmRO = readSession.getMapper(VerbatimRecordMapper.class);
+      // load target taxon
+      target = readSession.getMapper(TaxonMapper.class).get(targetKey.id(sector.getTargetID()));
+      targetUsage = usage(target, null, null);
+      // load source dataset
+      source = readSession.getMapper(DatasetMapper.class).get(sector.getSubjectDatasetKey());
 
-    // writes only
-    batchSession = factory.openSession(ExecutorType.BATCH, false);
-    vsm = batchSession.getMapper(VerbatimSourceMapper.class);
-    rm = batchSession.getMapper(ReferenceMapper.class);
-    tm = batchSession.getMapper(TaxonMapper.class);
-    nm = batchSession.getMapper(NameMapper.class);
-    nmm= batchSession.getMapper(NameMatchMapper.class);
-    num= batchSession.getMapper(NameUsageMapper.class);
+      // writes only
+      writeSession = factory.openSession(ExecutorType.BATCH, false);
+      vsm = writeSession.getMapper(VerbatimSourceMapper.class);
+      rm = writeSession.getMapper(ReferenceMapper.class);
+      tm = writeSession.getMapper(TaxonMapper.class);
+      nm = writeSession.getMapper(NameMapper.class);
+      nmm= writeSession.getMapper(NameMatchMapper.class);
+      num= writeSession.getMapper(NameUsageMapper.class);
 
-    // update verbatim source id generator - use current max
-    vsIdGen=vsm.getMaxID(targetDatasetKey)+1;
-    LOG.info("Start new verbatim source ids from {}", vsIdGen);
+      // update verbatim source id generator - use current max
+      vsIdGen=vsm.getMaxID(targetDatasetKey)+1;
+      LOG.info("Start new verbatim source ids from {}", vsIdGen);
+
+    } catch (RuntimeException | Error e) {
+      closeQuietly(writeSession);
+      closeQuietly(readSession);
+      throw e;
+    }
+    session = readSession;
+    batchSession = writeSession;
+  }
+
+  /**
+   * Closes both sessions without committing, the second even if closing the first fails.
+   * Subclasses whose constructor fails after this one completed must call it, as the handler is never closed then.
+   */
+  protected void closeSessions() {
+    closeQuietly(batchSession);
+    closeQuietly(session);
+  }
+
+  private static void closeQuietly(@Nullable SqlSession s) {
+    if (s != null) {
+      try {
+        s.close();
+      } catch (RuntimeException e) {
+        LOG.warn("Failed to close sql session", e);
+      }
+    }
+  }
+
+  /**
+   * Commits both sessions and closes them, also when a commit fails.
+   */
+  protected void commitAndCloseSessions() {
+    try {
+      session.commit();
+      batchSession.commit();
+    } finally {
+      closeSessions();
+    }
   }
 
   @Override
@@ -1007,9 +1050,6 @@ public abstract class TreeBaseHandler implements TreeHandler {
 
   @Override
   public void close() throws InterruptedException{
-    session.commit();
-    session.close();
-    batchSession.commit();
-    batchSession.close();
+    commitAndCloseSessions();
   }
 }

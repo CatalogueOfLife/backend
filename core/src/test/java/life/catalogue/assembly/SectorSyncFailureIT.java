@@ -4,7 +4,9 @@ import life.catalogue.TestUtils;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.SectorImport;
+import life.catalogue.api.model.Taxon;
 import life.catalogue.api.vocab.Datasets;
+import life.catalogue.api.vocab.EntityType;
 import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.db.mapper.SectorImportMapper;
@@ -15,6 +17,14 @@ import life.catalogue.junit.PgSetupRule;
 import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.junit.TestDataRule;
 import life.catalogue.junit.TreeRepoRule;
+import life.catalogue.dao.CopyUtil;
+import life.catalogue.matching.nidx.NameIndexFactory;
+import life.catalogue.release.UsageIdGen;
+
+import org.gbif.nameparser.api.Rank;
+
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.ibatis.session.SqlSession;
 import org.junit.ClassRule;
@@ -25,6 +35,7 @@ import org.junit.rules.TestRule;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -142,6 +153,48 @@ public class SectorSyncFailureIT extends SectorSyncTestBase {
   /**
    * A fresh sector with one successful sync recorded as attempt 1, which the sector pins.
    */
+  private static Sector handlerSector() {
+    Sector s = new Sector();
+    s.setId(999);
+    s.setDatasetKey(Datasets.COL);
+    s.setSubjectDatasetKey(TestDataRule.APPLE.key);
+    s.setMode(Sector.Mode.ATTACH);
+    s.setEntities(Set.of(EntityType.NAME_USAGE));
+    s.setRanks(Set.of(Rank.values()));
+    return s;
+  }
+
+  /**
+   * A copy sync that fails while it syncs its last buffered usages from close(), e.g. as it was cancelled, must still
+   * hand both pooled connections back. They used to stay borrowed for good, one pair per failed sync.
+   */
+  @Test
+  public void copyHandlerReleasesSessionsWhenClosingFails() throws Exception {
+    final int before = SqlSessionFactoryRule.activeConnections();
+    var handler = new TreeCopyHandler(Datasets.COL, Map.of(), SqlSessionFactoryRule.getSqlSessionFactory(),
+      NameIndexFactory.passThru(), Users.TESTER, handlerSector(), new SectorImport());
+    assertEquals(before + 2, SqlSessionFactoryRule.activeConnections());
+
+    // a buffered usage the handler cannot process, so syncing the last usages in close() throws
+    handler.acceptThrows(new Taxon());
+    assertThrows(NullPointerException.class, handler::close);
+    assertEquals("the handler must release its sessions", before, SqlSessionFactoryRule.activeConnections());
+  }
+
+  /**
+   * A merge handler whose own constructor fails after the base class opened its sessions must close them,
+   * nobody else has a reference to the half built handler.
+   */
+  @Test
+  public void mergeHandlerReleasesSessionsWhenConstructionFails() {
+    final int before = SqlSessionFactoryRule.activeConnections();
+    assertThrows(IllegalStateException.class, () -> new TreeMergeHandler(Datasets.COL, TestDataRule.APPLE.key, Map.of(),
+      SqlSessionFactoryRule.getSqlSessionFactory(), s -> { throw new IllegalStateException("no matcher"); },
+      NameIndexFactory.passThru(), Users.TESTER, handlerSector(), new SectorImport(), null,
+      CopyUtil.ID_GENERATOR, CopyUtil.ID_GENERATOR, UsageIdGen.RANDOM_SHORT_UUID, null));
+    assertEquals("the handler must release its sessions", before, SqlSessionFactoryRule.activeConnections());
+  }
+
   private DSID<Integer> createSectorWithGoodSync() {
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       var sm = session.getMapper(SectorMapper.class);

@@ -107,10 +107,14 @@ public class BaseMatcher {
 
     @Override
     public void close() throws RuntimeException {
-      if (!update) {
-        batchSession.commit();
+      try {
+        if (!update) {
+          batchSession.commit();
+        }
+      } finally {
+        // a failed final flush must not cost the pooled connection
+        batchSession.close();
       }
-      batchSession.close();
       total += _total;
       updated += _updated;
       nomatch += _nomatch;

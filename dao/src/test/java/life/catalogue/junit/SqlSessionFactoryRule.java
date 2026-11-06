@@ -40,6 +40,13 @@ public abstract class SqlSessionFactoryRule extends ExternalResource {
     return sqlSessionFactory;
   }
 
+  /**
+   * @return the number of pooled connections currently borrowed, e.g. to assert that nothing leaked a session
+   */
+  public static int activeConnections() {
+    return dataSource.getHikariPoolMXBean().getActiveConnections();
+  }
+
   public PgConnection connect() throws SQLException {
     LOG.debug("Connection directly via JDBC");
     return cfg.connect();
