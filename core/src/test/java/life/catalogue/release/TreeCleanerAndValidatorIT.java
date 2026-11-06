@@ -34,6 +34,7 @@ public class TreeCleanerAndValidatorIT {
   final static int datasetKey = 100;
   final static int synParentKey = 101;
   final static int rulesKey = 102;
+  final static int emptyGenusKey = 103;
 
   public final static SqlSessionFactoryRule pg = new PgSetupRule(); // PgConnectionRule("col", "postgres", "postgres");
 
@@ -44,7 +45,8 @@ public class TreeCleanerAndValidatorIT {
     .around(new TxtTreeDataRule(List.of(
       new TxtTreeDataRule.TreeDataset(datasetKey, "txtree/validation/mismatch.txtree"),
       new TxtTreeDataRule.TreeDataset(synParentKey, "txtree/validation/synonym-parent.txtree"),
-      new TxtTreeDataRule.TreeDataset(rulesKey, "txtree/validation/rules.txtree")
+      new TxtTreeDataRule.TreeDataset(rulesKey, "txtree/validation/rules.txtree"),
+      new TxtTreeDataRule.TreeDataset(emptyGenusKey, "txtree/validation/empty-genus.txtree")
     )));
 
   static void validate(int key) {
@@ -102,6 +104,31 @@ public class TreeCleanerAndValidatorIT {
     assertIssues(synParentKey, Rank.SPECIES, "Poa annua", Issue.MISSING_AUTHORSHIP);
     // the taxon below the synonym is left out
     assertIssues(synParentKey, Rank.SPECIES, "Diamesa kundera");
+  }
+
+  /**
+   * An empty genus merged from an extended release source is removed together with its synonyms.
+   * The synonyms used to stay, as the genus itself was deleted once per synonym, so the deferred parent foreign key
+   * failed the commit and with it the release.
+   */
+  @Test
+  public void removeEmptyGenusWithSynonym() throws Exception {
+    var factory = SqlSessionFactoryRule.getSqlSessionFactory();
+    // the write session mirrors XRelease: not autocommit, so the deferred parent FK is checked on commit
+    try (SqlSession sessionRO = factory.openSession(true);
+         SqlSession session = factory.openSession(false)
+    ) {
+      new TreeCleanerAndValidator(session, emptyGenusKey, true).validate(sessionRO);
+      session.commit();
+    }
+    try (SqlSession session = factory.openSession(true)) {
+      var num = session.getMapper(NameUsageMapper.class);
+      assertNull(num.get(DSID.of(emptyGenusKey, "~gen")));
+      assertNull(num.get(DSID.of(emptyGenusKey, "~syn")));
+      // genera not merged from an extended release source and genera with species stay
+      assertNotNull(num.get(DSID.of(emptyGenusKey, "dia")));
+      assertNotNull(num.get(DSID.of(emptyGenusKey, "abe")));
+    }
   }
 
   /**
