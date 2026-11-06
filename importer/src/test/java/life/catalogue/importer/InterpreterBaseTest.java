@@ -344,6 +344,7 @@ public class InterpreterBaseTest {
       "1999", 1999,
       "1999b", 1999,
       "184?", 1840,
+      "185 ?", 1850, // the pattern allows whitespace before the question mark
       " 1999", 1999,
       " 1778 b", 1778,
       "1761 D", 1761

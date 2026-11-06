@@ -73,8 +73,8 @@ public class InterpreterUtils {
       Matcher m = YEAR_PATTERN.matcher(year.trim());
       if (m.find()) {
         Integer y;
-        if (m.group(2).equals("?")) {
-          // convert ? to a zero
+        if (m.group(2).endsWith("?")) {
+          // convert ? to a zero, the pattern allows whitespace before it as in "185 ?"
           y = Integer.parseInt(m.group(1)+"0");
         } else {
           y = Integer.parseInt(m.group(1)+m.group(2));
