@@ -216,15 +216,6 @@ public class StringUtils {
     return null;
   }
 
-  public boolean allEmpty(String... strings) {
-    for (String s : strings) {
-      if (!org.apache.commons.lang3.StringUtils.isEmpty(s)) {
-        return false;
-      }
-    }
-    return true;
-  }
-
   /**
    * Returns an uppercase ASCII string for the given input. Replaces all non digit or letter characters with a single space, including
    * invisible control characters, underscore, dashes and punctuation and converts that to upper case and trims and normalizes whitespace;
@@ -353,17 +344,20 @@ public class StringUtils {
     if(text == null || (trim && text.isEmpty())) {
       return null;
     }
-    // most values need no escaping: return them as they are, or without their trailing spaces when trimming.
-    // Leading spaces take the long way below.
-    if (!needsPgCopyEscaping(text) && (!trim || text.charAt(0) != ' ')) {
+    // most values need no escaping: return them as they are, or without their leading and trailing spaces when trimming
+    if (!needsPgCopyEscaping(text)) {
       if (!trim) {
         return text;
       }
+      int start = 0;
       int end = text.length();
-      while (text.charAt(end - 1) == ' ') {
+      while (start < end && text.charAt(start) == ' ') {
+        start++;
+      }
+      while (end > start && text.charAt(end - 1) == ' ') {
         end--;
       }
-      return text.substring(0, end);
+      return start == end ? null : text.substring(start, end);
     }
 
     int stackedSpace = 0;
@@ -378,10 +372,15 @@ public class StringUtils {
         continue;
       }
 
-      if (stackedSpace > 0 && (!trim || sb.length()>0)) {
-        while(stackedSpace > 0) {
-          sb.append(' ');
-          stackedSpace--;
+      if (stackedSpace > 0) {
+        if (!trim || sb.length() > 0) {
+          while (stackedSpace > 0) {
+            sb.append(' ');
+            stackedSpace--;
+          }
+        } else {
+          // leading spaces are trimmed, they must not end up in the first gap of the value
+          stackedSpace = 0;
         }
       }
       switch(ch) {

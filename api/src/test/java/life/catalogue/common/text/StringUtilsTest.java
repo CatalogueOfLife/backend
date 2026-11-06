@@ -31,6 +31,9 @@ public class StringUtilsTest {
     assertNull(StringUtils.escapePgCopy("", true));
     assertNull(StringUtils.escapePgCopy(" ", true));
     assertNull(StringUtils.escapePgCopy("   ", true));
+    // leading spaces are trimmed, not moved into the first gap of the value
+    assertEquals("a b", StringUtils.escapePgCopy("  a b", true));
+    assertEquals("a\\tb  c", StringUtils.escapePgCopy("   a\tb  c  ", true));
   }
 
   @Test
