@@ -1,5 +1,6 @@
 package life.catalogue.concurrent;
 
+import life.catalogue.api.exception.TooManyRequestsException;
 import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.JobPriority;
@@ -386,6 +387,83 @@ public class JobExecutorTest {
     awaitIdle(ex);
     ex.stop();
     assertTrue(persisted.get(queued.getKey()).stream().noneMatch(s -> s == JobStatus.RUNNING || s == JobStatus.FINISHED));
+  }
+
+  static class LatchJob extends BackgroundJob {
+    final CountDownLatch latch;
+
+    LatchJob(CountDownLatch latch) {
+      super(JobExecutorTest.user.getKey());
+      this.latch = latch;
+    }
+
+    @Override
+    public void execute() throws Exception {
+      latch.await(10, TimeUnit.SECONDS);
+    }
+  }
+  static class PlainJob extends LatchJob {
+    PlainJob(CountDownLatch latch) {
+      super(latch);
+    }
+  }
+  static abstract class GroupedJob extends LatchJob {
+    GroupedJob(CountDownLatch latch) {
+      super(latch);
+    }
+    @Override
+    public Class<? extends BackgroundJob> maxPerUserClass() {
+      return GroupedJob.class;
+    }
+  }
+  static class GroupedJobA extends GroupedJob {
+    GroupedJobA(CountDownLatch latch) {
+      super(latch);
+    }
+  }
+  static class GroupedJobB extends GroupedJob {
+    GroupedJobB(CountDownLatch latch) {
+      super(latch);
+    }
+  }
+
+  /**
+   * A user limit applies to the jobs of its class group alone, and is configured by the name of that group.
+   * Jobs of any other class used to count against it, and a limit for a group like DatasetExportJob never applied
+   * as it was looked up by the concrete class name.
+   */
+  @Test
+  public void userLimits() throws Exception {
+    UserCrudDao udao = mock(UserCrudDao.class);
+    doReturn(user).when(udao).get(any());
+    var cfg = JobConfig.withThreads(1);
+    cfg.userLimit.put("GroupedJob", 2);
+    cfg.userLimit.put("PlainJob", 1);
+    var ex = new JobExecutor(cfg, new MetricRegistry(), null, udao, null);
+    ex.start();
+    var latch = new CountDownLatch(1);
+    try {
+      // two jobs of another class do not count against the group
+      ex.submit(new LatchJob(latch));
+      ex.submit(new LatchJob(latch));
+      ex.submit(new PlainJob(latch));
+      assertThrows(TooManyRequestsException.class, () -> ex.submit(new PlainJob(latch)));
+
+      // the group limit covers all its classes
+      ex.submit(new GroupedJobA(latch));
+      ex.submit(new GroupedJobB(latch));
+      assertThrows(TooManyRequestsException.class, () -> ex.submit(new GroupedJobA(latch)));
+      assertThrows(TooManyRequestsException.class, () -> ex.submit(new GroupedJobB(latch)));
+      assertEquals(5, ex.getQueue().size());
+
+      // admins are not limited
+      user.setRoles(Set.of(User.Role.ADMIN));
+      ex.submit(new GroupedJobA(latch));
+    } finally {
+      user.setRoles(Set.of());
+      latch.countDown();
+      ex.stop();
+    }
   }
 
   static class SerialJob extends BackgroundJob {
