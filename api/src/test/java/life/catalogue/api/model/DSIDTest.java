@@ -7,6 +7,13 @@ import static org.junit.Assert.*;
 public class DSIDTest {
 
   @Test
+  public void hasId() {
+    assertTrue(DSID.of(73, "1234").hasId());
+    assertTrue(DSID.of(73, 1234).hasId());
+    assertFalse(DSID.<String>of(73, null).hasId());
+  }
+
+  @Test
   public void concat() {
     assertEquals("73:1234", DSID.of(73, "1234").concat());
     assertEquals("73:-1Gtsjh ).", DSID.of(73, "-1Gtsjh ).").concat());

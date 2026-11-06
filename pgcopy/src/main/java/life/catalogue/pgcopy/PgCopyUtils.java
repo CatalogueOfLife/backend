@@ -165,7 +165,8 @@ public class PgCopyUtils {
       if (bytes == null) {
         return -1;
       }
-      return bytes[idx++];
+      // as an unsigned byte, a negative value means the end of the stream
+      return bytes[idx++] & 0xFF;
     }
 
     /**
