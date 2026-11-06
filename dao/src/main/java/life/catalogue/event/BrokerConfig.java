@@ -8,6 +8,9 @@ public class BrokerConfig {
   @NotNull
   public String queueDir = "/tmp/clb-queue";
 
+  /**
+   * Name of the broker, only used in logs. It used to name the queue tailers.
+   */
   @NotNull
   public String name = "main";
 
