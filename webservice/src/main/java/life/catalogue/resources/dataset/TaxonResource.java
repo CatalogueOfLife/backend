@@ -4,7 +4,6 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.Language;
 import life.catalogue.api.vocab.TreatmentFormat;
-import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.common.util.LoggingUtils;
 import life.catalogue.common.ws.MoreMediaTypes;
 import life.catalogue.dao.TaxonDao;
@@ -13,12 +12,10 @@ import life.catalogue.db.mapper.*;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.dw.jersey.filter.ProjectOnly;
 import life.catalogue.dw.jersey.filter.VaryAccept;
-import life.catalogue.printer.JsonTreePrinter;
 
 import org.gbif.nameparser.api.Rank;
 
 import java.io.InputStream;
-import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Set;
@@ -33,7 +30,6 @@ import org.slf4j.LoggerFactory;
 import io.dropwizard.auth.Auth;
 import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
@@ -193,27 +189,20 @@ public class TaxonResource extends AbstractDatasetScopedResource<String, Taxon, 
     return txtTreeDao.insertTxtree(datasetKey, id, user, txtree, replace);
   }
 
+  /**
+   * The breakdown of the taxon's subtree for a chart: the taxon, its accepted descendants by rank, the rank the nodes
+   * are counted at and the one or two ring ranks the tree is built of, both decided here, the total and the tree with
+   * remainder nodes for what sits in no node of a ring. Replaced the array of nested nodes on 2026-11-06.
+   */
   @GET
   @Path("{id}/breakdown")
-  public Response breakdown(@PathParam("key") int datasetKey,
-                            @PathParam("id") String id,
-                            @QueryParam("level") @DefaultValue("1")
-                            @Parameter(description = "Depth of the breakdown tree. Only level 1 or 2 are supported.",
-                                       schema = @Schema(type = "integer", allowableValues = {"1", "2"}, defaultValue = "1"))
-                            int level,
-                            @QueryParam("countRank") @DefaultValue("species")
-                            @Parameter(description = "Rank to count for each node, emitted as a property of that name. "
-                                                   + "Defaults to species; use e.g. genus for groups without species.")
-                            Rank countRank
+  public TaxonBreakdown breakdown(@PathParam("key") int datasetKey,
+                                  @PathParam("id") String id,
+                                  @QueryParam("countRank")
+                                  @Parameter(description = "Rank to count the nodes at. Defaults to species, or to genus "
+                                                         + "when genera outnumber species more than twofold.")
+                                  Rank countRank
   ) {
-    StreamingOutput stream = os -> {
-      try (Writer writer = UTF8IoUtils.writerFromStream(os);
-           JsonTreePrinter printer = dao.childrenBreakdownPrinter(datasetKey, id, level, countRank, writer)
-      ) {
-        printer.print();
-        writer.flush();
-      }
-    };
-    return Response.ok(stream).build();
+    return dao.taxonBreakdown(datasetKey, id, countRank);
   }
 }

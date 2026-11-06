@@ -19,12 +19,12 @@ import life.catalogue.matching.TaxGroupAnalyzer;
 import life.catalogue.parser.AreaLabelLookup;
 import life.catalogue.printer.AbstractPrinter;
 import life.catalogue.printer.JsonTreeCollector;
-import life.catalogue.printer.JsonTreePrinter;
 import life.catalogue.printer.PrinterFactory;
 
 import org.gbif.nameparser.api.Rank;
 import org.gbif.nameparser.util.RankUtils;
 
+import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.*;
@@ -834,48 +834,104 @@ public class TaxonDao extends NameUsageBaseDao<Taxon, TaxonMapper> implements Ta
     return null;
   }
 
-  public JsonTreeCollector childrenBreakdownCollector(int datasetKey, String id) {
-    return childrenBreakdownCollector(datasetKey, id, 1);
-  }
-  public JsonTreeCollector childrenBreakdownCollector(int datasetKey, String id, int levels) {
-    var wrapper = childrenBreakdown(JsonTreeCollector.class, datasetKey, id, levels, Rank.SPECIES, new StringWriter());
-    wrapper.printer.setTaxon(wrapper.taxon);
-    return wrapper.printer;
-  }
-
-  public JsonTreePrinter childrenBreakdownPrinter(int datasetKey, String id, Writer writer) {
-    return childrenBreakdownPrinter(datasetKey, id, 1, Rank.SPECIES, writer);
-  }
-  public JsonTreePrinter childrenBreakdownPrinter(int datasetKey, String id, int level, Writer writer) {
-    return childrenBreakdownPrinter(datasetKey, id, level, Rank.SPECIES, writer);
-  }
-  public JsonTreePrinter childrenBreakdownPrinter(int datasetKey, String id, int level, @Nullable Rank countRank, Writer writer) {
-    return childrenBreakdown(JsonTreePrinter.class, datasetKey, id, level, countRank, writer).printer;
-  }
-
-  private static class PrinterWrapper<T> {
-    T printer;
-    SimpleName taxon;
-
-    public PrinterWrapper(T printer, SimpleName taxon) {
-      this.printer = printer;
-      this.taxon = taxon;
-    }
+  /**
+   * The breakdown of a taxon's subtree as one object for a chart: counts by rank, the count rank and ring ranks decided
+   * by {@link BreakdownRules} and the tree with remainder nodes.
+   */
+  public TaxonBreakdown taxonBreakdown(int datasetKey, String id) {
+    return taxonBreakdown(datasetKey, id, null);
   }
 
   /**
-   * @param level number of nesting levels for major Linnean ranks to return.
-   *               Currently only 1 or 2 is supported, e.g. orders and families.
+   * @param countRank the rank to count the nodes at, overriding the rule
    */
-  private <T extends AbstractPrinter> PrinterWrapper<T> childrenBreakdown(Class<T> clazz, int datasetKey, String id, int level, @Nullable Rank countRank, Writer writer) {
-    if (level != 1 && level != 2) {
-      throw new IllegalArgumentException("Breakdown level has to be 1 or 2, not " + level);
-    }
-    if (countRank == null) {
-      countRank = Rank.SPECIES;
-    }
+  public TaxonBreakdown taxonBreakdown(int datasetKey, String id, @Nullable Rank countRank) {
     var key = DSID.of(datasetKey, id);
     var tax = getSimpleOr404(key);
+    var rank = breakdownRank(key, tax);
+    var counts = rankCounts(key);
+    if (countRank == null) {
+      countRank = BreakdownRules.countRank(counts);
+    }
+    var ranks = BreakdownRules.ringRanks(rank, counts, countRank);
+
+    var bd = new TaxonBreakdown();
+    tax.setParent(null);
+    bd.setTaxon(tax);
+    bd.setCounts(counts);
+    bd.setCountRank(countRank);
+    bd.setRanks(ranks);
+    if (countRank == null || ranks.isEmpty()) {
+      return bd;
+    }
+    bd.setTotal(counts.getOrDefault(countRank, 0));
+    var collector = childrenBreakdown(JsonTreeCollector.class, key, new HashSet<>(ranks), countRank, new StringWriter());
+    try {
+      collector.print();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+    bd.setChildren(breakdownNodes(collector.getRoot(), ranks, countRank, 0, bd.getTotal()));
+    return bd;
+  }
+
+  /**
+   * Converts one ring of the collected tree, adding a remainder node for the parent's counted descendants that sit in
+   * no node of the ring. A node of the count rank counts itself: the metrics only count descendants, so a species ring
+   * counted by species would otherwise be all zeros and one big remainder.
+   */
+  private static List<TaxonBreakdown.Node> breakdownNodes(List<JsonTreeCollector.TreeName> names, List<Rank> ranks, Rank countRank,
+                                                          int ring, int parentCount) {
+    List<TaxonBreakdown.Node> nodes = new ArrayList<>();
+    int sum = 0;
+    for (var tn : names) {
+      var sn = new SimpleName(tn.name);
+      sn.setParent(null);
+      int count = sn.getRank() == countRank ? 1 : tn.count;
+      var node = new TaxonBreakdown.Node(sn, count);
+      if (ring + 1 < ranks.size()) {
+        node.setChildren(breakdownNodes(tn.children, ranks, countRank, ring + 1, count));
+      }
+      nodes.add(node);
+      sum += count;
+    }
+    if (parentCount > sum) {
+      nodes.add(TaxonBreakdown.Node.remainder(ranks.get(ring), parentCount - sum));
+    }
+    return nodes;
+  }
+
+  /**
+   * Accepted descendants of a taxon by rank, the taxon itself not counted: from the taxon metrics for any dataset that
+   * has them, through elastic for projects. Empty when neither is available.
+   */
+  public Map<Rank, Integer> rankCounts(DSID<String> key) {
+    if (DatasetInfoCache.CACHE.info(key.getDatasetKey()).origin == DatasetOrigin.PROJECT) {
+      if (searchService == null) return Map.of(); // should be in tests only
+      var req = new NameUsageSearchRequest();
+      req.setDatasetFilter(key.getDatasetKey());
+      req.addFilter(NameUsageSearchParameter.TAXON_ID, key.getId());
+      req.addFilter(NameUsageSearchParameter.STATUS, TaxonomicStatus.ACCEPTED, TaxonomicStatus.PROVISIONALLY_ACCEPTED);
+      req.setFacets(Set.of(NameUsageSearchParameter.RANK));
+      req.setFacetLimit(Rank.values().length);
+      var facet = searchService.search(req, new Page(0, 0)).getFacets().get(NameUsageSearchParameter.RANK);
+      Map<Rank, Integer> counts = new EnumMap<>(Rank.class);
+      if (facet != null) {
+        for (var f : facet) {
+          counts.put((Rank) f.getValue(), f.getCount());
+        }
+      }
+      return counts;
+    }
+    var metrics = getMetrics(key);
+    return metrics == null || metrics.getTaxaByRankCount() == null ? Map.of() : metrics.getTaxaByRankCount();
+  }
+
+  /**
+   * The concrete rank a breakdown starts from: the taxon's own, or for an unranked or other rank the lowest concrete
+   * rank of its classification. Genera and below have no breakdown.
+   */
+  private Rank breakdownRank(DSID<String> key, SimpleName tax) {
     var rank = tax.getRank();
     // lookup lowest concrete parent rank or default to kingdom
     if (rank.otherOrUnranked()) {
@@ -887,29 +943,28 @@ public class TaxonDao extends NameUsageBaseDao<Taxon, TaxonMapper> implements Ta
     if (Rank.GENUS.higherOrEqualsTo(rank)) {
       throw new NotFoundException("Breakdown only available for suprageneric names, not " + tax);
     }
-    // figure out the next lower 2 linnean ranks to breakdown to
-    Set<Rank> ranks = new HashSet<>();
-    var nextRank = RankUtils.nextLowerLinneanRank(rank);
-    ranks.add(nextRank);
-    // for families and alike just show the genera and stop at the first level
-    if (level>1 && nextRank != Rank.GENUS) {
-      ranks.add(RankUtils.nextLowerLinneanRank(nextRank));
-    }
-    var ttp = TreeTraversalParameter.dataset(datasetKey);
-    ttp.setTaxonID(id);
+    return rank;
+  }
+
+  /**
+   * A printer over the accepted descendants of the taxon that have one of the given ranks, each counted at countRank:
+   * through the taxon metrics for any dataset that has them, through elastic for projects.
+   */
+  private <T extends AbstractPrinter> T childrenBreakdown(Class<T> clazz, DSID<String> key, Set<Rank> ranks, Rank countRank, Writer writer) {
+    var ttp = TreeTraversalParameter.dataset(key.getDatasetKey());
+    ttp.setTaxonID(key.getId());
     ttp.setSynonyms(false);
     ttp.setLowestRank(RankUtils.lowestRank(ranks));
     ttp.setIgnoreAmbiguousRanks(true);
     // we need to count differently for projects than other datasets with taxon metrics
     TaxonCounter taxonCounter;
-    if (DatasetInfoCache.CACHE.info(datasetKey).origin == DatasetOrigin.PROJECT) {
+    if (DatasetInfoCache.CACHE.info(key.getDatasetKey()).origin == DatasetOrigin.PROJECT) {
       // use elastic to do project counts
       taxonCounter = esCounter;
     } else {
       taxonCounter = metricsDao;
     }
-
-    return new PrinterWrapper<>(PrinterFactory.dataset(clazz, ttp, ranks, null, countRank, taxonCounter, factory, writer), tax);
+    return PrinterFactory.dataset(clazz, ttp, ranks, null, countRank, taxonCounter, factory, writer);
   }
 
   /**
