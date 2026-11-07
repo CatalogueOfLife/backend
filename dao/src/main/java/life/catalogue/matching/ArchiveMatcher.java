@@ -26,7 +26,8 @@ public class ArchiveMatcher extends BaseMatcher {
       session.getMapper(ArchivedNameUsageMatchMapper.class).truncate();
     }
 
-    try (SqlSession readOnlySession = factory.openSession(true)) {
+    // no autocommit, or the postgres driver ignores the fetch size and buffers the entire archive
+    try (SqlSession readOnlySession = factory.openSession(false)) {
       var amum = readOnlySession.getMapper(ArchivedNameUsageMapper.class);
       try (BulkMatchHandler hn = new BulkMatchHandler(true, ArchivedNameUsageMatchMapper.class, false)) {
         PgUtils.consume(() -> amum.processArchivedNames(null, false), hn);
@@ -46,7 +47,8 @@ public class ArchiveMatcher extends BaseMatcher {
    */
   public void match(int projectKey) {
     LOG.info("Rematch the name usage archive of project {}", projectKey);
-    try (SqlSession readOnlySession = factory.openSession(true)) {
+    // no autocommit, or the postgres driver ignores the fetch size and buffers the project's whole archive
+    try (SqlSession readOnlySession = factory.openSession(false)) {
       var amum = readOnlySession.getMapper(ArchivedNameUsageMapper.class);
       try (BulkMatchHandler hn = new BulkMatchHandler(true, ArchivedNameUsageMatchMapper.class, true)) {
         PgUtils.consume(() -> amum.processArchivedNames(projectKey, false), hn);

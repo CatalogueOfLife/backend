@@ -34,6 +34,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
@@ -528,8 +529,8 @@ public class IdProvider {
    */
   @VisibleForTesting
   protected void loadPreviousReleaseIds(){
-    // read the entire names archive
-    try (SqlSession session = factory.openSession(true)) {
+    // read the entire names archive - streaming, as the postgres driver buffers everything under autocommit
+    try (SqlSession session = factory.openSession(false)) {
       final int sizeBefore = ids.size();
       final LoadStats stats = new LoadStats();
       LOG.info("Read all archived names");
@@ -700,7 +701,9 @@ public class IdProvider {
     LOG.info("Map {} name usage IDs from dataset {}{}", uStore.size(), mappedDatasetKey, tempOnly ? ", temporary ids only" : "");
     final int lastRelIds = ids.currentIdCount();
     AtomicInteger counter = new AtomicInteger();
-    try (SqlSession writeSession = factory.openSession(false);
+    // the id map is only ever inserted into here, in jdbc batches: a round trip per usage of the release was most of the
+    // time this step took
+    try (SqlSession writeSession = factory.openSession(ExecutorType.BATCH, false);
          Writer nomatchWriter = buildNomatchWriter()
     ) {
       idm = writeSession.getMapper(IdMapMapper.class);
@@ -987,7 +990,8 @@ public class IdProvider {
   }
 
   public void removeIdsFromDataset(int datasetKey) {
-    try (SqlSession session = factory.openSession(true)) {
+    // no autocommit, or the postgres driver ignores the fetch size and buffers all ids of the dataset
+    try (SqlSession session = factory.openSession(false)) {
       var num = session.getMapper(NameUsageMapper.class);
       final AtomicInteger counter = new AtomicInteger(0);
       final AtomicInteger removed = new AtomicInteger(0);

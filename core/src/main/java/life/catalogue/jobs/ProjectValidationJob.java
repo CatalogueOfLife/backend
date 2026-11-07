@@ -44,9 +44,12 @@ public class ProjectValidationJob extends DatasetBlockingJob {
     LOG.info("Clean and validate entire project {}", datasetKey);
     final LocalDateTime start = LocalDateTime.now();
     // a failure fails the job - the issues have been removed already and must not look validated
-    try (SqlSession session = factory.openSession(true)) {
+    // the tree streams through its own session: with autocommit on the postgres driver buffers the whole project
+    try (SqlSession session = factory.openSession(true);
+         SqlSession sessionRO = factory.openSession(false)
+    ) {
       var consumer = new TreeCleanerAndValidator(session, datasetKey, false);
-      consumer.validate(session);
+      consumer.validate(sessionRO);
       LOG.info("Maximum depth of {} found for accepted tree of project {}", consumer.getMaxDepth(), datasetKey);
       LOG.info("{} usages out of {} flagged with issues during validation", consumer.getFlagged(), consumer.getCounter());
     }

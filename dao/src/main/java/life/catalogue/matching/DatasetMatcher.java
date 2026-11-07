@@ -51,7 +51,8 @@ public class DatasetMatcher extends BaseMatcher {
         doUpdate = !onlyMissingMatches && session.getMapper(NameMatchMapper.class).exists(datasetKey, null);
       }
 
-      try (SqlSession readOnlySession = factory.openSession(true)) {
+      // no autocommit, or the postgres driver ignores the fetch size and buffers all names of the dataset
+      try (SqlSession readOnlySession = factory.openSession(false)) {
         NameMapper nm = readOnlySession.getMapper(NameMapper.class);
 
         final boolean isProject = DatasetInfoCache.CACHE.info(datasetKey).origin == DatasetOrigin.PROJECT;

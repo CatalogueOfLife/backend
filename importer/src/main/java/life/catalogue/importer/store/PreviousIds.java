@@ -77,7 +77,8 @@ public class PreviousIds {
     }
     try {
       var builder = new Builder(includeSource);
-      try (var session = factory.openSession(true)) {
+      // no autocommit, or the postgres driver ignores the fetch size and buffers all usages
+      try (var session = factory.openSession(false)) {
         PgUtils.consume(
           () -> session.getMapper(NameUsageMapper.class).processDatasetGeneratedUsages(datasetKey, includeSource),
           builder::add

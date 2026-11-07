@@ -64,7 +64,8 @@ public abstract class FileMetricsDao<K> {
   public void updateNames(K dataKey, K storeKey, int attempt) {
     final File f = namesFile(storeKey, attempt);
     int written;
-    try (SqlSession session = factory.openSession(true);
+    // no autocommit, or the postgres driver ignores the fetch size and buffers all names of the dataset
+    try (SqlSession session = factory.openSession(false);
          NamesWriter nHandler = new NamesWriter(f, true)
     ){
       NameMapper nm = session.getMapper(NameMapper.class);
