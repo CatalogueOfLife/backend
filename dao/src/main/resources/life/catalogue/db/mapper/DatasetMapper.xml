@@ -296,27 +296,6 @@
   </resultMap>
 
 
-  <select id="listAgents" resultMap="datasetResultMap">
-    SELECT key, contact, creator, editor, publisher, contributor FROM dataset
-  </select>
-
-  <update id="updateAgents" parameterType="Dataset">
-    UPDATE dataset SET (
-    contact,
-    creator,
-    editor,
-    publisher,
-    contributor
-    ) = (
-    #{contact, typeHandler=life.catalogue.db.type.AgentTypeHandler},
-    #{creator, typeHandler=life.catalogue.db.type.AgentArrayTypeHandler},
-    #{editor, typeHandler=life.catalogue.db.type.AgentArrayTypeHandler},
-    #{publisher, typeHandler=life.catalogue.db.type.AgentTypeHandler},
-    #{contributor, typeHandler=life.catalogue.db.type.AgentArrayTypeHandler}
-    )
-    WHERE key = #{key}
-  </update>
-
   <select id="keysByPublisher" resultType="integer">
     SELECT key
     FROM dataset
@@ -686,21 +665,9 @@
     WHERE key = #{key} AND version_doi IS NOT NULL
   </select>
 
-  <select id="getMaxKey" parameterType="map" resultType="integer">
-    SELECT max(key) FROM dataset
-    <if test="limit">
-      WHERE key &lt; #{limit}
-    </if>
-  </select>
-
   <select id="getKeyByGBIF" resultType="integer">
     SELECT key FROM dataset
     WHERE gbif_key = #{key}
-  </select>
-
-  <select id="getGBIFKey" resultType="java.util.UUID">
-    SELECT gbif_key FROM dataset
-    WHERE key = #{key}
   </select>
 
   <select id="getByGBIF" resultMap="datasetResultMap">
@@ -805,12 +772,6 @@
   <select id="getReviewer" resultType="it.unimi.dsi.fastutil.ints.IntSet">
     SELECT acl_reviewer FROM dataset WHERE key = #{key}
   </select>
-
-  <update id="updateReviewer" parameterType="map">
-    UPDATE dataset  SET (acl_reviewer, modified_by, modified) =
-    ( #{reviewer, typeHandler=life.catalogue.db.type.IntSetTypeHandler}, #{userKey}, now() )
-    WHERE key = #{key}
-  </update>
 
   <update id="addReviewer" parameterType="map">
     UPDATE dataset SET (acl_reviewer, modified_by, modified) =

@@ -46,11 +46,6 @@ public interface NameRelationMapper extends Create<NameRelation>,
   List<String> listUsageIDsOutsideHomotypicSynonymy(@Param("datasetKey") int datasetKey, @Param("types") Set<NomRelType> types);
 
   /**
-   * Returns the list of related names of a given type for a single name on the relatedNameId side of the relation only.
-   */
-  List<NameRelation> listByTypeReverse(@Param("key") DSID<String> key, @Param("type") NomRelType type);
-
-  /**
    * Returns the unique list of ids from all related names within the same dataset that are (transitively) connected by relations of the given types.
    * The starting key is excluded from the result.
    *

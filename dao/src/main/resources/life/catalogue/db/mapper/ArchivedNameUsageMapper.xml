@@ -239,13 +239,6 @@
     </where>
   </select>
 
-  <select id="indexGroupIds" resultMap="life.catalogue.db.mapper.NameMapper.dsidResultMap">
-    SELECT u.dataset_key, u.id
-    FROM name_usage_archive_match m
-      JOIN name_usage_archive u ON m.dataset_key=u.dataset_key AND m.usage_id=u.id
-    WHERE m.index_id = #{nidx}
-  </select>
-
   <insert id="createMissingUsages" parameterType="map">
     INSERT INTO name_usage_archive (id, dataset_key, release_keys, <include refid="VERSION_COLS"><property name="alias" value=""/></include>)
     SELECT u.id, #{projectKey}, '{}'::int[], <include refid="VERSION_VALUES"/>
@@ -330,13 +323,6 @@
     VALUES (#{releaseKey}, #{id}, #{supersededBy})
     ON CONFLICT (dataset_key, id) DO UPDATE SET superseded_by = EXCLUDED.superseded_by
   </insert>
-
-  <select id="processSuperseded" parameterType="map" resultType="map" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
-    SELECT id, superseded_by AS supersededBy
-    FROM usage_id_superseded
-    WHERE dataset_key = #{releaseKey}
-    ORDER BY id
-  </select>
 
   <update id="clearSuperseded" parameterType="map">
     UPDATE name_usage_archive a SET superseded_by = null

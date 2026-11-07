@@ -69,12 +69,6 @@
     dataset_archive d LEFT JOIN dataset_import di ON d.attempt=di.attempt AND d.key=di.dataset_key
   </sql>
 
-  <!--  A mapping to Name, mostly auto mapped -->
-  <resultMap id="datasetArchiveResultMap" type="Dataset" autoMapping="true" extends="life.catalogue.db.mapper.DatasetMapper.datasetResultMap">
-    <id property="key" column="key"/>
-    <collection property="source" ofType="Citation" column="{datasetKey=key, attempt=attempt}" select="life.catalogue.db.mapper.CitationMapper.listArchive" />
-  </resultMap>
-
   <select id="get" resultMap="life.catalogue.db.mapper.DatasetMapper.datasetResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
@@ -106,24 +100,4 @@
   </delete>
 
 
-  <select id="listAgents" resultMap="life.catalogue.db.mapper.DatasetMapper.datasetResultMap">
-  SELECT key, contact, creator, editor, publisher, contributor FROM dataset_archive
-  </select>
-
-  <update id="updateAgents" parameterType="Dataset">
-    UPDATE dataset_archive SET (
-    contact,
-    creator,
-    editor,
-    publisher,
-    contributor
-    ) = (
-    #{contact, typeHandler=life.catalogue.db.type.AgentTypeHandler},
-    #{creator, typeHandler=life.catalogue.db.type.AgentArrayTypeHandler},
-    #{editor, typeHandler=life.catalogue.db.type.AgentArrayTypeHandler},
-    #{publisher, typeHandler=life.catalogue.db.type.AgentTypeHandler},
-    #{contributor, typeHandler=life.catalogue.db.type.AgentArrayTypeHandler}
-    )
-    WHERE key = #{key}
-  </update>
 </mapper>

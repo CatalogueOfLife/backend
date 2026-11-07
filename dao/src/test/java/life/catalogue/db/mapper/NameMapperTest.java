@@ -60,7 +60,6 @@ public class NameMapperTest extends CRUDDatasetScopedStringTestBase<Name, NameMa
   @Test
   public void indexGroup() throws Exception {
     mapper().indexGroup(1);
-    mapper().indexGroupIds(2);
   }
 
   @Test
@@ -68,14 +67,6 @@ public class NameMapperTest extends CRUDDatasetScopedStringTestBase<Name, NameMa
     // no real data to delete but tests valid SQL
     mapper().unrankedRankNameIds(datasetKey, null);
     mapper().unrankedRankNameIds(datasetKey, 1);
-  }
-
-  @Test
-  public void deleteBySectorAndRank() throws Exception {
-    // no real data to delete but tests valid SQL
-    mapper().deleteBySectorAndRank(DSID.of(datasetKey, 1), Rank.GENUS, null);
-    mapper().deleteBySectorAndRank(DSID.of(datasetKey, 1), Rank.SUPERSECTION_BOTANY, Set.of());
-    mapper().deleteBySectorAndRank(DSID.of(datasetKey, 1), Rank.FAMILY, Set.of("1,2,3", "abc"));
   }
 
   @Override
@@ -257,24 +248,6 @@ public class NameMapperTest extends CRUDDatasetScopedStringTestBase<Name, NameMa
     assertFalse(nameMapper.hasData(3));
   }
   
-  @Test
-  public void listByReference() throws Exception {
-    Name acc1 = newAcceptedName("Nom uno");
-    nameMapper.create(acc1);
-    assertTrue(nameMapper.listByReference(REF1b.getDatasetKey(), REF1b.getId()).isEmpty());
-    
-    Name acc2 = newAcceptedName("Nom duo");
-    acc2.setPublishedInId(REF1b.getId());
-    Name acc3 = newAcceptedName("Nom tres");
-    acc3.setPublishedInId(REF1b.getId());
-    nameMapper.create(acc2);
-    nameMapper.create(acc3);
-    
-    // we have one ref from the apple.sql
-    assertEquals(1, nameMapper.listByReference(REF1.getDatasetKey(), REF1.getId()).size());
-    assertEquals(2, nameMapper.listByReference(REF1b.getDatasetKey(), REF1b.getId()).size());
-  }
-
   @Test
   public void addIdentifier() throws Exception {
     Name n = TestEntityGenerator.newName("sk1");

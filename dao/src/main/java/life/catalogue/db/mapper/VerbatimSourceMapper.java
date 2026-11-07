@@ -81,8 +81,6 @@ public interface VerbatimSourceMapper extends Create<VerbatimSource>, CopyDatase
 
   VerbatimSource getIssues(@Param("key") DSID<Integer> key);
 
-  int updateIssues(@Param("key") DSID<Integer> key, @Param("issues") Set<Issue> issues);
-
   /**
    * Add an issue to an existing verbatim source record.
    */
@@ -120,8 +118,6 @@ public interface VerbatimSourceMapper extends Create<VerbatimSource>, CopyDatase
   void insertSource(@Param("key") DSID<Integer> key, @Param("source") DSID<String> secondarySource, @Param("groups") Set<InfoGroup> groups);
 
   void deleteSourceGroups(@Param("key") DSID<Integer> key, @Param("groups") Set<InfoGroup> groups);
-
-  void deleteSources(@Param("key") DSID<Integer> key);
 
   void delete(@Param("key") DSID<Integer> key);
 

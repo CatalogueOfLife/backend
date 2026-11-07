@@ -35,8 +35,6 @@ public interface SectorMapper extends BaseDecisionMapper<Sector, SectorSearchReq
   List<Sector> listBySubject(@Param("datasetKey") int datasetKey,
                              @Param("key") DSID<String> key);
   
-  List<Sector> listByTarget(@Param("key") DSID<String> key);
-
   List<Sector> listByDataset(@Param("datasetKey") @Nullable Integer datasetKey,
                              @Param("subjectDatasetKey") @Nullable Integer subjectDatasetKey,
                              @Param("mode") @Nullable Sector.Mode mode);
@@ -83,11 +81,6 @@ public interface SectorMapper extends BaseDecisionMapper<Sector, SectorSearchReq
    */
   Cursor<Sector> processSectors(@Param("datasetKey") int datasetKey,
                         @Param("subjectDatasetKey") int subjectDatasetKey);
-
-  /**
-   * Returns a list of unique dataset keys from all catalogues that have at least one sector.
-   */
-  List<Integer> listTargetDatasetKeys();
 
   /**
    * Updates the last sync attempt column of the given sector

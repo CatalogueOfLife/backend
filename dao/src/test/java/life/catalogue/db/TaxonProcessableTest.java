@@ -27,12 +27,4 @@ public class TaxonProcessableTest {
     }
   }
 
-  @Test
-  public void updateTaxonID() {
-    for (var mc : TaxonProcessable.MAPPERS) {
-      var m = testDataRule.getMapper(mc);
-      var key = DSID.of(3,"1");
-      m.updateTaxonID(key, "2", Users.TESTER);
-    }
-  }
 }

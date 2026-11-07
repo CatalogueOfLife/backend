@@ -107,8 +107,6 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
    */
   SimpleName getSimple(@Param("key") DSID<String> key);
 
-  SimpleNameInDataset getSimpleInDataset(@Param("key") DSID<String> key);
-
   SimpleNameVerbatim getSimpleVerbatim(@Param("key") DSID<String> key);
   /**
    * SimpleName.parent=parent.id
@@ -128,11 +126,6 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
    * can still be read.
    */
   Cursor<SimpleNameVerbatim> processSectorSimple(@Param("key") DSID<Integer> sectorKey);
-
-  /**
-   * Lists all accepted, direct children of a taxon
-   */
-  List<SimpleName> listSimpleChildren(@Param("key") DSID<String> key);
 
   /**
    * Lists all synonyms of a taxon
@@ -160,14 +153,6 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
     return findSimple(datasetKey, null, sn.getStatus(), sn.getRank(), sn.getName());
   }
 
-  /**
-   * Retrieves a simple name usage from a project by using the stable usage ID
-   * and the id map table
-   * @param key usage key with dataset being the project and ID being the stable id
-   * @return simple name with parent keys being the stable id, resolved via the id map
-   */
-  SimpleName getSimpleByIdMap(@Param("key") DSID<String> key);
-
   boolean exists(@Param("key") DSID<String> key);
 
   /**
@@ -184,12 +169,6 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
 
   int count(@Param("datasetKey") int datasetKey);
 
-  /**
-   * @return the number of distinct canonical name index ids the matched usages of a dataset resolve to.
-   * Used to size the canonical inverted index of a persistent usage matcher.
-   */
-  int countDistinctCanonical(@Param("datasetKey") int datasetKey);
-
   List<SimpleNameWithDecision> listByRegex(@Param("datasetKey") int datasetKey,
                                            @Param("projectKey") Integer projectKey,
                                            @Param("regex") String regex,
@@ -200,8 +179,6 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
                                            @Param("page") Page page);
 
   List<NameUsageBase> list(@Param("datasetKey") int datasetKey, @Param("page") Page page);
-
-  List<SimpleNameCached> listSN(@Param("datasetKey") int datasetKey, @Param("page") Page page);
 
   /**
    * First phase of the related usage lookup, see NameUsageDao.related.
@@ -417,17 +394,6 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
                       @Param("userKey") int userKey);
 
   /**
-   * Updates the primary key of the usage. Make sure no foreign keys point to the old id any longer.
-   * Use updateParentIds to update all existing usages with a parentID that points to the old id before.
-   * @param key
-   * @param newID
-   * @param userKey
-   */
-  void updateId(@Param("key") DSID<String> key,
-                @Param("newID") @Nullable String newID,
-                @Param("userKey") int userKey);
-
-  /**
    * Updates a taxon status
    * @param key
    * @param status
@@ -638,13 +604,6 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
   Cursor<UsageNameID> processTreeIds(@Param("key") DSID<String> key);
 
   /**
-   * Iterate over all usages ordered by their canonical names index id.
-   * The parent property is filled with the parent name, not its ID.
-   * @param minLength minimum length of the usage identifier. Usages with shorter ids will be excluded.
-   */
-  Cursor<SimpleNameWithNidx> processNxIds(@Param("datasetKey") int datasetKey, @Param("minLength") int minLength);
-
-  /**
    * Iterates over all usage ids for a given dataset, optionally filtered by a minimum string length,
    * e.g. to only list temporary UUIDs
    * @param datasetKey
@@ -655,29 +614,6 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
   Cursor<String> processIds(@Param("datasetKey") int datasetKey,
                             @Param("synonyms") boolean includeSynonyms,
                             @Param("minLength") Integer minLength);
-
-  /**
-   * Lists all usage ids for a given dataset, optionally filtered by a minimum, inclusive string length.
-   * @param datasetKey
-   * @param includeSynonyms
-   * @param maxLength
-   * @param page
-   * @return
-   */
-  List<String> pageIds(@Param("datasetKey") int datasetKey,
-                       @Param("synonyms") boolean includeSynonyms,
-                       @Param("maxLength") Integer maxLength,
-                       @Param("page") Page page
-  );
-  int countIds(@Param("datasetKey") int datasetKey,
-               @Param("synonyms") boolean includeSynonyms,
-               @Param("maxLength") Integer maxLength
-  );
-
-  /**
-   * Checks whether any parents (of both synonyms or accepted) exist that are synonyms.
-   */
-  boolean hasParentSynoynms(@Param("datasetKey") int datasetKey);
 
   /**
    * Looks for synonyms of synonyms and assigns them the (hopefully accepted) parent of their former synonym parent.

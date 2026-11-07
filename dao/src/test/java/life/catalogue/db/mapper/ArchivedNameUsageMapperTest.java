@@ -44,12 +44,6 @@ public class ArchivedNameUsageMapperTest extends MapperTestBase<ArchivedNameUsag
   }
 
   @Test
-  public void indexGroupIds() throws Exception {
-    var res = mapper().indexGroupIds(1);
-    assertEquals(0, res.size());
-  }
-
-  @Test
   public void archiveStatements() throws Exception {
     // apple has no release data, but this proves every statement runs against the schema
     final int rel = 1000;

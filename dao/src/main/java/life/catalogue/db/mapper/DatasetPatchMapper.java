@@ -5,7 +5,7 @@ import life.catalogue.db.DatasetProcessable;
 
 import org.apache.ibatis.annotations.Param;
 
-public interface DatasetPatchMapper extends DatasetProcessable<Dataset>, DatasetAgentMapper {
+public interface DatasetPatchMapper extends DatasetProcessable<Dataset> {
 
   void create(@Param("datasetKey") int datasetKey, @Param("obj") Dataset obj);
 

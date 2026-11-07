@@ -67,12 +67,6 @@ public interface TmpIssueMapper extends DatasetProcessable<VerbatimSource>, Sect
   void createTmpSourcesTableFromVerbatim(@Param("datasetKey") int datasetKey, @Nullable @Param("sectorKey") Integer sectorKey);
 
   /**
-   * Process all issues of the temporary table tmp_usage_issues.
-   * Make sure you created such a table for the given session beforehand!
-   */
-  Cursor<IssueContainer.SimpleWithID> processIssues();
-
-  /**
    * Read-only safe alternative to createTmpIssuesTable + processIssues that streams all usage issues
    * in a single statement and therefore also works on the read-only replica db.
    * Issues are stored differently in external and project / release datasets, so we pick the matching query.

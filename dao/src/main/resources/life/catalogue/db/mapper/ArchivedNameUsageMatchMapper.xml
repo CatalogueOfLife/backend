@@ -54,15 +54,6 @@
     WHERE dataset_key=#{key.datasetKey} AND usage_id = #{key.id}
   </delete>
 
-  <select id="countNidx" resultType="integer">
-    SELECT count(*)
-    FROM name_usage_archive_match nm
-    WHERE nm.index_id=#{nidx}
-    <if test="datasetKey != null">
-      AND nm.dataset_key = #{datasetKey}
-    </if>
-  </select>
-
   <update id="truncate">
     TRUNCATE name_usage_archive_match
   </update>
