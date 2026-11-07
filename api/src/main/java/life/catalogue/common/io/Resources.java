@@ -84,8 +84,10 @@ public class Resources {
    * @return newly copied file
    */
   public static File copy(String resourceName, File destination) throws IOException {
-    try (OutputStream out = new FileOutputStream(destination)) {
-      IOUtils.copy(stream(resourceName), out);
+    try (InputStream in = stream(resourceName);
+         OutputStream out = new FileOutputStream(destination)
+    ) {
+      IOUtils.copy(in, out);
     }
     return destination;
   }

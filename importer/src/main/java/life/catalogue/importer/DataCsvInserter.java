@@ -229,6 +229,15 @@ public abstract class DataCsvInserter implements DataInserter {
     });
   }
 
+  /**
+   * A record stream only closes its file once it was read to the end, so a cancelled or failed insert leaves
+   * data files open - on a scratch dir that gets deleted - until the reader is closed.
+   */
+  @Override
+  public void close() {
+    reader.close();
+  }
+
   @Override
   public void reportBadFks() {
     for (Map.Entry<Term, AtomicInteger> entry : badTaxonFks.entrySet()) {

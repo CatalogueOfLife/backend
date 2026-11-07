@@ -47,7 +47,7 @@ public class ReimportJob extends GlobalBlockingJob {
   }
 
   @Override
-  public void execute() {
+  public void execute() throws InterruptedException {
     final List<Integer> keys;
     try (SqlSession session = factory.openSession()) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
@@ -85,8 +85,9 @@ public class ReimportJob extends GlobalBlockingJob {
         LOG.warn("Cannot reimport dataset {}", key, e);
 
       } catch (InterruptedException e) {
-        LOG.warn("Reimporting interrupted", e);
-        break;
+        // rethrow, so the job ends as cancelled and not as finished
+        LOG.warn("Reimporting interrupted after scheduling {} of {} datasets", counter, total);
+        throw e;
 
       } catch (IOException e) {
         LOG.warn("Error reimporting dataset {}", key, e);

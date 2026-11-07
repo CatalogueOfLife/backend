@@ -2,6 +2,7 @@ package life.catalogue.matching;
 
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.NameMatch;
+import life.catalogue.common.lang.Exceptions;
 import life.catalogue.db.mapper.MatchMapper;
 import life.catalogue.matching.nidx.NameIndex;
 
@@ -64,7 +65,10 @@ public class BaseMatcher {
 
     @Override
     public void accept(Name n) {
-      _total++;
+      if (++_total % 10000 == 0) {
+        // a rematch of millions of names must end when its job is cancelled or the release it runs for ended
+        Exceptions.runtimeInterruptIfCancelled("Rematching interrupted");
+      }
       final Integer oldId = n.getNamesIndexId();
       NameMatch m = ni.match(n, allowInserts, false);
       if (!m.isMatched()) {
@@ -107,10 +111,14 @@ public class BaseMatcher {
 
     @Override
     public void close() throws RuntimeException {
-      if (!update) {
-        batchSession.commit();
+      try {
+        if (!update) {
+          batchSession.commit();
+        }
+      } finally {
+        // a failed final flush must not cost the pooled connection
+        batchSession.close();
       }
-      batchSession.close();
       total += _total;
       updated += _updated;
       nomatch += _nomatch;

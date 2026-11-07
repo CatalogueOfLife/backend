@@ -27,6 +27,7 @@ import org.gbif.txtree.TreeLine;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
@@ -90,10 +91,19 @@ public class TxtTreeInserter implements DataInserter {
     }
   }
 
+  /**
+   * The text tree library never closes the stream it reads.
+   */
+  private static boolean isValidTree(Path f) throws IOException {
+    try (InputStream in = Files.newInputStream(f)) {
+      return org.gbif.txtree.Tree.verify(in).valid;
+    }
+  }
+
   public static Optional<Path> findReadable(Path folder) {
     try {
       for (Path f : PathUtils.listFiles(folder, Set.of("txtree", "tree", "txt", "text", "archive"))) {
-        if (!f.getFileName().toString().startsWith("expected") && org.gbif.txtree.Tree.verify(Files.newInputStream(f)).valid) {
+        if (!f.getFileName().toString().startsWith("expected") && isValidTree(f)) {
           LOG.info("Found readable tree file {}", f);
           return Optional.of(f);
         }
@@ -120,7 +130,9 @@ public class TxtTreeInserter implements DataInserter {
         bibIns.insertAll();
       }
       LOG.info("Read tree and insert verbatim records from {}", treeFile);
-      tree = org.gbif.txtree.Tree.simple(Files.newInputStream(treeFile), this::addVerbatim);
+      try (InputStream in = Files.newInputStream(treeFile)) {
+        tree = org.gbif.txtree.Tree.simple(in, this::addVerbatim);
+      }
       LOG.info("Read tree with {} nodes from {}", String.valueOf(tree.size()), treeFile);
       // insert names and taxa in depth first order
       int ordinal = 1;

@@ -83,94 +83,100 @@ public class TreeMergeHandler extends TreeBaseHandler {
     // we use much smaller ids than UUID which are terribly long to iterate over the entire tree - which requires to build a path from all parent IDs
     // this causes postgres to use a lot of memory and creates very large temporary files
     super(targetDatasetKey, decisions, factory, nameIndex, user, sector, state, nameIdGen, typeMaterialIdGen, usageIdGen);
-    this.factory=factory;
-    this.cfg = cfg;
-    this.matcher = matcherSupplier.apply(batchSession);
-    groupAnalyzer = new TaxGroupAnalyzer();
-    sourceGroup = source == null ? null : TaxGroupAnalyzer.lowestCommonGroup(source.getTaxonomicGroupScope());
-    placementConflicts = Set.copyOf(vrmRO.listKeysByIssue(sector.getSubjectDatasetKey(), Issue.PLACEMENT_CONFLICT));
-    LOG.info("Source {} covers taxonomic group {} and has {} genera with a placement conflict", sector.getSubjectDatasetKey(), sourceGroup, placementConflicts.size());
-    utils = new MatchingUtils(nameIndex);
-    // same construction as UsageMatcher: reuse the names index own comparator when available so
-    // author matching (used to disambiguate bare-name merge candidates) behaves identically
-    this.authComp = nameIndex instanceof NameIndexImpl
-      ? ((NameIndexImpl) nameIndex).getAuthComp()
-      : new AuthorComparator(AuthorshipNormalizer.INSTANCE);
+    try {
+      this.factory=factory;
+      this.cfg = cfg;
+      this.matcher = matcherSupplier.apply(batchSession);
+      groupAnalyzer = new TaxGroupAnalyzer();
+      sourceGroup = source == null ? null : TaxGroupAnalyzer.lowestCommonGroup(source.getTaxonomicGroupScope());
+      placementConflicts = Set.copyOf(vrmRO.listKeysByIssue(sector.getSubjectDatasetKey(), Issue.PLACEMENT_CONFLICT));
+      LOG.info("Source {} covers taxonomic group {} and has {} genera with a placement conflict", sector.getSubjectDatasetKey(), sourceGroup, placementConflicts.size());
+      utils = new MatchingUtils(nameIndex);
+      // same construction as UsageMatcher: reuse the names index own comparator when available so
+      // author matching (used to disambiguate bare-name merge candidates) behaves identically
+      this.authComp = nameIndex instanceof NameIndexImpl
+        ? ((NameIndexImpl) nameIndex).getAuthComp()
+        : new AuthorComparator(AuthorshipNormalizer.INSTANCE);
 
-    // figure out the lowest insertion point in the project/release
-    // a) a target is given
-    // b) a subject is given. Match it and see if it is lower and inside the target
-    // c) nothing, but there maybe is an incertae sedis taxon configured to collect all unplaced
-    SimpleNameClassified<SimpleNameCached> trgt = null;
-    if (target != null) {
-      var cl = target.getParentKey() == null ? null : num.getClassificationSN(target.getParentKey());
-      trgt = utils.toSimpleNameClassified(target, cl);
-    }
-    if (trgt == null && cfg != null && cfg.incertae != null) {
-      trgt = utils.toSimpleNameClassified(cfg.incertae, null);
-    }
-    parents = new MatchedParentStack(trgt);
-    if (sector.getSubject() != null) {
-      // match subject and its classification
-      try (SqlSession session = factory.openSession()) {
-        var num = session.getMapper(NameUsageMapper.class);
-        // loop over classification incl the subject itself as the last usage
-        for (var p : num.getClassification(sector.getSubjectAsDSID())) {
-          var nusn = utils.toSimpleNameCached(p);
-          parents.push(nusn, null);
-          var snc = utils.toSimpleNameClassified(p, parents.classificationSN());
-          UsageMatch match = matcher.match(snc);
-          if (match.isMatch()) {
-            parents.setMatch(match.usage);
+      // figure out the lowest insertion point in the project/release
+      // a) a target is given
+      // b) a subject is given. Match it and see if it is lower and inside the target
+      // c) nothing, but there maybe is an incertae sedis taxon configured to collect all unplaced
+      SimpleNameClassified<SimpleNameCached> trgt = null;
+      if (target != null) {
+        var cl = target.getParentKey() == null ? null : num.getClassificationSN(target.getParentKey());
+        trgt = utils.toSimpleNameClassified(target, cl);
+      }
+      if (trgt == null && cfg != null && cfg.incertae != null) {
+        trgt = utils.toSimpleNameClassified(cfg.incertae, null);
+      }
+      parents = new MatchedParentStack(trgt);
+      if (sector.getSubject() != null) {
+        // match subject and its classification
+        try (SqlSession session = factory.openSession()) {
+          var num = session.getMapper(NameUsageMapper.class);
+          // loop over classification incl the subject itself as the last usage
+          for (var p : num.getClassification(sector.getSubjectAsDSID())) {
+            var nusn = utils.toSimpleNameCached(p);
+            parents.push(nusn, null);
+            var snc = utils.toSimpleNameClassified(p, parents.classificationSN());
+            UsageMatch match = matcher.match(snc);
+            if (match.isMatch()) {
+              parents.setMatch(match.usage);
+            }
+          }
+          var lowest = parents.lowestParentMatch();
+          if (lowest != null && (trgt == null || !lowest.getId().equals(trgt.getId()))) {
+            // found a lower target than we had before!
+            LOG.info("The sector subject {} resulted in a lower target match to use for merging: {}", sector.getSubject(), lowest);
+            parents.setRoot(lowest);
           }
         }
-        var lowest = parents.lowestParentMatch();
-        if (lowest != null && (trgt == null || !lowest.getId().equals(trgt.getId()))) {
-          // found a lower target than we had before!
-          LOG.info("The sector subject {} resulted in a lower target match to use for merging: {}", sector.getSubject(), lowest);
-          parents.setRoot(lowest);
-        }
       }
-    }
 
-    // check if requested entities are supported in the source at all
-    try (SqlSession session = factory.openSession()) {
-      if (entities.contains(EntityType.VERNACULAR)) {
-        var mapper = session.getMapper(VernacularNameMapper.class);
-        if (!mapper.entityExists(sourceDatasetKey)) {
-          entities.remove(EntityType.VERNACULAR);
-          LOG.info("No vernacular names in sector {}", sector);
+      // check if requested entities are supported in the source at all
+      try (SqlSession session = factory.openSession()) {
+        if (entities.contains(EntityType.VERNACULAR)) {
+          var mapper = session.getMapper(VernacularNameMapper.class);
+          if (!mapper.entityExists(sourceDatasetKey)) {
+            entities.remove(EntityType.VERNACULAR);
+            LOG.info("No vernacular names in sector {}", sector);
+          }
+        }
+        if (entities.contains(EntityType.TYPE_MATERIAL)) {
+          var mapper = session.getMapper(TypeMaterialMapper.class);
+          if (!mapper.entityExists(sourceDatasetKey)) {
+            entities.remove(EntityType.TYPE_MATERIAL);
+            LOG.info("No type material in sector {}", sector);
+          }
+        }
+        for (var type : MERGED_EXTENSIONS) {
+          if (entities.contains(type) && !session.getMapper(CopyUtil.extensionMapper(type)).entityExists(sourceDatasetKey)) {
+            entities.remove(type);
+            LOG.info("No {} in sector {}", type, sector);
+          }
         }
       }
-      if (entities.contains(EntityType.TYPE_MATERIAL)) {
-        var mapper = session.getMapper(TypeMaterialMapper.class);
-        if (!mapper.entityExists(sourceDatasetKey)) {
-          entities.remove(EntityType.TYPE_MATERIAL);
-          LOG.info("No type material in sector {}", sector);
-        }
-      }
-      for (var type : MERGED_EXTENSIONS) {
-        if (entities.contains(type) && !session.getMapper(CopyUtil.extensionMapper(type)).entityExists(sourceDatasetKey)) {
-          entities.remove(type);
-          LOG.info("No {} in sector {}", type, sector);
-        }
-      }
-    }
 
-    // resolve the identifier scope for the source dataset from the central registry.
-    // a single scope is configured per dataset; we route it to either name- or usage-id
-    // depending on the dataset type (nomenclatural sources publish well-known name IDs,
-    // taxonomic sources publish well-known usage IDs).
-    String resolvedScope = scopeResolver != null ? scopeResolver.resolve(source) : null;
-    if (resolvedScope != null && source.getType() == DatasetType.NOMENCLATURAL) {
-      nameIdScope = resolvedScope;
-      usageIdScope = null;
-    } else if (resolvedScope != null && source.getType() == DatasetType.TAXONOMIC) {
-      nameIdScope = null;
-      usageIdScope = resolvedScope;
-    } else {
-      nameIdScope = null;
-      usageIdScope = null;
+      // resolve the identifier scope for the source dataset from the central registry.
+      // a single scope is configured per dataset; we route it to either name- or usage-id
+      // depending on the dataset type (nomenclatural sources publish well-known name IDs,
+      // taxonomic sources publish well-known usage IDs).
+      String resolvedScope = scopeResolver != null ? scopeResolver.resolve(source) : null;
+      if (resolvedScope != null && source.getType() == DatasetType.NOMENCLATURAL) {
+        nameIdScope = resolvedScope;
+        usageIdScope = null;
+      } else if (resolvedScope != null && source.getType() == DatasetType.TAXONOMIC) {
+        nameIdScope = null;
+        usageIdScope = resolvedScope;
+      } else {
+        nameIdScope = null;
+        usageIdScope = null;
+      }
+    } catch (RuntimeException | Error e) {
+      // the base class opened both sessions, nobody closes a handler that failed to construct
+      closeSessions();
+      throw e;
     }
   }
 
@@ -1303,10 +1309,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
 
   @Override
   public void close() {
-    session.commit();
-    session.close();
-    batchSession.commit();
-    batchSession.close();
+    commitAndCloseSessions();
     LOG.info("{}: Total processed={}, thrown={}, ignored={}, created={}, updated={}, vernaculars={}, extensions={}", sector, counter, thrown, ignored, created, updated, vernaculars, extensions);
   }
 

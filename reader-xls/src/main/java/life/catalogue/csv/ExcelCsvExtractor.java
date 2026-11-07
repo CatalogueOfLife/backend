@@ -25,10 +25,11 @@ public class ExcelCsvExtractor {
   private static final String MetadataSheet = "metadata";
 
   public static List<File> extract(InputStream spreadsheet, File exportFolder) throws IOException {
-    // Open the workbook
-    Workbook wb = WorkbookFactory.create(spreadsheet);
-    ExcelCsvExtractor extractor = new ExcelCsvExtractor(wb);
-    return extractor.export(exportFolder);
+    // Open the workbook, closing it releases its in memory package or temp files
+    try (Workbook wb = WorkbookFactory.create(spreadsheet)) {
+      ExcelCsvExtractor extractor = new ExcelCsvExtractor(wb);
+      return extractor.export(exportFolder);
+    }
   }
 
   private final Workbook wb;

@@ -54,7 +54,7 @@ public class EventBroker implements AutoCloseable {
       .build();
     appender = queue.acquireAppender();
     polling = ExecutorUtils.runInNewThread(new Polling(), "event-broker-polling");
-    LOG.info("Started event broker with queue at {}", cfg.queueDir);
+    LOG.info("Started event broker {} with queue at {}", cfg.name, cfg.queueDir);
   }
 
   public void register(Listener listener) {
@@ -118,9 +118,10 @@ public class EventBroker implements AutoCloseable {
     @Override
     public void run() {
       long lastDeleteCheck = System.currentTimeMillis();
-      // we create a unique tailer for every webapp instance
-      // this allows us to deploy several aps in parallel and still read all messages
-      final ExcerptTailer tailer = queue.createTailer(cfg.name + "-" + lastDeleteCheck);
+      // every webapp instance reads with its own tailer, which lets several apps run in parallel during a deploy and
+      // still each read all messages. It is deliberately unnamed: a named tailer persists its read position in the
+      // queue metadata, and with a new name per start and the wind to the end below that position is never read again
+      final ExcerptTailer tailer = queue.createTailer();
       // we wind to the end to only consume new messages as the queue likely already exists
       tailer.toEnd();
       // Continuously read messages and distribute them to listeners

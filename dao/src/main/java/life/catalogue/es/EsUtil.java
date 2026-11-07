@@ -4,6 +4,7 @@ import life.catalogue.api.model.DSID;
 import life.catalogue.api.search.NameUsageSearchParameter;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.common.lang.InterruptedRuntimeException;
 import life.catalogue.config.IndexConfig;
 import life.catalogue.es.query.FieldLookup;
 
@@ -349,10 +350,16 @@ public class EsUtil {
     }
   }
 
+  /**
+   * Sleeps, but ends a cancelled job: the retries wait for up to 20 x 5 minutes, and swallowing the interrupt kept a
+   * cancelled job waiting all that time and then let it carry on as if nothing had happened.
+   */
   private static void sleep(long millis) {
     try {
       Thread.sleep(millis);
     } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new InterruptedRuntimeException("Interrupted while waiting to retry an elasticsearch request", e);
     }
   }
 

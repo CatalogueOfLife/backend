@@ -85,6 +85,7 @@ public abstract class ArchiveExport extends DatasetExportJob {
 
   @Override
   protected void export() throws Exception {
+    boolean done = false;
     try {
       init();
       exportCore();
@@ -92,10 +93,35 @@ public abstract class ArchiveExport extends DatasetExportJob {
       exportTaxonRels();
       exportReferences();
       closeWriter();
+      done = true;
     } catch (InterruptedRuntimeException e) {
       // per-record cancellation checks inside the Consumer lambdas below abort with the
       // unchecked variant; surface it as a checked InterruptedException so we end CANCELED
       throw e.asChecked();
+    } finally {
+      if (!done) {
+        closeOpenWriters();
+      }
+    }
+  }
+
+  /**
+   * Closes every writer a failed or cancelled export left open, before its tmp dir gets deleted.
+   * Subclasses with writers of their own override it and call super.
+   */
+  protected void closeOpenWriters() {
+    if (writer != null) {
+      try {
+        closeAdditionalWriters(writer.getRowType());
+      } catch (IOException | RuntimeException e) {
+        LOG.warn("Failed to close the additional writers of {}", writer.getRowType(), e);
+      }
+      try {
+        writer.close();
+      } catch (IOException | RuntimeException e) {
+        LOG.warn("Failed to close the {} writer", writer.getRowType(), e);
+      }
+      writer = null;
     }
   }
 

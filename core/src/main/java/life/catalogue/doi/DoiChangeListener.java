@@ -37,7 +37,6 @@ import java.nio.file.Files;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 import java.util.concurrent.*;
 
 import org.apache.commons.io.FileUtils;
@@ -56,7 +55,6 @@ public class DoiChangeListener implements DoiListener, Managed {
   private final SqlSessionFactory factory;
   private final DoiService doiService;
   private final DatasetConverter converter;
-  private final Set<DOI> deleted = ConcurrentHashMap.newKeySet();
   private final LatestDatasetKeyCache datasetKeyCache;
   private final DoiConfig cfg;
   private final long wait;
@@ -391,7 +389,6 @@ public class DoiChangeListener implements DoiListener, Managed {
         // ... otherwise the DOI was hidden only - make sure the URL is correct and points to CLB
         doiService.update(doi, url(doi));
       }
-      deleted.add(doi);
     }
   }
 }

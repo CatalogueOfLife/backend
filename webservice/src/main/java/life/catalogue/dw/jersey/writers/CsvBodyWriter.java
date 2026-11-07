@@ -51,8 +51,13 @@ public class CsvBodyWriter implements MessageBodyWriter<Stream<Object[]>> {
         }
       });
     } finally {
-      csv.close();
-      rows.close();
+      // the rows must be closed even when closing the writer fails, e.g. as the client went away:
+      // their onClose releases the files or db cursor they are read from
+      try {
+        csv.close();
+      } finally {
+        rows.close();
+      }
     }
   }
 }

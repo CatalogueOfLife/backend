@@ -9,19 +9,36 @@ import java.net.http.HttpResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class HttpUtils {
+public class HttpUtils implements AutoCloseable {
   private static Logger LOG = LoggerFactory.getLogger(HttpUtils.class);
   private final HttpClient client;
+  // true if the client was created here and therefore is closed here too
+  private final boolean ownsClient;
 
   public HttpUtils() {
     this(HttpClient.newBuilder()
       .followRedirects(HttpClient.Redirect.ALWAYS)
-      .build()
+      .build(), true
     );
   }
 
   public HttpUtils(HttpClient client) {
+    this(client, false);
+  }
+
+  private HttpUtils(HttpClient client, boolean ownsClient) {
     this.client = client;
+    this.ownsClient = ownsClient;
+  }
+
+  /**
+   * Closes the http client and its selector thread, unless it was given to this instance.
+   */
+  @Override
+  public void close() {
+    if (ownsClient) {
+      client.close();
+    }
   }
 
   /**

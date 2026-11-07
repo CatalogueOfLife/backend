@@ -168,9 +168,22 @@ public class TreeCopyHandler extends TreeBaseHandler {
     super.reset();
   }
 
+  /**
+   * Syncs the last buffered usages and commits. If that fails, e.g. as the sync was cancelled and the interrupt flag is
+   * still set, the sessions are closed without committing - they used to stay open, losing both pooled connections.
+   */
   @Override
   public void close() throws InterruptedException {
-    processLast();
-    super.close();
+    boolean processed = false;
+    try {
+      processLast();
+      processed = true;
+    } finally {
+      if (processed) {
+        super.close();
+      } else {
+        closeSessions();
+      }
+    }
   }
 }

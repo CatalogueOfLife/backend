@@ -1,0 +1,6 @@
+Animalia [kingdom] {ID=an CODE=zoological}
+  Diptera Linnaeus, 1758 [order] {ID=dip}
+    Diamesa Meigen, 1835 [genus] {ID=dia}
+      Diamesa aberrata Lundbeck, 1898 [species] {ID=abe}
+    Pseudodiamesa Goetghebuer, 1939 [genus] {ID=~gen}
+      =Syndiamesa Kieffer, 1918 [genus] {ID=~syn}

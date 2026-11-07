@@ -804,7 +804,9 @@ public class PgImport implements Callable<Boolean> {
           updateVerbatimUserEntity(rel);
           updateReferenceKey(rel);
           tcm.create(rel);
-          if (sRelCounter+tRelCounter++ % batchSize == 0) {
+          tRelCounter++;
+          // commit every batchSize relations of both kinds together, they share one batch session
+          if ((sRelCounter + tRelCounter) % batchSize == 0) {
             runtimeInterruptIfCancelled();
             session.commit();
             LOG.debug("Inserted {} taxon concept relations", tRelCounter);
@@ -820,7 +822,8 @@ public class PgImport implements Callable<Boolean> {
           updateVerbatimUserEntity(rel);
           updateReferenceKey(rel);
           spm.create(rel);
-          if (tRelCounter+sRelCounter++ % batchSize == 0) {
+          sRelCounter++;
+          if ((sRelCounter + tRelCounter) % batchSize == 0) {
             runtimeInterruptIfCancelled();
             session.commit();
             LOG.debug("Inserted {} species interaction relations", sRelCounter);
@@ -828,7 +831,7 @@ public class PgImport implements Callable<Boolean> {
         }
       });
       session.commit();
-      LOG.info("Inserted {} taxon concept relations in total", sRelCounter);
+      LOG.info("Inserted {} taxon concept relations in total", tRelCounter);
       LOG.info("Inserted {} species interaction relations in total", sRelCounter);
     }
   }

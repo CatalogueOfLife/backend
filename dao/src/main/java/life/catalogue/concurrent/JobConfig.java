@@ -101,8 +101,9 @@ public class JobConfig {
   }
 
   /**
-   * Maximum amount of jobs that a user can run or queue for a specific job class
-   * Keys should be just the simple names of java job classes.
+   * Maximum amount of jobs that a user can run or queue for a specific job class.
+   * Keys are the simple names of the classes jobs are grouped by in BackgroundJob.maxPerUserClass(),
+   * e.g. DatasetExportJob for all dataset exports, not the concrete ColdpExtendedExport.
    */
   public Map<String, Integer> userLimit = new HashMap<>();
 

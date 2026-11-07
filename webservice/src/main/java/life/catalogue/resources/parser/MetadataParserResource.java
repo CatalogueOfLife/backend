@@ -45,7 +45,10 @@ public class MetadataParserResource {
    */
   @GET
   public Optional<Dataset> parseGet(@QueryParam("url") String url, @QueryParam("format") MetadataFormat format) throws Exception {
-    return parseAny(new URL(url).openStream(), format);
+    // the parsers do not close the stream they read, e.g. the EML parser only closes its xml reader
+    try (InputStream in = new URL(url).openStream()) {
+      return parseAny(in, format);
+    }
   }
   
   /**

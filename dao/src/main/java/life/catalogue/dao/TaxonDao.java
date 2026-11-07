@@ -775,7 +775,7 @@ public class TaxonDao extends NameUsageBaseDao<Taxon, TaxonMapper> implements Ta
       NameUsageMapper num = session.getMapper(NameUsageMapper.class);
       NameMapper nm = session.getMapper(NameMapper.class);
 
-      List<Integer> sectorKeys = sm.listDescendantSectorKeys(id);
+      List<Integer> sectorKeys = sm.listDescendantSectorKeys(id, true);
       LOG.info("Recursively delete {}taxon {} and its {} nested sectors from dataset {} by user {}", keepRoot ? "descendants of " : "", id, sectorKeys.size(), id.getDatasetKey(), user);
 
       List<TaxonProcessable<?>> taxProcMappers = TaxonProcessable.MAPPERS.stream()

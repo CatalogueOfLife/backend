@@ -85,7 +85,7 @@ public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage> {
             var um = session.getMapper(NameUsageMapper.class);
             // first remove all synonyms
             for (var c : um.childrenIds(key)) {
-              um.delete(key);
+              um.delete(DSID.of(datasetKey, c));
             }
             um.delete(key);
             // names, references, verbatim source and related are removed as orphans at the end of the release

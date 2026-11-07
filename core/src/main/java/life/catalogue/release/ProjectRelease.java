@@ -193,8 +193,7 @@ public class ProjectRelease extends AbstractProjectCopy {
       }
 
     } else {
-      try {
-        var http = new HttpUtils();
+      try (var http = new HttpUtils()) {
         String yaml = http.get(url);
         if (logContent) {
           System.out.println("yaml content found under " + url);

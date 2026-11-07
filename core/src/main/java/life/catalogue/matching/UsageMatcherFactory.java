@@ -373,11 +373,19 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
       boolean hadFinal = finalDir.isDirectory();
       // the sidecar goes into the build dir BEFORE the move, so data and metadata land in one rename and a
       // crash can never leave new files described by an old sidecar
-      writeSidecar(datasetKey, fresh.store(), cfg.buildDir(datasetKey, token));
-      // an on demand matcher is aged out by the sidecar mtime, so a rebuild must not look like a use
-      long lastUsed = hadFinal ? cfg.datasetJson(datasetKey).lastModified() : 0;
-      if (hadFinal) {
-        FileUtils.moveDirectory(finalDir, backup); // park the old files; the old store keeps them via its mmap
+      final long lastUsed;
+      try {
+        writeSidecar(datasetKey, fresh.store(), cfg.buildDir(datasetKey, token));
+        // an on demand matcher is aged out by the sidecar mtime, so a rebuild must not look like a use
+        lastUsed = hadFinal ? cfg.datasetJson(datasetKey).lastModified() : 0;
+        if (hadFinal) {
+          FileUtils.moveDirectory(finalDir, backup); // park the old files; the old store keeps them via its mmap
+        }
+      } catch (IOException | RuntimeException e) {
+        // nothing was swapped yet and the fresh store was never handed out: release its mappings and files
+        fresh.store().close();
+        FileUtils.deleteQuietly(cfg.buildDir(datasetKey, token));
+        throw e;
       }
       try {
         FileUtils.moveDirectory(cfg.buildDir(datasetKey, token), finalDir);

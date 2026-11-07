@@ -4,17 +4,14 @@ import life.catalogue.api.model.User;
 import life.catalogue.db.mapper.DatasetMapper;
 
 import java.io.IOException;
-import java.util.ConcurrentModificationException;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.function.IntPredicate;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 
-import it.unimi.dsi.fastutil.ints.Int2BooleanMap;
-import it.unimi.dsi.fastutil.ints.Int2BooleanMaps;
-import it.unimi.dsi.fastutil.ints.Int2BooleanOpenHashMap;
+import com.google.common.annotations.VisibleForTesting;
+
 import jakarta.annotation.Priority;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotAuthorizedException;
@@ -37,8 +34,10 @@ public class PrivateFilter implements ContainerRequestFilter {
   public static String DATASET_KEY_PROPERTY = "request.datasetKey";
 
   private SqlSessionFactory factory;
-  // is dataset private cache?
-  private final Map<Integer, Boolean> cache = new HashMap<>(10_000);
+  // is dataset private cache? Read by every request thread and updated by dataset change events.
+  // The lookup is atomic per key, so a change event arriving while a request reads the db cannot be overwritten
+  // by the stale value that request read - a plain map used to cache a dataset that just went private as public.
+  private final Map<Integer, Boolean> cache = new ConcurrentHashMap<>(10_000);
 
   @Override
   public void filter(ContainerRequestContext req) throws IOException {
@@ -46,12 +45,7 @@ public class PrivateFilter implements ContainerRequestFilter {
     req.setProperty(DATASET_KEY_PROPERTY, datasetKey);
     if (datasetKey != null) {
       // is this a private dataset?
-      Boolean priv = cache.get(datasetKey);
-      if (priv == null) {
-        priv = isPrivateInDB(datasetKey);
-        cache.put(datasetKey, priv);
-      }
-
+      boolean priv = isPrivate(datasetKey);
       if (priv) {
         // check if user has permissions to at least read
         SecurityContext secCtxt = req.getSecurityContext();
@@ -65,6 +59,11 @@ public class PrivateFilter implements ContainerRequestFilter {
         }
       }
     }
+  }
+
+  @VisibleForTesting
+  boolean isPrivate(int datasetKey) {
+    return cache.computeIfAbsent(datasetKey, this::isPrivateInDB);
   }
 
   private boolean isPrivateInDB(int datasetKey) {

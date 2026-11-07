@@ -994,22 +994,6 @@
     WHERE dataset_key=#{datasetKey} AND id = tmp.uid
   </delete>
 
-  <select id="deleteSubtree" parameterType="map" resultType="String">
-    WITH RECURSIVE tree AS (
-      SELECT id, name_id AS nid
-      FROM name_usage
-      WHERE dataset_key=#{key.datasetKey} AND id=#{key.id}
-    UNION
-      SELECT c.id, c.name_id
-      FROM name_usage c JOIN tree ON c.dataset_key=tree.dataset_key AND tree.id = c.parent_id
-    )
-    DELETE
-    FROM name_usage u
-    USING tree t
-    WHERE u.dataset_key=#{key.datasetKey} AND u.id = t.id
-    RETURNING t.nid;
-  </select>
-
   <sql id="WHERE_START">
     <choose>
       <when test="param.taxonID != null">

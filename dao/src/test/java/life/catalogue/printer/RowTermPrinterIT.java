@@ -21,6 +21,8 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class RowTermPrinterIT {
   
@@ -35,12 +37,32 @@ public class RowTermPrinterIT {
     print(ColdpPrinter.TSV.class);
   }
 
+  /**
+   * The count column used to be static, so a print without a count rank failed with "speciesCount is not mapped"
+   * once any print with a count rank had run.
+   */
+  @Test
+  public void coldpWithAndWithoutCount() throws IOException {
+    var withCount = print(ColdpPrinter.TSV.class, Rank.SPECIES);
+    assertTrue(withCount.lines().findFirst().orElseThrow().endsWith("speciesCount"));
+
+    var withoutCount = print(ColdpPrinter.TSV.class, null);
+    assertFalse(withoutCount.lines().findFirst().orElseThrow().contains("Count"));
+
+    var genusCount = print(ColdpPrinter.TSV.class, Rank.GENUS);
+    assertTrue(genusCount.lines().findFirst().orElseThrow().endsWith("genusCount"));
+  }
+
   @Test
   public void dwca() throws IOException {
     print(DwcaPrinter.TSV.class);
   }
 
   public void print(Class<? extends AbstractPrinter> clazz) throws IOException {
+    print(clazz, Rank.SPECIES);
+  }
+
+  private String print(Class<? extends AbstractPrinter> clazz, Rank countRank) throws IOException {
     Writer writer = new StringWriter();
     TaxonCounter taxonCounter = new TaxonCounter() {
       @Override
@@ -49,7 +71,7 @@ public class RowTermPrinterIT {
       }
     };
     int count = PrinterFactory.dataset(clazz, TreeTraversalParameter.dataset(TestDataRule.TREE.key), null, null,
-      Rank.SPECIES, taxonCounter, SqlSessionFactoryRule.getSqlSessionFactory(), writer).print();
+      countRank, taxonCounter, SqlSessionFactoryRule.getSqlSessionFactory(), writer).print();
     assertEquals(24, count);
     System.out.println(writer);
 
@@ -58,5 +80,6 @@ public class RowTermPrinterIT {
     AtomicInteger counter = new AtomicInteger();
     reader.forEach(r -> counter.incrementAndGet());
     assertEquals(25, counter.get());
+    return writer.toString();
   }
 }

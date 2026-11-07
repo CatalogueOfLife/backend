@@ -488,6 +488,9 @@
       WHERE t.dataset_key=#{key.datasetKey} AND NOT is_synonym(t.status)
     )
     SELECT DISTINCT sid FROM x WHERE sid IS NOT NULL
+    <if test="!inclRoot">
+      AND x.id &lt;&gt; #{key.id}
+    </if>
   </select>
 
   <select id="count" resultType="integer">

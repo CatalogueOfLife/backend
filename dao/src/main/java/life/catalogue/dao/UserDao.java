@@ -154,8 +154,8 @@ public class UserDao extends UserCrudDao {
             }
           }
         }
-      } catch (Throwable e) {
-        LOG.warn("Failed to list release keys for user {}", e, userKey);
+      } catch (RuntimeException e) {
+        LOG.warn("Failed to list release keys for user {}", userKey, e);
       }
     }
     return keys;

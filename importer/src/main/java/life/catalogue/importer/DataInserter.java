@@ -6,7 +6,7 @@ import life.catalogue.csv.MappingInfos;
 import java.nio.file.Path;
 import java.util.Optional;
 
-public interface DataInserter {
+public interface DataInserter extends AutoCloseable {
 
   /**
    * @throws NormalizationFailedException if some fatal error forced the normalization to stop.
@@ -27,5 +27,12 @@ public interface DataInserter {
    */
   default Optional<InterpreterBase> interpreter() {
     return Optional.empty();
+  }
+
+  /**
+   * Releases the source files, also those left open by a cancelled or failed insert.
+   */
+  @Override
+  default void close() {
   }
 }

@@ -194,15 +194,24 @@ public class XRelease extends ProjectRelease {
     // runs in parallel to the rest of the prep phase below
     Runnable matchMissingTask = new RematchMissing(factory, ni, null, baseReleaseKey, getUserKey());
     final var thread = ExecutorUtils.runInNewThread(matchMissingTask);
+    try {
+      // add new publisher sectors
+      updatePublisherSectors();
 
-    // add new publisher sectors
-    updatePublisherSectors();
+      // load all merge sectors from project as they do not exist in the base release
+      loadMergeSectors();
 
-    // load all merge sectors from project as they do not exist in the base release
-    loadMergeSectors();
+      // make sure the missing matching is completed before we deal with the real data
+      thread.join();
 
-    // make sure the missing matching is completed before we deal with the real data
-    thread.join();
+    } finally {
+      if (thread.isAlive()) {
+        // the release failed or was cancelled before the rematch finished: nothing waits for it anymore,
+        // so it must not carry on writing to the db on its own
+        LOG.warn("Stop rematching base release {} as the release ended early", baseReleaseKey);
+        thread.interrupt();
+      }
+    }
 
     // copy base release to tmp project - we keep all identifiers
     final int xreleaseDatasetKey = newDatasetKey;
@@ -778,50 +787,6 @@ public class XRelease extends ProjectRelease {
     DateUtils.logDuration(LOG, TreeCleanerAndValidator.class, start);
   }
 
-
-  /**
-   * Goes through all accepted bi/trinomen and looks for names that are identical by rank and authorship
-   * and only differ by one letter in their scientific name.
-   *
-   * The highest priority name stays, the other becomes a synonym of it.
-   */
-  private void synonymizeMisspelledBinomials(SectorPriority prios) throws InterruptedException {
-    checkIfCancelled();
-    LOG.info("Find misspelled names and synonymize them");
-    final LocalDateTime start = LocalDateTime.now();
-    try (SqlSession session = factory.openSession(false)) {
-      var num = session.getMapper(NameUsageMapper.class);
-      var dum = session.getMapper(DuplicateMapper.class);
-      var adder = new IssueAdder(newDatasetKey, session);
-      // same names with the same rank and code
-      var dupes = dum.homonyms(newDatasetKey, Set.of(TaxonomicStatus.ACCEPTED));
-      LOG.info("Marking {} homonyms as provisional", dupes.size());
-
-      int counter = 0;
-      final DSID<String> key = DSID.root(newDatasetKey);
-      for (var d : dupes) {
-        int min = Integer.MAX_VALUE;
-        for (var u : d.getUsages()) {
-          min = Math.min(min, prios.priority(u.getSectorKey()));
-        }
-        for (var u : d.getUsages()) {
-          if (prios.priority(u.getSectorKey()) > min) {
-            num.updateStatus(key.id(u.getId()), TaxonomicStatus.PROVISIONALLY_ACCEPTED, user);
-            adder.addIssue(u.getId(), Issue.DUPLICATE_NAME);
-            if (counter++ % 1000 == 0) {
-              session.commit();
-            }
-          }
-        }
-      }
-      session.commit();
-      LOG.info("Changed {} homonyms to provisional status", counter);
-
-    } catch (Exception e) {
-      LOG.error("Homonym flagging failed", e);
-    }
-    DateUtils.logDuration(LOG, "Homonym flagging", start);
-  }
 
   /**
    * Assigns a doubtful status to accepted names that only differ in authorship

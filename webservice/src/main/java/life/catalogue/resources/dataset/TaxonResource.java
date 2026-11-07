@@ -4,7 +4,6 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.Language;
 import life.catalogue.api.vocab.TreatmentFormat;
-import life.catalogue.common.util.LoggingUtils;
 import life.catalogue.common.ws.MoreMediaTypes;
 import life.catalogue.dao.TaxonDao;
 import life.catalogue.dao.TxtTreeDao;
@@ -19,7 +18,6 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 
 import org.apache.ibatis.cursor.Cursor;
 import org.apache.ibatis.session.SqlSession;
@@ -68,8 +66,6 @@ public class TaxonResource extends AbstractDatasetScopedResource<String, Taxon, 
   @VaryAccept
   @Path("{id}")
   public Taxon get(@PathParam("key") int datasetKey, @PathParam("id") String id) {
-    LoggingUtils.setDatasetMDC(datasetKey, getClass());
-    LoggingUtils.setJobMDC(UUID.randomUUID(), getClass());
     var key = new DSIDValue<>(datasetKey, id);
     return dao.getOr404(key);
   }

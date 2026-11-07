@@ -40,6 +40,7 @@ import javax.annotation.Nullable;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.ibatis.session.SqlSession;
@@ -200,10 +201,13 @@ public abstract class AbstractMatchingJob extends DatasetJob {
       // match
       if (req.getUpload() != null) {
         LOG.info("Match uploaded names from {}", req.getUpload());
-        var mstream = streamUpload();
-        writeMatches(writer, mstream.mapper.rawHeader, mstream.stream, matcher);
-        // delete file upload
-        FileUtils.deleteQuietly(req.getUpload());
+        try {
+          var mstream = streamUpload();
+          writeMatches(writer, mstream.mapper.rawHeader, mstream.stream, matcher);
+        } finally {
+          // delete file upload, also when matching failed
+          FileUtils.deleteQuietly(req.getUpload());
+        }
 
       } else if (req.getSourceDatasetKey() != null) {
         try (SqlSession session = openSession()) {
@@ -507,8 +511,21 @@ public abstract class AbstractMatchingJob extends DatasetJob {
       this.stream = stream;
     }
   }
+  /**
+   * Streams the uploaded file. Closing the returned stream closes the file, which is also closed if this fails,
+   * e.g. on a missing header or name column.
+   */
   private MappedStream streamUpload() throws IOException {
     final InputStream data = new FileInputStream(req.getUpload());
+    try {
+      return streamUpload(data);
+    } catch (IOException | RuntimeException e) {
+      IOUtils.closeQuietly(data);
+      throw e;
+    }
+  }
+
+  private MappedStream streamUpload(final InputStream data) throws IOException {
     var reader  = CharsetDetectingStream.createReader(data);
     // an explicit csv or tsv content type is kept as the upload file suffix, anything else is probed
     final String suffix = FilenameUtils.getExtension(req.getUpload().getName()).toLowerCase();
@@ -526,7 +543,9 @@ public abstract class AbstractMatchingJob extends DatasetJob {
     ResultIterator<String[], ParsingContext> iter = parser.iterate(reader).iterator();
     final RowMapper mapper = new RowMapper(iter.next());
 
-    Stream<String[]> rowStream = StreamSupport.stream(Spliterators.spliteratorUnknownSize(iter, Spliterator.ORDERED), false);
+    // the parser only closes its input once it read it to the end
+    Stream<String[]> rowStream = StreamSupport.stream(Spliterators.spliteratorUnknownSize(iter, Spliterator.ORDERED), false)
+      .onClose(() -> IOUtils.closeQuietly(data));
 
     return new MappedStream(mapper, rowStream.map(row -> {
       final IssueContainer issues = new IssueContainer.Simple();

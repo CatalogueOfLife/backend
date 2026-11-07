@@ -8,7 +8,6 @@ import life.catalogue.api.vocab.JobLane;
 import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.common.Idle;
 import life.catalogue.common.Managed;
-import life.catalogue.common.collection.CountMap;
 import life.catalogue.dao.JobDao;
 import life.catalogue.dao.UserCrudDao;
 
@@ -716,14 +715,15 @@ public class JobExecutor implements Managed, Idle, SomeExecutor {
     if (queueSize(lane) >= cfg.queueSize(lane)) {
       throw new TooManyRequestsException("The " + lane + " job queue is full, please try again later");
     }
-    // look for duplicates in the queue and count by user
-    var jobCnt = new CountMap<Class<?>>();
+    // look for duplicates in the queue and count the users jobs of the same class group
+    final var group = job.maxPerUserClass();
+    int jobCnt = 0;
     for (BackgroundJob qj : getQueue()) {
       if (job.isDuplicate(qj)) {
         throw new IllegalArgumentException("An identical job " + qj.getKey() + " is queued already");
       }
-      if (qj.getUserKey() == job.getUserKey()) {
-        jobCnt.inc(job.maxPerUserClass());
+      if (qj.getUserKey() == job.getUserKey() && qj.maxPerUserClass() == group) {
+        jobCnt++;
       }
     }
     // make sure all components needed for the job have started before we even submit the job
@@ -734,8 +734,8 @@ public class JobExecutor implements Managed, Idle, SomeExecutor {
       throw new IllegalArgumentException("No user "+job.getUserKey()+" existing");
     }
     // are number of jobs per user restricted?
-    if (!user.isAdmin() && jobCnt.getOrDefault(job.maxPerUserClass(), 0) >= jobUserLimit(job)) {
-      throw new TooManyRequestsException(user.getUsername() + " already runs the maximum allowed number of " + job.getClass().getSimpleName() + " jobs");
+    if (!user.isAdmin() && jobCnt >= jobUserLimit(job)) {
+      throw new TooManyRequestsException(user.getUsername() + " already runs the maximum allowed number of " + group.getSimpleName() + " jobs");
     }
 
     LOG.info("Scheduling new {} job {} by user {}: {}<{}>", job.getJobName(), job.getKey(), job.getUserKey(), user.getName(), user.getEmail());
@@ -775,8 +775,11 @@ public class JobExecutor implements Managed, Idle, SomeExecutor {
     return false;
   }
 
+  /**
+   * The limits are configured by the simple name of the class jobs are grouped by, e.g. DatasetExportJob for all exports.
+   */
   private int jobUserLimit(BackgroundJob job) {
-    return cfg.userLimit.getOrDefault(job.getClass().getSimpleName(), Integer.MAX_VALUE);
+    return cfg.userLimit.getOrDefault(job.maxPerUserClass().getSimpleName(), Integer.MAX_VALUE);
   }
 
 }

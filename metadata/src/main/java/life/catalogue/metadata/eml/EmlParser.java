@@ -47,8 +47,11 @@ public class EmlParser {
   }
 
   public static Optional<DatasetWithSettings> parse(Path file) throws IOException {
-    CharsetDetectingStream cds = CharsetDetectingStream.create(Files.newInputStream(file));
-    return parse(cds, cds.getCharset());
+    // closing the xml stream reader does not close the stream underneath, so the file is closed here
+    try (InputStream in = Files.newInputStream(file)) {
+      CharsetDetectingStream cds = CharsetDetectingStream.create(in);
+      return parse(cds, cds.getCharset());
+    }
   }
 
   public static Optional<DatasetWithSettings> parse(InputStream stream) throws IOException {
