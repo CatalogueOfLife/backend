@@ -593,7 +593,9 @@ public class UsageMatcher implements AutoCloseable {
     // for genus matches we keep the canonical matches and compare their lineage further down.
     // Two qualified names are only merged when their authorship compares EQUAL - a DIFFERENT or merely
     // UNKNOWN comparison keeps them as separate entries. Year-only authorship is handled below.
-    if (qualifiedName && !nu.getRank().isGenusOrSuprageneric() && !isYearOnlyAuthorship(nu)) {
+    // parses the authorship, so it is done once per match
+    final boolean yearOnlyAuthorship = isYearOnlyAuthorship(nu);
+    if (qualifiedName && !nu.getRank().isGenusOrSuprageneric() && !yearOnlyAuthorship) {
       existing.removeIf(u -> u.hasAuthorship() && notEqualAuthorship(u, nu) );
     }
 
@@ -642,7 +644,7 @@ public class UsageMatcher implements AutoCloseable {
     // author-difference filters above leave same-canonical homonyms unseparated. Disambiguate on the year
     // directly: a candidate only fits a year-only query if it carries a year within tolerance. Candidates
     // without any year, or with a clearly different year, are not this name.
-    if (isYearOnlyAuthorship(nu)) {
+    if (yearOnlyAuthorship) {
       final String nuYear = authorshipYear(nu);
       if (nuYear != null) {
         existing.removeIf(u -> {

@@ -40,6 +40,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
@@ -755,15 +756,20 @@ public class XRelease extends ProjectRelease {
     LOG.info("Clean, validate & produce taxon metrics for entire xrelease {}", newDatasetKey);
     final AtomicInteger counter = new AtomicInteger();
     final LocalDateTime start = LocalDateTime.now();
-    try (SqlSession sessionRO = factory.openSession(true);
-         SqlSession session = factory.openSession(false)
+    // the read session must not autocommit: the postgres driver ignores the fetch size then and buffers the whole tree.
+    // Its transaction is busy while the slow tree query runs and then only idles between fetches.
+    // The metrics only ever insert, so they get a batch session of their own: one round trip per taxon used to cost
+    // more than the validation, and the cleaner's session must stay a simple one as it reads and writes alike.
+    try (SqlSession sessionRO = factory.openSession(false);
+         SqlSession session = factory.openSession(false);
+         SqlSession metricsSession = factory.openSession(ExecutorType.BATCH, false)
     ) {
       // nothing may touch session before the traversal streams: the path sorted tree query takes longer than the
       // idle-in-transaction timeout of prod postgres on COL and a transaction opened here gets killed, see #1605
       var consumer = new TreeCleanerAndValidator(session, newDatasetKey, xCfg.removeEmptyGenera);
       // add metrics generator to tree traversal
       var stack = consumer.stack();
-      TaxonMetricsBuilder mb = new TaxonMetricsBuilder(TaxonMetricsBuilder.tracker(stack), newDatasetKey, session);
+      TaxonMetricsBuilder mb = new TaxonMetricsBuilder(TaxonMetricsBuilder.tracker(stack), newDatasetKey, metricsSession);
       stack.addHandler(new ParentStack.StackHandler<>() {
         @Override
         public void start(TreeCleanerAndValidator.XLinneanNameUsage n) {
@@ -775,12 +781,14 @@ public class XRelease extends ProjectRelease {
           mb.end(n.usage, n.usage.getSectorKey(), n.usage.getExtinct());
           if (counter.incrementAndGet() % 5000 == 0) {
             session.commit();
+            metricsSession.commit();
           }
         }
       });
       // traverse accepted tree - a failure must fail the release, it used to leave most of the tree silently unvalidated
       consumer.validate(sessionRO);
       session.commit();
+      metricsSession.commit();
       metrics.setMaxClassificationDepth(consumer.getMaxDepth());
       LOG.info("{} usages out of {} flagged with issues during validation", consumer.getFlagged(), consumer.getCounter());
     }

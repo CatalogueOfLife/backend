@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
@@ -79,8 +80,10 @@ public class TaxonMetricsBuilder {
 
     LOG.info("Starting to rebuild all taxon metrics for dataset {}", datasetKey);
     AtomicInteger counter = new AtomicInteger();
-    try (SqlSession sessionRO = factory.openSession(true);
-         SqlSession session = factory.openSession(false)
+    // the read session must not autocommit: the postgres driver ignores the fetch size then and buffers the whole tree
+    // the metrics are written in jdbc batches, a single round trip per taxon used to dominate the rebuild
+    try (SqlSession sessionRO = factory.openSession(false);
+         SqlSession session = factory.openSession(ExecutorType.BATCH, false)
     ) {
       // add metrics generator to tree traversal
       final var stack = new ParentStack<LinneanNameUsage>();

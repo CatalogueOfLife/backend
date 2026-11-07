@@ -294,7 +294,8 @@ public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage> {
     }
     // persist if we have flagged issues
     if (issues.hasIssues()) {
-      issueAdder.addIssues(sn.getId(), issues.getIssues());
+      // the tree query carries the verbatim source key, looking it up again cost a query per flagged usage
+      issueAdder.addIssues(sn.getVerbatimSourceKey(), sn.getId(), issues.getIssues());
       flagged.incrementAndGet();
     }
   }

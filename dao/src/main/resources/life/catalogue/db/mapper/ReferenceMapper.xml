@@ -117,6 +117,14 @@
     <foreach item="k" index="idx" collection="ids" open="(" separator="," close=")">#{k}</foreach>
   </select>
 
+  <!-- id and citation of every reference of a sector that has a citation, to deduplicate references by citation -->
+  <select id="listCitations" resultType="life.catalogue.api.model.Reference">
+    SELECT r.id, r.citation
+    FROM reference r
+    WHERE r.dataset_key=#{datasetKey} AND r.sector_key=#{sectorKey} AND r.citation IS NOT NULL
+    ORDER BY r.id
+  </select>
+
   <select id="find" resultMap="referenceResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>

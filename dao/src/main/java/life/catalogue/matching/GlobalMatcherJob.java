@@ -47,7 +47,8 @@ public class GlobalMatcherJob extends GlobalBlockingJob {
     @Override
     public void run() throws RuntimeException {
       LOG.info("Create missing name matches for all datasets");
-      try (SqlSession readOnlySession = factory.openSession(true);
+      // the read sessions must not autocommit, or the postgres driver ignores the fetch size and buffers all names
+      try (SqlSession readOnlySession = factory.openSession(false);
            BulkMatchHandler hn = new BulkMatchHandler(true, NameMatchMapper.class, false);
       ) {
         var mapper = readOnlySession.getMapper(NameMapper.class);
@@ -64,7 +65,7 @@ public class GlobalMatcherJob extends GlobalBlockingJob {
       }
 
       LOG.info("Create missing archived name matches for all project");
-      try (SqlSession readOnlySession = factory.openSession(true);
+      try (SqlSession readOnlySession = factory.openSession(false);
            BulkMatchHandler hn = new BulkMatchHandler(true, ArchivedNameUsageMatchMapper.class, false);
       ) {
         total = 0;

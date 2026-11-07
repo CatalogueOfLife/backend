@@ -86,6 +86,8 @@ public abstract class TreeBaseHandler implements TreeHandler {
   protected final Map<NomRelType, Set<NameIdPair>> nameRelsToBeCreated = new HashMap<>();
   protected record NameIdPair(String nameId, String relatedNameId) {}
   private final Map<String, String> refIds = new HashMap<>();
+  // see sectorRefsByCitation(), loaded lazily
+  private Map<String, String> sectorRefsByCitation;
   // source usage id -> target usage id of all usages created or updated by this sync
   protected final Map<String, String> usageIds = new HashMap<>();
   // source name id -> target name id of all names created by this sync. See targetNameId()
@@ -998,15 +1000,39 @@ public abstract class TreeBaseHandler implements TreeHandler {
     return null;
   }
 
+  /**
+   * The ids of the references this sector holds in the target by their citation, the ones existing before the sync
+   * loaded once and all created by it added. References are deduplicated by citation, which used to be a query per new
+   * reference that scanned all references of the sector as citations are not indexed - quadratic in their number.
+   * The first reference wins if several share a citation.
+   */
+  private Map<String, String> sectorRefsByCitation() {
+    if (sectorRefsByCitation == null) {
+      sectorRefsByCitation = new HashMap<>();
+      int dupes = 0;
+      // the batch session sees whatever this sync wrote already, a select flushes it first
+      for (var r : rm.listCitations(targetDatasetKey, sector.getId())) {
+        if (sectorRefsByCitation.putIfAbsent(r.getCitation(), r.getId()) != null) {
+          dupes++;
+        }
+      }
+      if (dupes > 0) {
+        LOG.warn("{} references of sector {} in catalogue {} duplicate the citation of another", dupes, sector.getId(), targetDatasetKey);
+      }
+    }
+    return sectorRefsByCitation;
+  }
+
   protected String lookupOrCreateReference(Reference ref) {
     if (ref != null) {
       if (refIds.containsKey(ref.getId())) {
         // we have seen this ref before
         return refIds.get(ref.getId());
       }
-      // sth new?
-      List<Reference> matches = rm.find(targetDatasetKey, sector.getId(), ref.getCitation());
-      if (matches.isEmpty()) {
+      // sth new? A reference without citation never matches an existing one
+      final String citation = ref.getCitation();
+      final String existingID = citation == null ? null : sectorRefsByCitation().get(citation);
+      if (existingID == null) {
         // insert new ref
         ref.setDatasetKey(targetDatasetKey);
         ref.setSectorKey(sector.getId());
@@ -1020,15 +1046,14 @@ public abstract class TreeBaseHandler implements TreeHandler {
         // copy
         DSID<String> origID = ReferenceDao.copyReference(batchSession, ref, targetDatasetKey, user);
         refIds.put(origID.getId(), ref.getId());
+        if (citation != null) {
+          sectorRefsByCitation.put(citation, ref.getId());
+        }
         return ref.getId();
 
       } else {
-        if (matches.size() > 1) {
-          LOG.warn("{} duplicate references in catalogue {} with citation {}", matches.size(), targetDatasetKey, ref.getCitation());
-        }
-        String refID = matches.get(0).getId();
-        refIds.put(ref.getId(), refID);
-        return refID;
+        refIds.put(ref.getId(), existingID);
+        return existingID;
       }
     }
     return null;

@@ -552,12 +552,12 @@ public class TreeMergeHandler extends TreeBaseHandler {
       nu.setStatus(TaxonomicStatus.PROVISIONALLY_ACCEPTED);
     }
     if (parent != null && parent.status.isSynonym()) {
-      // use accepted instead
-      var p = numRO.getSimpleParent(targetKey.id(parent.id));
+      // use accepted instead. Read through the batch session: the synonym may have been created by this sync
+      var p = num.getSimpleParent(targetKey.id(parent.id));
       // make sure rank hierarchy makes sense - can be distorted by synonyms
       if (p == null || (nu.isTaxon() && nu.getRank().notOtherOrUnranked() && p.getRank().lowerOrEqualsTo(nu.getRank()))) {
         while (p != null && p.getRank().lowerOrEqualsTo(nu.getRank())) {
-          p = numRO.getSimpleParent(targetKey.id(p.getId()));
+          p = num.getSimpleParent(targetKey.id(p.getId()));
         }
         if (p == null) {
           // nothing to attach to. Better skip this taxon, but include children
@@ -732,8 +732,11 @@ public class TreeMergeHandler extends TreeBaseHandler {
       && nidxId.equals(u.getNamesIndexId()));
   }
 
+  /**
+   * Reads through the batch session, whose selects flush its pending statements first and so see all writes of this
+   * sync. It used to commit before every read, once per matched usage.
+   */
   private Name loadFromDB(String usageID) {
-    batchSession.commit();
     return nm.getByUsage(targetDatasetKey, usageID);
   }
 
@@ -810,6 +813,9 @@ public class TreeMergeHandler extends TreeBaseHandler {
   }
   private void updateParent(NameUsageBase nu, DSID<String> existingUsageKey, UsageMatch existing, SimpleNameWithNidx existingParent, SimpleNameWithNidx parent, Set<InfoGroup> upd) {
     LOG.debug("Update {} with closer parent {} {} than {} from {}", existing.usage, parent.getRank(), parent.getId(), existingParent, nu);
+    // the update runs on the autocommit session, a connection of its own, which only sees a parent created by this sync
+    // once it is committed - or its foreign key check fails. This used to commit for every matched taxon, updated or not.
+    batchSession.commit();
     numRO.updateParentId(existingUsageKey, parent.getId(), user);
     matcher.store().updateParentId(existingUsageKey.getId(), parent.getId());
     upd.add(InfoGroup.PARENT);
@@ -841,7 +847,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
 
               } else {
                 var existingParent = existing.usage.getClassification() == null || existing.usage.getClassification().isEmpty() ? null : existing.usage.getClassification().get(0);
-                batchSession.commit(); // we need to flush the write session to avoid broken foreign key constraints
+                // the conflict check reads through the matcher store on the batch session, which sees its own writes
                 if (existingParent == null || proposedParentDoesNotConflict(existing.usage, existingParent, parent)) {
                   updateParent(nu, existingUsageKey, existing, existingParent, parent, upd);
                 }
@@ -963,7 +969,8 @@ public class TreeMergeHandler extends TreeBaseHandler {
     final boolean srcExtinct = Boolean.TRUE.equals(src.isExtinct());
     if (!srcEnv && !srcRange && !srcExtinct) return false;
 
-    var t = numRO.getTaxonInfo(key);
+    // through the batch session, the existing taxon may have been created by this very sync
+    var t = num.getTaxonInfo(key);
     if (t == null) return false;
     boolean changed = false;
     if (srcEnv && (t.getEnvironments() == null || t.getEnvironments().isEmpty())) {
@@ -1292,7 +1299,8 @@ public class TreeMergeHandler extends TreeBaseHandler {
   protected String targetNameId(String sourceNameId) {
     return nameIds.computeIfAbsent(sourceNameId, id -> {
       var usageId = matchedNameUsageIds.get(id);
-      return usageId == null ? null : session.getMapper(NameMapper.class).getNameIdByUsage(targetDatasetKey, usageId);
+      // through the batch session, the usage may have been created by this sync and not be committed yet
+      return usageId == null ? null : nm.getNameIdByUsage(targetDatasetKey, usageId);
     });
   }
 

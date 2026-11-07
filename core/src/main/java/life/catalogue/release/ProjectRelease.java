@@ -313,10 +313,13 @@ public class ProjectRelease extends AbstractProjectCopy {
     checkIfCancelled();
     LOG.info("Remove copied issues and validate release {}", newDatasetKey);
     final LocalDateTime start = LocalDateTime.now();
-    try (SqlSession session = factory.openSession(true)) {
+    // the tree streams through its own session: with autocommit on the postgres driver buffers the whole release
+    try (SqlSession session = factory.openSession(true);
+         SqlSession sessionRO = factory.openSession(false)
+    ) {
       session.getMapper(VerbatimSourceMapper.class).removeAllIssues(newDatasetKey);
       var consumer = new TreeCleanerAndValidator(session, newDatasetKey, false);
-      consumer.validate(session);
+      consumer.validate(sessionRO);
       LOG.info("{} usages out of {} flagged with issues during validation of release {}", consumer.getFlagged(), consumer.getCounter(), newDatasetKey);
     }
     DateUtils.logDuration(LOG, TreeCleanerAndValidator.class, start);

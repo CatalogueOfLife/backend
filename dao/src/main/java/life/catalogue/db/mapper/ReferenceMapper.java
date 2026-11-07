@@ -37,6 +37,11 @@ public interface ReferenceMapper extends CRUD<DSID<String>, Reference>, DatasetP
 	 * @return all bibliographic reference from a dataset by its full citation, optionally limited to a single sector
 	 */
 	List<Reference> find(@Param("datasetKey") int datasetKey, @Param("sectorKey") Integer sectorKey, @Param("citation") String citation);
+
+	/**
+	 * @return references of a sector with just their id and citation, all those with a citation, ordered by id
+	 */
+	List<Reference> listCitations(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
 	
 	List<Reference> search(@Param("datasetKey") int datasetKey, @Param("req") ReferenceSearchRequest request, @Param("page") Page page);
 	
