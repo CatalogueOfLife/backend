@@ -396,6 +396,18 @@ public class NameParserTest {
     assertEquals("Aguilar-Aguilar, 2025", n.getAuthorship());
     n = parse("Scaphytopius ancorus", "Arias\u2011Paco & Godoy, 2025", Rank.SPECIES, NomCode.ZOOLOGICAL);
     assertEquals("Arias-Paco & Godoy, 2025", n.getAuthorship());
+    // en and em dashes joining a double surname, data#1862
+    n = parse("Dilta benahoarense", "Palacios\u2013Martinez & Garc\u00eda-Par\u00eds, 2025", Rank.SPECIES, NomCode.ZOOLOGICAL);
+    assertEquals("Palacios-Martinez & Garc\u00eda-Par\u00eds, 2025", n.getAuthorship());
+    n = parse("Xerocrassa marina", "Mart\u00ednez\u2013Ort\u00ed, 2026", Rank.SPECIES, NomCode.ZOOLOGICAL);
+    assertEquals("Mart\u00ednez-Ort\u00ed, 2026", n.getAuthorship());
+    n = parse("Abies alba", "Lopes\u2014Andrade, 2026", Rank.SPECIES, NomCode.ZOOLOGICAL);
+    assertEquals("Lopes-Andrade, 2026", n.getAuthorship());
+    // but not a year range, nor a dash that is a mis-decoded \u00f3 (Mac Roman read as Windows-1252)
+    n = parse("Abies alba", "Linnaeus, 1758\u20131759", Rank.SPECIES, NomCode.ZOOLOGICAL);
+    assertTrue(n.getAuthorship().contains("\u2013"));
+    n = parse("Porphyra umbilicalis", "(K\u00fctzing) J\u2014nsson", Rank.SPECIES, NomCode.BOTANICAL);
+    assertTrue(n.getAuthorship().contains("\u2014"));
 
     // a cyrillic homoglyph in an otherwise latin authorship
     n = parse("Ochetosoma megametricum", "(Talbot, 1934) Caballero y С. & Vogelsang, 1947", Rank.SPECIES, NomCode.ZOOLOGICAL);

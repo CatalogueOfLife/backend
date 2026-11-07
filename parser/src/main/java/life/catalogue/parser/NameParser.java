@@ -62,6 +62,10 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
   private static final Pattern NORM_WHITESPACE = Pattern.compile("(?:\\\\[nr]|\\s)+");
   // hyphens in disguise, e.g. the non-breaking hyphen
   private static final Pattern HYPHENS = Pattern.compile("[\\u2010\\u2011\\u2012\\u2043\\u2212\\uFE63\\uFF0D]");
+  // an en or em dash between a small and a capital letter is the hyphen of a double surname, "Palacios–Martinez",
+  // see data#1862. Elsewhere it stays: in a year range, and in "J—nsson" or "L—pez", where it is a mis-decoded ó
+  // (Mac Roman read as Windows-1252) a hyphen would only hide
+  private static final Pattern DASH_IN_WORD = Pattern.compile("(?<=\\p{Ll})[\\u2013\\u2014](?=\\p{Lu})");
   private static final Pattern IN_COLON = Pattern.compile("\\b(in)\\s*:", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CHARACTER_CLASS);
   private static final String DAGGER = "\u2020";
 
@@ -278,6 +282,7 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
 
     // broken characters the parser already dropped from the authorship atoms, see data#1765
     name = HYPHENS.matcher(name).replaceAll("-");
+    name = DASH_IN_WORD.matcher(name).replaceAll("-");
     name = replaceHomoglyphs(name);
     if (pnu.isExtinct()) {
       name = name.replace(DAGGER, " ");
