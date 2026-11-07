@@ -1,15 +1,10 @@
 package life.catalogue.doi.datacite.model;
 
 import life.catalogue.api.model.DOI;
-import life.catalogue.api.util.ObjectUtils;
 
-import java.time.Year;
-import java.time.temporal.ChronoField;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-
-import javax.annotation.Nullable;
 
 import jakarta.validation.constraints.NotNull;
 
@@ -67,17 +62,6 @@ public class DoiAttributes {
   private String created;
   private String registered;
   private String updated;
-
-  public static DoiAttributes required(DOI doi, String title, List<Creator> creator, String url, @Nullable String publisher, @Nullable Integer publicationYear) {
-    DoiAttributes attr = new DoiAttributes(doi);
-    attr.setTypes(DATASET_RESOURCE);
-    attr.setTitles(List.of(new Title(title)));
-    attr.setCreators(creator);
-    attr.setUrl(url);
-    attr.setPublisher(ObjectUtils.coalesce(publisher, "GBIF"));
-    attr.setPublicationYear(ObjectUtils.coalesce(publicationYear, Year.now().get(ChronoField.YEAR)));
-    return attr;
-  }
 
   public DoiAttributes() {
   }

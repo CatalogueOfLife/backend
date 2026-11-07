@@ -129,13 +129,6 @@
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
 
-  <select id="listRootIds" resultType="string">
-    SELECT id
-    FROM name_usage
-    WHERE dataset_key=#{datasetKey} AND parent_id IS NULL AND NOT is_synonym(status)
-    ORDER BY id
-  </select>
-
   <select id="listByIds" resultMap="taxonResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>

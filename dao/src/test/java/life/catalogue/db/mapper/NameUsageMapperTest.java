@@ -3,8 +3,6 @@ package life.catalogue.db.mapper;
 import life.catalogue.api.RandomUtils;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
-import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.Environment;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
@@ -20,8 +18,6 @@ import org.gbif.nameparser.api.Rank;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.ibatis.cursor.Cursor;
@@ -100,25 +96,6 @@ public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
   }
 
   @Test
-  public void pageIds() throws Exception {
-    assertEquals(4, mapper().pageIds(testDataRule.testData.key, true, null, new Page()).size());
-    assertEquals(4, mapper().pageIds(testDataRule.testData.key, true, null, new Page(0,5)).size());
-    assertEquals(2, mapper().pageIds(testDataRule.testData.key, false, null, new Page(0,10)).size());
-    assertEquals(2, mapper().pageIds(testDataRule.testData.key, true, null, new Page(0,2)).size());
-    assertEquals(0, mapper().pageIds(testDataRule.testData.key, true, null, new Page(10, 10)).size());
-    assertEquals(2, mapper().pageIds(testDataRule.testData.key, true, 2, new Page()).size());
-  }
-
-  @Test
-  public void countIds() throws Exception {
-    assertEquals(4, mapper().countIds(testDataRule.testData.key, true, null));
-    assertEquals(2, mapper().countIds(testDataRule.testData.key, false, null));
-    assertEquals(4, mapper().countIds(testDataRule.testData.key, true, 100));
-    assertEquals(2, mapper().countIds(testDataRule.testData.key, true, 2));
-    assertEquals(0, mapper().countIds(testDataRule.testData.key, true, 1));
-  }
-
-  @Test
   public void processTreeConsolidationName() throws Exception {
     assertSize(mapper().processTreeConsolidationName(DSID.of(testDataRule.testData.key, "swedrftgzhuj")), 0);
     assertSize(mapper().processTreeConsolidationName(DSID.of(testDataRule.testData.key, "root-1")), 1);
@@ -129,11 +106,6 @@ public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
   public void getVerbatim() throws Exception {
     mapper().getSimpleVerbatim(DSID.of(TestEntityGenerator.TAXON1.getDatasetKey(), TestEntityGenerator.TAXON1.getId()));
     mapper().getSimpleParent(DSID.of(TestEntityGenerator.TAXON1.getDatasetKey(), TestEntityGenerator.TAXON1.getId()));
-  }
-
-  @Test
-  public void getSimpleInDataset() throws Exception {
-    mapper().getSimpleInDataset(DSID.of(TestEntityGenerator.TAXON1.getDatasetKey(), TestEntityGenerator.TAXON1.getId()));
   }
 
   @Test

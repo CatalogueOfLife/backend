@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.apache.ibatis.cursor.Cursor;
 import org.apache.ibatis.session.SqlSession;
@@ -74,13 +73,6 @@ public abstract class ArchiveExport extends DatasetExportJob {
       Reference r = s.getMapper(ReferenceMapper.class).get(DSID.of(datasetKey, id));
       return r == null ? null : r.getCitation();
     }
-  }
-
-  protected String citationByID(String refID) {
-    if (!StringUtils.isBlank(refID)) {
-      return refCache.get(refID);
-    }
-    return null;
   }
 
   @Override

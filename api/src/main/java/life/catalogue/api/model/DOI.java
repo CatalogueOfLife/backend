@@ -40,8 +40,6 @@ public class DOI implements Serializable {
   private static final String TEST_RESOLVER = "https://handle.test.datacite.org/";
 
   private static final String DATASET_PATH = "d";
-  private static final String EXPORT_PATH = "e";
-  private static final Pattern DATASET_PATTERN = Pattern.compile("^"+DATASET_PATH+"([^-.]+)$");
   private static final Pattern SOURCE_DATASET_PATTERN = Pattern.compile("^"+DATASET_PATH+"(.+)-(.+)$");
   private static final Pattern DATASET_VERSION_PATTERN = Pattern.compile("^"+DATASET_PATH+"(.+)\\.v(\\d+)$");
   // pattern that matches the dataset key also for version and source dois!

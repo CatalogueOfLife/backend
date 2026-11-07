@@ -8,7 +8,6 @@ import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 
 import java.time.LocalDateTime;
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -51,14 +50,6 @@ public interface NameMapper extends CRUD<DSID<String>, Name>, DatasetProcessable
    */
   List<String> unrankedRankNameIds(@Param("datasetKey") int datasetKey,
                                    @Param("sectorKey") @Nullable Integer sectorKey);
-  /**
-   * Deletes names by sector key and a max rank to be included.
-   * An optional set of name ids can be provided that will be excluded from the deletion.
-   * This is useful to avoid deletion of ambiguous ranks like section or series which are placed differently in zoology and botany.
-   * @param key the sector key
-   * @param excludeNameIds name ids to exclude from the deletion
-   */
-  int deleteBySectorAndRank(@Param("key") DSID<Integer> key, @Param("rank") Rank rank, @Param("nameIds") Collection<String> excludeNameIds);
 
   /**
    * Removes the publishedIn reference, page and page link from all names of other sectors or the project itself
@@ -87,21 +78,11 @@ public interface NameMapper extends CRUD<DSID<String>, Name>, DatasetProcessable
   Cursor<SimpleNameInDataset> processAll(@Nullable @Param("rank") Rank rank);
 
   /**
-   * Returns the list of names published in the same reference.
-   */
-  List<Name> listByReference(@Param("datasetKey") int datasetKey, @Param("refId") String publishedInId);
-  
-  /**
    * Lists all names with the same names index key across all datasets.
    *
    * @param nidx names index key!
    */
   List<Name> indexGroup(@Param("nidx") int nidx);
-
-  /**
-   * Same as indexGroup, but only retrieves the name identifiers
-   */
-  List<DSID<String>> indexGroupIds(@Param("nidx") int nidx);
 
   /**
    * @return true if at least one record for the given dataset exists

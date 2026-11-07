@@ -259,10 +259,6 @@
       AND count(DISTINCT n.code) &lt;= 1
   </select>
 
-  <sql id="543432243">
-    WHERE u.dataset_key=#{datasetKey} AND u.status = 'ACCEPTED'::TAXONOMICSTATUS
-  </sql>
-
   <select id="count" parameterType="map" resultType="int">
     SELECT COUNT(*) FROM (
       SELECT <include refid="keyCol"/>

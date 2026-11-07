@@ -1,7 +1,5 @@
 package life.catalogue.db.mapper;
 
-import kotlin.collections.EmptySet;
-
 import life.catalogue.api.model.Dataset;
 
 import java.util.EnumSet;
@@ -11,7 +9,6 @@ import java.util.Set;
 
 import life.catalogue.api.model.DatasetSimple;
 import life.catalogue.api.model.Sector;
-import life.catalogue.dao.DatasetSourceDao;
 
 import org.apache.ibatis.annotations.Param;
 
@@ -20,7 +17,7 @@ import org.apache.ibatis.annotations.Param;
  * The table dataset_source only stores sources for releases, not the project itself.
  * The live project sources are determined based on the sector mappings alone and are the reason for the name of the mapper.
  */
-public interface DatasetSourceMapper extends DatasetAgentMapper {
+public interface DatasetSourceMapper {
 
   class SourceDataset extends Dataset {
     private Set<Sector.Mode> sectorModes = EnumSet.noneOf(Sector.Mode.class);

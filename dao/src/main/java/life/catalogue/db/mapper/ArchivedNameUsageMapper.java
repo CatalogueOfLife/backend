@@ -5,7 +5,6 @@ import life.catalogue.db.Create;
 import life.catalogue.db.DatasetProcessable;
 
 import java.util.List;
-import java.util.Map;
 
 import javax.annotation.Nullable;
 
@@ -112,11 +111,6 @@ public interface ArchivedNameUsageMapper extends Create<ArchivedNameUsage>, Data
   void addSuperseded(@Param("releaseKey") int releaseKey, @Param("id") String id, @Param("supersededBy") String supersededBy);
 
   /**
-   * Streams the staged supersede pairs of one release as {id, supersededBy} maps, ordered by id.
-   */
-  Cursor<Map<String, Object>> processSuperseded(@Param("releaseKey") int releaseKey);
-
-  /**
    * Clears superseded_by for every archived id the given release does have, i.e. the ones it resurrected.
    * @return number of cleared archive records
    */
@@ -135,13 +129,6 @@ public interface ArchivedNameUsageMapper extends Create<ArchivedNameUsage>, Data
    * Drops the staged supersede pairs of a release once they have been applied to the archive.
    */
   int deleteSuperseded(@Param("releaseKey") int releaseKey);
-
-  /**
-   * Lists all name usage identifiers with the same names index key across all datasets.
-   *
-   * @param nidx from the names index!
-   */
-  List<DSID<String>> indexGroupIds(@Param("nidx") int nidx);
 
   /**
    * Truncate entire name usage archive table

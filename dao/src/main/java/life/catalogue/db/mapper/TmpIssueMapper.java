@@ -1,24 +1,13 @@
 package life.catalogue.db.mapper;
 
-import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.IssueContainer;
-import life.catalogue.api.model.SecondarySource;
 import life.catalogue.api.model.VerbatimSource;
-import life.catalogue.api.vocab.InfoGroup;
-import life.catalogue.api.vocab.Issue;
 import life.catalogue.dao.DatasetInfoCache;
-import life.catalogue.db.CopyDataset;
-import life.catalogue.db.Create;
 import life.catalogue.db.DatasetProcessable;
 import life.catalogue.db.SectorProcessable;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
 import javax.annotation.Nullable;
 
-import org.apache.ibatis.annotations.MapKey;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.cursor.Cursor;
 
@@ -65,12 +54,6 @@ public interface TmpIssueMapper extends DatasetProcessable<VerbatimSource>, Sect
    * creates empty table...
    */
   void createTmpSourcesTableFromVerbatim(@Param("datasetKey") int datasetKey, @Nullable @Param("sectorKey") Integer sectorKey);
-
-  /**
-   * Process all issues of the temporary table tmp_usage_issues.
-   * Make sure you created such a table for the given session beforehand!
-   */
-  Cursor<IssueContainer.SimpleWithID> processIssues();
 
   /**
    * Read-only safe alternative to createTmpIssuesTable + processIssues that streams all usage issues

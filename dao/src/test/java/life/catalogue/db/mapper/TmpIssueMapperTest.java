@@ -15,13 +15,11 @@ public class TmpIssueMapperTest extends MapperTestBase<TmpIssueMapper> {
   @Test
   public void external() throws Exception {
     mapper().createTmpIssuesTable(12, null);
-    mapper().processIssues();
   }
 
   @Test
   public void project() throws Exception {
     mapper().createTmpIssuesTable(Datasets.COL, null);
-    mapper().processIssues();
   }
 
   @Test

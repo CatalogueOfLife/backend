@@ -76,7 +76,5 @@ public interface MatchMapper {
    */
   int countByDataset(@Param("datasetKey") int datasetKey);
 
-  int countNidx(@Param("nidx") int nidx, @Nullable @Param("datasetKey") Integer datasetKey);
-
   void truncate();
 }

@@ -5,7 +5,6 @@ import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.TaxGroup;
-import life.catalogue.dao.DatasetDao;
 import life.catalogue.db.CRUD;
 import life.catalogue.db.GlobalPageable;
 import life.catalogue.db.type2.StringCount;
@@ -24,7 +23,6 @@ import org.apache.ibatis.cursor.Cursor;
 import com.google.common.annotations.VisibleForTesting;
 import it.unimi.dsi.fastutil.ints.IntSet;
 
-import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,7 +30,7 @@ import org.slf4j.LoggerFactory;
  * The dataset mappers create method expects the key to be provided.
  * Unless you know exactly what you are doing please use the DatasetDAO to create, modify or delete datasets.
  */
-public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Dataset>, DatasetAgentMapper {
+public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Dataset> {
   Logger LOG = LoggerFactory.getLogger(DatasetMapper.class);
 
   int MAGIC_ADMIN_USER_KEY = -42;
@@ -115,8 +113,6 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
   void _updateTaxonomicGroupScope(@Param("key") int key, @Param("groups") Set<TaxGroup> groups);
 
   IntSet getReviewer(@Param("key") int key);
-
-  void updateReviewer(@Param("key") int key, @Param("reviewer") IntSet reviewer, @Param("userKey") int userKey);
 
   void addReviewer(@Param("key") int key, @Param("reviewer") int reviewer, @Param("userKey") int userKey);
 
@@ -442,8 +438,6 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
 
   Integer getKeyByGBIF(@Param("key") UUID key);
 
-  UUID getGBIFKey(@Param("key") int key);
-
   Dataset getByGBIF(@Param("key") UUID key);
 
   /**
@@ -490,12 +484,6 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
    * @param key dataset key
    */
   int updateLastImportAttempt(@Param("key") int key);
-
-  /**
-   * @param limit optional limit to consider when looking for the maximum.
-   *              If null the global maximum is returned, if existing the maximum key below the given limit
-   */
-  Integer getMaxKey(@Param("limit") Integer limit);
 
   /**
    * A release of a project as the name usage archive ranks it, see life.catalogue.dao.ReleaseRanking.

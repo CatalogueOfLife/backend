@@ -4,8 +4,6 @@ import life.catalogue.api.model.EditorialDecision;
 import life.catalogue.api.model.SimpleNameCached;
 import life.catalogue.api.model.SimpleNameWithNidx;
 
-import life.catalogue.assembly.TreeHandler;
-
 import org.gbif.nameparser.api.Rank;
 
 import java.util.*;
@@ -53,15 +51,6 @@ public class MatchedParentStack {
     } else {
       rootMU = null;
     }
-  }
-
-  public boolean containsMatch(String id) {
-    for (var p : parents) {
-      if (p.match != null && p.match.getId().equals(id)) {
-        return true;
-      }
-    }
-    return false;
   }
 
   public static class MatchedUsage {

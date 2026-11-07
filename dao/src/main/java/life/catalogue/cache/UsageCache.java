@@ -137,44 +137,6 @@ public interface UsageCache extends AutoCloseable {
   }
 
   /**
-   * A usage cache that does nothing and keeps nothing in memory
-   */
-  static UsageCache passThru() {
-    return new UsageCache() {
-      @Override
-      public int getDatasetKey() {
-        return -1;
-      }
-
-      @Override
-      public boolean contains(String key) {
-        return false;
-      }
-
-      @Override
-      public SimpleNameCached get(String key) {
-        return null;
-      }
-
-      @Override
-      public SimpleNameCached put(SimpleNameCached usage) {
-        return null;
-      }
-
-      @Override
-      public SimpleNameCached remove(String key) {
-        return null;
-      }
-
-      @Override
-      public void clear() { }
-
-      @Override
-      public void close() { }
-    };
-  }
-
-  /**
    * A simple cache backed by an in memory hash map that grows forever.
    */
   static UsageCache hashMap(final int datasetKey) {

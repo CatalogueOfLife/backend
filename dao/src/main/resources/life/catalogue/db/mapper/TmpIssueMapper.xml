@@ -124,11 +124,6 @@
     ANALYZE tmp_usage_sources;
   </update>
 
-  <select id="processIssues" parameterType="map" resultMap="issueResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
-    SELECT id, issues
-    FROM tmp_usage_issues
-  </select>
-
   <!--
     Read-only safe streaming variants of createTmpIssuesTableFrom* + processIssues combined into a single statement.
     The nu set is inlined as a CTE (referenced many times by usageIssues, hence materialized by Postgres) so this

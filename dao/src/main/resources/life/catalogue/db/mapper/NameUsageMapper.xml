@@ -397,12 +397,6 @@
     WHERE dataset_key = #{datasetKey}
   </select>
 
-  <select id="countDistinctCanonical" resultType="integer">
-    SELECT count(DISTINCT nm.index_id)
-    FROM <include refid="FROM_NIDX_BASE"/>
-    WHERE nm.dataset_key = #{datasetKey}
-  </select>
-
   <select id="get" resultMap="usageResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
@@ -411,12 +405,6 @@
 
   <select id="getSimple" resultMap="simpleResultMap">
     SELECT <include refid="SELECT_SIMPLE"/>
-    FROM <include refid="FROM_SIMPLE"/>
-    WHERE u.dataset_key = #{key.datasetKey} AND u.id = #{key.id}
-  </select>
-
-  <select id="getSimpleInDataset" resultMap="simpleInDatasetResultMap">
-    SELECT <include refid="SELECT_SIMPLE_IN_DATASET"/>
     FROM <include refid="FROM_SIMPLE"/>
     WHERE u.dataset_key = #{key.datasetKey} AND u.id = #{key.id}
   </select>
@@ -438,13 +426,6 @@
     FROM <include refid="FROM_SIMPLE"/>
       JOIN name_usage child ON child.dataset_key=u.dataset_key AND child.parent_id=u.id
     WHERE child.dataset_key = #{key.datasetKey} AND child.id = #{key.id}
-  </select>
-
-  <select id="listSimpleChildren" resultMap="simpleResultMap">
-    SELECT <include refid="SELECT_SIMPLE"/>
-    FROM <include refid="FROM_SIMPLE"/>
-    WHERE u.dataset_key = #{key.datasetKey} AND u.parent_id = #{key.id}
-      AND NOT is_synonym(u.status)
   </select>
 
   <select id="listSimpleSynonyms" resultMap="simpleResultMap">
@@ -472,14 +453,6 @@
     </if>
   </select>
 
-
-  <select id="getSimpleByIdMap" resultMap="simpleResultMap">
-    SELECT u.id, n.scientific_name, n.authorship, n.rank, n.code, u.status, coalesce(idp.id2, u.parent_id) AS parent_id
-    FROM <include refid="FROM_SIMPLE"/>
-      JOIN idmap_name_usage_${key.datasetKey} idmap ON idmap.id=u.id
-      LEFT JOIN idmap_name_usage_${key.datasetKey} idp ON idp.id=u.parent_id
-    WHERE u.dataset_key = #{key.datasetKey} AND idmap.id2 = #{key.id}
-  </select>
 
   <select id="exists" resultType="boolean">
     SELECT exists(
@@ -528,14 +501,6 @@
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
     WHERE u.dataset_key = #{datasetKey}
-    ORDER BY u.id
-    <include refid="life.catalogue.db.Common.limit"/>
-  </select>
-
-  <select id="listSN" resultMap="simpleCachedResultMap">
-    SELECT <include refid="SELECT_SIMPLE_CACHED"/>
-    FROM <include refid="FROM_SIMPLE_CACHED"/>
-    WHERE u.dataset_key=#{datasetKey}
     ORDER BY u.id
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
@@ -1270,18 +1235,6 @@
     SELECT * FROM tree;
   </select>
 
-  <select id="processNxIds" parameterType="map" resultMap="simpleNidxResultMapParentName" resultOrdered="true" fetchSize="2500" resultSetType="FORWARD_ONLY">
-    SELECT <include refid="SELECT_SIMPLE"/>, nm.index_id, np.scientific_name AS parent
-    FROM name_usage u
-      JOIN name n ON n.dataset_key=#{datasetKey} AND n.id=u.name_id
-      LEFT JOIN name_usage up ON up.dataset_key=#{datasetKey} AND up.id=u.parent_id
-      LEFT JOIN name np ON np.dataset_key=#{datasetKey} AND np.id=up.name_id
-      LEFT JOIN name_match nm ON nm.name_id=n.id AND nm.dataset_key=#{datasetKey}
-      LEFT JOIN names_index ni ON ni.id=nm.index_id
-    WHERE u.dataset_key=#{datasetKey} AND length(u.id) >= #{minLength}
-    ORDER BY nm.index_id
-  </select>
-
   <select id="processIds" parameterType="map" resultType="string" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
     SELECT id FROM name_usage WHERE dataset_key=#{datasetKey}
     <if test="!synonyms">
@@ -1289,27 +1242,6 @@
     </if>
     <if test="minLength != null">
       AND length(id) >= #{minLength}
-    </if>
-  </select>
-
-  <select id="pageIds" parameterType="map" resultType="string">
-    SELECT id FROM name_usage WHERE dataset_key=#{datasetKey}
-    <if test="!synonyms">
-      AND NOT is_synonym(status)
-    </if>
-    <if test="maxLength != null">
-      AND length(id) &lt;= #{maxLength}
-    </if>
-    <include refid="life.catalogue.db.Common.limit"/>
-  </select>
-
-  <select id="countIds" parameterType="map" resultType="integer">
-    SELECT count(*) FROM name_usage WHERE dataset_key=#{datasetKey}
-    <if test="!synonyms">
-      AND NOT is_synonym(status)
-    </if>
-    <if test="maxLength != null">
-      AND length(id) &lt;= #{maxLength}
     </if>
   </select>
 
@@ -1322,15 +1254,6 @@
     DELETE FROM name_usage
     WHERE dataset_key=#{datasetKey}
   </delete>
-
-  <select id="hasParentSynoynms" parameterType="map" resultType="boolean">
-    SELECT exists(
-      SELECT 1
-      FROM name_usage u
-         JOIN name_usage p ON p.id=u.parent_id AND p.dataset_key=u.dataset_key
-      WHERE is_synonym(p.status) AND u.parent_id IS NOT NULL AND u.dataset_key=#{datasetKey}
-    )
-  </select>
 
   <update id="moveSynonymOfSynonym" parameterType="map">
     UPDATE name_usage u SET parent_id = p.parent_id
@@ -1381,16 +1304,6 @@
     UPDATE name_usage
     SET identifier = array_cat(identifier, ARRAY[<foreach item="id" collection="ids" separator=",">#{id}</foreach>]::text[])
     WHERE dataset_key = #{key.datasetKey} AND id = #{key.id}
-  </update>
-
-  <update id="updateId" parameterType="map">
-    UPDATE name_usage SET id=#{newID}, modified_by=#{userKey}, modified=now()
-    WHERE dataset_key=#{key.datasetKey} AND id=#{key.id}
-  </update>
-
-  <update id="updateTaxonID" parameterType="map">
-    UPDATE name_usage SET parent_id=#{newTaxonID}, modified_by=#{userKey}, modified=now()
-    WHERE dataset_key=#{key.datasetKey} AND parent_id=#{key.id}
   </update>
 
 </mapper>

@@ -1,9 +1,6 @@
 package life.catalogue.importer.store;
 
 import life.catalogue.api.model.NameRelation;
-import life.catalogue.api.vocab.NomRelType;
-import life.catalogue.common.kryo.map.MapDbObjectSerializer;
-import life.catalogue.common.kryo.map.MapDbStringArraySerializer;
 import life.catalogue.common.kryo.map.MapDbStringSetSerializer;
 import life.catalogue.importer.IdGenerator;
 import life.catalogue.importer.store.model.NameData;
@@ -13,14 +10,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import life.catalogue.importer.store.model.RelationData;
 
-import life.catalogue.importer.store.model.UsageData;
-
-import org.apache.commons.lang3.ArrayUtils;
 import org.mapdb.DB;
 import org.mapdb.Serializer;
 

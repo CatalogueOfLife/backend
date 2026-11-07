@@ -882,7 +882,7 @@ public class Normalizer implements Callable<Boolean> {
   }
 
   /**
-   * Applies the classification lc to the given RankedUsage taxon
+   * Applies the classification lc to the given taxon
    * @param taxon
    * @param clOrig
    */
@@ -1371,10 +1371,6 @@ public class Normalizer implements Callable<Boolean> {
     }
     checked.addAll(visited);
     return null;
-  }
-
-  private void addNameIssue(NameData data, Issue... issue) {
-    store.addIssues(data.getName(), issue);
   }
 
   private void addUsageIssue(UsageData data, Issue... issue) {

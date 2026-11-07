@@ -766,16 +766,6 @@ public class DatasetMapperTest extends CRUDEntityTestBase<Integer, Dataset, Data
   }
 
   @Test
-  public void getMaxKey() throws Exception {
-    // 3, 11, 12
-    assertEquals(12, (int) mapper().getMaxKey(null));
-    assertEquals(12, (int) mapper().getMaxKey(20));
-    assertEquals(11, (int) mapper().getMaxKey(12));
-    assertEquals(3, (int) mapper().getMaxKey(10));
-    assertEquals(3, (int) mapper().getMaxKey(5));
-  }
-
-  @Test
   public void sourceSuggest() throws Exception {
     final Integer d1 = createSearchableDataset("ITIS", "Mike;Bob", "ITIS", "Also contains worms");
     final Integer d2 = createSearchableDataset("BIZ", "bob;jim", "CUIT", "A sentence with worms and worms");

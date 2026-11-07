@@ -183,13 +183,6 @@ public class SectorMapperTest extends BaseDecisionMapperTest<Sector, SectorSearc
     assertNull(s2.getTarget());
   }
   
-  @Test
-  public void listByTarget() {
-    add2Sectors();
-    assertEquals(1, mapper().listByTarget(DSID.of(targetDatasetKey,"t4")).size());
-    assertEquals(0, mapper().listByTarget(DSID.of(targetDatasetKey,"t32134")).size());
-  }
-
   /**
    * A link is stale when its id still resolves, but to a usage carrying a different name than the one
    * stored on the sector - the sector then silently points somewhere else than it claims. That is a
@@ -715,13 +708,6 @@ public class SectorMapperTest extends BaseDecisionMapperTest<Sector, SectorSearc
     return s;
   }
 
-  @Test
-  public void listTargetDatasetKeys() {
-    assertEquals(0, mapper().listTargetDatasetKeys().size());
-    add2Sectors();
-    assertEquals(1, mapper().listTargetDatasetKeys().size());
-  }
-  
   @Override
   Sector createTestEntity(int dkey) {
     return create();

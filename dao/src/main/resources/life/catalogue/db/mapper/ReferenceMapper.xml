@@ -125,15 +125,6 @@
     ORDER BY r.id
   </select>
 
-  <select id="find" resultMap="referenceResultMap">
-    SELECT <include refid="SELECT"/>
-    FROM <include refid="FROM"/>
-    WHERE r.dataset_key=#{datasetKey} AND r.citation=#{citation}
-    <if test="sectorKey != null">
-      AND r.sector_key=#{sectorKey}
-    </if>
-  </select>
-
   <select id="search" resultMap="referenceResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>

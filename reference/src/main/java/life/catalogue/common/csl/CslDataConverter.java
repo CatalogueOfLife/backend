@@ -16,7 +16,6 @@ import org.jbibtex.StringValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
 
 import de.undercouch.citeproc.csl.CSLDate;
@@ -31,7 +30,6 @@ import de.undercouch.citeproc.helper.json.StringJsonBuilderFactory;
  */
 public class CslDataConverter {
   private static final Logger LOG = LoggerFactory.getLogger(CslDataConverter.class);
-  private static final ObjectMapper OM = new ObjectMapper();
   private static final StringJsonBuilderFactory FACTORY = new StringJsonBuilderFactory();
   
   public static CSLItemData toCSLItemData(CslData src) {

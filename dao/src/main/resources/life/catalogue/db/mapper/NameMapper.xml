@@ -248,13 +248,6 @@
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
 
-  <select id="listByReference" resultMap="nameResultMap">
-    SELECT <include refid="SELECT"/>
-    FROM <include refid="FROM"/>
-    WHERE n.dataset_key=#{datasetKey} AND n.published_in_id = #{refId}
-    ORDER BY n.id
-  </select>
-
   <select id="get" resultMap="nameResultMap">
     SELECT <include refid="SELECT_NIDX"/>
     FROM <include refid="FROM_NIDX"/>
@@ -313,13 +306,6 @@
     WHERE nm.index_id = #{nidx}
   </select>
 
-  <select id="indexGroupIds" resultMap="dsidResultMap">
-    SELECT n.dataset_key, n.id
-    FROM name_match nm
-      JOIN name n ON n.id=nm.name_id AND n.dataset_key=nm.dataset_key
-    WHERE nm.index_id = #{nidx}
-  </select>
-
   <insert id="create" parameterType="Name" useGeneratedKeys="false" keyProperty="id">
     INSERT INTO name (<include refid="COLS"/>, created, modified)
     VALUES (<include refid="PROPS"/>, now(), now())
@@ -356,15 +342,6 @@
       AND n.modified &lt; #{before}
     </if>
   </sql>
-
-  <delete id="deleteBySectorAndRank" parameterType="map">
-    DELETE FROM name
-    WHERE dataset_key = #{key.datasetKey} AND sector_key = #{key.id} AND rank >= #{rank}::rank
-    <if test="nameIds != null and !nameIds.isEmpty()">
-      AND id NOT IN
-      <foreach item="id" collection="nameIds" open="(" separator="," close=")">#{id}</foreach>
-    </if>
-  </delete>
 
   <update id="updateVerbatimSourceKey" parameterType="map">
     UPDATE name

@@ -119,24 +119,12 @@ public class UsageData implements DSID<String>, VerbatimEntity {
     usage.setDatasetKey(key);
   }
   
-  public void addRemark(String remark) {
-    remarks.add(remark);
-  }
-
   public List<RelationData<TaxonConceptRelType>> getTcRelations() {
     return tcRelations;
   }
 
-  public void addTcRelation(RelationData<TaxonConceptRelType> rel) {
-    this.tcRelations.add(rel);
-  }
-
   public List<RelationData<SpeciesInteractionType>> getSpiRelations() {
     return spiRelations;
-  }
-
-  public void addSpiRelation(RelationData<SpeciesInteractionType> rel) {
-    this.spiRelations.add(rel);
   }
 
   /**
@@ -163,10 +151,6 @@ public class UsageData implements DSID<String>, VerbatimEntity {
     Preconditions.checkArgument(status.isSynonym(), "Status needs to be a synonym status");
     usage = new Synonym(asTaxon());
     usage.setStatus(status);
-  }
-
-  public boolean hasRelations() {
-    return !tcRelations.isEmpty() || !spiRelations.isEmpty();
   }
 
   public boolean hasSupplementaryInfos() {

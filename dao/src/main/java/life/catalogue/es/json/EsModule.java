@@ -6,12 +6,10 @@ import life.catalogue.api.jackson.FastutilsSerde;
 import life.catalogue.api.jackson.LabelPropertyFilter;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.NameField;
-import life.catalogue.es.EsException;
 
 import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.Rank;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
@@ -38,14 +36,6 @@ public class EsModule extends SimpleModule {
   }
 
   private static final ObjectWriter DEBUG_WRITER = MAPPER.writer().withDefaultPrettyPrinter();
-
-  public static String writeDebug(Object obj) {
-    try {
-      return DEBUG_WRITER.writeValueAsString(obj);
-    } catch (JsonProcessingException e) {
-      throw new EsException(e);
-    }
-  }
 
   public EsModule() {
     super("Elasticsearch");

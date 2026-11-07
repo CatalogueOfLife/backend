@@ -320,18 +320,6 @@ public class ImportStore implements AutoCloseable {
     };
   }
 
-  public NameData addNameIssues(String nameID, Issue... issue) {
-    NameData nn = names.objByID(nameID);
-    addIssues(nn, issue);
-    return nn;
-  }
-
-  public UsageData addUsageIssues(String usageID, Issue... issue) {
-    UsageData nu = usages.objByID(usageID);
-    addIssues(nu, issue);
-    return nu;
-  }
-
   public void addIssues(VerbatimEntity ent, Issue... issue) {
     addIssues(ent.getVerbatimKey(), issue);
   }

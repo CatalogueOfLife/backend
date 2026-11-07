@@ -220,12 +220,6 @@ public class DatasetConverter {
                  .collect(Collectors.toList());
   }
 
-  public List<Contributor> toContributor(List<Agent> agents, @Nullable ContributorType type) {
-    return agents.stream()
-                 .map(a -> agent2Contributor(a, type))
-                 .collect(Collectors.toList());
-  }
-
   Contributor agent2Contributor(Agent a, @Nullable ContributorType type) {
     if (type == null) {
       if (a.getNote() != null) {

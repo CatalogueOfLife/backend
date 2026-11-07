@@ -123,14 +123,6 @@
       AND nr.name_id = #{key.id}
   </select>
 
-  <select id="listByTypeReverse" resultMap="nameRelResultMap">
-    SELECT <include refid="SELECT"/>
-    FROM name_rel nr
-    WHERE nr.dataset_key = #{key.datasetKey}
-      AND nr.type=#{type}::NOMRELTYPE
-      AND nr.related_name_id = #{key.id}
-  </select>
-
   <select id="listRelatedNameIDs" resultType="string">
     WITH RECURSIVE graph (nid, path) AS (
 

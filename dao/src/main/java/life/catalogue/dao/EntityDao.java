@@ -233,30 +233,4 @@ public class EntityDao<K, T extends Entity<K>, M extends CRUD<K, T>> {
     return true;
   }
 
-  /**
-   * Provides a mapper bound to a new sql session which is returned together with the mapper
-   * and MUST BE CLOSED by the consumer!
-   */
-  public CloseableMapper<M> newMapper() {
-    return new CloseableMapper<>(mapperClass, getFactory().openSession());
-  }
-
-  public static class CloseableMapper<M> implements AutoCloseable {
-    private final Class<M> mapperClass;
-    private final SqlSession session;
-
-    public CloseableMapper(Class<M> mapperClass, SqlSession session) {
-      this.mapperClass = mapperClass;
-      this.session = session;
-    }
-
-    public M mapper() {
-      return session.getMapper(mapperClass);
-    }
-
-    @Override
-    public void close() {
-      session.close();
-    }
-  }
 }

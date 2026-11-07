@@ -12,8 +12,6 @@ import life.catalogue.event.EventBroker;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import org.apache.ibatis.session.SqlSession;
@@ -82,18 +80,6 @@ public class SectorDeleteFull extends SectorRunnable {
   void doMetrics() throws Exception {
     // we don't remove any sector metric anymore to avoid previous releases to be broken
     // see https://github.com/CatalogueOfLife/backend/issues/986
-
-    //final DSIDValue<Integer> key = DSID.copy(sectorKey);
-    //for (int sKey : visitedSectors) {
-    //  // remove metric files
-    //  try {
-    //    sid.deleteAll(key.id(sKey));
-    //  } catch (IOException e) {
-    //    LOG.error("Failed to delete metrics files for sector {}", key, e);
-    //  }
-    //  LOG.info("Removed file metrics for sector {}", key);
-    //}
-    //LOG.info("Removed file metrics for {} sectors", visitedSectors.size());
   }
 
   @Override

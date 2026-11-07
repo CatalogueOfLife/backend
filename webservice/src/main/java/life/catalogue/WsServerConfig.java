@@ -37,7 +37,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.client.JerseyClientConfiguration;
 import io.dropwizard.core.Configuration;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 
 
@@ -156,12 +155,6 @@ public class WsServerConfig extends Configuration implements ExporterConfig, Cor
    */
   @Valid
   public PgLogConfig pgLog;
-
-  /**
-   * The name parser timeout in milliseconds
-   */
-  @Min(100)
-  public long parserTimeout = 5000;
 
   /**
    * Names diff engine settings: output limits and the canonical-distance pairing tolerance.

@@ -110,12 +110,6 @@ public class UsageCounter {
     rankCounter.get(rank).set(count);
   }
 
-  public synchronized void putRankCounter(Map<Rank, Integer> map) {
-    for (Map.Entry<Rank, Integer> x : map.entrySet()) {
-      rankCounter.put(x.getKey(), new AtomicInteger(x.getValue()));
-    }
-  }
-
   public Map<Rank, Integer> getRankCounterMap() {
     Map<Rank, Integer> map = new HashMap<>(rankCounter.size());
     for (Map.Entry<Rank, AtomicInteger> x : rankCounter.entrySet()) {

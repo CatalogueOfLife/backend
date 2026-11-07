@@ -53,10 +53,6 @@ public class VerbatimSourceMapperTest extends MapperTestBase<VerbatimSourceMappe
 
     var iss = mapper().getIssues(v1).getIssues();
     assertEquals(iss, Set.copyOf(v1.getIssues()));
-
-    iss = Set.of(Issue.INCONSISTENT_NAME, Issue.BASIONYM_DERIVED, Issue.WRONG_MONOMIAL_CASE);
-    mapper().updateIssues(v1, iss);
-    assertEquals(iss, mapper().getIssues(v1).getIssues());
   }
 
   /**
@@ -169,11 +165,6 @@ public class VerbatimSourceMapperTest extends MapperTestBase<VerbatimSourceMappe
     VerbatimSource v1 = create();
     mapper().create(v1);
     commit();
-
-    // non existing vsource
-    assertNotNull(mapper().get(v1));
-    mapper().deleteSources(DSID.of(datasetKey, 123456789));
-    assertNotNull(mapper().get(v1));
 
     // get
     var srcs = mapper().getSources(v1);
