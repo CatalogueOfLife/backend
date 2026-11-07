@@ -12,7 +12,6 @@ import org.gbif.nameparser.api.Rank;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Before;

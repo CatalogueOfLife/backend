@@ -26,7 +26,6 @@ public class NomenOntology {
   private static final Logger LOG = LoggerFactory.getLogger(NomenOntology.class);
   private static final String RESOURCE = "parser/nomen.owl";
   private static final String NS_RDF = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
-  private static final String NS_OWL = "http://www.w3.org/2002/07/owl#";
 
   public static final URI NAMESPACE = URI.create("http://purl.obolibrary.org/obo/");
   private static final String ROOT = NAMESPACE.resolve("NOMEN").toString();

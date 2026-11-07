@@ -555,18 +555,6 @@ public abstract class TreeBaseHandler implements TreeHandler {
     return p;
   }
 
-  protected Usage findUninomial(NomCode code, Rank rank, String uninomial, Usage parent) {
-    Preconditions.checkArgument(rank.isGenusOrSuprageneric());
-    Name n = new Name();
-    n.setCode(code);
-    n.setUninomial(uninomial);
-    n.setRank(rank);
-    n.setType(NameType.SCIENTIFIC);
-    n.setSectorKey(sector.getId());
-    n.rebuildScientificName();
-    return findExisting(n, parent);
-  }
-
   protected Usage findSubgenus(NomCode code, String genus, String subgenus, Usage parent) {
     Name n = new Name();
     n.setCode(code);

@@ -63,20 +63,6 @@ public class DownloadUtil {
   }
   
   /**
-   * Downloads a uri to a local file using conditional GET, i.e. only downloading the file again if it has been changed
-   * since the last download.
-   * <p>
-   * Updates the last modified file property to reflect the last servers modified http header.
-   *
-   * @param downloadTo file to download to
-   * @return true if changed and downloaded or false if unmodified since lastModified
-   * @throws DownloadException if any error occurred incl all http 4xx, 5xx responses
-   */
-  public boolean downloadIfModified(URI url, File downloadTo, LocalDateTime lastModified) throws DownloadException {
-    return downloadIfModifiedSince(url, lastModified, downloadTo);
-  }
-
-  /**
    * @return last modified timestamp of an existing local file or null if not existing
    */
   public static LocalDateTime lastModified(@Nullable File file) {

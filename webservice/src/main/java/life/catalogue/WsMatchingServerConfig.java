@@ -37,12 +37,6 @@ public class WsMatchingServerConfig extends Configuration implements CorsBundleC
   @NotNull
   public CorsConfiguration cors = new CorsConfiguration();
 
-  /**
-   * The name parser timeout in milliseconds
-   */
-  @Min(100)
-  public long parserTimeout = 5000;
-
   @Valid
   @NotNull
   public NamesIndexConfig namesIndex = new NamesIndexConfig();

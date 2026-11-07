@@ -66,7 +66,6 @@ public class ReferenceFactory {
   // author parsing
   private static final Pattern AUTHOR_PREFIX = Pattern.compile("^((?:\\p{Ll}{1,5} ){1,2})(\\p{Lu})");
   // author year citation (e.g. sensu Miller, 1973)
-  private static final Pattern AUTHOR_YEAR = Pattern.compile("^([\\p{L} -.,]+)\\s*,?\\s*([12]\\d{3})?\\s*$");
 
   private final Integer datasetKey;
   private final ReferenceStore store;
@@ -504,10 +503,6 @@ public class ReferenceFactory {
     }
     name.setFamily(StringUtils.trimToNull(family));
     return name;
-  }
-  
-  private static String nullIfEmpty(String s) {
-    return StringUtils.isEmpty(s) ? null : s;
   }
   
   /**

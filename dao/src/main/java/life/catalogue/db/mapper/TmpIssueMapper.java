@@ -1,24 +1,13 @@
 package life.catalogue.db.mapper;
 
-import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.IssueContainer;
-import life.catalogue.api.model.SecondarySource;
 import life.catalogue.api.model.VerbatimSource;
-import life.catalogue.api.vocab.InfoGroup;
-import life.catalogue.api.vocab.Issue;
 import life.catalogue.dao.DatasetInfoCache;
-import life.catalogue.db.CopyDataset;
-import life.catalogue.db.Create;
 import life.catalogue.db.DatasetProcessable;
 import life.catalogue.db.SectorProcessable;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
 import javax.annotation.Nullable;
 
-import org.apache.ibatis.annotations.MapKey;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.cursor.Cursor;
 

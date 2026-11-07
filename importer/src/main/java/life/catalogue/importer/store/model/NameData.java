@@ -114,7 +114,4 @@ public class NameData implements DSID<String>, VerbatimEntity {
     return String.format("%s [%s] %s", getId(), getRank(), pnu.getName().getLabel());
   }
 
-  public boolean containsRelation(NomRelType nomRelType) {
-    return relations.stream().anyMatch(r -> r.getType() == nomRelType);
-  }
 }

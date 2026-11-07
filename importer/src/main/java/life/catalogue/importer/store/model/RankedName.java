@@ -40,14 +40,6 @@ public class RankedName {
     return toStringBuilder().toString();
   }
   
-  public String toStringWithID() {
-    StringBuilder sb = toStringBuilder();
-    sb.append(" {");
-    sb.append(getNameID());
-    sb.append("}");
-    return sb.toString();
-  }
-  
   public StringBuilder toStringBuilder() {
     StringBuilder sb = new StringBuilder();
     sb.append(name);

@@ -41,8 +41,6 @@ import jakarta.ws.rs.core.UriBuilder;
 public class DataCiteService implements DoiService {
   private static final Logger LOG = LoggerFactory.getLogger(DataCiteService.class);
   private static final String ALREADY_TAKEN = "already been taken";
-  private static final String DATASET_PATH = "ds";
-  private static final String DOWNLOAD_PATH = "dl";
 
   private final DoiConfig cfg;
   private final WebTarget dois;

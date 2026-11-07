@@ -17,7 +17,6 @@ import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
@@ -40,8 +39,6 @@ import static life.catalogue.api.util.ObjectUtils.coalesce;
  */
 public class DatasetPager {
   private static final Logger LOG = LoggerFactory.getLogger(DatasetPager.class);
-  private static final Pattern SUFFIX_KEY = Pattern.compile("^(.+)-(\\d+)$");
-  private static final Pattern domain = Pattern.compile("([^.]+)\\.[a-z]+$", Pattern.CASE_INSENSITIVE);
   private static final int MAX_OFFSET = 100_000;
   // bounded retry backoff for slow/timing-out GBIF pages - seconds, not minutes, so one bad page cannot stall the whole sync
   private static final int MAX_PAGE_TRIES = 6;
@@ -295,7 +292,6 @@ public class DatasetPager {
     d.dataset.setTemporalScope(coverage(g.temporalCoverages));
     addIdentifiers(d, g.key, g.identifiers);
     d.dataset.setSource(toSource(g.bibliographicCitations));
-    //d.setNotes(toNotes(g.comments));
     d.dataset.setIssued(g.pubDate);
     d.dataset.setCreated(LocalDateTime.now());
     LOG.debug("Dataset {} converted: {}", g.key, g.title);
@@ -424,16 +420,6 @@ public class DatasetPager {
       }
       d.dataset.setIdentifier(list);
     }
-  }
-
-  static String toNotes(List<GComment> comments) {
-    if (comments == null || comments.isEmpty()) {
-      return null;
-    }
-    return comments.stream()
-                   .filter(c -> !StringUtils.isBlank(c.content))
-                   .map(c -> c.content)
-                   .collect(Collectors.joining("; "));
   }
 
   static List<Agent> byType(List<GAgent> contacts, String... type) {

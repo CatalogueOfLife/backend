@@ -5,9 +5,7 @@ import life.catalogue.db.mapper.UserMapper;
 import life.catalogue.dw.auth.gbif.GBIFAuthentication;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
@@ -19,7 +17,6 @@ import org.slf4j.LoggerFactory;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import com.google.common.annotations.VisibleForTesting;
 
 /**
  * Identity service that delegates authentication to a pluggable provider
@@ -85,27 +82,6 @@ public class IdentityService {
         throw new IllegalArgumentException("User " + username + " does not exist");
       }
       return cache(user);
-    }
-  }
-
-  /**
-   * Creates or updates users as they exit in the cache currently.
-   * This is needed for tests when the same server runs across several tests which can wipe the database
-   * and remove users from the db, but which are still cached.
-   * Dont use this for non testing code!
-   */
-  @VisibleForTesting
-  public void persistCachedUsers() {
-    try (SqlSession session = sqlSessionFactory.openSession(true)) {
-      UserMapper um = session.getMapper(UserMapper.class);
-      for (User u : cache.values()) {
-        User u2 = um.get(u.getKey());
-        if (u2 == null) {
-          um.create(u);
-        } else {
-          um.update(u);
-        }
-      }
     }
   }
 
@@ -184,23 +160,4 @@ public class IdentityService {
     return num;
   }
 
-  /**
-   * Invalidates all users which are in the SCL lists of the given dataset
-   * @param datasetKey
-   */
-  public void invalidateByDataset(int datasetKey) {
-    Set<String> usernames = new HashSet<>();
-    try (SqlSession session = sqlSessionFactory.openSession(true)) {
-      UserMapper um = session.getMapper(UserMapper.class);
-      for (var u : um.datasetEditors(datasetKey)) {
-        usernames.add(u.getUsername());
-      }
-      for (var u : um.datasetReviewer(datasetKey)) {
-        usernames.add(u.getUsername());
-      }
-    }
-    for (String u : usernames) {
-      invalidate(u);
-    }
-  }
 }

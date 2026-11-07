@@ -8,9 +8,7 @@ import life.catalogue.db.mapper.NameMapper;
 
 import java.io.*;
 import java.nio.file.Files;
-import java.util.Set;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
@@ -29,12 +27,6 @@ public abstract class FileMetricsDao<K> {
   protected final SqlSessionFactory factory;
   protected final File repo;
   protected final String type;
-
-  public static Set<String> readLines(File f) throws IOException{
-    try (BufferedReader br = UTF8IoUtils.readerFromFile(f)) {
-      return br.lines().collect(Collectors.toSet());
-    }
-  }
 
   public FileMetricsDao(String type, SqlSessionFactory factory, File repo) {
     this.type = type;

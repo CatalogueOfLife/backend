@@ -144,15 +144,6 @@ public class ExportManager implements DatasetListener {
     };
   }
 
-  /**
-   * Checks if an export job with the given key is currently still queued or running.
-   * @param key
-   * @return true if the job is not queued or running anymore
-   */
-  public boolean hasCompleted(UUID key) {
-    return ! executor.exists(key);
-  }
-
   @VisibleForTesting
   UUID submit(DatasetBlockingJob job) throws IllegalArgumentException {
     executor.submit(job);

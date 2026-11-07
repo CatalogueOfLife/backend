@@ -74,13 +74,6 @@ public class NameIndexImpl implements NameIndex {
     }
   }
 
-  public void printPgIndex() {
-    System.out.println("\nNames Index from postgres:");
-    try (SqlSession session = sqlFactory.openSession(true)) {
-      session.getMapper(NamesIndexMapper.class).processAll().forEach(System.out::println);
-    }
-  }
-
   private void addFromPg(NameIndexEntry name) {
     store.add(name.getNormalized(), name.getKey());
   }

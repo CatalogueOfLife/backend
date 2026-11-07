@@ -1,7 +1,5 @@
 package life.catalogue.db.mapper;
 
-import kotlin.collections.EmptySet;
-
 import life.catalogue.api.model.Dataset;
 
 import java.util.EnumSet;
@@ -11,7 +9,6 @@ import java.util.Set;
 
 import life.catalogue.api.model.DatasetSimple;
 import life.catalogue.api.model.Sector;
-import life.catalogue.dao.DatasetSourceDao;
 
 import org.apache.ibatis.annotations.Param;
 

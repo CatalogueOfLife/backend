@@ -5,7 +5,6 @@ import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.TaxGroup;
-import life.catalogue.dao.DatasetDao;
 import life.catalogue.db.CRUD;
 import life.catalogue.db.GlobalPageable;
 import life.catalogue.db.type2.StringCount;
@@ -24,7 +23,6 @@ import org.apache.ibatis.cursor.Cursor;
 import com.google.common.annotations.VisibleForTesting;
 import it.unimi.dsi.fastutil.ints.IntSet;
 
-import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

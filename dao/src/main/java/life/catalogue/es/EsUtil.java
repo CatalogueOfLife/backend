@@ -132,13 +132,6 @@ public class EsUtil {
   }
 
   /**
-   * Deletes the provided alias.
-   */
-  public static void deleteAlias(ElasticsearchClient client, String index, String alias) throws IOException {
-    client.indices().deleteAlias(a -> a.index(index).name(alias));
-  }
-
-  /**
    * Whether or not an index with the provided name exists.
    */
   public static boolean indexExists(ElasticsearchClient client, String index) throws IOException {
@@ -267,13 +260,6 @@ public class EsUtil {
       from = to;
     }
     return deleted;
-  }
-
-  /**
-   * Deletes all documents from the index, but leaves the index itself intact.
-   */
-  public static void truncate(ElasticsearchClient client, String index) {
-    deleteByQuery(client, index, Query.of(q -> q.matchAll(m -> m)));
   }
 
   /**

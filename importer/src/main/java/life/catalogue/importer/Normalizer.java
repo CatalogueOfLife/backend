@@ -1373,10 +1373,6 @@ public class Normalizer implements Callable<Boolean> {
     return null;
   }
 
-  private void addNameIssue(NameData data, Issue... issue) {
-    store.addIssues(data.getName(), issue);
-  }
-
   private void addUsageIssue(UsageData data, Issue... issue) {
     store.addIssues(data.usage, issue);
   }

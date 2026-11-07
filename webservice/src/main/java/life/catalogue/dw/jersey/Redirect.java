@@ -15,8 +15,4 @@ public class Redirect {
     return Response.status(Response.Status.FOUND).location(location).build();
   }
 
-  public static Response permanent(URI location){
-    return Response.status(Response.Status.MOVED_PERMANENTLY).location(location).build();
-  }
-
 }

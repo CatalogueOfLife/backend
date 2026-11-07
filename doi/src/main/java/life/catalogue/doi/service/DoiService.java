@@ -46,18 +46,6 @@ public interface DoiService {
   void create(DoiAttributes doi) throws DoiException;
 
   /**
-   * Creates a new draft DOI and updates it already with given metadata
-   */
-  default void createSilently(DoiAttributes doi) {
-    try {
-      create(doi);
-    } catch (DoiException e) {
-      LOG.error("Failed to silently create a new DOI {}", doi.getDoi(), e);
-      notifyException(doi.getDoi(), "create", e);
-    }
-  }
-
-  /**
    * Tries to delete an identifier. If it is still a draft DOI it will be fully deleted.
    * If it was published already, i.e. state=findable, it will be hidden instead and enter state=registered.
    * Make sure to also update the DOIs url location to an appropriate tombstone page in that case.
@@ -73,15 +61,6 @@ public interface DoiService {
    * @param doi
    */
   void publish(DOI doi) throws DoiException;
-
-  default void publishSilently(DOI doi) {
-    try {
-      publish(doi);
-    } catch (DoiException e) {
-      LOG.error("Failed to silently publish DOI {}", doi);
-      notifyException(doi, "publish", e);
-    }
-  }
 
   /**
    * Updates the identifier metadata attributes. This method must be called every time the object or metadata

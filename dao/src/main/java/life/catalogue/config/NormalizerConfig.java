@@ -23,7 +23,6 @@ public class NormalizerConfig {
   private static final Logger LOG = LoggerFactory.getLogger(NormalizerConfig.class);
   public static final String ARCHIVE_SUFFIX = "archive";
   private static final Pattern ARCHIVE_FN_PATTERN = Pattern.compile("^0*(\\d+)\\." + ARCHIVE_SUFFIX + "$");
-  private static final String UPLOAD = "upload";
 
   /**
    * Archive directory to store larger amount of data

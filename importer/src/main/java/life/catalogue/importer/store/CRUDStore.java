@@ -1,7 +1,5 @@
 package life.catalogue.importer.store;
 
-import com.google.common.base.Function;
-
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.VerbatimEntity;
 import life.catalogue.api.vocab.Issue;
@@ -10,13 +8,11 @@ import life.catalogue.importer.IdGenerator;
 import life.catalogue.importer.store.model.*;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
 import org.mapdb.DB;
 import org.mapdb.Serializer;
-
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -127,24 +123,6 @@ public abstract class CRUDStore<T extends DSID<String> & VerbatimEntity> {
       //TODO: remove all relations as well
     }
     return obj;
-  }
-
-  public <X extends Enum<?>> void removeRelation(RelationData<X> r, Function<T, List<RelationData<X>>> getRelsFrom, Function<T, List<RelationData<X>>> getRelsTo) {
-    var from = objects.get(r.getFromID());
-    if (from != null) {
-      if (getRelsFrom.apply(from).remove(r)) {
-        objects.put(from.getId(), from);
-      }
-    }
-
-    if (r.getToID() != null) {
-      var to = objects.get(r.getToID());
-      if (to != null) {
-        if (getRelsTo.apply(to).remove(r)) {
-          objects.put(to.getId(), to);
-        }
-      }
-    }
   }
 
   public int getDuplicateCounter() {
