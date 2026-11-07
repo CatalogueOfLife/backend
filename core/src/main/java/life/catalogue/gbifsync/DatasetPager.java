@@ -545,12 +545,6 @@ public class DatasetPager {
     public String modifiedBy;
   }
 
-  static class GKeywords {
-    public String content;
-    public String createdBy;
-    public String modifiedBy;
-  }
-
   static class GInstallation {
     public UUID key;
     public UUID organizationKey;

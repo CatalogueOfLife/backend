@@ -3,7 +3,6 @@ package life.catalogue.importer.store;
 import life.catalogue.api.model.NameRelation;
 import life.catalogue.api.vocab.NomRelType;
 import life.catalogue.common.kryo.map.MapDbObjectSerializer;
-import life.catalogue.common.kryo.map.MapDbStringArraySerializer;
 import life.catalogue.common.kryo.map.MapDbStringSetSerializer;
 import life.catalogue.importer.IdGenerator;
 import life.catalogue.importer.store.model.NameData;

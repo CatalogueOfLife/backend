@@ -882,7 +882,7 @@ public class Normalizer implements Callable<Boolean> {
   }
 
   /**
-   * Applies the classification lc to the given RankedUsage taxon
+   * Applies the classification lc to the given taxon
    * @param taxon
    * @param clOrig
    */

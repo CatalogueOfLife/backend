@@ -70,7 +70,6 @@ public class MapDbSerializerBytesTest {
     // production uses 64 to 256
     for (int bufferSize : new int[]{16, 64, 128, 4096}) {
       var verbatimSer = new MapDbObjectSerializer<>(VerbatimRecord.class, pool, bufferSize);
-      var arraySer = new MapDbStringArraySerializer(pool, bufferSize);
       var setSer = new MapDbStringSetSerializer(pool, bufferSize);
       for (int i = 0; i < 500; i++) {
         VerbatimRecord v = new VerbatimRecord(i, "file" + i, DwcTerm.Taxon);
@@ -82,16 +81,14 @@ public class MapDbSerializerBytesTest {
         if (rnd.nextBoolean()) {
           v.add(Issue.values()[rnd.nextInt(Issue.values().length)]);
         }
-        String[] array = new String[rnd.nextInt(30)];
         Set<String> set = new HashSet<>();
-        for (int j = 0; j < array.length; j++) {
-          array[j] = rnd.nextInt(5) == 0 ? null : randomString();
+        int size = rnd.nextInt(30);
+        for (int j = 0; j < size; j++) {
           set.add(randomString());
         }
 
         byte[] bytes = newBytes(verbatimSer, v);
         assertArrayEquals(oldBytes(v, bufferSize), bytes);
-        assertArrayEquals(oldBytes(array, bufferSize), newBytes(arraySer, array));
         assertArrayEquals(oldBytes(set, bufferSize), newBytes(setSer, set));
         // and read back
         assertEquals(v, verbatimSer.deserialize(new DataInput2.ByteArray(bytes), bytes.length));

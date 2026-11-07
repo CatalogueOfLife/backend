@@ -175,10 +175,6 @@ public class HomotypicConsolidator {
     consolidateMisspellings=true;
   }
 
-  static class ConsolidatedSimpleName extends SimpleName {
-    String synonymizedTo;
-  }
-
   /**
    * Goes through all usages of a given parent taxon and tries to discover basionyms by comparing the specific or infraspecific epithet and the authorships.
    * As we often see missing brackets from author names we must code defensively and allow several original names in the data for a single epithet.
