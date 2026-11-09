@@ -588,7 +588,11 @@ public enum Issue {
   NAME_RELATION_REDUNDANT(NAME, Level.INFO,
       "A homotypic name relation repeats what a more specific relation between the same two names already says, "
       + "e.g. next to a basionym or replacement name, or it is given in both directions. "
-      + "Extended releases keep only one relation.")
+      + "Extended releases keep only one relation."),
+
+  DISTRIBUTION_ABSENT(DISTRIBUTION, Level.INFO,
+      "A distribution record states that the taxon is absent from the area, e.g. by an occurrenceStatus of absent or excluded. "
+      + "It was not interpreted, as distributions always declare presence.")
   ;
 
   /**

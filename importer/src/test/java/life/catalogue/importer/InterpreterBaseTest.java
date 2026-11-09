@@ -7,6 +7,7 @@ import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.NomStatus;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.coldp.ColdpTerm;
+import org.gbif.dwc.terms.DwcTerm;
 import life.catalogue.dao.ReferenceFactory;
 import life.catalogue.importer.store.ImportStore;
 import life.catalogue.importer.store.ReferenceMapStore;
@@ -378,6 +379,27 @@ public class InterpreterBaseTest {
     // MRGID URLs, see https://github.com/CatalogueOfLife/data/issues/483
     assertDistributions(Gazetteer.MRGID, "http://marineregions.org/mrgid/48213", "48213");
     assertDistributions(Gazetteer.MRGID, "https://marineregions.org/mrgid/48213", "48213");
+  }
+
+  @Test
+  public void absentDistribution() throws Exception {
+    BiConsumer<Distribution, VerbatimRecord> noRef = (d, v) -> {};
+    for (String status : new String[]{"absent", "Excluded", "not present"}) {
+      var v = new VerbatimRecord();
+      v.put(DwcTerm.occurrenceStatus, status);
+      var dis = InterpreterBase.createDistribution(Gazetteer.ISO, "DE", null, v, DwcTerm.occurrenceStatus,
+        null,null,null,null,null,null,null,null, noRef);
+      assertTrue(status, dis.isEmpty());
+      assertTrue(status, v.contains(Issue.DISTRIBUTION_ABSENT));
+    }
+    for (String status : new String[]{"present", "doubtful", null}) {
+      var v = new VerbatimRecord();
+      v.put(DwcTerm.occurrenceStatus, status);
+      var dis = InterpreterBase.createDistribution(Gazetteer.ISO, "DE", null, v, DwcTerm.occurrenceStatus,
+        null,null,null,null,null,null,null,null, noRef);
+      assertEquals(String.valueOf(status), 1, dis.size());
+      assertFalse(String.valueOf(status), v.contains(Issue.DISTRIBUTION_ABSENT));
+    }
   }
 
   private void assertDistributions(Gazetteer std, String loc, String expectedID) {

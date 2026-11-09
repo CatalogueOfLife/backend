@@ -313,6 +313,11 @@ public class InterpreterBase {
     Term tRemarks,
     BiConsumer<Distribution, VerbatimRecord> addReference) {
 
+    // a distribution always declares presence, so records stating absence are skipped
+    if (tStatus != null && DistributionStatusParser.isAbsent(rec.get(tStatus))) {
+      rec.add(Issue.DISTRIBUTION_ABSENT);
+      return List.of();
+    }
     return interpretArea(gazetteer, locationID, location, rec)
       .stream()
       .map(area -> createDistribution(

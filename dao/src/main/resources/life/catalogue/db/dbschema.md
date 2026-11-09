@@ -11,6 +11,13 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2026-11-09 absent distributions
+Distribution records stating absence (occurrenceStatus absent, excluded, not present...) are no longer imported as
+distributions but flagged on their verbatim record. Run before the deploy. Existing absent rows only go on re-import.
+```sql
+ALTER TYPE ISSUE ADD VALUE 'DISTRIBUTION_ABSENT';
+```
+
 #### 2026-10-30 new Costello Marine Realms Gazetteer
 ```sql
 ALTER TYPE GAZETTEER ADD VALUE 'COSTELLO' AFTER 'GI';

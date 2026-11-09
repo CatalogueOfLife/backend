@@ -9,6 +9,7 @@ import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.importer.store.model.NameData;
 import life.catalogue.importer.store.model.UsageData;
 
+import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.GbifTerm;
 import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.NomCode;
@@ -850,6 +851,12 @@ public class NormalizerDwcaIT extends NormalizerITBase {
       }
       assertEquals((Integer)2023, d.getYear());
     }
+    // the absent Walloon record is no distribution, but flagged
+    var absent = store.verbatimList(GbifTerm.Distribution)
+      .filter(r -> "absent".equals(r.get(DwcTerm.occurrenceStatus)))
+      .toList();
+    assertEquals(1, absent.size());
+    assertTrue(absent.getFirst().contains(Issue.DISTRIBUTION_ABSENT));
     v = store.getVerbatim(p.getFirst().getVerbatimKey());
     assertNotNull(v);
   }
