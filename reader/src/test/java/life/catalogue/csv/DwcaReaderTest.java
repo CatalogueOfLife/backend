@@ -10,6 +10,8 @@ import org.gbif.dwc.terms.*;
 
 import java.io.File;
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Ignore;
@@ -25,6 +27,31 @@ import static org.junit.Assert.*;
  */
 public class DwcaReaderTest {
   public static final Term TERM_CoL_name = new UnknownTerm(URI.create("http://unknown.org/CoL_name"), false);
+
+  /**
+   * meta.xml comes with user supplied archives and must never resolve an external entity, see gbif/informatics#85 (A4).
+   */
+  @Test
+  public void externalEntitiesRejected() throws Exception {
+    Path dir = Files.createTempDirectory("dwca-xxe");
+    Path secret = Files.createTempFile("secret", ".txt");
+    try {
+      Files.writeString(secret, "TOP-SECRET-CONTENT");
+      Files.writeString(dir.resolve("taxa.txt"), "id\tscientificName\n1\tAbies alba\n");
+      Files.writeString(dir.resolve(DwcaReader.META_FN), "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+        "<!DOCTYPE archive [<!ENTITY xxe SYSTEM \"" + secret.toUri() + "\">]>\n" +
+        "<archive xmlns=\"http://rs.tdwg.org/dwc/text/\">\n" +
+        "<core encoding=\"UTF-8\" fieldsTerminatedBy=\"\\t\" ignoreHeaderLines=\"1\" rowType=\"http://rs.tdwg.org/dwc/terms/Taxon\">\n" +
+        "<files><location>taxa.txt</location></files><id index=\"0\"/>\n" +
+        "<field index=\"1\" term=\"http://rs.tdwg.org/dwc/terms/scientificName\" default=\"&xxe;\"/>\n" +
+        "</core></archive>");
+      var e = assertThrows(SourceInvalidException.class, () -> DwcaReader.from(dir));
+      assertFalse(String.valueOf(e.getMessage()).contains("TOP-SECRET-CONTENT"));
+    } finally {
+      Files.deleteIfExists(secret);
+      PathUtils.deleteRecursively(dir);
+    }
+  }
 
   @Test
   public void metaIF() throws Exception {
