@@ -3,6 +3,8 @@ package life.catalogue;
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.JobResult;
 import life.catalogue.api.util.ObjectUtils;
+import life.catalogue.api.vocab.OutboxType;
+import life.catalogue.assembly.SectorDeleteHandler;
 import life.catalogue.assembly.SyncFactory;
 import life.catalogue.assembly.SyncManager;
 import life.catalogue.assembly.SyncScheduler;
@@ -15,7 +17,7 @@ import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.dao.*;
 import life.catalogue.db.LookupTables;
-import life.catalogue.doi.DoiChangeListener;
+import life.catalogue.doi.DoiHandler;
 import life.catalogue.doi.service.DataCiteService;
 import life.catalogue.doi.service.DatasetConverter;
 import life.catalogue.doi.service.DoiService;
@@ -26,6 +28,7 @@ import life.catalogue.dw.db.MybatisBundle;
 import life.catalogue.dw.health.CslUtilsHealthCheck;
 import life.catalogue.dw.health.DockerHealthCheck;
 import life.catalogue.dw.health.NamesIndexHealthCheck;
+import life.catalogue.dw.health.OutboxHealthCheck;
 import life.catalogue.dw.jersey.ColJerseyBundle;
 import life.catalogue.dw.logging.pg.PgLogBundle;
 import life.catalogue.dw.mail.MailBundle;
@@ -73,8 +76,9 @@ import life.catalogue.parser.NameParser;
 import life.catalogue.printer.DatasetDiffService;
 import life.catalogue.printer.SectorDiffService;
 import life.catalogue.release.ProjectCopyFactory;
-import life.catalogue.release.PublishReleaseListener;
-import life.catalogue.release.PublisherChangeListener;
+import life.catalogue.outbox.LegacyEventBridge;
+import life.catalogue.outbox.OutboxRunner;
+import life.catalogue.release.ReleasePublishedHandler;
 import life.catalogue.resources.*;
 import life.catalogue.resources.dataset.*;
 import life.catalogue.resources.matching.DatasetGbifMatchResource;
@@ -362,7 +366,7 @@ public class WsServer extends Application<WsServerConfig> {
     EstimateDao edao = new EstimateDao(getSqlSessionFactory(), validator);
     NameDao ndao = new NameDao(getSqlSessionFactory(), indexService, ni, validator);
     PublisherDao pdao = new PublisherDao(getSqlSessionFactory(), validator);
-    SectorPublisherDao spdao = new SectorPublisherDao(getSqlSessionFactory(), broker, validator);
+    SectorPublisherDao spdao = new SectorPublisherDao(getSqlSessionFactory(), validator);
     SectorProfileDao sprdao = new SectorProfileDao(getSqlSessionFactory(), validator);
     ReferenceDao rdao = new ReferenceDao(getSqlSessionFactory(), doiResolver, validator);
     TaxonDao tdao = new TaxonDao(getSqlSessionFactory(), ndao, mdao, thumborService, indexService, searchService, validator);
@@ -400,8 +404,11 @@ public class WsServer extends Application<WsServerConfig> {
       doiService = new DataCiteService(cfg.doi, jerseyClient, mail.getMailer(), cfg.job.onErrorTo, cfg.job.onErrorFrom);
     }
     DatasetConverter converter = new DatasetConverter(cfg.portalURI, cfg.clbURI, udao::get);
-    DoiChangeListener doiChangeListener = new DoiChangeListener(getSqlSessionFactory(), doiService, coljersey.getCache(), converter, cfg.doi);
-    managedService.manage(Component.DoiUpdater, doiChangeListener);
+    // a disabled DoiUpdater is never registered, so its handler runs without being started and drains the DOI
+    // commands through the pass through service instead of leaving them in the outbox forever
+    final boolean doiDisabled = cfg.mode(Component.DoiUpdater) == ComponentMode.DISABLED;
+    DoiHandler doiHandler = new DoiHandler(getSqlSessionFactory(), doiService, coljersey.getCache(), converter, cfg.doi, doiDisabled);
+    managedService.manage(Component.DoiUpdater, doiHandler);
 
     // exporter
     ExportManager exportManager = new ExportManager(cfg, getSqlSessionFactory(), executor, imgService, exdao, searchService, cfg.clbURI);
@@ -479,12 +486,21 @@ public class WsServer extends Application<WsServerConfig> {
     // link assembly and import manager so they are aware of each other
     importManager.setAssemblyCoordinator(syncManager);
 
+    // outbox: durable commands that must run exactly once, on the app whose Outbox component is started
+    OutboxRunner outbox = new OutboxRunner(cfg.outbox, getSqlSessionFactory());
+    outbox.register(OutboxType.DOI, doiHandler);
+    outbox.register(OutboxType.SECTOR_DELETE, new SectorDeleteHandler(syncManager));
+    outbox.register(OutboxType.RELEASE_PUBLISHED,
+      new ReleasePublishedHandler(cfg.release, cfg, cfg.doi, getSqlSessionFactory(), matcherFactory, httpClient, executor)
+    );
+    managedService.manage(Component.Outbox, outbox);
+
     // admin resources
     j.register(new MatcherManagementResource(matcherFactory));
     j.register(new AdminResource(
       getSqlSessionFactory(), managedService, syncManager, new DownloadUtil(httpClient), cfg,
       imgService, ni, indexService, searchService,
-      importManager, ddao, siDao, diDao, gbifSync, executor, broker, encryption, doiChangeListener, matcherFactory)
+      importManager, ddao, siDao, diDao, gbifSync, executor, broker, encryption, matcherFactory)
     );
 
     // dataset scoped
@@ -526,6 +542,7 @@ public class WsServer extends Application<WsServerConfig> {
     registerReadOnlyHealthChecks(env, broker, esClient, cfg);
     env.healthChecks().register("csl-utils", new CslUtilsHealthCheck());
     env.healthChecks().register("docker", new DockerHealthCheck(docker, cfg.docker));
+    env.healthChecks().register("outbox", new OutboxHealthCheck(outbox));
 
     // tasks
     env.admin().addTask(new ClearCachesTask(auth, coljersey.getCache()));
@@ -541,9 +558,9 @@ public class WsServer extends Application<WsServerConfig> {
     if (cfg.apiURI != null) {
       broker.register(new CacheFlush(httpClient, cfg.apiURI));
     }
-    broker.register(new PublishReleaseListener(cfg.release, cfg, getSqlSessionFactory(), matcherFactory, httpClient, executor, broker));
-    broker.register(new PublisherChangeListener(getSqlSessionFactory()));
-    broker.register(doiChangeListener);
+    // DOI changes and sector deletions are outbox commands now. This turns the events an app of the previous
+    // version still publishes during the deploy that introduces the outbox into commands, remove it afterwards.
+    broker.register(new LegacyEventBridge(getSqlSessionFactory(), cfg.doi));
     broker.register(exportManager);
     broker.register(syncManager);
     broker.register(importManager);

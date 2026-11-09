@@ -11,8 +11,8 @@ package life.catalogue.dw.managed;
  *       and discards the queue. To quiesce for maintenance without losing the queue, pause it instead
  *       (POST /admin/jobs/pause);</li>
  *   <li><b>an autonomous writer</b> - everything that acts without an HTTP request behind it and so has to be
- *       silenced on the old app before the new one takes over: the cron executor, the DOI listener, the two
- *       polling schedulers, the GBIF registry sync and the feedback service.</li>
+ *       silenced on the old app before the new one takes over: the outbox runner, the cron executor, the DOI
+ *       updater, the two polling schedulers, the GBIF registry sync and the feedback service.</li>
  * </ul>
  *
  * Starting all of them is therefore the read/write switch: with them stopped this app does nothing of its own
@@ -32,7 +32,14 @@ package life.catalogue.dw.managed;
 public enum Component {
   NamesIndex,
   JobExecutor,
+  /**
+   * Runs the durable commands of the outbox table. Their handlers submit jobs, so it starts after the executor.
+   */
+  Outbox,
   CronExecutor,
+  /**
+   * Lets the outbox run DOI commands against DataCite. Stopped, they wait in the outbox.
+   */
   DoiUpdater,
   ImportScheduler,
   SyncScheduler,

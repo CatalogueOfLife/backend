@@ -182,16 +182,20 @@ a silent failure to publish cannot pass as success.
 ### What publishing already does by itself
 
 Worth knowing before adding triggers, because most of it needs none. Flipping a release from private
-to public emits one `DatasetChanged` event, and the listeners on the broker do the rest **inside the
-rw server**:
+to public emits one `DatasetChanged` event and, in the same transaction as the flip, writes a DOI and a
+`RELEASE_PUBLISHED` command to the outbox. The rest happens **inside the rw server**:
 
 | | Who | Where |
 |---|---|---|
 | matcher build | `UsageMatcherFactory.datasetChanged` → `ensurePublishedMatcher` | rw server, for every published dataset above threshold — not release specific |
-| concept DOI published, previous release's DOI URL updated | `PublishReleaseListener` | rw server |
-| COLDP, DwC-A and TextTree exports + `latest_*` symlinks | `PublishReleaseListener.publishCOL` → `ColReleaseExportJob` | rw server, written into `colDownloadDir/monthly/`. **Only for releases of the COL project** (`sourceKey == Datasets.COL`) — another project's release gets none |
-| names archive updated | `PublishReleaseListener` → `NameUsageArchiver` | rw server |
-| `publishActions` fired | `PublishReleaseListener`, last | outbound HTTP from the rw server |
+| concept DOI published | outbox DOI command → `DoiHandler` | rw server |
+| previous release's DOI URL updated | `PublishReleaseJob` → outbox DOI command | rw server, **only for releases of the COL project** |
+| COLDP, DwC-A and TextTree exports + `latest_*` symlinks | `PublishReleaseJob` → `ColReleaseExportJob` | rw server, written into `colDownloadDir/monthly/`. **Only for releases of the COL project** (`sourceKey == Datasets.COL`) — another project's release gets none |
+| names archive updated | `PublishReleaseJob` → `NameUsageArchiver` | rw server |
+| `publishActions` fired | `PublishReleaseJob`, last | outbound HTTP from the rw server |
+
+`PublishReleaseJob` is submitted once per published release by the `RELEASE_PUBLISHED` outbox command and shows up
+in the job history with its log.
 
 So exports and matchers are already automatic. What genuinely needs an outbound trigger is the
 **bundle** and, for the extended release, the **portal sitemap** — both too heavy or too far outside
@@ -206,7 +210,7 @@ matters:
 
 - `actions` — fired from `ProjectRelease.postMetrics()` when the **release job succeeds**, while the
   release is still private.
-- `publishActions` — fired from `PublishReleaseListener` when a release is **published**.
+- `publishActions` — fired from `PublishReleaseJob` when a release is **published**.
 
 Use `publishActions`: a bundle should only exist for a release the public can actually get.
 

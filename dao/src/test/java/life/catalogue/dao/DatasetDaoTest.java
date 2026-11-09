@@ -7,6 +7,7 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.Datasets;
+import life.catalogue.api.vocab.OutboxType;
 import life.catalogue.api.vocab.Setting;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.event.EventBroker;
@@ -18,6 +19,10 @@ import life.catalogue.config.NormalizerConfig;
 import life.catalogue.config.ReleaseConfig;
 import life.catalogue.db.mapper.DatasetMapperTest;
 import life.catalogue.db.mapper.DatasetPartitionMapper;
+import life.catalogue.db.mapper.OutboxMapper;
+import life.catalogue.db.mapper.SectorMapper;
+import life.catalogue.db.mapper.SectorMapperTest;
+import life.catalogue.db.mapper.SectorPublisherMapper;
 import life.catalogue.db.mapper.SectorProfileMapper;
 import life.catalogue.doi.service.DoiConfig;
 import life.catalogue.es.indexing.NameUsageIndexService;
@@ -25,12 +30,15 @@ import life.catalogue.img.ImageService;
 import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.junit.TestDataRule;
 import life.catalogue.metadata.coldp.ColdpMetadataParser;
+import life.catalogue.outbox.DoiAction;
+import life.catalogue.outbox.Outbox;
 
 import java.net.URI;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.apache.ibatis.session.SqlSession;
 import org.junit.Before;
@@ -363,6 +371,174 @@ public class DatasetDaoTest extends DaoTestBase {
     try (SqlSession session = factory().openSession(true)) {
       return session.getMapper(SectorProfileMapper.class).count(datasetKey);
     }
+  }
+
+  private List<OutboxEntry> outbox(OutboxType type) {
+    try (SqlSession session = factory().openSession(true)) {
+      return session.getMapper(OutboxMapper.class).list(type, null, null);
+    }
+  }
+
+  private Set<DoiAction> doiActions(DOI doi) {
+    try (SqlSession session = factory().openSession(true)) {
+      var e = session.getMapper(OutboxMapper.class).getByKey(OutboxType.DOI, doi.getDoiName());
+      return e == null ? Set.of() : Outbox.doiActions(e.getParams());
+    }
+  }
+
+  private void clearOutbox() {
+    try (SqlSession session = factory().openSession(true)) {
+      session.getConnection().createStatement().execute("TRUNCATE outbox");
+    } catch (java.sql.SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  /**
+   * DOI commands are written to the outbox in the transaction of the change, so they can neither get lost nor exist
+   * without the change.
+   */
+  @Test
+  public void doiCommands() throws Exception {
+    Dataset d = DatasetMapperTest.create();
+    d.setPrivat(true);
+    dao.create(d, Users.TESTER);
+    final DOI doi = d.getDoi();
+    assertNotNull(doi);
+    assertEquals(Set.of(DoiAction.CREATE), doiActions(doi));
+    clearOutbox();
+
+    // a metadata change updates the DOI
+    d = dao.get(d.getKey());
+    d.setTitle("A new title");
+    dao.update(d, Users.TESTER);
+    assertEquals(Set.of(DoiAction.UPDATE), doiActions(doi));
+    clearOutbox();
+
+    // an update that fails validation writes nothing
+    d = dao.get(d.getKey());
+    d.setConfidence(9);
+    try {
+      dao.update(d, Users.TESTER);
+      fail("confidence of 9 must be invalid");
+    } catch (jakarta.validation.ConstraintViolationException e) {
+      // expected
+    }
+    assertTrue(outbox(null).isEmpty());
+
+    // publishing publishes the DOI, also through a plain update
+    d = dao.get(d.getKey());
+    d.setPrivat(false);
+    dao.update(d, Users.TESTER);
+    assertEquals(Set.of(DoiAction.UPDATE, DoiAction.PUBLISH), doiActions(doi));
+    // not a release
+    assertTrue(outbox(OutboxType.RELEASE_PUBLISHED).isEmpty());
+    clearOutbox();
+
+    // deleting
+    dao.delete(d.getKey(), Users.TESTER);
+    assertEquals(Set.of(DoiAction.DELETE), doiActions(doi));
+  }
+
+  @Test
+  public void publishingReleaseRequestsReleasePublished() throws Exception {
+    Dataset proj = DatasetMapperTest.create();
+    proj.setOrigin(DatasetOrigin.PROJECT);
+    dao.create(proj, Users.TESTER);
+    int rkey = createRelease(proj.getKey(), true);
+    clearOutbox();
+
+    assertTrue(dao.publish(rkey, TestDataRule.TEST_USER));
+    var rp = outbox(OutboxType.RELEASE_PUBLISHED);
+    assertEquals(1, rp.size());
+    assertEquals(String.valueOf(rkey), rp.get(0).getKey());
+    assertEquals(rkey, rp.get(0).getParams().path("releaseKey").asInt());
+    assertEquals(Set.of(DoiAction.UPDATE, DoiAction.PUBLISH), doiActions(dao.get(rkey).getDoi()));
+
+    // publishing again does nothing
+    clearOutbox();
+    assertFalse(dao.publish(rkey, TestDataRule.TEST_USER));
+    assertTrue(outbox(null).isEmpty());
+  }
+
+  /**
+   * A dataset that changed its GBIF publisher is credited with the new publisher in every project that merges it
+   * and lists the former publisher, see https://github.com/CatalogueOfLife/backend/issues/1423
+   */
+  @Test
+  public void publisherChangeAddsSectorPublisher() throws Exception {
+    final UUID p1 = UUID.randomUUID();
+    final UUID p2 = UUID.randomUUID();
+    Dataset proj = DatasetMapperTest.create();
+    proj.setOrigin(DatasetOrigin.PROJECT);
+    dao.create(proj, Users.TESTER);
+    Dataset src = DatasetMapperTest.create();
+    src.setGbifPublisherKey(p1);
+    dao.create(src, Users.TESTER);
+
+    try (SqlSession session = factory().openSession(true)) {
+      var sp = new SectorPublisher();
+      sp.setDatasetKey(proj.getKey());
+      sp.setId(p1);
+      sp.setTitle("Old publisher");
+      sp.applyUser(Users.TESTER);
+      session.getMapper(SectorPublisherMapper.class).create(sp);
+
+      var s = SectorMapperTest.create(DSID.of(proj.getKey(), "t1"), DSID.of(src.getKey(), "s1"));
+      s.setMode(Sector.Mode.MERGE);
+      s.applyUser(Users.TESTER);
+      session.getMapper(SectorMapper.class).create(s);
+    }
+
+    src = dao.get(src.getKey());
+    src.setGbifPublisherKey(p2);
+    dao.update(src, Users.TESTER);
+    try (SqlSession session = factory().openSession(true)) {
+      assertEquals(Set.of(p1, p2), session.getMapper(SectorPublisherMapper.class).listAllKeys(proj.getKey()));
+    }
+
+    // and once only
+    src = dao.get(src.getKey());
+    src.setTitle("Same publisher");
+    dao.update(src, Users.TESTER);
+    try (SqlSession session = factory().openSession(true)) {
+      assertEquals(2, session.getMapper(SectorPublisherMapper.class).listAllKeys(proj.getKey()).size());
+    }
+  }
+
+  @Test
+  public void deletingSectorPublisherRequestsSectorDeletions() throws Exception {
+    final UUID p1 = UUID.randomUUID();
+    Dataset proj = DatasetMapperTest.create();
+    proj.setOrigin(DatasetOrigin.PROJECT);
+    dao.create(proj, Users.TESTER);
+    Dataset src = DatasetMapperTest.create();
+    src.setGbifPublisherKey(p1);
+    dao.create(src, Users.TESTER);
+    var spDao = new SectorPublisherDao(factory(), validator);
+
+    int sectorId;
+    try (SqlSession session = factory().openSession(true)) {
+      var sp = new SectorPublisher();
+      sp.setDatasetKey(proj.getKey());
+      sp.setId(p1);
+      sp.setTitle("Publisher");
+      sp.applyUser(Users.TESTER);
+      session.getMapper(SectorPublisherMapper.class).create(sp);
+
+      var s = SectorMapperTest.create(DSID.of(proj.getKey(), "t1"), DSID.of(src.getKey(), "s1"));
+      s.setMode(Sector.Mode.MERGE);
+      s.applyUser(Users.TESTER);
+      session.getMapper(SectorMapper.class).create(s);
+      sectorId = s.getId();
+      // the publisher of a sector is looked up from the project's source metadata
+      session.getMapper(life.catalogue.db.mapper.DatasetSourceMapper.class).create(proj.getKey(), dao.get(src.getKey()));
+    }
+    clearOutbox();
+
+    spDao.delete(DSID.of(proj.getKey(), p1), Users.TESTER);
+    var dels = outbox(OutboxType.SECTOR_DELETE).stream().map(OutboxEntry::getKey).collect(Collectors.toSet());
+    assertEquals(Set.of(proj.getKey() + ":" + sectorId), dels);
   }
 
   int createRelease(int projectKey, boolean privat) {

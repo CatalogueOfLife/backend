@@ -11,6 +11,34 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2026-11-09 durable outbox commands
+DOI changes, sector deletions and the work of publishing a release no longer travel over the Chronicle event queue,
+which lost them whenever no app was listening, e.g. between stop-all and start-all of a deploy, and ran them on both
+apps of a deploy. They are now rows of the outbox table, written in the transaction of the change and run once by the
+Outbox component. Run before the deploy, taxon-ws shares the db.
+```sql
+CREATE TYPE OUTBOXSTATUS AS ENUM ('PENDING', 'RUNNING', 'FAILED');
+CREATE TYPE OUTBOXTYPE AS ENUM ('DOI', 'SECTOR_DELETE', 'RELEASE_PUBLISHED');
+
+CREATE TABLE outbox (
+  id BIGSERIAL PRIMARY KEY,
+  type OUTBOXTYPE NOT NULL,
+  key TEXT NOT NULL,
+  params JSONB NOT NULL DEFAULT '{}',
+  status OUTBOXSTATUS NOT NULL DEFAULT 'PENDING',
+  due TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT now(),
+  version INTEGER NOT NULL DEFAULT 0,
+  attempts INTEGER NOT NULL DEFAULT 0,
+  last_error TEXT,
+  claimed_by TEXT,
+  created_by INTEGER NOT NULL,
+  created TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT now(),
+  modified TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT now(),
+  UNIQUE (type, key)
+);
+CREATE INDEX ON outbox (due) WHERE status = 'PENDING';
+```
+
 #### 2026-11-09 absent distributions
 Distribution records stating absence (occurrenceStatus absent, excluded, not present...) are no longer imported as
 distributions but flagged on their verbatim record. Run before the deploy. Existing absent rows only go on re-import.

@@ -22,7 +22,7 @@ import java.io.File;
 import java.net.URI;
 import java.util.concurrent.TimeUnit;
 
-import life.catalogue.release.PublishReleaseListener;
+import life.catalogue.release.PublishReleaseJob;
 
 import org.junit.*;
 
@@ -158,7 +158,7 @@ public class ExportManagerIT {
     ExportManager manager = new ExportManager(cfg, SqlSessionFactoryRule.getSqlSessionFactory(), executor, ImageService.passThru(), exDao, NameUsageSearchService.passThru(), java.net.URI.create("https://www.checklistbank.org"));
 
     // first schedule a block job that runs forever
-    for (DataFormat df : PublishReleaseListener.EXPORT_FORMATS) {
+    for (DataFormat df : PublishReleaseJob.EXPORT_FORMATS) {
       ExportRequest req = new ExportRequest();
       req.setDatasetKey(datasetKey);
       req.setFormat(df);

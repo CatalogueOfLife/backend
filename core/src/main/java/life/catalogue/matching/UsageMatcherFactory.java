@@ -215,17 +215,33 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
 
   /** Asynchronously removes and rebuilds a single matcher. The "rebuild one" lever. */
   public BackgroundJob rebuild(int datasetKey, int userKey) {
-    var job = new MatcherBuildJob(datasetKey, userKey);
+    var job = new MatcherBuildJob(datasetKey, userKey, false);
+    executor.submit(job);
+    return job;
+  }
+
+  /**
+   * Asynchronously brings the matcher of a dataset whose data changed up to date: a small dataset is served live from
+   * postgres, so its stale persistent store is removed, any other gets rebuilt.
+   * The size is only counted in the job, counting a big dataset can take a while.
+   */
+  public BackgroundJob refresh(int datasetKey, int userKey) {
+    var job = new MatcherBuildJob(datasetKey, userKey, true);
     executor.submit(job);
     return job;
   }
 
   private class MatcherBuildJob extends BackgroundJob {
     private final int datasetKey;
+    private final boolean refresh;
 
-    MatcherBuildJob(int datasetKey, int userKey) {
+    /**
+     * @param refresh if true a small dataset gets its persistent store removed instead of rebuilt
+     */
+    MatcherBuildJob(int datasetKey, int userKey, boolean refresh) {
       super(userKey);
       this.datasetKey = datasetKey;
+      this.refresh = refresh;
     }
 
     @Override
@@ -235,6 +251,10 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
 
     @Override
     public void execute() throws Exception {
+      if (refresh && isSmallDataset(datasetKey)) {
+        remove(datasetKey); // drop any stale persistent file; served live from postgres now
+        return;
+      }
       // build into a temp dir off-lock so the previous matcher keeps serving, then swap atomically.
       buildAndSwap(datasetKey);
     }
@@ -585,11 +605,7 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
     // previous attempt would silently serve stale data - but never create one for every private import
     if (d.isPrivat() && !matcherExists(event.datasetKey)) return;
     try {
-      if (isSmallDataset(event.datasetKey)) {
-        remove(event.datasetKey); // drop any stale persistent file; served live from postgres now
-      } else {
-        rebuild(event.datasetKey, event.user); // refresh to new attempt; creates if missing
-      }
+      refresh(event.datasetKey, event.user); // refresh to new attempt; creates if missing
     } catch (Exception e) {
       LOG.error("Failed to refresh matcher for dataset {}", event.datasetKey, e);
     }

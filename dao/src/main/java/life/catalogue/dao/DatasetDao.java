@@ -1,6 +1,5 @@
 package life.catalogue.dao;
 
-import life.catalogue.api.event.DoiChange;
 import life.catalogue.api.event.DatasetChanged;
 import life.catalogue.api.event.UserPermissionChanged;
 import life.catalogue.api.exception.NotFoundException;
@@ -21,6 +20,8 @@ import life.catalogue.es.indexing.NameUsageIndexService;
 import life.catalogue.event.EventBroker;
 import life.catalogue.img.ImageService;
 import life.catalogue.img.LogoUpdateJob;
+import life.catalogue.outbox.DoiAction;
+import life.catalogue.outbox.Outbox;
 
 import java.beans.PropertyDescriptor;
 import java.io.File;
@@ -414,10 +415,10 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     );
   }
 
-  private void postDoiDeletionForSources(DatasetSourceMapper psm, int datasetKey){
+  private void postDoiDeletionForSources(SqlSession session, DatasetSourceMapper psm, int datasetKey, int user){
     psm.listReleaseSourcesSimple(datasetKey, false).stream()
       .filter(d -> d.getDoi() != null && d.getDoi().isCOL())
-      .forEach(d -> bus.publish(DoiChange.delete(d.getDoi())));
+      .forEach(d -> Outbox.doi(session, dCfg, d.getDoi(), DoiAction.DELETE, user));
   }
 
   /**
@@ -473,11 +474,11 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
 
       // Simplify the DOI updates by deleting ALL DOIs for ALL releases and ALL sources at the beginning
       LOG.warn("Request deletion of all DOIs from project {}", key);
-      postDoiDeletionForSources(dsm, key);
+      postDoiDeletionForSources(session, dsm, key, user);
       // cascade to releases first before we remove the mother project dataset
       for (var d : releases) {
         LOG.info("Deleting release {} of project {}", d.getKey(), key);
-        postDoiDeletionForSources(dsm, d.getKey());
+        postDoiDeletionForSources(session, dsm, d.getKey(), user);
         deleteEntirely(d.getKey(), user);
       }
     } else if (old != null) {
@@ -552,7 +553,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
       }
     }
     // trigger DOI update at the very end for the now removed sources!
-    dois.forEach(doi -> bus.publish(DoiChange.update(doi)));
+    dois.forEach(doi -> Outbox.doi(session, dCfg, doi, DoiAction.UPDATE, user));
   }
 
   /**
@@ -615,6 +616,10 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
       deleteKeptReleaseData(key, session);
       mapper.deletePhysically(key);
     }
+    // the DOI is removed or hidden at DataCite by the outbox, committed with the deletion
+    if (old.getDoi() != null) {
+      Outbox.doi(session, dCfg, old.getDoi(), DoiAction.DELETE, user);
+    }
     session.commit();
     session.close();
 
@@ -626,9 +631,6 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
       });
     // notify event bus
     bus.publish(delEvent);
-    if (old.getDoi() != null) {
-      bus.publish(DoiChange.delete(old.getDoi()));
-    }
     return false;
   }
 
@@ -712,12 +714,13 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     if (obj.getOrigin() == DatasetOrigin.PROJECT) {
       session.getMapper(DatasetPartitionMapper.class).createSequences(obj.getKey());
     }
+    // the DOI is registered at DataCite by the outbox, committed with the new DOI
+    Outbox.doi(session, dCfg, obj.getDoi(), DoiAction.CREATE, user);
     session.commit();
     session.close();
-    // other non pg stuff - DOIs are created in DataCite by the dataset change listener
+    // other non pg stuff
     pullLogo(obj, null, user);
     bus.publish(DatasetChanged.created(obj, user));
-    bus.publish(DoiChange.create(obj.getDoi()));
     return false;
   }
 
@@ -767,6 +770,58 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
       }
     }
     super.updateBefore(obj, old, user, mapper, session);
+    // everything below is written in the transaction of the update, so it happens exactly once and only if it commits
+    enqueueUpdateCommands(obj, old, user, session);
+    if (!java.util.Objects.equals(old.getGbifPublisherKey(), obj.getGbifPublisherKey())) {
+      addChangedPublisherToProjects(obj, old.getGbifPublisherKey(), obj.getGbifPublisherKey(), user, session);
+    }
+  }
+
+  /**
+   * Requests the outbox commands that follow a dataset update.
+   * The DOI is never changed by an update, so the persisted one of the old version is the one to update.
+   */
+  private void enqueueUpdateCommands(Dataset obj, Dataset old, int user, SqlSession session) {
+    final boolean madePublic = old.isPrivat() && !obj.isPrivat();
+    if (old.getDoi() != null) {
+      Outbox.doi(session, dCfg, old.getDoi(), DoiAction.UPDATE, user);
+      if (madePublic) {
+        Outbox.doi(session, dCfg, old.getDoi(), DoiAction.PUBLISH, user);
+      }
+    }
+    if (madePublic && obj.getOrigin().isRelease()) {
+      Outbox.releasePublished(session, obj.getKey(), user);
+    }
+  }
+
+  /**
+   * If the GBIF publisher of a dataset changed, every project that lists the former publisher as a sector publisher
+   * and has merge sectors from this dataset gets the new publisher added too.
+   * See https://github.com/CatalogueOfLife/backend/issues/1423
+   */
+  private static void addChangedPublisherToProjects(Dataset d, @Nullable UUID oldPublisher, @Nullable UUID newPublisher,
+                                                    int user, SqlSession session) {
+    if (oldPublisher == null || newPublisher == null) return;
+    LOG.info("Publisher of dataset {} has changed from {} to {}", d.getKey(), oldPublisher, newPublisher);
+    var dm = session.getMapper(DatasetMapper.class);
+    var pm = session.getMapper(SectorPublisherMapper.class);
+    var sm = session.getMapper(SectorMapper.class);
+    for (var pkey : dm.listProjectKeys()) {
+      var curr = pm.listAllKeys(pkey);
+      if (curr.contains(oldPublisher) && !curr.contains(newPublisher)
+          && !sm.listByDataset(pkey, d.getKey(), Sector.Mode.MERGE).isEmpty()) {
+        LOG.warn("Project {} has merge sectors from dataset {} of publisher {}, which changed to {}. Add the new publisher to the project",
+          pkey, d.getKey(), oldPublisher, newPublisher);
+        var p = new SectorPublisher();
+        p.setDatasetKey(pkey);
+        p.setId(newPublisher);
+        //TODO: query GBIF API
+        p.setTitle("New publisher " + newPublisher);
+        p.setAlias(newPublisher.toString().substring(0, 8));
+        p.applyUser(user);
+        pm.create(p);
+      }
+    }
   }
 
   static String articleAlias(Dataset d) {
@@ -814,9 +869,6 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     // other non pg stuff
     pullLogo(obj, old, user);
     bus.publish(DatasetChanged.changed(obj, old, user));
-    if (obj.getDoi() != null) {
-      bus.publish(DoiChange.update(old.getDoi()));
-    }
     return false;
   }
 
@@ -881,10 +933,8 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     var d = getNotDeleted(key);
     if (d.isPrivat()) {
       d.setPrivat(false);
+      // the update publishes the DOI and, for a release, triggers the publishing of the release
       update(d, user.getKey());
-      if (d.getDoi() != null) {
-        bus.publish(DoiChange.publish(d.getDoi()));
-      }
       return true;
     }
     return false;

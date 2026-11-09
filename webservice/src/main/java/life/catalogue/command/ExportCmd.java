@@ -19,7 +19,7 @@ import life.catalogue.exporter.ExportManager;
 import life.catalogue.img.ImageService;
 import life.catalogue.img.ImageServiceFS;
 import life.catalogue.release.ProjectRelease;
-import life.catalogue.release.PublishReleaseListener;
+import life.catalogue.release.PublishReleaseJob;
 
 import java.io.File;
 import java.util.*;
@@ -94,7 +94,7 @@ public class ExportCmd extends AbstractMybatisCmd {
       formats = Set.of(df);
     } else {
       formats = Arrays.stream(DataFormat.values())
-                      .filter(PublishReleaseListener.EXPORT_FORMATS::contains)
+                      .filter(PublishReleaseJob.EXPORT_FORMATS::contains)
                       .collect(Collectors.toSet());
     }
     System.out.printf("Export format(s): %s\n", formats.stream().map(DataFormat::getName).collect(Collectors.joining(", ")));

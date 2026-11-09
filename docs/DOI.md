@@ -48,30 +48,43 @@ is FINDABLE it stays FINDABLE; this is deliberate. Use an explicit delete if you
 DOIs are managed by a `DoiService` — in production this is implemented by `DataCiteService`, which talks to
 the [DataCite REST API](https://api.datacite.org).
 
-All DOI mutations are decoupled via `DoiChange` events on the central `EventBroker`:
+All DOI mutations are durable commands in the `outbox` table, see
+[the design record](2026-11-09-durable-commands-and-pg-events.md). A producer writes the command in the
+transaction of the change that causes it, so it is never lost and never exists without the change, and the
+`OutboxRunner` of the app whose `Outbox` component is started runs it once.
 
-**Producers**:
-- `DatasetDao.createAfter` — emits `DoiChange.create(conceptDoi)` for every new dataset.
-- `DatasetDao.updateAfter` — emits `DoiChange.update(conceptDoi)` on any dataset update (to keep DataCite metadata in sync).
-- `DatasetDao.publish` — emits `DoiChange.publish(conceptDoi)` when a non-release dataset is flipped to public.
-- `ImportJob` — after a successful import, emits `DoiChange.create(versionDoi)` for the new version DOI.
-- `PublishReleaseListener` — on a release's private→public transition, emits `DoiChange.publish(conceptDoi)`
-  and `DoiChange.update(prevReleaseDoi)` (to refresh the target URL of the previously-latest release).
-- `DoiUpdateCmd` — bulk operations for manual repair or backfill.
+**Producers** (`Outbox.doi(...)`):
+- `DatasetDao.createAfter` — `CREATE` of the concept DOI of every new dataset.
+- `DatasetDao.updateBefore` — `UPDATE` of the concept DOI on any dataset update, plus `PUBLISH` when the update
+  turns a private dataset public. That covers `DatasetDao.publish` as well as a plain PUT.
+- `DatasetDao.deleteAfter` / `deleteBefore` — `DELETE` of the concept DOI, `UPDATE` (or `DELETE` for a project) of
+  the DOIs of the release sources.
+- `ImportJob` — after a successful import, `CREATE` of the new version DOI.
+- `PublishReleaseJob` — for COL releases, `UPDATE` of the previous release's DOI so its target URL no longer
+  resolves as the latest.
+- `POST|PUT|PATCH /admin/doi/{suffix}` — manual create, update and publish.
+- `DoiUpdateCmd` — bulk operations for manual repair or backfill; it talks to DataCite directly.
 
 **Consumer**:
-`DoiChangeListener` subscribes to the bus and persists events into a Chronicle-backed map so they survive
-application restarts. Scheduling rules:
-- `CREATE`, `PUBLISH`, `DELETE` events run immediately.
-- `UPDATE` events are **debounced** by `cfg.waitPeriod` seconds — bursts of dataset edits collapse into a
-  single DataCite update call.
-- `CREATE` on a public dataset auto-publishes after the draft is created (this is how public external-dataset
-  version DOIs become FINDABLE without the importer issuing an explicit PUBLISH).
+`DoiHandler` runs the DOI commands. There is one command per DOI, all requested actions are flags of it and run in
+a fixed order: a `DELETE` runs alone; a `CREATE` sends the current metadata and, for a public dataset, publishes the
+DOI; an `UPDATE` sends the metadata unless a create just did; a `PUBLISH` publishes unless a create just did.
+Metadata is read when the command runs. Every step is safe to repeat: a create of an existing DOI updates it.
+- `CREATE`, `PUBLISH` and `DELETE` are due immediately.
+- An `UPDATE` is **debounced**: it is due `doi.waitPeriod` seconds after the first request, and later requests
+  are merged into it, so a burst of dataset edits ends up in a single DataCite call.
+- DOIs with a foreign prefix or of an unknown dataset are dropped with a log line.
 
-**Retry and rate limiting**:
-- Failed events are re-queued with an exponential back-off of `fails²` hours.
-- DataCite HTTP 429 (rate limited) pauses the queue for 6 minutes before retrying.
-- Events that can't be matched to a dataset (e.g. prefix mismatch, deleted dataset) are dropped with a warning.
+`DoiHandler` is the `DoiUpdater` component. While it is stopped, e.g. on the old app of a deploy or during a
+DataCite outage, DOI commands wait in the outbox. Where the component is `DISABLED` (dev) the handler runs
+without being started against `DoiService.passThru()`, so the commands drain without touching DataCite.
+
+**Retry**:
+- A failed command is retried after `attempts²` hours, at most `outbox.maxAttempts` times (12 by default).
+- Invalid metadata (pre-flight validation, or HTTP 422 from DataCite) fails the command at once and mails the
+  error. A later change of the dataset revives a failed command.
+- Failed commands are kept for `outbox.failedRetentionDays`, listed by `GET /admin/outbox?type=DOI&status=FAILED`
+  and retried with `POST /admin/outbox/{id}/retry`.
 
 ## DOI metadata and chaining
 `DatasetConverter` (in the `doi` module) builds the DataCite `DoiAttributes` from the live dataset (for the

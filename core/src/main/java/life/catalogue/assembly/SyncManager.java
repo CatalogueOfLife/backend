@@ -2,8 +2,6 @@ package life.catalogue.assembly;
 
 import life.catalogue.api.event.DatasetChanged;
 import life.catalogue.api.event.DatasetListener;
-import life.catalogue.api.event.DeleteSector;
-import life.catalogue.api.event.SectorListener;
 import life.catalogue.api.exception.TooManyRequestsException;
 import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.*;
@@ -41,7 +39,7 @@ import com.codahale.metrics.MetricRegistry;
  * on the SYNC lane of the shared JobExecutor.
  * Jobs of the same project are serialized by the executor, syncs of different projects run in parallel.
  */
-public class SyncManager implements SectorListener, DatasetListener {
+public class SyncManager implements DatasetListener {
   static  final Comparator<Sector> SECTOR_ORDER = Comparator.comparing(Sector::getTarget, Comparator.nullsLast(SimpleName::compareTo));
   private static final Logger LOG = LoggerFactory.getLogger(SyncManager.class);
 
@@ -302,7 +300,10 @@ public class SyncManager implements SectorListener, DatasetListener {
     }
   }
 
-  private boolean isQueuedOrRunning(DSID<Integer> sectorKey) {
+  /**
+   * @return true if a sync or deletion of the sector is queued or running
+   */
+  public boolean isQueuedOrRunning(DSID<Integer> sectorKey) {
     return syncJobs().stream().anyMatch(job -> job.getSectorKey().equals(sectorKey));
   }
 
@@ -351,15 +352,6 @@ public class SyncManager implements SectorListener, DatasetListener {
     int queued = sectors.size()-failed;
     LOG.info("Scheduled {} sectors for sync, {} failed", queued, failed);
     return queued;
-  }
-
-  @Override
-  public void sectorDeleted(DeleteSector event){
-    LOG.info("Trigger deletion of sector {} by user={}", event.key, event.user);
-    var del = deleteSector(event.key, true, event.user);
-    if (!del) {
-      LOG.warn("Unable to queue deletion of sector {} by user={}", event.key, event.user);
-    }
   }
 
   @Override

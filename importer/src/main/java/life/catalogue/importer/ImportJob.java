@@ -1,7 +1,8 @@
 package life.catalogue.importer;
 
 import life.catalogue.api.event.DatasetDataChanged;
-import life.catalogue.api.event.DoiChange;
+import life.catalogue.outbox.DoiAction;
+import life.catalogue.outbox.Outbox;
 import life.catalogue.api.model.DatasetImport;
 import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.vocab.DataFormat;
@@ -545,7 +546,7 @@ public class ImportJob extends DatasetBlockingJob {
 
           // flush dataset in varnish, update matcher, etc
           bus.publish(new DatasetDataChanged(datasetKey, req.createdBy));
-          bus.publish(DoiChange.create(vDOI));
+          Outbox.doi(factory, dCfg, vDOI, DoiAction.CREATE, req.createdBy);
 
           if (rematchDecisions()) {
             updateState(ImportState.MATCHING);

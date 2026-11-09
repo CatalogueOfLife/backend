@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="life.catalogue.db.mapper.OutboxMapper">
+
+  <sql id="SELECT">
+    o.id,
+    o.type,
+    o.key,
+    o.params,
+    o.status,
+    o.due,
+    o.version,
+    o.attempts,
+    o.last_error,
+    o.claimed_by,
+    o.created_by,
+    o.created,
+    o.modified
+  </sql>
+
+  <sql id="WHERE">
+    <where>
+      <if test="type != null">AND o.type = #{type}::OUTBOXTYPE</if>
+      <if test="status != null">AND o.status = #{status}::OUTBOXSTATUS</if>
+    </where>
+  </sql>
+
+  <resultMap id="outboxResultMap" type="OutboxEntry" autoMapping="true">
+    <id property="id" column="id"/>
+    <result property="params" column="params" typeHandler="life.catalogue.db.type2.JsonNodeHandler"/>
+  </resultMap>
+
+  <!--
+    A request for a type and key that is already waiting is merged into it. The earlier due time wins, so a burst of
+    requests is run together once the first one is due and constant requests cannot postpone it forever.
+    A running command stays running: its version changes, so the run cannot complete it and it is requeued instead.
+    A failed command is revived by a new request, with its attempts reset.
+  -->
+  <insert id="enqueue">
+    INSERT INTO outbox (type, key, params, due, created_by)
+    VALUES (#{type}::OUTBOXTYPE, #{key}, #{params, typeHandler=life.catalogue.db.type2.JsonNodeHandler}::jsonb,
+            now() + #{delaySeconds} * interval '1 second', #{user})
+    ON CONFLICT (type, key) DO UPDATE SET
+      params = outbox.params || EXCLUDED.params,
+      due = CASE WHEN outbox.status = 'FAILED' THEN EXCLUDED.due ELSE LEAST(outbox.due, EXCLUDED.due) END,
+      version = outbox.version + 1,
+      attempts = CASE WHEN outbox.status = 'FAILED' THEN 0 ELSE outbox.attempts END,
+      last_error = CASE WHEN outbox.status = 'FAILED' THEN NULL ELSE outbox.last_error END,
+      status = CASE WHEN outbox.status = 'RUNNING' THEN 'RUNNING'::OUTBOXSTATUS ELSE 'PENDING'::OUTBOXSTATUS END,
+      modified = now()
+  </insert>
+
+  <select id="get" resultMap="outboxResultMap">
+    SELECT <include refid="SELECT"/>
+    FROM outbox o
+    WHERE o.id = #{id}
+  </select>
+
+  <select id="getByKey" resultMap="outboxResultMap">
+    SELECT <include refid="SELECT"/>
+    FROM outbox o
+    WHERE o.type = #{type}::OUTBOXTYPE AND o.key = #{key}
+  </select>
+
+  <select id="list" resultMap="outboxResultMap">
+    SELECT <include refid="SELECT"/>
+    FROM outbox o
+    <include refid="WHERE"/>
+    ORDER BY o.due, o.id
+    <include refid="life.catalogue.db.Common.limit"/>
+  </select>
+
+  <select id="count" resultType="integer">
+    SELECT count(*)
+    FROM outbox o
+    <include refid="WHERE"/>
+  </select>
+
+  <select id="countOverdue" resultType="integer">
+    SELECT count(*)
+    FROM outbox o
+    WHERE o.status = 'PENDING' AND o.due &lt; now() - #{minutes} * interval '1 minute'
+  </select>
+
+  <!--
+    SKIP LOCKED lets two runners claim side by side without ever taking the same row.
+    Mapped as a select as it returns the claimed rows, flushCache as it changes them.
+  -->
+  <select id="claim" resultMap="outboxResultMap" flushCache="true">
+    UPDATE outbox o SET status = 'RUNNING'::OUTBOXSTATUS, claimed_by = #{instance}, modified = now()
+    FROM (
+      SELECT id FROM outbox
+      WHERE type = #{type}::OUTBOXTYPE AND status = 'PENDING' AND due &lt;= now()
+      ORDER BY due, id
+      LIMIT #{limit}
+      FOR UPDATE SKIP LOCKED
+    ) c
+    WHERE o.id = c.id
+    RETURNING <include refid="SELECT"/>
+  </select>
+
+  <delete id="complete">
+    DELETE FROM outbox
+    WHERE id = #{id} AND version = #{version} AND claimed_by = #{instance}
+  </delete>
+
+  <update id="requeue">
+    UPDATE outbox SET status = 'PENDING'::OUTBOXSTATUS, claimed_by = NULL, modified = now()
+    WHERE id = #{id} AND claimed_by = #{instance}
+  </update>
+
+  <update id="retry">
+    UPDATE outbox SET status = 'PENDING'::OUTBOXSTATUS,
+      claimed_by = NULL,
+      attempts = attempts + #{inc},
+      due = now() + #{delaySeconds} * interval '1 second',
+      last_error = #{error},
+      modified = now()
+    WHERE id = #{id} AND claimed_by = #{instance}
+  </update>
+
+  <update id="fail">
+    UPDATE outbox SET
+      status = CASE WHEN version = #{version} THEN 'FAILED'::OUTBOXSTATUS ELSE 'PENDING'::OUTBOXSTATUS END,
+      attempts = CASE WHEN version = #{version} THEN attempts + 1 ELSE 0 END,
+      claimed_by = NULL,
+      last_error = #{error},
+      modified = now()
+    WHERE id = #{id} AND claimed_by = #{instance}
+  </update>
+
+  <update id="releaseMine">
+    UPDATE outbox SET status = 'PENDING'::OUTBOXSTATUS, claimed_by = NULL, modified = now()
+    WHERE status = 'RUNNING' AND claimed_by = #{instance}
+  </update>
+
+  <update id="resetStale">
+    UPDATE outbox SET status = 'PENDING'::OUTBOXSTATUS, claimed_by = NULL, modified = now()
+    WHERE status = 'RUNNING'
+  </update>
+
+  <update id="retryNow">
+    UPDATE outbox SET status = 'PENDING'::OUTBOXSTATUS, claimed_by = NULL, attempts = 0, due = now(), modified = now()
+    WHERE id = #{id} AND status != 'RUNNING'
+  </update>
+
+  <delete id="delete">
+    DELETE FROM outbox WHERE id = #{id}
+  </delete>
+
+  <delete id="purgeFailed">
+    DELETE FROM outbox
+    WHERE status = 'FAILED' AND modified &lt; now() - #{days} * interval '1 day'
+  </delete>
+
+</mapper>
