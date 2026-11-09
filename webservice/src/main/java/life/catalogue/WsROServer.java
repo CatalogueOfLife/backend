@@ -263,7 +263,7 @@ public class WsROServer<C extends WsServerConfig> extends Application<C> {
     NameDao ndao = new NameDao(getSqlSessionFactory(), indexService, NameIndexFactory.passThru(), validator);
     var nudao = new NameUsageDao(getSqlSessionFactory(), indexService);
     PublisherDao pdao = new PublisherDao(getSqlSessionFactory(), validator);
-    SectorPublisherDao spdao = new SectorPublisherDao(getSqlSessionFactory(), broker, validator);
+    SectorPublisherDao spdao = new SectorPublisherDao(getSqlSessionFactory(), validator);
     SectorProfileDao sprdao = new SectorProfileDao(getSqlSessionFactory(), validator);
     ReferenceDao rdao = new ReferenceDao(getSqlSessionFactory(), doiResolver, validator);
     SynonymDao sdao = new SynonymDao(getSqlSessionFactory(), ndao, indexService, validator);

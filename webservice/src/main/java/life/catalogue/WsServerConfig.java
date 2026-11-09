@@ -15,6 +15,7 @@ import life.catalogue.dw.managed.ComponentMode;
 import life.catalogue.dw.mail.MailBundleConfig;
 import life.catalogue.config.EsConfig;
 import life.catalogue.event.BrokerConfig;
+import life.catalogue.outbox.OutboxConfig;
 import life.catalogue.exporter.ExporterConfig;
 import life.catalogue.feedback.GithubConfig;
 import life.catalogue.img.ImgConfig;
@@ -54,6 +55,10 @@ public class WsServerConfig extends Configuration implements ExporterConfig, Cor
 
   @Valid
   public BrokerConfig broker = new BrokerConfig();
+
+  @Valid
+  @NotNull
+  public OutboxConfig outbox = new OutboxConfig();
 
   @Valid
   @NotNull

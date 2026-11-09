@@ -88,7 +88,7 @@ vocab, coldp, reference, kryo, reader, reader-xls, pgcopy, metadata, doi
 
 - **api**: Data models (Dataset, NameUsage, Taxon, Synonym, Reference), vocabularies (TaxonomicStatus, Issue, ImportState), validation annotations, Jackson serializers. No external dependencies beyond basic libraries.
 
-- **dao**: Persistence layer with MyBatis mappers (`dao/src/main/resources/mapper/*.xml`), DAO classes (`dao/dao/*.java`), PostgreSQL utilities, Elasticsearch integration, name matching algorithms. Uses **dataset-based table partitioning** for performance.
+- **dao**: Persistence layer with MyBatis mappers (`dao/src/main/resources/life/catalogue/db/mapper/*.xml`), DAO classes (`dao/dao/*.java`), PostgreSQL utilities, Elasticsearch integration, name matching algorithms. Uses **dataset-based table partitioning** for performance.
 
 - **core**: Business logic not tied to HTTP layer. Key packages:
   - `assembly/`: Sector synchronization (merges source datasets into projects via SectorSync)
@@ -150,11 +150,24 @@ Records are unique only within a dataset. Combined key = `datasetKey + id`. Enab
 - Avoids expensive full-table scans when querying single datasets
 
 **Event-Driven Updates:**
-`EventBroker` publishes `DatasetChanged` events. Services subscribe to invalidate caches, rebuild indices, etc. Decouples import pipeline from downstream updates.
+`EventBroker` publishes `DatasetChanged`, `UserChanged` and similar events to every JVM on the host - the rw and ro
+server and both apps of a blue-green deploy - through a Chronicle queue in `broker.queueDir`. Each JVM reads only
+what is published after it started and every JVM acts on every event, so the broker is for cache invalidation and
+reactions that are harmless to repeat or miss (a matcher refresh, cancelling the queued jobs of a deleted dataset).
+Anything that must happen exactly once and must not be lost is an **outbox command** instead: a row of the
+`outbox` table written with `Outbox.*` in the transaction of the change that causes it, claimed with
+`FOR UPDATE SKIP LOCKED` and run once by the `OutboxRunner` (the `Outbox` component) through the `OutboxHandler`
+of its `OutboxType` - DOI changes (`DoiHandler`), sector deletions (`SectorDeleteHandler`) and the work of publishing
+a release (`ReleasePublishedHandler` submits a `PublishReleaseJob`). A request hitting a waiting command of the same
+type and key is merged into it (jsonb `||`, the earlier `due` wins, `version` bumped so a running command is
+requeued instead of completed); failures retry with a backoff and end as `FAILED`, listed and retried under
+`/admin/outbox`. `DoiChange`/`DeleteSector` are no longer published; `LegacyEventBridge` turns those of an app of
+the previous version into commands during the deploy that introduces the outbox and goes afterwards. See
+[`docs/2026-11-09-durable-commands-and-pg-events.md`](docs/2026-11-09-durable-commands-and-pg-events.md).
 
 **DAO Pattern:**
 All DAOs extend `DataEntityDao<Key, Entity, Mapper>`:
-- MyBatis XML mappers in `dao/src/main/resources/mapper/*.xml`
+- MyBatis XML mappers in `dao/src/main/resources/life/catalogue/db/mapper/*.xml`
 - Java interfaces in `dao/db/mapper/*Mapper.java`
 - CRUD operations: `get()`, `create()`, `update()`, `delete()`, `search()`
 
@@ -241,6 +254,11 @@ text `step`, is what `JobSearchRequest.unchanged` filters on: the step has rende
 history by lane, multiple case insensitive job names, status, priority, dataset, sector, user, a
 `createdAfter`/`createdBefore` range, `unchanged` and `format`, the last of which semi joins
 `dataset_import` and `dataset_export` and therefore also narrows to those two kinds of job.
+The executor has no durable intake of its own - a job exists once something in this JVM submits it. Work that a
+write has to cause for sure, even while no executor runs, is therefore requested as an outbox command (see
+Event-Driven Updates) whose handler submits the job and retries while the executor is stopped. Once submitted, the
+job is subject to the executor's own rules: a queued `PublishReleaseJob` or sector deletion discarded by `stop()` is
+recorded as CANCELED like any other.
 
 **Startable components:**
 `Component`/`ManagedService` back `/admin/component/{start,stop,restart}[-all]`, which dropwizard never starts
@@ -248,8 +266,9 @@ by itself - during a deploy two apps run at once and cannot both own the same fi
 over the API. A component earns its place by being exactly one of three things: an **exclusive resource**
 (`NamesIndex` alone - its chronicle map is opened read-write and has to be handed between JVMs), the **work
 engine** (`JobExecutor`), or an **autonomous writer** that acts with no HTTP request behind it and so must be
-silenced on the old app (`CronExecutor`, `DoiUpdater`, `ImportScheduler`, `SyncScheduler`, `GBIFRegistrySync`,
-`Feedback`). `stop-all` is therefore the read/write switch: with them stopped the app does nothing of its own
+silenced on the old app (`Outbox`, `CronExecutor`, `DoiUpdater`, `ImportScheduler`, `SyncScheduler`,
+`GBIFRegistrySync`, `Feedback`). `Outbox` comes right after the executor, as its handlers submit jobs. `DoiUpdater`
+only lets the outbox run DOI commands: stopped, they wait in the outbox, which also pauses DataCite traffic. `stop-all` is therefore the read/write switch: with them stopped the app does nothing of its own
 accord. It does not stop HTTP-triggered writes - the CRUD API writes on the request thread and never goes near
 a job - and `/admin/maintenance` only writes a JSON status file for a UI banner, blocking nothing.
 A submit gate in front of the executor is explicitly *not* a component: `DatasetImporter` and
@@ -266,10 +285,11 @@ is what deploy's `nidx-swap.sh` does.
 `ComponentMode`; anything unlisted is `AUTO`. `MANUAL` is managed and individually startable but skipped by
 `start-all` - the cron executor and the continuous importer on dev, harmless to have around but with no business
 polling by themselves. `DISABLED` is not registered at all: absent from `/admin/component`, no switch in the admin
-UI, and start/stop by name is the same logged no-op as a component a server never wired - Feedback and DoiUpdater
-on dev and test, which open public github issues and register DataCite DOIs. `WsServer` also selects the existing
-`FeedbackService.passThru()`/`DoiService.passThru()` for those two when disabled, so the instance is inert and not
-merely unstartable. It is `DISABLED` and not `OFF` because yaml 1.1 resolves a bare `OFF` to a boolean.
+UI, and start/stop by name is the same logged no-op as a component a server never wired - Feedback on dev and test,
+which opens public github issues, and DoiUpdater on dev (test registers DOIs with the DataCite test system).
+`WsServer` also selects the existing `FeedbackService.passThru()`/`DoiService.passThru()` for those two when
+disabled, so the instance is inert and not merely unstartable; a disabled DoiUpdater's `DoiHandler` runs unstarted
+against the pass through service, so DOI commands drain instead of piling up in the outbox. It is `DISABLED` and not `OFF` because yaml 1.1 resolves a bare `OFF` to a boolean.
 `stop-all` still stops everything managed, `MANUAL` included - it is the blue-green switch and must not leave a
 hand started scheduler alive on the app being replaced - so `restart-all` leaves the manual ones stopped.
 `GET /admin/component` therefore answers `{idle, quiesced, components: {name: {running, autostart}}}`, letting a UI
@@ -344,8 +364,9 @@ The archive is the memory all of this reads: one row per id ever issued, holding
 release that carries it (`ReleaseRanking`: base release generations newest first, an extended release in the generation
 of the base release its job recorded as `params.baseReleaseKey`, the base release above its extended releases). It used
 to freeze the first version, which is why an old id kept losing to a younger duplicate. Publishing runs the per release
-step `NameUsageArchiver.archiveRelease`, which never deletes a row, is safe to run twice - the broker delivers the event
-to both apps of a blue-green deploy - and writes the release key last, so a key's presence means the release was
+step `NameUsageArchiver.archiveRelease` from the `PublishReleaseJob` of the release, once, through the outbox. It
+never deletes a row, is safe to run twice - a rerun after a failure, or the `ArchiveRefreshJob` - and writes the
+release key last, so a key's presence means the release was
 archived completely: base and extended release jobs refuse to start while a public release of their project lacks its
 key. `ArchiveRefreshJob` (`POST /admin/archive/refresh?projectKey=`) refreshes a whole project in place and rematches it
 through the names index. An id a release drops can record which id took it over (`name_usage_archive.superseded_by`,
@@ -430,7 +451,7 @@ Rules:
   case-insensitive, GitHub and the Linux build hosts are not.
 
 ### MyBatis Mappers
-- XML mappers in `dao/src/main/resources/mapper/*.xml`
+- XML mappers in `dao/src/main/resources/life/catalogue/db/mapper/*.xml`
 - Java interfaces in `dao/db/mapper/*.java`
 - Use `<sql id="...">` fragments for reusable SQL blocks
 - Dynamic SQL with `<if>`, `<choose>`, `<foreach>`
@@ -444,7 +465,7 @@ Rules:
 
 ### Adding a New Entity Type
 1. Create model class in `api/src/main/java/life/catalogue/api/model/`
-2. Create MyBatis mapper XML in `dao/src/main/resources/mapper/`
+2. Create MyBatis mapper XML in `dao/src/main/resources/life/catalogue/db/mapper/`
 3. Create MyBatis mapper interface in `dao/db/mapper/`
 4. Create DAO in `dao/dao/`
 5. Create REST resource in `webservice/resources/`
@@ -538,7 +559,7 @@ GET /dataset/{key}/export.zip?format=COLDP
 | API models | `api/src/main/java/life/catalogue/api/model/` |
 | Vocabularies | `api/src/main/java/life/catalogue/api/vocab/` |
 | DAOs | `dao/src/main/java/life/catalogue/dao/` |
-| MyBatis mappers | `dao/src/main/resources/mapper/` |
+| MyBatis mappers | `dao/src/main/resources/life/catalogue/db/mapper/` |
 | Import logic | `importer/src/main/java/life/catalogue/importer/` |
 | REST endpoints | `webservice/src/main/java/life/catalogue/resources/` |
 | Assembly/Sync | `core/src/main/java/life/catalogue/assembly/` |

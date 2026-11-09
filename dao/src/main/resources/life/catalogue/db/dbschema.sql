@@ -460,6 +460,18 @@ CREATE TYPE ORIGIN AS ENUM (
   'OTHER'
 );
 
+CREATE TYPE OUTBOXSTATUS AS ENUM (
+  'PENDING',
+  'RUNNING',
+  'FAILED'
+);
+
+CREATE TYPE OUTBOXTYPE AS ENUM (
+  'DOI',
+  'SECTOR_DELETE',
+  'RELEASE_PUBLISHED'
+);
+
 CREATE TYPE RANK AS ENUM (
   'SUPERDOMAIN',
   'DOMAIN',
@@ -1181,6 +1193,27 @@ CREATE INDEX ON job (created DESC);
 CREATE INDEX ON job (status) WHERE status IN ('WAITING','BLOCKED','RUNNING');
 -- no index on params: nothing filters on it, it is only ever selected and inserted.
 -- a GIN index here would be pure write overhead on the weekly sector sync burst.
+
+-- durable commands that must happen exactly once and survive restarts and deploys, e.g. DataCite calls.
+-- Producers write them in the transaction of the change that caused them, the OutboxRunner of the app whose
+-- Outbox component is started claims them with SKIP LOCKED, runs them and deletes them.
+CREATE TABLE outbox (
+  id BIGSERIAL PRIMARY KEY,
+  type OUTBOXTYPE NOT NULL,
+  key TEXT NOT NULL,                   -- dedupe key within the type: a request hitting a waiting row is merged into it
+  params JSONB NOT NULL DEFAULT '{}',  -- merged with || on every merge
+  status OUTBOXSTATUS NOT NULL DEFAULT 'PENDING',
+  due TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT now(),
+  version INTEGER NOT NULL DEFAULT 0,  -- bumped by every merge, a run only completes the version it read
+  attempts INTEGER NOT NULL DEFAULT 0,
+  last_error TEXT,
+  claimed_by TEXT,                     -- the runner instance executing it, so a late finish of a stopped app is a no-op
+  created_by INTEGER NOT NULL,
+  created TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT now(),
+  modified TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT now(),
+  UNIQUE (type, key)
+);
+CREATE INDEX ON outbox (due) WHERE status = 'PENDING';
 
 CREATE TABLE sector (
   id INTEGER NOT NULL,

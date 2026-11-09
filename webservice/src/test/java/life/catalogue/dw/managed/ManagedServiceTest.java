@@ -143,6 +143,8 @@ public class ManagedServiceTest {
     var order = List.of(Component.values());
     assertEquals(Component.NamesIndex, order.get(0));
     assertTrue(order.indexOf(Component.JobExecutor) < order.indexOf(Component.CronExecutor));
+    // outbox handlers submit jobs, so the outbox starts after and stops before the executor
+    assertTrue(order.indexOf(Component.JobExecutor) < order.indexOf(Component.Outbox));
   }
 
   /**

@@ -5,14 +5,17 @@ import io.dropwizard.auth.Auth;
 import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.annotation.security.PermitAll;
 import jakarta.annotation.security.RolesAllowed;
+import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.StreamingOutput;
 import life.catalogue.WsServerConfig;
-import life.catalogue.api.event.DoiChange;
 import life.catalogue.api.model.DOI;
 import life.catalogue.api.model.DSID;
+import life.catalogue.api.model.OutboxEntry;
+import life.catalogue.api.model.Page;
+import life.catalogue.api.model.ResultPage;
 import life.catalogue.api.model.RequestScope;
 import life.catalogue.api.model.User;
 import life.catalogue.assembly.SyncManager;
@@ -26,11 +29,13 @@ import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.JobPriority;
+import life.catalogue.api.vocab.OutboxStatus;
+import life.catalogue.api.vocab.OutboxType;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.JobDao;
 import life.catalogue.dao.SectorImportDao;
-import life.catalogue.doi.DoiChangeListener;
+import life.catalogue.db.mapper.OutboxMapper;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.dw.managed.Component;
 import life.catalogue.dw.managed.Maintenance;
@@ -51,7 +56,10 @@ import life.catalogue.matching.RematchArchiveJob;
 import life.catalogue.matching.RematchJob;
 import life.catalogue.matching.UsageMatcherFactory;
 import life.catalogue.matching.nidx.NameIndex;
+import life.catalogue.outbox.DoiAction;
+import life.catalogue.outbox.Outbox;
 import life.catalogue.release.LegacyIdMapJob;
+import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -95,19 +103,17 @@ public class AdminResource {
   private final ManagedService componedService;
   private final EventBroker bus;
   private final EmailEncryption encryption;
-  private final DoiChangeListener doiListener;
   private final UsageMatcherFactory matcherFactory;
 
   public AdminResource(SqlSessionFactory factory, ManagedService managedService, SyncManager assembly, DownloadUtil downloader,
                        WsServerConfig cfg, ImageService imgService, NameIndex ni,
                        NameUsageIndexService indexService, NameUsageSearchService searchService,
                        ImportManager importManager, DatasetDao ddao, SectorImportDao siDao, DatasetImportDao diDao, GbifSyncManager gbifSync,
-                       JobExecutor executor, EventBroker bus, EmailEncryption encryption, DoiChangeListener doiListener,
+                       JobExecutor executor, EventBroker bus, EmailEncryption encryption,
                        UsageMatcherFactory matcherFactory) {
     this.factory = factory;
     this.diDao = diDao;
     this.matcherFactory = matcherFactory;
-    this.doiListener = doiListener;
     this.encryption = encryption;
     this.bus = bus;
     this.componedService = managedService;
@@ -535,28 +541,68 @@ public class AdminResource {
     return new DOI(cfg.doi.prefix, suffix);
   }
 
+  /**
+   * Lists the DOI commands waiting in the outbox.
+   */
   @GET
   @Path("/doi")
-  public List<DoiChangeListener.XDoiChange> listDOIEventsAsText() {
-    return doiListener.list();
+  public List<OutboxEntry> listDOICommands() {
+    return listOutbox(OutboxType.DOI, null, new Page(0, Page.MAX_LIMIT)).getResult();
   }
 
   @POST
   @Path("/doi/{suffix}")
-  public void createDOI(@PathParam("suffix") String suffix) {
-    bus.publish(DoiChange.create(doi(suffix)));
+  public void createDOI(@PathParam("suffix") String suffix, @Auth User user) {
+    Outbox.doi(factory, cfg.doi, doi(suffix), DoiAction.CREATE, user.getKey());
   }
 
   @PUT
   @Path("/doi/{suffix}")
-  public void updateDOI(@PathParam("suffix") String suffix) {
-    bus.publish(DoiChange.update(doi(suffix)));
+  public void updateDOI(@PathParam("suffix") String suffix, @Auth User user) {
+    Outbox.doi(factory, cfg.doi, doi(suffix), DoiAction.UPDATE, user.getKey());
   }
 
   @PATCH
   @Path("/doi/{suffix}")
-  public void publishDOI(@PathParam("suffix") String suffix) {
-    bus.publish(DoiChange.publish(doi(suffix)));
+  public void publishDOI(@PathParam("suffix") String suffix, @Auth User user) {
+    Outbox.doi(factory, cfg.doi, doi(suffix), DoiAction.PUBLISH, user.getKey());
+  }
+
+  /**
+   * Lists the durable commands of the outbox, earliest due first.
+   */
+  @GET
+  @Path("/outbox")
+  public ResultPage<OutboxEntry> listOutbox(@QueryParam("type") OutboxType type,
+                                            @QueryParam("status") OutboxStatus status,
+                                            @Valid @BeanParam Page page) {
+    final Page p = page == null ? new Page() : page;
+    try (SqlSession session = factory.openSession()) {
+      var om = session.getMapper(OutboxMapper.class);
+      return new ResultPage<>(p, om.list(type, status, p), () -> om.count(type, status));
+    }
+  }
+
+  /**
+   * Retries a waiting or failed outbox command right away, with its attempts reset.
+   */
+  @POST
+  @Path("/outbox/{id}/retry")
+  public boolean retryOutbox(@PathParam("id") long id, @Auth User user) {
+    try (SqlSession session = factory.openSession(true)) {
+      return session.getMapper(OutboxMapper.class).retryNow(id) > 0;
+    }
+  }
+
+  /**
+   * Removes an outbox command for good.
+   */
+  @DELETE
+  @Path("/outbox/{id}")
+  public boolean deleteOutbox(@PathParam("id") long id, @Auth User user) {
+    try (SqlSession session = factory.openSession(true)) {
+      return session.getMapper(OutboxMapper.class).delete(id) > 0;
+    }
   }
 
   private JobInfo runJob(BackgroundJob job){

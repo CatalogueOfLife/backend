@@ -231,8 +231,12 @@ public class UsageMatcherFactoryTest {
     f.persistent(key);            // build a matcher on disk + cache
     assertNotNull(f.get(key));
     f.datasetDataChanged(new DatasetDataChanged(key, 1));
-    verify(executor, never()).submit(any()); // small → never rebuilt
-    assertNull(f.get(key));                   // stale persistent matcher removed
+    // the size is only counted in the refresh job, never on the event thread
+    var job = org.mockito.ArgumentCaptor.forClass(BackgroundJob.class);
+    verify(executor).submit(job.capture());
+    assertNotNull(f.get(key));
+    job.getValue().execute(); // small → removed instead of rebuilt
+    assertNull(f.get(key));   // stale persistent matcher removed
   }
 
   @Test

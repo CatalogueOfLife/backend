@@ -34,14 +34,8 @@ public class DoiConfig {
   public String prefix = "10.80631";
 
   /**
-   * Filesystem location where to persist DOI events
-   */
-  @NotNull
-  public String store = "/tmp/clb/datacite";
-
-  /**
-   * Quarantine time in seconds to wait before a DOI change event is actually acted on.
-   * This is useful to pool changes for a DOI when several updates happen shortly after each other.
+   * Seconds a DOI metadata update waits in the outbox before it is sent to DataCite,
+   * so that several changes made shortly after each other end up in a single update.
    */
   @Min(2)
   @Max(24*60*60)  // 1 day
