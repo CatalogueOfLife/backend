@@ -6,9 +6,10 @@ import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.dw.jersey.exception.JsonExceptionMapperBase;
 
 import java.io.IOException;
-import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.security.Principal;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -16,6 +17,7 @@ import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.io.BaseEncoding;
 
 import io.jsonwebtoken.Claims;
@@ -28,6 +30,7 @@ import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.ContainerRequestFilter;
 import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.PathSegment;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
 import jakarta.ws.rs.core.UriInfo;
@@ -52,7 +55,7 @@ public class AuthFilter implements ContainerRequestFilter {
   private static final String TOKEN_PARAM = "token";
 
   static final Pattern AUTH_PATTERN = Pattern.compile("^(Basic|Bearer)\\s+(.+)$");
-  private static final Pattern DATASET_PATTERN = Pattern.compile("/dataset/([0-9]+)");
+  private static final Pattern DIGITS = Pattern.compile("^[0-9]+$");
   private final IdentityService idService;
   private final JwtCodec jwt;
   private final boolean requireSecure;
@@ -202,16 +205,59 @@ public class AuthFilter implements ContainerRequestFilter {
     return false;
   }
 
+  /**
+   * The dataset key of a /dataset/{key} request, read from the decoded path segments without their matrix parameters,
+   * i.e. the very value Jersey hands to the resource as its {key} path parameter.
+   * Only plain ASCII digits are accepted as a key. Anything else Jersey would still convert into an integer -
+   * a sign, non ASCII digits, surrounding whitespace or an encoded form of those - is rejected with a 400:
+   * the resource would see the dataset while the authorization and private filters did not, see gbif/informatics#85 (A3).
+   *
+   * @return the requested dataset key or null if the path does not address a dataset
+   * @throws WebApplicationException with status 400 for a dataset key written in any but the canonical form
+   */
   static Integer requestedDataset(UriInfo uri){
-    return requestedDataset(uri.getAbsolutePath());
+    return requestedDataset(uri.getPathSegments(true).stream()
+      .map(PathSegment::getPath)
+      .toList()
+    );
   }
 
-  static Integer requestedDataset(URI absoluteUri){
-    Matcher m = DATASET_PATTERN.matcher(absoluteUri.toString());
-    if (m.find()) {
-      return Integer.parseInt(m.group(1));
+  /**
+   * @param path a decoded path, relative to the application root, with optional matrix parameters on any segment
+   */
+  @VisibleForTesting
+  static Integer requestedDataset(String path){
+    return requestedDataset(Arrays.stream(path.split("/"))
+      .map(seg -> seg.contains(";") ? seg.substring(0, seg.indexOf(';')) : seg)
+      .toList()
+    );
+  }
+
+  private static Integer requestedDataset(List<String> segments){
+    // ignore empty segments so a doubled slash cannot hide the key
+    var segs = segments.stream().filter(s -> !s.isEmpty()).toList();
+    if (segs.size() < 2 || !segs.get(0).equals("dataset")) {
+      return null;
     }
-    return null;
+    final String key = segs.get(1);
+    if (DIGITS.matcher(key).matches()) {
+      try {
+        return Integer.parseInt(key);
+      } catch (NumberFormatException e) {
+        throw invalidDatasetKey(); // too large for an int
+      }
+    }
+    // anything else Jersey would convert into an integer must not pass unseen
+    try {
+      Integer.valueOf(key.strip());
+      throw invalidDatasetKey();
+    } catch (NumberFormatException e) {
+      return null; // not a key at all, e.g. /dataset/keys
+    }
+  }
+
+  private static WebApplicationException invalidDatasetKey() {
+    return error(Response.Status.BAD_REQUEST, "Invalid dataset key. Dataset keys consist of ASCII digits only");
   }
 
   static WebApplicationException authenticationError(String msg) {
