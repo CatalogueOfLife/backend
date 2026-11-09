@@ -17,7 +17,7 @@ import life.catalogue.dw.logging.pg.PgLogBundle;
 import life.catalogue.dw.managed.ManagedUtils;
 import life.catalogue.dw.metrics.HttpClientBuilder;
 import life.catalogue.dw.tasks.ClearCachesTask;
-import life.catalogue.dw.tasks.EventQueueTask;
+import life.catalogue.dw.tasks.EventsTask;
 import life.catalogue.es.EsClientFactory;
 import life.catalogue.es.EsUtil;
 import life.catalogue.es.indexing.NameUsageIndexService;
@@ -26,6 +26,7 @@ import life.catalogue.es.search.NameUsageSearchServiceEs;
 import life.catalogue.es.suggest.NameUsageSuggestionService;
 import life.catalogue.es.suggest.NameUsageSuggestionServiceEs;
 import life.catalogue.event.EventBroker;
+import life.catalogue.event.EventBrokers;
 import life.catalogue.feedback.FeedbackService;
 import life.catalogue.img.ImageService;
 import life.catalogue.img.ImageServiceFS;
@@ -201,9 +202,9 @@ public class WsROServer<C extends WsServerConfig> extends Application<C> {
 
     DatasetInfoCache.CACHE.setFactory(mybatis.getSqlSessionFactory());
 
-    // event broker
-    broker = new EventBroker(cfg.broker);
-    env.lifecycle().manage(ManagedUtils.from(broker));
+    // event broker - listens from now on and delivers to the listeners registered below once the server starts
+    broker = buildBroker(cfg);
+    env.lifecycle().manage(ManagedUtils.from((life.catalogue.common.Managed) broker));
 
     // validation
     var validator = env.getValidator();
@@ -289,13 +290,21 @@ public class WsROServer<C extends WsServerConfig> extends Application<C> {
     registerReadOnlyHealthChecks(env, broker, esClient, cfg);
 
     // tasks
-    env.admin().addTask(new ClearCachesTask(auth, coljersey.getCache()));
-    env.admin().addTask(new EventQueueTask(broker));
+    env.admin().addTask(new ClearCachesTask(auth, coljersey.getCache(), broker));
+    env.admin().addTask(new EventsTask(broker));
 
     // attach listeners to event broker
     broker.register(auth);
     broker.register(coljersey);
     broker.register(DatasetInfoCache.CACHE);
+  }
+
+  /**
+   * The event broker of this server. The main database of a read only server is usually a standby, so its broker
+   * listens on the primary configured as broker.db.
+   */
+  protected EventBroker buildBroker(C cfg) {
+    return EventBrokers.build(cfg.broker, cfg.db, getSqlSessionFactory());
   }
 
   /**

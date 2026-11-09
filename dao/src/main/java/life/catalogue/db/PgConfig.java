@@ -5,6 +5,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Objects;
+import java.util.Properties;
 
 import org.apache.ibatis.jdbc.ScriptRunner;
 import org.postgresql.jdbc.PgConnection;
@@ -139,6 +140,23 @@ public class PgConfig extends PgDbConfig {
   public PgConnection connect(PgDbConfig db) throws SQLException {
     PgConnection c = DriverManager.getConnection(jdbcUrl(db), Strings.emptyToNull(db.user), Strings.emptyToNull(db.password)).unwrap(PgConnection.class);
     // enforce UTF8 connections, see https://github.com/Sp2000/colplus-backend/issues/577
+    try (Statement st = c.createStatement()) {
+      st.execute("SET client_encoding = 'UTF8'");
+    }
+    return c;
+  }
+
+  /**
+   * @return a new long lived postgres jdbc connection with its own application name, sending TCP keepalives so a
+   *         dead network path is noticed on an otherwise idle connection
+   */
+  public PgConnection connectLongLived(String applicationName) throws SQLException {
+    Properties props = new Properties();
+    if (!Strings.isNullOrEmpty(user)) props.setProperty("user", user);
+    if (!Strings.isNullOrEmpty(password)) props.setProperty("password", password);
+    props.setProperty("ApplicationName", applicationName);
+    props.setProperty("tcpKeepAlive", "true");
+    PgConnection c = DriverManager.getConnection("jdbc:postgresql://" + location(database), props).unwrap(PgConnection.class);
     try (Statement st = c.createStatement()) {
       st.execute("SET client_encoding = 'UTF8'");
     }

@@ -1,8 +1,8 @@
 # Durable outbox commands, then events over Postgres LISTEN/NOTIFY
 
 Date: 2026-11-09
-Status: Phase 1 (outbox commands) implemented on branch `feat/durable-commands`, not merged or deployed.
-Phase 2 (LISTEN/NOTIFY) not yet implemented.
+Status: Phase 1 (outbox commands) implemented in PR #1702, phase 2 (LISTEN/NOTIFY) on branch `feat/pg-events`,
+stacked on it. Neither merged nor deployed.
 
 ## Why
 
@@ -88,28 +88,56 @@ published twice, a dataset made public through a plain PUT never got its DOI pub
   before. Making `PublishReleaseJob` or sector deletions `resubmitAfterStop` is a possible follow-up.
 - `resetStale` on start assumes one active runner, the same assumption `JobExecutor.cancelStale` makes.
 
-## Phase 2: LISTEN/NOTIFY replaces Chronicle (not yet implemented)
+## Phase 2: LISTEN/NOTIFY replaces Chronicle (implemented)
 
-With commands out of it, the broker only carries cache invalidation. Plan:
+With commands out of it, the broker only carries cache invalidation.
 
-- `EventBroker` becomes an interface, `PgEventBroker` sends `pg_notify('clb_events', json)` (inside the caller's
-  transaction where there is one: delivered on commit, dropped on rollback) and listens on one dedicated
-  autocommit connection to the primary per JVM. The ro server, whose main db is the pg2 standby where `LISTEN`
-  is impossible, gets an explicit `broker.db` pointing at pg1. `LocalEventBroker` serves the CLI, the bundle server
-  and tests.
-- Thin JSON events (Jackson, unknown properties and types ignored, < 8000 bytes): keys plus the facts listeners
-  need (`privat`, `privatChanged`, `origin`, `sourceKey`, `createdBy`, usernames). An oversized event degrades to
-  `FlushCaches`. This removes the Kryo version skew.
-- On the ro server, before dispatching a batch, read `pg_current_wal_insert_lsn()` on the listen connection (insert
-  LSN, as pg1 runs `synchronous_commit = off`) and wait until pg2's `pg_last_wal_replay_lsn()` reaches it, so
-  reloads never re-cache stale data.
-- Every 30s `SELECT pg_notification_queue_usage()` on the listen connection proves it alive and reports a filling
-  queue; any error reconnects with backoff and flushes every cache, as notifications sent meanwhile are gone.
-- Listeners registered before dispatch starts, `CopyOnWriteArrayList`.
-- Remove `chronicle-queue`, the Kryo event pool, `EventQueueTask` and the legacy event classes. Chronicle Map stays
-  for the names index.
-- Deploy: the old (Chronicle) and new (NOTIFY) apps cannot hear each other during that one overlap, so a
-  `clear-caches?broadcast=true` once the old apps are gone is mandatory.
+- `EventBroker` is an interface. `PgEventBroker` publishes with `pg_notify(channel, json)` on a pooled autocommit
+  connection after the change committed, as the Chronicle broker did, and listens on one dedicated autocommit
+  connection to the primary per app (`PgConfig.connectLongLived`, application name `<applicationName>-events`, TCP
+  keepalive). `EventBrokers.build` picks it: a server whose main db `pg_is_in_recovery()` needs `broker.db` with the
+  primary or refuses to start; it then publishes on short lived connections to that primary. `LocalEventBroker`
+  dispatches synchronously within the JVM for the CLI commands, the release bundle (`WsROServer.buildBroker` hook) and
+  tests; `broker.mode: LOCAL` selects it by config.
+- The connection LISTENs when the broker is built, before the caches warm up, and one thread reads it once the app
+  starts, after every listener is registered (`CopyOnWriteArrayList`). Notifications wait on the connection meanwhile.
+- Events are thin JSON (`EventCodec`, type in `"t"`, unknown properties and types ignored, an event of 7900 bytes
+  or more becomes `FlushCaches`). `DatasetChanged` carries type, key, user, origin, sourceKey, publisherKey, createdBy,
+  deleted, privat, privatChanged and the usernames to invalidate; `UserChanged` type, key and username.
+  `EntityChanged`, `DoiChange`, `DeleteSector`, their listeners, `LegacyEventBridge`, the Kryo event pool and the
+  `chronicle-queue` dependency are gone. Chronicle Map stays for the names index.
+- Listeners: `DatasetInfoCache` builds its info from the event facts instead of reloading, and now also drops the
+  label; `ColJerseyBundle` refreshes the latest release on deletions too; `UsageMatcherFactory` schedules a refresh
+  job for a dataset made public instead of counting its usages on the event thread; every cache implements
+  `Listener.flushCaches()`.
+- On a server reading from a standby, a batch of notifications is dispatched once the standby replayed up to the
+  primary's `pg_current_wal_insert_lsn()`, read on the listen connection right after the batch arrived (insert, not
+  write position, as pg1 runs `synchronous_commit = off`), or after `broker.standbyWaitSeconds`.
+- Every `broker.checkSeconds` (30) `SELECT pg_notification_queue_usage()` probes the connection; the health check is
+  red when it is down, unchecked for three periods or the queue is half full. Any error closes the connection and
+  reconnects with a backoff up to `broker.maxReconnectSeconds`, then every listener flushes its caches.
+- `POST /tasks/events` on the admin port shows the status and the last 100 events, replacing the queue dump.
+  `POST /tasks/flush-caches?broadcast=true` makes every app flush its caches.
+- `BrokerConfig` ignores the Chronicle settings (`queueDir`, `pollingLatency`, `poolSize`, `bufferSize`), so the
+  current deploy configs still parse.
+
+Deviations from the plan: no `publish(SqlSession, Event)` variant, every producer already publishes after its commit;
+one thread both reads and dispatches, as notifications queue up in Postgres while it waits for the standby; liveness
+is the queue usage probe rather than a self-addressed ping.
+
+### Deploying phase 2
+
+0. Deploy phase 1 on its own first, per environment: phase 2 removes the `LegacyEventBridge`, so an app of a
+   version before phase 1 must not be running next to it.
+1. `config-ro.yml` is an overlay that `deploy.sh` merges onto `config.yml`, so the ro server inherits the `broker`
+   block. The overlays of prod and test point `db` at the pg2 standby and therefore need `broker.db` pointing at pg1,
+   the same shape as their `pgLog.db` (`applicationName: checklistbank-ro`, the connection appends `-events`). Add it together with this
+   version: an older jar rejects the unknown property. Dev's ro server inherits the primary and needs nothing.
+2. During the deploy the old apps (Chronicle) and the new ones (NOTIFY) cannot hear each other. Avoid privacy flips
+   and permission changes until the old apps are gone, then run
+   `curl -X POST http://localhost:<admin port>/tasks/flush-caches?broadcast=true` on the new rw app once. This is
+   mandatory: the private filter and the user cache have no expiry.
+3. Afterwards remove `broker.queueDir` from the deploy configs and delete `/srv/events`.
 
 ## Rejected alternatives
 

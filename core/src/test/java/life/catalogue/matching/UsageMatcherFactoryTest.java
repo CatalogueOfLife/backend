@@ -132,12 +132,16 @@ public class UsageMatcherFactoryTest {
   }
 
   @Test
-  public void publishSkipsSmallDataset() {
+  public void publishSkipsSmallDataset() throws Exception {
     var f = factory();
     stubUsageMapper(101, 5);                 // below threshold
     f.datasetChanged(DatasetChanged.changed(
       dataset(101, DatasetOrigin.EXTERNAL, false), dataset(101, DatasetOrigin.EXTERNAL, true), 1));
-    verify(executor, never()).submit(any());
+    // the size is only counted in the refresh job, never on the event thread
+    var job = org.mockito.ArgumentCaptor.forClass(BackgroundJob.class);
+    verify(executor).submit(job.capture());
+    job.getValue().execute();
+    assertNull(f.get(101));                  // small → no persistent matcher built
   }
 
   @Test

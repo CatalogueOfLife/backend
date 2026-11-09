@@ -60,11 +60,14 @@ public class ColJerseyBundle implements ConfiguredBundle<WsServerConfig>, Datase
 
   @Override
   public void datasetChanged(DatasetChanged d){
-    if (d.obj!=null && d.obj.getOrigin().isRelease()) {
-      if (d.obj.getSourceKey() != null) {
-        // refresh the latest release (candidate) of the source project
-        cache.refresh(d.obj.getSourceKey());
-      }
+    // a release was created, changed or deleted: refresh the latest release (candidate) of its project
+    if (d.isRelease() && d.sourceKey != null) {
+      cache.refresh(d.sourceKey);
     }
+  }
+
+  @Override
+  public void flushCaches() {
+    cache.clear();
   }
 }

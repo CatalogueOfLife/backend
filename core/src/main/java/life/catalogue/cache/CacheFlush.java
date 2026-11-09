@@ -52,9 +52,8 @@ public class CacheFlush implements DatasetListener {
       VarnishUtils.ban(client, datasetUrlBuilder.build(event.key));
     }
     // did visibility of a releases change? ban project URLs
-    if (event.isUpdated() && event.obj.isPrivat() != event.old.isPrivat() && event.obj.getOrigin().isRelease()) {
-      int projectKey = event.obj.getSourceKey();
-      VarnishUtils.ban(client, projectUrlBuilder.build(projectKey));
+    if (event.isUpdated() && event.privatChanged && event.isRelease() && event.sourceKey != null) {
+      VarnishUtils.ban(client, projectUrlBuilder.build(event.sourceKey));
       VarnishUtils.ban(client, colseo);
     }
   }

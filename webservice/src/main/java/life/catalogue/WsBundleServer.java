@@ -5,6 +5,8 @@ import life.catalogue.common.Managed;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.dao.JobDao;
+import life.catalogue.event.EventBroker;
+import life.catalogue.event.LocalEventBroker;
 import life.catalogue.dao.UserCrudDao;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.dw.jersey.filter.SingleDatasetRewriteFilter;
@@ -66,6 +68,14 @@ public class WsBundleServer extends WsROServer<WsBundleServerConfig> {
    * A bundle always ships elastic, so a missing or empty es section is a configuration error, not a reason
    * to silently serve empty search results.
    */
+  /**
+   * A bundle is the only app on its database, so events stay within this JVM.
+   */
+  @Override
+  protected EventBroker buildBroker(WsBundleServerConfig cfg) {
+    return new LocalEventBroker();
+  }
+
   @Override
   protected boolean esRequired() {
     return true;

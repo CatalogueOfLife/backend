@@ -150,10 +150,19 @@ Records are unique only within a dataset. Combined key = `datasetKey + id`. Enab
 - Avoids expensive full-table scans when querying single datasets
 
 **Event-Driven Updates:**
-`EventBroker` publishes `DatasetChanged`, `UserChanged` and similar events to every JVM on the host - the rw and ro
-server and both apps of a blue-green deploy - through a Chronicle queue in `broker.queueDir`. Each JVM reads only
-what is published after it started and every JVM acts on every event, so the broker is for cache invalidation and
-reactions that are harmless to repeat or miss (a matcher refresh, cancelling the queued jobs of a deleted dataset).
+`EventBroker` publishes `DatasetChanged`, `UserChanged` and similar events to every app on the database - the rw and
+ro server and both apps of a blue-green deploy - with Postgres `LISTEN/NOTIFY` (`PgEventBroker`, channel
+`broker.channel`). An event is a thin JSON document (`EventCodec`, type in `"t"`, unknown types and properties
+ignored, under 8000 bytes or it degrades to `FlushCaches`) carrying keys and the facts its listeners need, never a
+whole entity, so two app versions read each other's events. Each app listens on one dedicated autocommit connection
+to the primary, opened when the broker is built so nothing sent before `start()` is lost; a standby cannot LISTEN, so
+the ro server, whose main db is pg2, sets `broker.db` to pg1 and waits for pg2 to replay up to the primary's WAL insert
+position before dispatching, as its listeners reload from pg2. Notifications are not stored: after a reconnect every
+listener's `flushCaches()` runs, `pg_notification_queue_usage()` probes the connection every `broker.checkSeconds`,
+and `POST /tasks/flush-caches?broadcast=true` on the admin port flushes every app. `LocalEventBroker` serves the
+CLI commands and the release bundle. Each app receives only what is published while it runs and every app acts on
+every event, so the broker is for cache invalidation and reactions that are harmless to repeat or miss (a matcher
+refresh, cancelling the queued jobs of a deleted dataset).
 Anything that must happen exactly once and must not be lost is an **outbox command** instead: a row of the
 `outbox` table written with `Outbox.*` in the transaction of the change that causes it, claimed with
 `FOR UPDATE SKIP LOCKED` and run once by the `OutboxRunner` (the `Outbox` component) through the `OutboxHandler`
@@ -161,8 +170,7 @@ of its `OutboxType` - DOI changes (`DoiHandler`), sector deletions (`SectorDelet
 a release (`ReleasePublishedHandler` submits a `PublishReleaseJob`). A request hitting a waiting command of the same
 type and key is merged into it (jsonb `||`, the earlier `due` wins, `version` bumped so a running command is
 requeued instead of completed); failures retry with a backoff and end as `FAILED`, listed and retried under
-`/admin/outbox`. `DoiChange`/`DeleteSector` are no longer published; `LegacyEventBridge` turns those of an app of
-the previous version into commands during the deploy that introduces the outbox and goes afterwards. See
+`/admin/outbox`. See
 [`docs/2026-11-09-durable-commands-and-pg-events.md`](docs/2026-11-09-durable-commands-and-pg-events.md).
 
 **DAO Pattern:**

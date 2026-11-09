@@ -17,6 +17,7 @@ import life.catalogue.doi.datacite.model.DoiAttributes;
 import life.catalogue.doi.datacite.model.DoiState;
 import life.catalogue.doi.service.*;
 import life.catalogue.event.EventBroker;
+import life.catalogue.event.LocalEventBroker;
 
 import java.time.Instant;
 import java.util.List;
@@ -138,7 +139,7 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
       // setup
       doiService = new DataCiteService(cfg.doi, jerseyClient);
       Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
-      events = new EventBroker(cfg.broker);
+      events = new LocalEventBroker();
       UserDao udao = new UserDao(factory, cfg.mail, null, events, validator);
       converter = new DatasetConverter(cfg.portalURI, cfg.clbURI, udao::get);
       var threads = ns.getInt(ARG_THREADS);
