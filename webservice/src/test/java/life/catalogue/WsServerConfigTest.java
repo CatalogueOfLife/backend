@@ -5,10 +5,12 @@
  import life.catalogue.dw.managed.Component;
  import life.catalogue.dw.managed.ComponentMode;
 
+ import java.io.ByteArrayInputStream;
  import java.io.File;
  import java.io.FileInputStream;
  import java.io.IOException;
  import java.io.InputStream;
+ import java.nio.charset.StandardCharsets;
  import java.util.UUID;
 
  import org.assertj.core.api.Assertions;
@@ -18,7 +20,9 @@
  import com.fasterxml.jackson.databind.ObjectMapper;
  import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 
+ import io.dropwizard.configuration.ConfigurationParsingException;
  import io.dropwizard.configuration.ConfigurationSourceProvider;
+ import io.dropwizard.configuration.DefaultConfigurationFactoryFactory;
  import io.dropwizard.configuration.YamlConfigurationFactory;
  import io.dropwizard.jackson.Jackson;
  import io.dropwizard.jersey.validation.Validators;
@@ -27,6 +31,7 @@
  import static org.junit.Assert.assertEquals;
  import static org.junit.Assert.assertNotNull;
  import static org.junit.Assert.assertNull;
+ import static org.junit.Assert.assertThrows;
  import static org.junit.Assert.assertTrue;
 
 public class WsServerConfigTest {
@@ -125,6 +130,26 @@ public class WsServerConfigTest {
     assertEquals(ComponentMode.AUTO, cfg.mode(Component.NamesIndex));
     assertEquals(ComponentMode.AUTO, cfg.mode(Component.JobExecutor));
     assertEquals(ComponentMode.AUTO, new WsServerConfig().mode(Component.Feedback));
+  }
+
+  /**
+   * The server parses its config with dropwizard's default factory, which unlike the factory above rejects unknown
+   * properties. The Chronicle settings of the old event broker are such properties now and must stop a server
+   * whose deploy config still carries them.
+   */
+  @Test
+  public void oldBrokerSettingsAreRejected() throws Exception {
+    // unknown properties fail the parsing, so no validator is needed - it would only ask for the other required settings
+    var strict = new DefaultConfigurationFactoryFactory<WsServerConfig>().create(WsServerConfig.class, null, objectMapper, "dw");
+    for (String old : new String[]{"queueDir: /srv/events", "pollingLatency: 10", "poolSize: 2", "bufferSize: 1024"}) {
+      String yaml = "broker:\n  name: main\n  " + old + "\n";
+      var e = assertThrows(old, ConfigurationParsingException.class,
+        () -> strict.build(path -> new ByteArrayInputStream(yaml.getBytes(StandardCharsets.UTF_8)), "config.yml")
+      );
+      assertTrue(e.getMessage(), e.getMessage().contains("Unrecognized field at: broker." + old.substring(0, old.indexOf(':'))));
+    }
+    WsServerConfig cfg = strict.build(path -> new ByteArrayInputStream("broker:\n  name: rw\n".getBytes(StandardCharsets.UTF_8)), "config.yml");
+    assertEquals("rw", cfg.broker.name);
   }
 
   @Test

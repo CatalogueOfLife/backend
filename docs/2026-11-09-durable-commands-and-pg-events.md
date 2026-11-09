@@ -1,8 +1,8 @@
 # Durable outbox commands, then events over Postgres LISTEN/NOTIFY
 
 Date: 2026-11-09
-Status: Phase 1 (outbox commands) implemented in PR #1702, phase 2 (LISTEN/NOTIFY) on branch `feat/pg-events`,
-stacked on it. Neither merged nor deployed.
+Status: Phase 1 (outbox commands, PR #1702) and phase 2 (LISTEN/NOTIFY, PR #1703) both merged on 2026-11-09, to
+go out in one deploy. Not deployed.
 
 ## Why
 
@@ -78,8 +78,8 @@ published twice, a dataset made public through a plain PUT never got its DOI pub
 1. Run the DDL before the deploy.
 2. The old app discards its pooled DOI updates one last time at `stop-all`, logged as "Discard queued DOI";
    re-enqueue them with `PUT /admin/doi/{suffix}`.
-3. `LegacyEventBridge` on the new app turns `DoiChange`/`DeleteSector` events of the old app into outbox rows.
-   This only works while the event classes and `EventKryoPool` stay unchanged.
+3. `LegacyEventBridge` on the new app was to turn `DoiChange`/`DeleteSector` events of the old app into outbox rows.
+   Phase 2 removed it again and both phases go out in the same deploy, so it never runs (see Deploying phase 2).
 4. Don't publish releases while both versions run: the old app's `PublishReleaseListener` still reacts.
 
 ### Left as is
@@ -118,8 +118,9 @@ With commands out of it, the broker only carries cache invalidation.
   reconnects with a backoff up to `broker.maxReconnectSeconds`, then every listener flushes its caches.
 - `POST /tasks/events` on the admin port shows the status and the last 100 events, replacing the queue dump.
   `POST /tasks/flush-caches?broadcast=true` makes every app flush its caches.
-- `BrokerConfig` ignores the Chronicle settings (`queueDir`, `pollingLatency`, `poolSize`, `bufferSize`), so the
-  current deploy configs still parse.
+- The Chronicle settings (`queueDir`, `pollingLatency`, `poolSize`, `bufferSize`) are gone from `BrokerConfig`. They
+  were briefly ignored so old deploy configs would still parse; now, like any unknown setting, they keep the server
+  from starting, so the deploy configs drop them with this version.
 
 Deviations from the plan: no `publish(SqlSession, Event)` variant, every producer already publishes after its commit;
 one thread both reads and dispatches, as notifications queue up in Postgres while it waits for the standby; liveness
@@ -127,17 +128,22 @@ is the queue usage probe rather than a self-addressed ping.
 
 ### Deploying phase 2
 
-0. Deploy phase 1 on its own first, per environment: phase 2 removes the `LegacyEventBridge`, so an app of a
-   version before phase 1 must not be running next to it.
-1. `config-ro.yml` is an overlay that `deploy.sh` merges onto `config.yml`, so the ro server inherits the `broker`
-   block. The overlays of prod and test point `db` at the pg2 standby and therefore need `broker.db` pointing at pg1,
-   the same shape as their `pgLog.db` (`applicationName: checklistbank-ro`, the connection appends `-events`). Add it together with this
-   version: an older jar rejects the unknown property. Dev's ro server inherits the primary and needs nothing.
+0. Both phases go out in one deploy, after the phase 1 DDL. Without the `LegacyEventBridge` the `DoiChange` and
+   `DeleteSector` events the old app sends during the overlap are handled by the old app alone, as in every deploy
+   before: follow the phase 1 notes (re-enqueue discarded DOIs, no release publishing) and avoid dataset edits and
+   sector publisher deletions while both apps run.
+1. Change the deploy configs together with this version, in both directions the jars reject what they do not know:
+   - Remove `queueDir`, and any other Chronicle setting, from the `broker` block of every `config.yml` and
+     `config-ro.yml`.
+   - `config-ro.yml` is an overlay that `deploy.sh` merges onto `config.yml`, so the ro server inherits the `broker`
+     block. The overlays of prod and test point `db` at the pg2 standby and therefore need `broker.db` pointing at
+     pg1, the same shape as their `pgLog.db` (`applicationName: checklistbank-ro`, the connection appends
+     `-events`). Dev's ro server inherits the primary and needs nothing.
 2. During the deploy the old apps (Chronicle) and the new ones (NOTIFY) cannot hear each other. Avoid privacy flips
    and permission changes until the old apps are gone, then run
    `curl -X POST http://localhost:<admin port>/tasks/flush-caches?broadcast=true` on the new rw app once. This is
    mandatory: the private filter and the user cache have no expiry.
-3. Afterwards remove `broker.queueDir` from the deploy configs and delete `/srv/events`.
+3. Afterwards delete `/srv/events`.
 
 ## Rejected alternatives
 

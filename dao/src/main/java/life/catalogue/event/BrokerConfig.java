@@ -4,8 +4,6 @@ import life.catalogue.db.PgConfig;
 
 import javax.annotation.Nullable;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
@@ -13,9 +11,7 @@ import jakarta.validation.constraints.Pattern;
 
 /**
  * Configuration of the event broker, see {@link PgEventBroker}.
- * The Chronicle queue settings of former versions are ignored, so old configs still parse.
  */
-@JsonIgnoreProperties({"queueDir", "pollingLatency", "poolSize", "bufferSize"})
 public class BrokerConfig {
 
   public enum Mode {
