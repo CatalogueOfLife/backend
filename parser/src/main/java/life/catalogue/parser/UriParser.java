@@ -3,6 +3,7 @@ package life.catalogue.parser;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Optional;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
@@ -14,12 +15,15 @@ import com.google.common.base.Strings;
 
 /**
  * Greedy URL parser assuming HTTP URIs in case no schema was given.
+ * Only http, https and ftp URLs with a host are accepted: links are rendered as anchors by clients,
+ * and a javascript: or data: URL (javascript://host/%0aalert(1) has a host) would run in their pages.
  * Modified version of the registry-metadata GreedyUriConverter.
  */
 public class UriParser implements Parser<URI> {
   private static final String HTTP_SCHEME = "http://";
   private static final Pattern DOI_HTTP = Pattern.compile("^https?://doi.org(/.+)$");
   private final static Pattern WHITESPACE = Pattern.compile("\\s");
+  private static final Set<String> SCHEMES = Set.of("http", "https", "ftp");
   public static final UriParser PARSER = new UriParser();
   
   // Pattern for things that are probably domains followed by a slash, without a protocol.
@@ -76,8 +80,8 @@ public class UriParser implements Parser<URI> {
         }
       }
       
-      // verify that we have a domain
-      if (Strings.isNullOrEmpty(uri.getHost())) {
+      // verify that we have a domain and a web scheme
+      if (Strings.isNullOrEmpty(uri.getHost()) || uri.getScheme() == null || !SCHEMES.contains(uri.getScheme().toLowerCase())) {
         return null;
       }
       

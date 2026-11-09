@@ -52,6 +52,12 @@ public class VerbatimRecord implements DSID<Integer>, IssueContainer, Serializab
   private static final Pattern ECMA_UNICODE = Pattern.compile("\\\\u\\{([0-9a-fA-F]{4})}");
   private static final Pattern ANGLE_UNICODE = Pattern.compile("<U\\+?([0-9a-f]{4})>", Pattern.CASE_INSENSITIVE);
   private static final Pattern REMOVE_TAGS = Pattern.compile("</? *[a-z][a-z1-5]{0,5} */? *>", Pattern.CASE_INSENSITIVE);
+  // tags with attributes, <img src=x onerror=alert(1)> or <a href="x">. Browsers also take a slash as attribute
+  // separator, <img/src=x>, and end an unquoted value only at whitespace or >.
+  // All quantifiers are possessive, so an unclosed tag in a long value cannot backtrack
+  private static final Pattern REMOVE_TAGS_WITH_ATTRIBUTES = Pattern.compile(
+    "</?[a-z][a-z0-9-]*+(?>[\\s/]++[^\\s\"'<>/=]++(?>\\s*+=\\s*+(?>\"[^\"]*+\"|'[^']*+'|[^\\s>]++))?+)++[\\s/]*+>",
+    Pattern.CASE_INSENSITIVE);
 
   private Integer id;
   private Integer datasetKey;
@@ -189,6 +195,8 @@ public class VerbatimRecord implements DSID<Integer>, IssueContainer, Serializab
       unescaped = ECMA_UNICODE.matcher(unescaped).replaceAll(this::replUnicode);
       unescaped = ANGLE_UNICODE.matcher(unescaped).replaceAll(this::replUnicode);
       unescaped = StringEscapeUtils.unescapeHtml4(unescaped);
+      // strip tags only after decoding entities, so an encoded &lt;img ...&gt; is removed too
+      unescaped = REMOVE_TAGS_WITH_ATTRIBUTES.matcher(unescaped).replaceAll("");
       unescaped = REMOVE_TAGS.matcher(unescaped).replaceAll("");
       if (!x.equals(unescaped)) {
         issues.add(Issue.ESCAPED_CHARACTERS);

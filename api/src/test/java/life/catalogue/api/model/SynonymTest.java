@@ -48,7 +48,7 @@ public class SynonymTest {  @Test
 
     t.setExtinct(true);
     assertEquals("†Abies alba subsp. alpina (Lin. & Deca., 1899) L. & DC., 1999 non Miller 1899", s.getLabel());
-    assertEquals("†<i>Abies alba</i> subsp. <i>alpina</i> (Lin. & Deca., 1899) L. & DC., 1999 non Miller 1899", s.getLabelHtml());
+    assertEquals("†<i>Abies alba</i> subsp. <i>alpina</i> (Lin. &amp; Deca., 1899) L. &amp; DC., 1999 non Miller 1899", s.getLabelHtml());
   }
 
   @Test

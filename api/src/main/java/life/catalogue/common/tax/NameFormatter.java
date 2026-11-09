@@ -15,6 +15,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
+
 import org.apache.commons.lang3.StringUtils;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -144,8 +146,33 @@ public class NameFormatter {
     return n.getScientificName();
   }
 
+  /**
+   * Escapes the three characters that carry meaning in HTML element content: &amp;, &lt; and &gt;.
+   * Nothing else is touched, quotes and non ASCII characters like the hybrid marker × stay as they are,
+   * so the result is safe as element content (innerHTML) but not as an attribute value.
+   */
+  public static String escapeHtml(@Nullable String x) {
+    if (x == null || StringUtils.containsNone(x, '&', '<', '>')) {
+      return x;
+    }
+    StringBuilder sb = new StringBuilder(x.length() + 16);
+    for (int i = 0; i < x.length(); i++) {
+      char c = x.charAt(i);
+      switch (c) {
+        case '&' -> sb.append("&amp;");
+        case '<' -> sb.append("&lt;");
+        case '>' -> sb.append("&gt;");
+        default -> sb.append(c);
+      }
+    }
+    return sb.toString();
+  }
+
+  /**
+   * @return the HTML escaped text wrapped in italics
+   */
   public static String inItalics(String x) {
-    return "<i>" + x + "</i>";
+    return "<i>" + escapeHtml(x) + "</i>";
   }
 
   /**
@@ -417,6 +444,7 @@ public class NameFormatter {
 
   /**
    * Adds italics around the epithets but not rank markers or higher ranked names.
+   * The name is HTML escaped, so the result contains no markup other than the italic tags added here.
    */
   public static String scientificNameHtml(String scientificName, Rank rank){
     // only genus names and below are shown in italics
@@ -426,14 +454,14 @@ public class NameFormatter {
         StringBuilder sb = new StringBuilder();
         sb.append(inItalicsKeepHybrid(m.group(1)));
         sb.append(" ");
-        sb.append(m.group(2));
+        sb.append(escapeHtml(m.group(2)));
         if (m.group(3) != null) {
           sb.append(" ");
           sb.append(inItalicsKeepHybrid(m.group(3).trim()));
         }
         if (m.group(4) != null) {
           sb.append(" ");
-          sb.append(m.group(4).trim());
+          sb.append(escapeHtml(m.group(4).trim()));
         }
         return sb.toString();
 
@@ -445,7 +473,7 @@ public class NameFormatter {
       }
     }
     //TODO: Candidatus or Ca.
-    return scientificName;
+    return escapeHtml(scientificName);
   }
 
 }

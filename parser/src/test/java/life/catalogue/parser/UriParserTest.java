@@ -44,6 +44,10 @@ public class UriParserTest extends ParserTestBase<URI> {
   }
   @Override
   List<String> additionalUnparsableValues() {
-    return Lists.newArrayList("www", "deuter");
+    return Lists.newArrayList("www", "deuter",
+      // only web schemes, see backend#1699
+      "javascript:alert(1)", "javascript://gbif.org/%0aalert(1)", "JavaScript://gbif.org/%0aalert(1)",
+      "data:text/html,<b>x</b>", "file://gbif.org/etc/passwd", "vbscript://gbif.org/x"
+    );
   }
 }

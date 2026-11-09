@@ -124,6 +124,11 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
     return getLabel(false);
   }
 
+  /**
+   * The label as HTML with the epithets and sensu in italics.
+   * Every part of it is HTML escaped, so it is safe to use as element content (innerHTML)
+   * and contains no markup other than {@code <i>} and {@code </i>}.
+   */
   @Override
   public String getLabelHtml() {
     return getLabel(true);
@@ -160,7 +165,7 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
   public static void appendNamePhraseAndAccordingTo(StringBuilder sb, String namePhrase, String accordingTo, boolean html) {
     if (namePhrase != null) {
       sb.append(" ");
-      sb.append(namePhrase);
+      sb.append(html ? NameFormatter.escapeHtml(namePhrase) : namePhrase);
     }
     if (accordingTo != null && (namePhrase == null || namePhrase.length() < 6)) {
       sb.append(" ");
@@ -170,7 +175,8 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
         sb.append("sensu");
       }
       sb.append(" ");
-      sb.append(abbreviate(accordingTo));
+      String sec = abbreviate(accordingTo);
+      sb.append(html ? NameFormatter.escapeHtml(sec) : sec);
     }
   }
 

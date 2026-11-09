@@ -17,6 +17,7 @@ import io.swagger.v3.oas.integration.OpenApiConfigurationException;
 import io.swagger.v3.oas.integration.api.OpenApiContext;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
@@ -41,6 +42,7 @@ public class OpenApiFactory {
       reader.setConfiguration(ctxt.getOpenApiConfiguration());
 
       OpenAPI oas = ctxt.read();
+      describeLabels(oas);
 
       // we set the version programmatically from our git properties if they exist
       Info info  = YamlUtils.read(Info.class, Resources.stream("openapi-info.yaml"));
@@ -73,6 +75,23 @@ public class OpenApiFactory {
 
     } catch (OpenApiConfigurationException | IOException e) {
       throw new RuntimeException(e);
+    }
+  }
+
+  static final String LABEL_HTML_DESCRIPTION = "The label as HTML with the epithets in italics. "
+    + "Every part is HTML escaped, so it is safe to use as element content (innerHTML) and contains no markup other than <i> and </i>. "
+    + "It is not escaped for use inside an attribute value.";
+
+  /**
+   * The schemas are generated from the jackson model, which carries no descriptions.
+   * Document the guarantee labelHtml makes wherever it appears, see backend#1699
+   */
+  static void describeLabels(OpenAPI oas) {
+    if (oas.getComponents() == null || oas.getComponents().getSchemas() == null) return;
+    for (Schema<?> schema : oas.getComponents().getSchemas().values()) {
+      if (schema.getProperties() != null && schema.getProperties().containsKey("labelHtml")) {
+        schema.getProperties().get("labelHtml").setDescription(LABEL_HTML_DESCRIPTION);
+      }
     }
   }
 
