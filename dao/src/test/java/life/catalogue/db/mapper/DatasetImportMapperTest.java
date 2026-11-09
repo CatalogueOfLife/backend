@@ -4,6 +4,7 @@ import life.catalogue.api.model.DatasetImport;
 import life.catalogue.api.model.JobInfo;
 import life.catalogue.api.model.ImportMetrics;
 import life.catalogue.api.model.Page;
+import life.catalogue.api.model.User;
 import life.catalogue.api.search.JobSearchRequest;
 import life.catalogue.api.vocab.*;
 import life.catalogue.api.vocab.area.Gazetteer;
@@ -232,18 +233,18 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
 
     JobMapper jm = session().getMapper(JobMapper.class);
     var req = new JobSearchRequest();
-    assertEquals(2, jm.count(req));
+    assertEquals(2, jm.count(req, User.ADMIN_MAGIC_KEY));
 
     req.setFormat(DataFormat.COLDP);
-    assertEquals(1, jm.count(req));
+    assertEquals(1, jm.count(req, User.ADMIN_MAGIC_KEY));
 
     req.setFormat(DataFormat.DWCA);
-    var res = jm.search(req, new Page());
+    var res = jm.search(req, User.ADMIN_MAGIC_KEY, new Page());
     assertEquals(1, res.size());
     assertEquals(dwca.getJobKey(), res.get(0).getKey());
 
     req.setFormat(DataFormat.ACEF);
-    assertEquals(0, jm.count(req));
+    assertEquals(0, jm.count(req, User.ADMIN_MAGIC_KEY));
   }
 
   /**
@@ -267,15 +268,15 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
     var req = new JobSearchRequest();
     req.setLane(Set.of(JobLane.IMPORT));
     // unset by default, so nothing is hidden
-    assertEquals(3, jm.count(req));
+    assertEquals(3, jm.count(req, User.ADMIN_MAGIC_KEY));
 
     req.setUnchanged(true);
-    assertEquals(2, jm.count(req));
+    assertEquals(2, jm.count(req, User.ADMIN_MAGIC_KEY));
     assertEquals(Set.of(current, legacy),
-      jm.search(req, new Page()).stream().map(JobInfo::getKey).collect(Collectors.toSet()));
+      jm.search(req, User.ADMIN_MAGIC_KEY, new Page()).stream().map(JobInfo::getKey).collect(Collectors.toSet()));
 
     req.setUnchanged(false);
-    var imports = jm.search(req, new Page());
+    var imports = jm.search(req, User.ADMIN_MAGIC_KEY, new Page());
     assertEquals(1, imports.size());
     assertEquals(real.getJobKey(), imports.get(0).getKey());
   }

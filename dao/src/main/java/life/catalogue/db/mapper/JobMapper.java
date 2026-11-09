@@ -16,9 +16,13 @@ import org.apache.ibatis.annotations.Param;
  */
 public interface JobMapper extends CRUD<UUID, JobInfo> {
 
-  List<JobInfo> search(@Param("req") JobSearchRequest req, @Param("page") Page page);
+  /**
+   * @param userKey the caller, null for anonymous callers and {@link life.catalogue.api.model.User#ADMIN_MAGIC_KEY} for
+   *                admins and internal use. Jobs of private datasets the caller cannot read are left out
+   */
+  List<JobInfo> search(@Param("req") JobSearchRequest req, @Param("userKey") Integer userKey, @Param("page") Page page);
 
-  int count(@Param("req") JobSearchRequest req);
+  int count(@Param("req") JobSearchRequest req, @Param("userKey") Integer userKey);
 
   /**
    * Deletes a batch of finished job records that no import, sync or export metrics refer to and that are

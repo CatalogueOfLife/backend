@@ -397,6 +397,11 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
   boolean isPrivate(@Param("key") int key);
 
   /**
+   * @return the keys of all private datasets that are not deleted
+   */
+  Set<Integer> privateKeys();
+
+  /**
    * Looks up the dataset key of the latest release for a given project, ignoring temporary datasets
    * @param key the project key
    * @param publicOnly if true only include public releases

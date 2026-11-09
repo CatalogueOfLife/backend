@@ -10,9 +10,14 @@ import java.nio.charset.StandardCharsets;
 import java.security.Principal;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -172,6 +177,38 @@ public class AuthFilter implements ContainerRequestFilter {
    * Admins have access to all datasets. Editors and reviewers only to the ones explicitly listed in the users properties.
    * Project releases are evaluated by the project only, thus an editor of a project always has access to all releases.
    */
+  /**
+   * For listings and searches across datasets, which no dataset scoped check covers.
+   * @return the private datasets the user cannot read: all of them for an anonymous caller, none for an admin
+   */
+  public static Set<Integer> unreadablePrivateDatasets(Optional<User> user) {
+    var priv = DatasetInfoCache.CACHE.privateKeys();
+    if (user.isEmpty()) {
+      return priv;
+    }
+    if (user.get().isAdmin()) {
+      return Set.of();
+    }
+    return priv.stream()
+      .filter(k -> !hasReadAccess(user.get(), k))
+      .collect(Collectors.toUnmodifiableSet());
+  }
+
+  /**
+   * Whether a job or export of the given dataset may be listed for the user: the dataset is not private,
+   * the user can read it or the user created the job. Jobs without a dataset are visible to all.
+   */
+  public static boolean canSeeJob(Optional<User> user, @Nullable Integer datasetKey, @Nullable Integer createdBy) {
+    if (datasetKey == null || !DatasetInfoCache.CACHE.isPrivate(datasetKey)) {
+      return true;
+    }
+    return user.isPresent() && (
+      user.get().isAdmin()
+      || Objects.equals(createdBy, user.get().getKey())
+      || hasReadAccess(user.get(), datasetKey)
+    );
+  }
+
   public static boolean hasReadAccess(User user, int datasetKey){
     try {
       // use the project key to evaluate permissions

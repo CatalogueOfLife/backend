@@ -5,6 +5,7 @@ import life.catalogue.api.model.ExportRequest;
 import life.catalogue.api.model.JobInfo;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
+import life.catalogue.api.model.User;
 import life.catalogue.api.search.ExportSearchRequest;
 import life.catalogue.api.vocab.JobLane;
 import life.catalogue.api.vocab.JobPriority;
@@ -37,12 +38,15 @@ public class DatasetExportDao extends EntityDao<UUID, DatasetExport, DatasetExpo
     this.cfg = cfg;
   }
 
-  public ResultPage<DatasetExport> list(ExportSearchRequest filter, Page page) {
+  /**
+   * @param userKey the caller, see {@link DatasetExportMapper#search}
+   */
+  public ResultPage<DatasetExport> list(ExportSearchRequest filter, Integer userKey, Page page) {
     Page p = page == null ? new Page() : page;
     try (SqlSession session = factory.openSession()) {
       DatasetExportMapper mapper = session.getMapper(mapperClass);
-      List<DatasetExport> result = mapper.search(filter, page);
-      return new ResultPage<>(p, result, () -> mapper.count(filter));
+      List<DatasetExport> result = mapper.search(filter, userKey, page);
+      return new ResultPage<>(p, result, () -> mapper.count(filter, userKey));
     }
   }
 
@@ -55,7 +59,8 @@ public class DatasetExportDao extends EntityDao<UUID, DatasetExport, DatasetExpo
 
     try (SqlSession session = factory.openSession()) {
       DatasetExportMapper mapper = session.getMapper(mapperClass);
-      List<DatasetExport> result = mapper.search(filter, new Page(0,1));
+      // an internal lookup to reuse an export, so private datasets count too
+      List<DatasetExport> result = mapper.search(filter, User.ADMIN_MAGIC_KEY, new Page(0,1));
       if (!result.isEmpty()) {
         DatasetExport ex = result.get(0);
         // make sure its based on the same import attempt

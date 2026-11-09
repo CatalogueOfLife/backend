@@ -105,6 +105,10 @@ public abstract class NameUsageRequest {
 
   private EnumMap<NameUsageSearchParameter, @Size(max = 1000) Set<Object>> filters = new EnumMap<>(NameUsageSearchParameter.class);
 
+  // Datasets the caller may not see, set by the server only: never bound from query parameters or JSON.
+  // The cross dataset search excludes private datasets with it, as the index does not know which are private.
+  @JsonIgnore
+  private Set<Integer> excludedDatasetKeys = Set.of();
 
   public NameUsageRequest() {
   }
@@ -124,6 +128,7 @@ public abstract class NameUsageRequest {
     this.sortBy = other.sortBy;
     this.reverse = other.reverse;
     setFilters(other.filters);
+    this.excludedDatasetKeys = other.excludedDatasetKeys;
   }
 
   public void clearFilter(NameUsageSearchParameter param) {
@@ -351,6 +356,24 @@ public abstract class NameUsageRequest {
     this.reverse = reverse;
   }
 
+  /**
+   * @return the keys of datasets whose usages are never returned, whatever the filters say. Never null
+   */
+  @JsonIgnore
+  public Set<Integer> getExcludedDatasetKeys() {
+    return excludedDatasetKeys;
+  }
+
+  @JsonIgnore
+  public void setExcludedDatasetKeys(Set<Integer> excludedDatasetKeys) {
+    this.excludedDatasetKeys = excludedDatasetKeys == null ? Set.of() : Set.copyOf(excludedDatasetKeys);
+  }
+
+  @JsonIgnore
+  public boolean hasExcludedDatasets() {
+    return !excludedDatasetKeys.isEmpty();
+  }
+
   @Override
   public boolean equals(Object o) {
     if (!(o instanceof NameUsageRequest that)) return false;
@@ -360,11 +383,12 @@ public abstract class NameUsageRequest {
       minRank == that.minRank &&
       maxRank == that.maxRank &&
       sortBy == that.sortBy &&
-      Objects.equals(filters, that.filters);
+      Objects.equals(filters, that.filters) &&
+      Objects.equals(excludedDatasetKeys, that.excludedDatasetKeys);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(q, minRank, maxRank, sortBy, reverse, filters);
+    return Objects.hash(q, minRank, maxRank, sortBy, reverse, filters, excludedDatasetKeys);
   }
 }

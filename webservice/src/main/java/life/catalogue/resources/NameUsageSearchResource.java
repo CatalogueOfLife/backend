@@ -7,6 +7,7 @@ import life.catalogue.api.search.NameUsageSearchParameter;
 import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.api.search.NameUsageSearchResponse;
 import life.catalogue.db.mapper.*;
+import life.catalogue.dw.auth.AuthFilter;
 import life.catalogue.es.query.InvalidQueryException;
 import life.catalogue.es.search.NameUsageSearchService;
 
@@ -16,6 +17,7 @@ import org.gbif.nameparser.api.Rank;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import org.apache.ibatis.session.SqlSession;
@@ -25,6 +27,7 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import io.dropwizard.auth.Auth;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
@@ -117,10 +120,13 @@ public class NameUsageSearchResource {
   public NameUsageSearchResponse search(@BeanParam NameUsageSearchRequest query,
                                         @Valid @BeanParam Page page,
                                         @Context ContainerRequestContext ctx,
-                                        @Context UriInfo uri) throws InvalidQueryException {
+                                        @Context UriInfo uri,
+                                        @Auth Optional<User> user) throws InvalidQueryException {
     if (uri != null) {
       query.addFilters(uri.getQueryParameters());
     }
+    // the index holds private datasets too, see gbif/informatics#85 (A6)
+    query.setExcludedDatasetKeys(AuthFilter.unreadablePrivateDatasets(user));
     if (query.hasFilter(NameUsageSearchParameter.PROJECT_KEY)) {
       ResourceUtils.dontCache(ctx);
     }
@@ -131,8 +137,9 @@ public class NameUsageSearchResource {
   @Path("search")
   public NameUsageSearchResponse searchPOST(@Valid SearchRequestBody req,
                                             @Context ContainerRequestContext ctx,
-                                            @Context UriInfo uri) throws InvalidQueryException {
-    return search(req.request, req.page, ctx, uri);
+                                            @Context UriInfo uri,
+                                            @Auth Optional<User> user) throws InvalidQueryException {
+    return search(req.request, req.page, ctx, uri, user);
   }
 
   public static class SearchRequestBody {

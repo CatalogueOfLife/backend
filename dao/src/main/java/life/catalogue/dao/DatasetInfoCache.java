@@ -40,6 +40,11 @@ public class DatasetInfoCache implements DatasetListener {
                                                               .maximumSize(10000)
                                                               .expireAfterWrite(24, TimeUnit.HOURS)
                                                               .build(this::buildLabel);
+  // the keys of all private datasets, a few hundred. A single entry under a constant key, dropped by every dataset
+  // change event so a dataset going private is hidden at once. The expiry only bounds a missed event.
+  private final LoadingCache<Boolean, Set<Integer>> privateKeys = Caffeine.newBuilder()
+                                                                          .expireAfterWrite(5, TimeUnit.MINUTES)
+                                                                          .build(k -> loadPrivateKeys());
 
   public static DatasetInfoCache CACHE = new DatasetInfoCache();
 
@@ -62,6 +67,27 @@ public class DatasetInfoCache implements DatasetListener {
       }
       LOG.info("Warmed dataset info cache with {} entries", datasets.size());
     }
+  }
+
+  private Set<Integer> loadPrivateKeys() {
+    Preconditions.checkNotNull(factory, "No session factory set to load the private datasets");
+    try (SqlSession session = factory.openSession()) {
+      return Set.copyOf(session.getMapper(DatasetMapper.class).privateKeys());
+    }
+  }
+
+  /**
+   * @return the keys of all private datasets that are not deleted
+   */
+  public Set<Integer> privateKeys() {
+    return privateKeys.get(true);
+  }
+
+  /**
+   * @return true if the dataset is private and not deleted
+   */
+  public boolean isPrivate(int datasetKey) {
+    return privateKeys().contains(datasetKey);
   }
 
   private String buildLabel(int key) {
@@ -221,6 +247,7 @@ public class DatasetInfoCache implements DatasetListener {
   public void clear() {
     infos.clear();
     labels.invalidateAll();
+    privateKeys.invalidateAll();
     LOG.info("Dataset info & label cache cleared");
   }
 
@@ -230,6 +257,8 @@ public class DatasetInfoCache implements DatasetListener {
 
   @Override
   public void datasetChanged(DatasetChanged event){
+    // any change can make a dataset private or public, a new dataset included
+    privateKeys.invalidateAll();
     if (event.isDeletion()) {
       LOG.info("Deletion event registered for dataset {}", event.key);
       update(event.key, event.old, true);

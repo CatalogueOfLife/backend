@@ -134,6 +134,9 @@
   <sql id="WHERE">
     <where>
       j.result_deleted IS NULL
+      <include refid="life.catalogue.db.mapper.JobMapper.VISIBLE">
+        <property name="dsKey" value="de.dataset_key"/>
+      </include>
       <if test="req.datasetKey != null">AND de.dataset_key = #{req.datasetKey}</if>
       <if test="req.createdBy != null">AND j.created_by = #{req.createdBy}</if>
       <if test="req.status != null and !req.status.isEmpty()">

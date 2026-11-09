@@ -591,6 +591,10 @@
     WHERE d.key = #{key}
   </select>
 
+  <select id="privateKeys" resultType="integer">
+    SELECT key FROM dataset WHERE private AND deleted IS NULL
+  </select>
+
   <select id="isPrivate" resultType="boolean">
     SELECT EXISTS (
       SELECT 1 FROM dataset WHERE key = #{key}

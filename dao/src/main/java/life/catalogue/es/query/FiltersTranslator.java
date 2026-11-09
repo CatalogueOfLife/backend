@@ -5,7 +5,9 @@ import life.catalogue.api.search.NameUsageRequest;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
+import co.elastic.clients.elasticsearch._types.FieldValue;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 
 import static life.catalogue.api.search.NameUsageSearchParameter.*;
@@ -34,6 +36,9 @@ public class FiltersTranslator {
           .forEach(subqueries::add);
     }
     subqueries.addAll(processMinMaxRank(request));
+    if (request.hasExcludedDatasets()) {
+      subqueries.add(excludeDatasets(request.getExcludedDatasetKeys()));
+    }
     if (subqueries.size() == 1) {
       return subqueries.get(0);
     }
@@ -97,6 +102,23 @@ public class FiltersTranslator {
     return request.getFilters().size() > 1 ||
       request.getFilters().size() == 1 && !request.hasFilter(PROJECT_KEY) ||
       request.getMinRank() != null ||
-      request.getMaxRank() != null;
+      request.getMaxRank() != null ||
+      request.hasExcludedDatasets();
+  }
+
+  /**
+   * The index holds private datasets as well and has no idea which are private, so a search across datasets leaves
+   * out those the caller may not read. As the set of private datasets rarely changes, the filter is the same for
+   * every anonymous request and Elasticsearch can cache it.
+   */
+  private static Query excludeDatasets(Set<Integer> keys) {
+    String field = FieldLookup.INSTANCE.lookupSingle(DATASET_KEY);
+    List<FieldValue> values = keys.stream()
+      .sorted()
+      .map(k -> FieldValue.of(String.valueOf(k)))
+      .toList();
+    return Query.of(q -> q.bool(b -> b
+      .mustNot(mn -> mn.terms(t -> t.field(field).terms(tv -> tv.value(values))))
+    ));
   }
 }

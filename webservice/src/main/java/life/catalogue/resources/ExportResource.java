@@ -13,6 +13,7 @@ import life.catalogue.dw.auth.Roles;
 import life.catalogue.dw.jersey.MoreHttpHeaders;
 
 import java.util.UUID;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.slf4j.Logger;
@@ -42,8 +43,9 @@ public class ExportResource {
   }
 
   @GET
-  public ResultPage<DatasetExport> list(@BeanParam ExportSearchRequest filter, @Valid @BeanParam Page page) {
-    return dao.list(filter, page);
+  public ResultPage<DatasetExport> list(@BeanParam ExportSearchRequest filter, @Valid @BeanParam Page page, @Auth Optional<User> user) {
+    // exports of private datasets only for those who can read them, see gbif/informatics#85 (A6)
+    return dao.list(filter, User.userkey(user), page);
   }
 
   @GET

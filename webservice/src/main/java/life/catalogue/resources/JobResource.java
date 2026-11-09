@@ -4,6 +4,7 @@ import life.catalogue.api.model.JobInfo;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
 import life.catalogue.api.model.User;
+import life.catalogue.dw.auth.AuthFilter;
 import life.catalogue.api.search.JobSearchRequest;
 import life.catalogue.api.vocab.JobLane;
 import life.catalogue.common.ws.MoreMediaTypes;
@@ -20,6 +21,7 @@ import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -127,9 +129,11 @@ public class JobResource {
    * The live queue, rendered as the same generic JobInfo the history and single job lookups use.
    */
   @GET
-  public JobQueueState jobQueue(@QueryParam("datasetKey") Integer datasetKey) {
-    var jobs = datasetKey == null ? exec.getQueue() : exec.getQueue().stream()
-      .filter(j -> datasetKey.equals(j.datasetKey()))
+  public JobQueueState jobQueue(@QueryParam("datasetKey") Integer datasetKey, @Auth Optional<User> user) {
+    var jobs = exec.getQueue().stream()
+      .filter(j -> datasetKey == null || datasetKey.equals(j.datasetKey()))
+      // jobs of private datasets only for those who can read them, see gbif/informatics#85 (A6)
+      .filter(j -> AuthFilter.canSeeJob(user, j.datasetKey(), j.getUserKey()))
       .collect(Collectors.toList());
     return new JobQueueState(jobs);
   }
@@ -148,8 +152,8 @@ public class JobResource {
    */
   @GET
   @Path("search")
-  public ResultPage<JobInfo> search(@BeanParam JobSearchRequest req, @Valid @BeanParam Page page) {
-    return dao.search(req, page);
+  public ResultPage<JobInfo> search(@BeanParam JobSearchRequest req, @Valid @BeanParam Page page, @Auth Optional<User> user) {
+    return dao.search(req, User.userkey(user), page);
   }
 
   @GET

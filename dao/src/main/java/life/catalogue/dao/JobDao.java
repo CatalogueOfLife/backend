@@ -37,12 +37,15 @@ public class JobDao {
     }
   }
 
-  public ResultPage<JobInfo> search(JobSearchRequest req, Page page) {
+  /**
+   * @param userKey the caller, see {@link JobMapper#search}
+   */
+  public ResultPage<JobInfo> search(JobSearchRequest req, Integer userKey, Page page) {
     final Page p = page == null ? new Page() : page;
     try (SqlSession session = factory.openSession(true)) {
       JobMapper jm = session.getMapper(JobMapper.class);
-      List<JobInfo> result = jm.search(req, p);
-      return new ResultPage<>(p, result, () -> jm.count(req));
+      List<JobInfo> result = jm.search(req, userKey, p);
+      return new ResultPage<>(p, result, () -> jm.count(req, userKey));
     }
   }
 
