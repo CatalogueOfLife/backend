@@ -6,6 +6,8 @@ import life.catalogue.api.model.SpeciesEstimate;
 import life.catalogue.api.model.User;
 import life.catalogue.api.search.EstimateSearchRequest;
 import life.catalogue.dao.EstimateDao;
+import life.catalogue.dw.auth.Roles;
+import life.catalogue.dw.jersey.filter.ProjectOnly;
 import life.catalogue.matching.decision.EstimateRematcher;
 import life.catalogue.matching.decision.RematchRequest;
 import life.catalogue.matching.decision.RematcherBase;
@@ -14,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.dropwizard.auth.Auth;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
@@ -43,6 +46,8 @@ public class EstimateResource extends AbstractDatasetScopedResource<Integer, Spe
 
   @POST
   @Path("/rematch")
+  @ProjectOnly
+  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public RematcherBase.MatchCounter rematch(@PathParam("key") int projectKey, RematchRequest req, @Auth User user) {
     req.setDatasetKey(projectKey);
     return EstimateRematcher.match(dao, req, user.getKey());
