@@ -47,6 +47,13 @@ public class ReplaceHtmlEquivalenceTest {
   public void markupStillParsed() {
     assertEquals("bold & link", InterpreterUtils.replaceHtml("<b>bold</b> &amp; link", false));
     assertEquals("[link](http://x.org)", InterpreterUtils.replaceHtml("<a href='http://x.org'>link</a>", true));
+    assertEquals("[mail](mailto:a@x.org) [ftp](FTP://x.org/a)",
+      InterpreterUtils.replaceHtml("<a href='mailto:a@x.org'>mail</a> <a href=' FTP://x.org/a'>ftp</a>", true));
+    // links with other schemes or no scheme keep their text only, see backend#1699
+    assertEquals("click", InterpreterUtils.replaceHtml("<a href='javascript:alert(1)'>click</a>", true));
+    assertEquals("click", InterpreterUtils.replaceHtml("<a href=' JavaScript://x.org/%0aalert(1)'>click</a>", true));
+    assertEquals("click", InterpreterUtils.replaceHtml("<a href='data:text/html,<b>x</b>'>click</a>", true));
+    assertEquals("click", InterpreterUtils.replaceHtml("<a href='/relative'>click</a>", true));
     // text with a carriage return always goes through Jsoup
     assertEquals(InterpreterUtils.parseHtml("a\r\nb", false), InterpreterUtils.replaceHtml("a\r\nb", false));
   }

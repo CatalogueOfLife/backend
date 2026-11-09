@@ -28,11 +28,13 @@ public class InterpreterUtils {
   private static final Pattern YEAR_PATTERN = Pattern.compile("^(\\d{3})(\\d|\\s*\\?)(?:-[0-9-]+)?(?:\\s*[a-zA-Z])?$");
   private static final Pattern YEAR_RANGE_PATTERN = Pattern.compile("^(\\d{4})\\s*[-–]\\s*(\\d{2}|\\d{4})(?:\\s*[a-zA-Z])?$");
   private static final Pattern SPLIT_COMMA = Pattern.compile("(?<!\\\\),");
+  private static final Pattern LINK_SCHEME = Pattern.compile("^(?:https?://|ftp://|mailto:)\\S", Pattern.CASE_INSENSITIVE);
 
   private InterpreterUtils() {}
 
   /**
    * Strips all html tags if they exist and optionally converts link to markdown links.
+   * Only links to http, https, ftp and mailto URLs become markdown links, any other link is reduced to its text.
    */
   public static String replaceHtml(String x, boolean useMarkdownLinks) {
     if (StringUtils.isBlank(x)) return null;
@@ -50,14 +52,22 @@ public class InterpreterUtils {
     if (useMarkdownLinks) {
       var links = doc.select("a");
       for (var link : links) {
-        String url = link.attr("href");
-        if (!StringUtils.isBlank(url)) {
+        String url = link.attr("href").trim();
+        if (isLinkable(url)) {
           String md = String.format("[%s](%s)", link.text(), url);
           link.text(md);
         }
       }
     }
     return doc.wholeText().trim();
+  }
+
+  /**
+   * @return true for an absolute http, https, ftp or mailto URL, the only links worth rendering.
+   *   A javascript: or data: URL would run code in the client that renders the markdown, see backend#1699
+   */
+  private static boolean isLinkable(String url) {
+    return LINK_SCHEME.matcher(url).find();
   }
 
   public static Integer parseNomenYear(Term term, VerbatimRecord v) {

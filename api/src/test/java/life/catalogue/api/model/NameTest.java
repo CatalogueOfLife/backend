@@ -207,7 +207,7 @@ public class NameTest extends SerdeTestBase<Name> {
     n.rebuildAuthorship();
 
     assertEquals("Abies × alba subsp. alpina (Lin. & Deca., 1899) L. & DC., 1999 nom.illeg.", n.getLabel());
-    assertEquals("<i>Abies</i> × <i>alba</i> subsp. <i>alpina</i> (Lin. & Deca., 1899) L. & DC., 1999 nom.illeg.", n.getLabelHtml());
+    assertEquals("<i>Abies</i> × <i>alba</i> subsp. <i>alpina</i> (Lin. &amp; Deca., 1899) L. &amp; DC., 1999 nom.illeg.", n.getLabelHtml());
 
     // https://github.com/CatalogueOfLife/backend/issues/1090
     n = new Name();
@@ -269,7 +269,7 @@ public class NameTest extends SerdeTestBase<Name> {
     n.rebuildAuthorship();
 
     assertEquals("Ophrys × varvarae Faller & Kreutz", n.getLabel());
-    assertEquals("<i>Ophrys</i> × <i>varvarae</i> Faller & Kreutz", n.getLabelHtml());
+    assertEquals("<i>Ophrys</i> × <i>varvarae</i> Faller &amp; Kreutz", n.getLabelHtml());
   }
 
   @Test

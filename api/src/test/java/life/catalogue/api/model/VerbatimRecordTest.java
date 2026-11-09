@@ -159,6 +159,40 @@ public class VerbatimRecordTest extends SerdeTestBase<VerbatimRecord> {
     assertEquals("first linesecond linethird", v.get(ColdpTerm.remarks));
   }
 
+  /**
+   * Tags with attributes are removed too, also when they were entity encoded, see backend#1699
+   */
+  @Test
+  public void tagsWithAttributes() throws Exception {
+    v = new VerbatimRecord(11, "myFile.txt", ColdpTerm.Name);
+    v.put(ColdpTerm.authorship, "Mill.<img src=x onerror=alert(1)>");
+    assertEquals("Mill.", v.get(ColdpTerm.authorship));
+    assertTrue(v.contains(Issue.ESCAPED_CHARACTERS));
+
+    v.put(ColdpTerm.authorship, "Mill. &lt;iframe src=x&gt;&lt;/iframe&gt;");
+    assertEquals("Mill. ", v.get(ColdpTerm.authorship));
+
+    v.put(ColdpTerm.authorship, "<a href=\"https://gbif.org\" target='_blank'>Mill.</a>");
+    assertEquals("Mill.", v.get(ColdpTerm.authorship));
+
+    v.put(ColdpTerm.authorship, "Mill.<img/src=x/onerror=alert(1)><svg onload=alert(1) />");
+    assertEquals("Mill.", v.get(ColdpTerm.authorship));
+
+    v.put(ColdpTerm.authorship, "Mill.<img src=x onerror=\"alert('a > b')\">");
+    assertEquals("Mill.", v.get(ColdpTerm.authorship));
+
+    // no tags
+    v.put(ColdpTerm.remarks, "length < 5 mm, width <3 mm and > 1 mm, <b, c>");
+    assertEquals("length < 5 mm, width <3 mm and > 1 mm, <b, c>", v.get(ColdpTerm.remarks));
+
+    // an unclosed tag in a long value must not backtrack for ages
+    String unclosed = "<img" + " a=b/c".repeat(20_000);
+    v.put(ColdpTerm.remarks, unclosed);
+    long start = System.currentTimeMillis();
+    assertEquals(unclosed, v.get(ColdpTerm.remarks));
+    assertTrue(System.currentTimeMillis() - start < 2000);
+  }
+
   @Test
   public void diacriticsAreNoHomoglyphs() throws Exception {
     v = new VerbatimRecord(11, "myFile.txt", ColdpTerm.Name);

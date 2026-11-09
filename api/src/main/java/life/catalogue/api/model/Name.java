@@ -871,6 +871,11 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     return getLabel(false);
   }
 
+  /**
+   * The label as HTML with the epithets in italics.
+   * Every part of it is HTML escaped, so it is safe to use as element content (innerHTML)
+   * and contains no markup other than {@code <i>} and {@code </i>}.
+   */
   public String getLabelHtml() {
     return getLabel(true);
   }
@@ -882,6 +887,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
   /**
    * @param sb build to append to
    * @param preAuthorship optional prefix to be placed just before the authorship
+   * @param html if true every part is HTML escaped and only the italic tags of the epithets are added as markup
    */
   StringBuilder appendNameLabel(StringBuilder sb, @Nullable String preAuthorship, boolean html) {
     String name = html ? NameFormatter.scientificNameHtml(scientificName, rank) : scientificName;
@@ -897,12 +903,12 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     }
     if (preAuthorship != null) {
       sb.append(" ");
-      sb.append(preAuthorship);
+      sb.append(html ? NameFormatter.escapeHtml(preAuthorship) : preAuthorship);
     }
     // compare ASCII folded forms without punctuation: "Linnaeus, 1758" in the name is "Linnæus 1758", see #1621
     if (authorship != null && name != null && !asciiKey(scientificName).contains(asciiKey(authorship))) {
       sb.append(" ");
-      sb.append(authorship);
+      sb.append(html ? NameFormatter.escapeHtml(authorship) : authorship);
     }
     return sb;
   }

@@ -249,6 +249,11 @@ public class SimpleName implements Comparable<SimpleName>, NameUsageCore {
     return strOrNull(appendFullName(new StringBuilder(), false));
   }
 
+  /**
+   * The label as HTML with the epithets in italics.
+   * Every part of it is HTML escaped, so it is safe to use as element content (innerHTML)
+   * and contains no markup other than {@code <i>} and {@code </i>}.
+   */
   public String getLabelHtml() {
     return strOrNull(appendFullName(new StringBuilder(), true));
   }
@@ -267,11 +272,11 @@ public class SimpleName implements Comparable<SimpleName>, NameUsageCore {
     }
     if (authorship != null) {
       sb.append(" ");
-      sb.append(authorship);
+      sb.append(html ? NameFormatter.escapeHtml(authorship) : authorship);
     }
     if (phrase != null) {
       sb.append(" ");
-      sb.append(phrase);
+      sb.append(html ? NameFormatter.escapeHtml(phrase) : phrase);
     }
     return sb;
   }
