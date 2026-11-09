@@ -185,6 +185,29 @@ public class ReleaseRanking {
   }
 
   /**
+   * The releases whose ids are live: the supplying releases of the newest generation, plus the highest ranked supplying
+   * release of each origin. The latter matters between a base release and its extended release: the ids of the last
+   * extended release are still current for the next extended release, whose id provider redirects the ones it drops.
+   *
+   * @return the keys of the supplying releases carrying live ids, highest rank first
+   */
+  public List<Integer> liveKeys() {
+    final Set<Integer> newest = new HashSet<>(newestGenerationSupplyingKeys());
+    final Set<DatasetOrigin> origins = EnumSet.noneOf(DatasetOrigin.class);
+    final List<Integer> keys = new ArrayList<>();
+    for (var r : ranked) {
+      if (supplies(r.getKey())) {
+        // ranked is highest rank first, so the first release of an origin is its highest ranked one
+        boolean highestOfOrigin = origins.add(r.getOrigin());
+        if (highestOfOrigin || newest.contains(r.getKey())) {
+          keys.add(r.getKey());
+        }
+      }
+    }
+    return keys;
+  }
+
+  /**
    * Superseded redirects are decided by the newest generation: its highest ranked supplying base release and its highest
    * ranked supplying extended release each apply the pairs staged for them.
    * @return true if the release supplies versions, belongs to the newest generation and no supplying release of the same

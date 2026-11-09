@@ -88,6 +88,60 @@ public class TaxonDaoArchivedIT {
     }
   }
 
+  void supersede(String id, String by) {
+    try (var session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true);
+         var st = session.getConnection().createStatement()) {
+      // ids of the idprovider archive data or new rows with the same name, which is all the dao reads
+      st.execute("INSERT INTO name_usage_archive (id, dataset_key, n_id, n_rank, n_scientific_name, n_origin, n_type, origin, status, release_keys) "
+        + "SELECT '" + by + "', dataset_key, n_id, n_rank, n_scientific_name, n_origin, n_type, origin, status, release_keys "
+        + "FROM name_usage_archive WHERE dataset_key=" + PROJECT_KEY + " AND id='" + ARCHIVED_ID + "' "
+        + "ON CONFLICT DO NOTHING");
+      st.execute("UPDATE name_usage_archive SET superseded_by='" + by + "' WHERE dataset_key=" + PROJECT_KEY + " AND id='" + id + "'");
+    } catch (java.sql.SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  ArchivedException archived(String id) {
+    try {
+      dao().getUsageInfoOr404(DSID.of(RELEASE_KEY, id));
+      fail("expected an ArchivedException for " + id);
+      return null;
+    } catch (ArchivedException e) {
+      return e;
+    }
+  }
+
+  /**
+   * data#1867: the archived usage names the id that took it over, and follows a chain of redirects to its end.
+   */
+  @Test
+  public void supersededBy() {
+    assertNull(archived(ARCHIVED_ID).usage.getSupersededBy());
+
+    supersede(ARCHIVED_ID, "BBB");
+    var e = archived(ARCHIVED_ID);
+    assertEquals("BBB", e.usage.getSupersededBy());
+    assertTrue(e.getMessage(), e.getMessage().endsWith(", superseded by BBB"));
+
+    // BBB was dropped itself since
+    supersede("BBB", "CCC");
+    supersede("CCC", "DDD");
+    assertEquals("DDD", archived(ARCHIVED_ID).usage.getSupersededBy());
+    assertEquals("DDD", archived("BBB").usage.getSupersededBy());
+
+    // a cycle, which publishing never writes, stops at the last new id
+    supersede("DDD", ARCHIVED_ID);
+    assertEquals("DDD", archived(ARCHIVED_ID).usage.getSupersededBy());
+
+    // a long chain stops after 5 hops
+    supersede("DDD", "FFF");
+    supersede("FFF", "GGG");
+    supersede("GGG", "HHH");
+    supersede("HHH", "JJJ");
+    assertEquals("GGG", archived(ARCHIVED_ID).usage.getSupersededBy());
+  }
+
   /**
    * An id that never existed stays a plain 404 in both endpoints.
    */

@@ -63,7 +63,8 @@
     accepted,
     classification,
     published_in,
-    release_keys
+    release_keys,
+    superseded_by
   </sql>
 
   <!-- The columns that make up the archived version of an id, paired by position with VERSION_VALUES.
@@ -184,6 +185,62 @@
     WHERE u.dataset_key=#{datasetKey}
     ORDER BY m.index_id
   </select>
+
+  <!-- release keys as a literal int array, keys are always integers from the db, never request values -->
+  <sql id="KEYS">ARRAY[<foreach collection="${keys}" item="k" separator=",">${k}</foreach>]::int[]</sql>
+
+  <!-- The archived usages of every canonical group that has both a live id and a dead id without a redirect, ordered by
+       names index id: the live ids, carried by one of the live releases, and the dead ids lacking a redirect that one
+       of the dead releases carried. Ids without a names index match cannot be grouped and are left out. -->
+  <select id="processRedirectCandidates" parameterType="map" resultMap="archivedSimpleResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
+    WITH g AS (
+      SELECT m.index_id
+      FROM name_usage_archive u
+        JOIN name_usage_archive_match m ON m.dataset_key=u.dataset_key AND m.usage_id=u.id
+      WHERE u.dataset_key=#{projectKey}
+      GROUP BY m.index_id
+      HAVING bool_or(u.release_keys &amp;&amp; <include refid="KEYS"><property name="keys" value="live"/></include>)
+        AND bool_or(
+          NOT (u.release_keys &amp;&amp; <include refid="KEYS"><property name="keys" value="live"/></include>)
+          AND u.superseded_by IS NULL
+          AND u.release_keys &amp;&amp; <include refid="KEYS"><property name="keys" value="dead"/></include>
+        )
+    )
+    SELECT u.id,
+      u.release_keys,
+      u.n_scientific_name AS name,
+      u.n_authorship AS authorship,
+      u.name_phrase AS phrase,
+      u.n_rank AS rank,
+      u.n_code AS code,
+      u.status,
+      CASE WHEN is_synonym(u.status) THEN (u.accepted).name ELSE u.classification[array_upper(u.classification, 1)].name END AS parent,
+      u.classification,
+      m.index_id AS namesIndexId,
+      u.superseded_by
+    FROM g
+      JOIN name_usage_archive_match m ON m.dataset_key=#{projectKey} AND m.index_id=g.index_id
+      JOIN name_usage_archive u ON u.dataset_key=m.dataset_key AND u.id=m.usage_id
+    WHERE u.release_keys &amp;&amp; <include refid="KEYS"><property name="keys" value="live"/></include>
+      OR (u.superseded_by IS NULL AND u.release_keys &amp;&amp; <include refid="KEYS"><property name="keys" value="dead"/></include>)
+    ORDER BY m.index_id, u.id
+  </select>
+
+  <!-- Only fills missing redirects and never one of an id a live release carries.
+       live holds literal keys, never bind parameters: name_usage is hash partitioned -->
+  <update id="fillSuperseded" parameterType="map">
+    UPDATE name_usage_archive a SET superseded_by = p.superseded_by
+    FROM (VALUES <foreach collection="redirects" item="r" separator=",">(#{r.id}, #{r.supersededBy})</foreach>) AS p(id, superseded_by)
+    WHERE a.dataset_key=#{projectKey}
+      AND a.id=p.id
+      AND a.superseded_by IS NULL
+      <if test="live != null and !live.isEmpty()">
+      AND NOT EXISTS (
+        SELECT true FROM name_usage u
+        WHERE u.dataset_key IN (<foreach collection="live" item="k" separator=",">${k}</foreach>) AND u.id=p.id
+      )
+      </if>
+  </update>
 
   <select id="processArchivedNames" parameterType="map" resultMap="life.catalogue.db.mapper.NameMapper.nameResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
     SELECT

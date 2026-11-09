@@ -10,7 +10,8 @@ public class ArchivedException extends NotFoundException{
   public final ArchivedNameUsage usage;
 
   public ArchivedException(DSID<String> key, ArchivedNameUsage usage) {
-    super(key, "Usage " + key + " was deleted and archived in release: " + usage.getLastReleaseKey());
+    super(key, "Usage " + key + " was deleted and archived in release: " + usage.getLastReleaseKey()
+               + (usage.getSupersededBy() == null ? "" : ", superseded by " + usage.getSupersededBy()));
     this.usage = usage;
   }
 }

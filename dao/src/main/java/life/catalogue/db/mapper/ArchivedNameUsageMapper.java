@@ -131,6 +131,41 @@ public interface ArchivedNameUsageMapper extends Create<ArchivedNameUsage>, Data
   int deleteSuperseded(@Param("releaseKey") int releaseKey);
 
   /**
+   * Iterates over the archived usages of every canonical group that holds both a live id and a dead id without a
+   * redirect, ordered by their canonical names index id. Within such a group it returns the live ids and the dead ids
+   * without a redirect. Ids without a names index match are never returned.
+   *
+   * @param live the keys of the releases carrying live ids, see ReleaseRanking.liveKeys
+   * @param dead the keys of the releases whose dropped ids should get a redirect. An archived id none of the live
+   *   releases carries is only returned if one of these carried it
+   */
+  Cursor<ArchivedSimpleName> processRedirectCandidates(@Param("projectKey") int projectKey,
+                                                       @Param("live") List<Integer> live,
+                                                       @Param("dead") List<Integer> dead);
+
+  /**
+   * Sets the redirects of archived ids that have none, never overwriting an existing one and skipping ids a live
+   * release carries.
+   * @param live the keys of the releases carrying live ids
+   * @return number of updated archive records
+   */
+  int fillSuperseded(@Param("projectKey") int projectKey, @Param("redirects") List<Redirect> redirects,
+                     @Param("live") List<Integer> live);
+
+  /**
+   * An archived id and the id that took it over.
+   */
+  record Redirect(String id, String supersededBy) {
+    public String getId() {
+      return id;
+    }
+
+    public String getSupersededBy() {
+      return supersededBy;
+    }
+  }
+
+  /**
    * Truncate entire name usage archive table
    */
   void truncate();
@@ -138,6 +173,7 @@ public interface ArchivedNameUsageMapper extends Create<ArchivedNameUsage>, Data
   class ArchivedSimpleName extends SimpleNameCached {
     private int[] releaseKeys; // release datasetKey
     private List<SimpleName> classification; // in case of synonyms the first entry is the accepted name
+    private String supersededBy;
 
     public int[] getReleaseKeys() {
       return releaseKeys;
@@ -161,6 +197,14 @@ public interface ArchivedNameUsageMapper extends Create<ArchivedNameUsage>, Data
 
     public void setClassification(List<SimpleName> classification) {
       this.classification = classification;
+    }
+
+    public String getSupersededBy() {
+      return supersededBy;
+    }
+
+    public void setSupersededBy(String supersededBy) {
+      this.supersededBy = supersededBy;
     }
   }
 }
