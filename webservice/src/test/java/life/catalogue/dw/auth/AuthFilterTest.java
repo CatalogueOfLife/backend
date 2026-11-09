@@ -33,6 +33,18 @@ public class AuthFilterTest {
   }
 
   /**
+   * Magic keys are rewritten to the real dataset key by the pre-matching DatasetKeyRewriteFilter, before this
+   * post-matching filter runs. One that reaches it unrewritten (PUT, DELETE, an unknown alias) is no integer at all
+   * and must never get a 400 here - the resource answers it as it always did.
+   */
+  @Test
+  public void magicKeysPass() {
+    for (String key : new String[]{"3LXR", "3LR", "3LXRC", "3LRC", "3R5", "COL25XR", "COL2025.10", "gbif-7ddf754f-d193-4cc9-b351-99906754a03b"}) {
+      assertNull(key, AuthFilter.requestedDataset("/dataset/" + key + "/taxon/x"));
+    }
+  }
+
+  /**
    * Keys Jersey converts into an integer, but which are not plain ASCII digits, must be rejected.
    * The paths are decoded already, so this also covers their percent encoded forms.
    */
