@@ -4,20 +4,17 @@ import life.catalogue.api.event.DatasetChanged;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.common.io.TmpIO;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.event.BrokerConfig;
 import life.catalogue.event.EventBroker;
+import life.catalogue.event.EventBrokers;
 import life.catalogue.junit.PgSetupRule;
 import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.junit.TestDataRule;
 
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.io.Writer;
-import java.nio.charset.StandardCharsets;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BooleanSupplier;
 
 import org.apache.ibatis.session.SqlSession;
 import org.junit.ClassRule;
@@ -46,19 +43,21 @@ public class DatasetInfoCacheTest {
     DatasetInfoCache.CACHE.info(999);
   }
 
-  public static EventBroker build(TmpIO.Dir dir) {
-    var cfg = new BrokerConfig();
-    cfg.pollingLatency = 1;
-    cfg.queueDir = dir.file + "/queue";
-    return new EventBroker(cfg);
+  static void await(BooleanSupplier condition) throws InterruptedException {
+    for (int i = 0; i < 200 && !condition.getAsBoolean(); i++) {
+      TimeUnit.MILLISECONDS.sleep(25);
+    }
+    assertTrue(condition.getAsBoolean());
   }
 
+  /**
+   * The cache is updated from the facts an event carries, delivered through postgres.
+   */
   @Test
-  public void deletedEvent() throws InterruptedException, IOException {
-    try (var dir = new TmpIO.Dir();
-         EventBroker bus = build(dir)
-    ) {
+  public void updatedThroughBroker() throws Exception {
+    try (EventBroker bus = EventBrokers.build(new BrokerConfig(), SqlSessionFactoryRule.getCfg(), SqlSessionFactoryRule.getSqlSessionFactory())) {
       bus.register(DatasetInfoCache.CACHE);
+      bus.start();
 
       var info = DatasetInfoCache.CACHE.info(3);
       assertFalse(info.deleted);
@@ -68,21 +67,18 @@ public class DatasetInfoCacheTest {
         d = session.getMapper(DatasetMapper.class).get(3);
       }
 
-      bus.publish(DatasetChanged.created(d, 1));
-      info = DatasetInfoCache.CACHE.info(d.getKey());
-      assertFalse(info.deleted);
+      // a changed publisher
+      final UUID publisher = UUID.randomUUID();
+      Dataset d2 = new Dataset(d);
+      d2.setGbifPublisherKey(publisher);
+      bus.publish(DatasetChanged.changed(d2, d, 1));
+      await(() -> publisher.equals(DatasetInfoCache.CACHE.info(3).publisherKey));
 
       bus.publish(DatasetChanged.deleted(d, 1));
-      TimeUnit.MILLISECONDS.sleep(200); // give the event a little bit of time
-
-      Writer pw = new PrintWriter(new OutputStreamWriter(System.out, StandardCharsets.UTF_8));
-      bus.dumpQueue(pw);
-
-      info = DatasetInfoCache.CACHE.info(d.getKey(), true);
-      assertTrue(info.deleted);
-
-    } catch (Exception e) {
-      throw new RuntimeException(e);
+      await(() -> DatasetInfoCache.CACHE.info(3, true).deleted);
+      assertThrows(NotFoundException.class, () -> DatasetInfoCache.CACHE.info(3));
+    } finally {
+      DatasetInfoCache.CACHE.clear();
     }
   }
 }

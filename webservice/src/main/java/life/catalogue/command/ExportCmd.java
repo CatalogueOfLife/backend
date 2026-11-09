@@ -14,6 +14,7 @@ import life.catalogue.dao.UserDao;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.dw.mail.MailBundle;
 import life.catalogue.event.EventBroker;
+import life.catalogue.event.LocalEventBroker;
 import life.catalogue.exporter.ColReleaseExportJob;
 import life.catalogue.exporter.ExportManager;
 import life.catalogue.img.ImageService;
@@ -109,7 +110,8 @@ public class ExportCmd extends AbstractMybatisCmd {
       System.out.printf("Use extended exports\n");
     }
 
-    EventBroker bus = new EventBroker(cfg.broker);
+    // no other app needs to hear from a command line tool
+    EventBroker bus = new LocalEventBroker();
     Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
     UserDao udao = new UserDao(factory, cfg.mail, null, bus, validator);
     mail.run(cfg, null);

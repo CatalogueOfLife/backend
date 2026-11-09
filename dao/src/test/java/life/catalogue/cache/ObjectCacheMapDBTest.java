@@ -2,7 +2,6 @@ package life.catalogue.cache;
 
 import com.esotericsoftware.kryo.Kryo;
 
-import life.catalogue.api.event.DoiChange;
 import life.catalogue.api.model.HasID;
 import life.catalogue.common.io.TempFile;
 import life.catalogue.common.kryo.ApiKryoPool;

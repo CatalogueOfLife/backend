@@ -78,8 +78,9 @@ public class AuthBundle implements ConfiguredBundle<WsServerConfig>, UserListene
 
   @Override
   public void userChanged(UserChanged event){
-    String username = event.isDeletion() ? event.old.getUsername() : event.obj.getUsername();
-    idService.invalidate(username);
+    if (event.username != null) {
+      idService.invalidate(event.username);
+    }
   }
 
   @Override
@@ -91,16 +92,21 @@ public class AuthBundle implements ConfiguredBundle<WsServerConfig>, UserListene
         idService.invalidate(uname);
       }
     } else {
-      privateFilter.updateCache(event.key, event.obj.isPrivat());
+      privateFilter.updateCache(event.key, event.privat);
     }
     // a new dataset, make creator an editor unless it is a release or a bot
     if (event.isCreated()
-        && event.obj.getCreatedBy() != null
-        && !Users.isBot(event.obj.getCreatedBy())
-        && !event.obj.getOrigin().isRelease()) {
-      User creator = idService.get(event.obj.getCreatedBy());
+        && event.createdBy != null
+        && !Users.isBot(event.createdBy)
+        && !event.isRelease()) {
+      User creator = idService.get(event.createdBy);
       creator.addDatasetRole(User.Role.EDITOR, event.key);
     }
+  }
+
+  @Override
+  public void flushCaches() {
+    flushCache();
   }
 
   public void flushCache() {

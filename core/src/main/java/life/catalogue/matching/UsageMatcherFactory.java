@@ -568,26 +568,22 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
   public void datasetChanged(DatasetChanged d) {
     if (d.isDeletion()) {
       remove(d.key);
-    } else if (d.isUpdated() && d.obj != null && d.old != null) {
-      if (d.old.isPrivat() && !d.obj.isPrivat()) {
-        ensurePublishedMatcher(d.obj, d.user);
-      }
-      // going private deliberately keeps the matcher: its editors & reviewers can still match against it
-      // and reconcile ages it out once nobody has used it for MatchingConfig.onDemandTtlDays
+    } else if (d.isMadePublic()) {
+      ensurePublishedMatcher(d.key, d.origin, d.user);
     }
+    // going private deliberately keeps the matcher: its editors & reviewers can still match against it
+    // and reconcile ages it out once nobody has used it for MatchingConfig.onDemandTtlDays
   }
 
   /** Schedules a build for a newly published dataset if it is in scope and above threshold. */
-  private void ensurePublishedMatcher(Dataset d, int userKey) {
-    if (dir == null) return;
-    var origin = d.getOrigin();
+  private void ensurePublishedMatcher(int datasetKey, DatasetOrigin origin, int userKey) {
+    if (dir == null || origin == null) return;
     if (origin != DatasetOrigin.EXTERNAL && !origin.isRelease()) return; // projects served live
     try {
-      if (!isSmallDataset(d.getKey())) {
-        rebuild(d.getKey(), userKey);
-      }
+      // the refresh job only builds a matcher above the size threshold
+      refresh(datasetKey, userKey);
     } catch (Exception e) {
-      LOG.error("Failed to create matcher for newly published dataset {}", d.getKey(), e);
+      LOG.error("Failed to create matcher for newly published dataset {}", datasetKey, e);
     }
   }
 

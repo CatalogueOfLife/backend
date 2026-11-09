@@ -39,7 +39,7 @@ import life.catalogue.dw.managed.ManagedUtils;
 import life.catalogue.dw.metrics.HttpClientBuilder;
 import life.catalogue.dw.tasks.ClearCachesTask;
 import life.catalogue.dw.tasks.DeleteTmpDatasetsTask;
-import life.catalogue.dw.tasks.EventQueueTask;
+import life.catalogue.dw.tasks.EventsTask;
 import life.catalogue.es.EsClientFactory;
 import life.catalogue.es.EsUtil;
 import life.catalogue.es.indexing.NameUsageIndexService;
@@ -49,6 +49,7 @@ import life.catalogue.es.search.NameUsageSearchServiceEs;
 import life.catalogue.es.suggest.NameUsageSuggestionService;
 import life.catalogue.es.suggest.NameUsageSuggestionServiceEs;
 import life.catalogue.event.EventBroker;
+import life.catalogue.event.EventBrokers;
 import life.catalogue.exporter.ExportManager;
 import life.catalogue.feedback.EmailEncryption;
 import life.catalogue.feedback.FeedbackService;
@@ -76,7 +77,6 @@ import life.catalogue.parser.NameParser;
 import life.catalogue.printer.DatasetDiffService;
 import life.catalogue.printer.SectorDiffService;
 import life.catalogue.release.ProjectCopyFactory;
-import life.catalogue.outbox.LegacyEventBridge;
 import life.catalogue.outbox.OutboxRunner;
 import life.catalogue.release.ReleasePublishedHandler;
 import life.catalogue.resources.*;
@@ -272,16 +272,17 @@ public class WsServer extends Application<WsServerConfig> {
     auth.setClient(httpClient);
     log.setSqlSessionFactory(mybatis.getSqlSessionFactory());
 
+    // event broker - listens from now on, so no event sent while the caches warm up is missed,
+    // and delivers to the listeners registered below once the server starts
+    final EventBroker broker = EventBrokers.build(cfg.broker, cfg.db, getSqlSessionFactory());
+    env.lifecycle().manage(ManagedUtils.from((life.catalogue.common.Managed) broker));
+
     // warm the info cache for all components in one batch query
     DatasetInfoCache.CACHE.setFactory(mybatis.getSqlSessionFactory());
     DatasetInfoCache.CACHE.warmUp();
 
     HttpUtils http = new HttpUtils();
     env.lifecycle().manage(ManagedUtils.from(http));
-
-    // event broker - starts immediately
-    var broker = new EventBroker(cfg.broker);
-    env.lifecycle().manage(ManagedUtils.from(broker));
 
     // validation
     var validator = env.getValidator();
@@ -545,8 +546,8 @@ public class WsServer extends Application<WsServerConfig> {
     env.healthChecks().register("outbox", new OutboxHealthCheck(outbox));
 
     // tasks
-    env.admin().addTask(new ClearCachesTask(auth, coljersey.getCache()));
-    env.admin().addTask(new EventQueueTask(broker));
+    env.admin().addTask(new ClearCachesTask(auth, coljersey.getCache(), broker));
+    env.admin().addTask(new EventsTask(broker));
     env.admin().addTask(new DeleteTmpDatasetsTask(ddao));
 
     // attach listeners to event broker
@@ -558,9 +559,6 @@ public class WsServer extends Application<WsServerConfig> {
     if (cfg.apiURI != null) {
       broker.register(new CacheFlush(httpClient, cfg.apiURI));
     }
-    // DOI changes and sector deletions are outbox commands now. This turns the events an app of the previous
-    // version still publishes during the deploy that introduces the outbox into commands, remove it afterwards.
-    broker.register(new LegacyEventBridge(getSqlSessionFactory(), cfg.doi));
     broker.register(exportManager);
     broker.register(syncManager);
     broker.register(importManager);

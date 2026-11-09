@@ -6,7 +6,7 @@ import life.catalogue.event.EventBroker;
 import com.codahale.metrics.health.HealthCheck;
 
 /**
- * Checks that the event broker is polling events fine.
+ * Checks that the event broker receives events.
  */
 public class EventBrokerHealthCheck extends HealthCheck {
 
@@ -15,12 +15,9 @@ public class EventBrokerHealthCheck extends HealthCheck {
   public EventBrokerHealthCheck(EventBroker broker) {
     this.broker = broker;
   }
-  
+
   @Override
   protected Result check() throws Exception {
-    if (broker.isAlive()) {
-      return Result.healthy("Event broker is online and alive");
-    }
-    return Result.unhealthy("Event broker thread is dead");
+    return broker.isHealthy() ? Result.healthy(broker.status()) : Result.unhealthy(broker.status());
   }
 }

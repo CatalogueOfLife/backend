@@ -1,237 +1,42 @@
 package life.catalogue.event;
 
-import life.catalogue.api.event.*;
-import life.catalogue.common.ChronicleLogging;
-import life.catalogue.concurrent.ExecutorUtils;
+import life.catalogue.api.event.Event;
+import life.catalogue.api.event.Listener;
+import life.catalogue.common.Managed;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.Writer;
-import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.io.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import net.openhft.chronicle.queue.ExcerptAppender;
-import net.openhft.chronicle.queue.ExcerptTailer;
-import net.openhft.chronicle.queue.RollCycles;
-import net.openhft.chronicle.queue.impl.single.SingleChronicleQueue;
-import net.openhft.chronicle.queue.impl.single.SingleChronicleQueueBuilder;
-import net.openhft.chronicle.queue.util.FileUtil;
-import net.openhft.chronicle.wire.DocumentContext;
-
-import static java.util.stream.Collectors.toList;
-
 /**
- * Broker of events being shared between JDKs using a Chronicle queue on disk.
+ * Broadcasts events to the registered listeners of every app sharing the database: the read-write and the read-only
+ * server and both apps of a blue-green deploy. Meant for cache invalidation and reactions that are harmless to repeat
+ * or miss. An app only receives what is published while it runs, and every app receives everything, so anything that
+ * must happen exactly once is an outbox command instead, see life.catalogue.outbox.Outbox.
+ *
+ * Events published before {@link #start()} are delivered once it is started.
  */
-public class EventBroker implements AutoCloseable {
-  private static final Logger LOG = LoggerFactory.getLogger(EventBroker.class);
-  private static final long POLLING_STOP_TIMEOUT_MS = 5000;
+public interface EventBroker extends Managed, AutoCloseable {
 
-  private final BrokerConfig cfg;
-  private final List<DoiListener> doiListeners = new ArrayList<>();
-  private final List<UserListener> userListeners = new ArrayList<>();
-  private final List<SectorListener> sectorListeners = new ArrayList<>();
-  private final List<DatasetListener> datasetListeners = new ArrayList<>();
-  private final KryoHelper io;
-  private final Thread polling;
-  private final SingleChronicleQueue queue;
-  private final ExcerptAppender appender;
+  void register(Listener listener);
 
-  static {
-    ChronicleLogging.install();
-  }
+  void publish(Event event);
 
-  public EventBroker(BrokerConfig cfg) {
-    this.cfg = cfg;
-    this.io = new KryoHelper(cfg);
-    queue = SingleChronicleQueueBuilder
-      .single(cfg.queueDir)
-      .rollCycle(RollCycles.FAST_DAILY)
-      .build();
-    appender = queue.acquireAppender();
-    polling = ExecutorUtils.runInNewThread(new Polling(), "event-broker-polling");
-    LOG.info("Started event broker {} with queue at {}", cfg.name, cfg.queueDir);
-  }
+  /**
+   * @return true if events are being received
+   */
+  boolean isHealthy();
 
-  public void register(Listener listener) {
-    if (listener instanceof DatasetListener) {
-      datasetListeners.add((DatasetListener) listener);
-    }
-    if (listener instanceof DoiListener) {
-      doiListeners.add((DoiListener) listener);
-    }
-    if (listener instanceof UserListener) {
-      userListeners.add((UserListener) listener);
-    }
-    if (listener instanceof SectorListener) {
-      sectorListeners.add((SectorListener) listener);
-    }
-  }
+  /**
+   * @return a human readable status
+   */
+  String status();
 
-  public void dumpQueue(Writer writer) {
-    queue.dump(writer, -1, Long.MAX_VALUE);
-  }
-
-  public synchronized void publish(Event event) {
-    LOG.debug("publish new event {}", event);
-    // the chronicle appender remembers which thread wrote the last message
-    // it only allows the same thread to write to the queue
-    // we disable this check as we synchronize the method, so we never have multiple threads writing to the queue at the same time
-    if (appender != null) {
-      appender.singleThreadedCheckReset();
-      try (DocumentContext dc = appender.writingDocument()) {
-        io.write(event, dc.wire().bytes().outputStream());
-      } catch (Exception e) {
-        LOG.error("Failed to publish event {}", event, e);
-      }
-
-    } else {
-      LOG.warn("Broker not started yet, cannot publish event {}", event);
-    }
-  }
-
-  public boolean isAlive() {
-    return polling.isAlive();
-  }
+  /**
+   * @return the latest events delivered to this app, newest last
+   */
+  List<String> recent();
 
   @Override
-  public void close() throws IOException {
-    LOG.info("Stoping event broker with queue at {} and polling thread {}", cfg.queueDir, polling);
-    polling.interrupt();
-    // let the poller close its tailer before the queue goes away underneath it
-    try {
-      polling.join(POLLING_STOP_TIMEOUT_MS);
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-    }
-    if (polling.isAlive()) {
-      LOG.warn("Event polling thread {} did not stop within {}ms, closing the queue anyway", polling, POLLING_STOP_TIMEOUT_MS);
-    }
-    queue.close();
-  }
-
-  private class Polling implements Runnable {
-    @Override
-    public void run() {
-      long lastDeleteCheck = System.currentTimeMillis();
-      // every webapp instance reads with its own tailer, which lets several apps run in parallel during a deploy and
-      // still each read all messages. It is deliberately unnamed: a named tailer persists its read position in the
-      // queue metadata, and with a new name per start and the wind to the end below that position is never read again
-      final ExcerptTailer tailer = queue.createTailer();
-      // we wind to the end to only consume new messages as the queue likely already exists
-      tailer.toEnd();
-      // Continuously read messages and distribute them to listeners
-      try {
-        while (!Thread.currentThread().isInterrupted() && !tailer.isClosing()) {
-          try (var dc = tailer.readingDocument()) {
-            // If no message was available, pause for a short time to avoid busy-waiting
-            if (dc.wire() == null) {
-              // check for rolling file deletions once a day
-              if (System.currentTimeMillis() - lastDeleteCheck > 24*60*60*1000) {
-                removeUnusedFiles();
-                lastDeleteCheck = System.currentTimeMillis();
-              } else {
-                try {
-                  Thread.sleep(cfg.pollingLatency);
-                } catch (InterruptedException e) {
-                  Thread.currentThread().interrupt();
-                  break;
-                }
-              }
-
-            } else {
-              broker(io.read(dc.wire().bytes().inputStream()));
-            }
-          } catch (Exception e) {
-            LOG.error("Event polling throws exception", e);
-          }
-        }
-      } finally {
-        tailer.close();
-      }
-      LOG.warn("Event polling stopped!");
-    }
-
-    private void removeUnusedFiles() {
-      LOG.info("Look for unused files from queue at {}", cfg.queueDir);
-      List<File> candidates = FileUtil.removableRollFileCandidates(queue.file()).collect(toList());
-      candidates.forEach(FileUtils::deleteQuietly);
-      LOG.info("Removed {} unused files from queue at {}", candidates.size(), cfg.queueDir);
-    }
-
-    private void broker(Object obj) {
-      LOG.debug("Broker event {}", obj);
-      if (obj instanceof DatasetLogoChanged) {
-        DatasetLogoChanged event = (DatasetLogoChanged) obj;
-        for (DatasetListener l : datasetListeners) {
-          try {
-            l.datasetLogoChanged(event);
-          } catch (Exception e) {
-            LOG.error("Failed to broker logo change event: {}", event, e);
-          }
-        }
-      } else if (obj instanceof DatasetChanged) {
-        DatasetChanged event = (DatasetChanged) obj;
-        for (DatasetListener l : datasetListeners) {
-          try {
-            l.datasetChanged(event);
-          } catch (Exception e) {
-            LOG.error("Failed to broker dataset change event: {}", event, e);
-          }
-        }
-      } else if (obj instanceof DatasetDataChanged) {
-        DatasetDataChanged event = (DatasetDataChanged) obj;
-        for (DatasetListener l : datasetListeners) {
-          try {
-            l.datasetDataChanged(event);
-          } catch (Exception e) {
-            LOG.error("Failed to broker dataset data change event: {}", event, e);
-          }
-        }
-      } else if (obj instanceof DeleteSector) {
-        DeleteSector event = (DeleteSector) obj;
-        for (SectorListener l : sectorListeners) {
-          try {
-            l.sectorDeleted(event);
-          } catch (Exception e) {
-            LOG.error("Failed to broker sector delete event: {}", event, e);
-          }
-        }
-      } else if (obj instanceof DoiChange) {
-        DoiChange event = (DoiChange) obj;
-        for (DoiListener l : doiListeners) {
-          try {
-            l.doiChanged(event);
-          } catch (Exception e) {
-            LOG.error("Failed to broker DOI change event: {}", event, e);
-          }
-        }
-      } else if (obj instanceof UserChanged) {
-        UserChanged event = (UserChanged) obj;
-        for (UserListener l : userListeners) {
-          try {
-            l.userChanged(event);
-          } catch (Exception e) {
-            LOG.error("Failed to broker user change event: {}", event, e);
-          }
-        }
-      } else if (obj instanceof UserPermissionChanged) {
-        UserPermissionChanged event = (UserPermissionChanged) obj;
-        for (UserListener l : userListeners) {
-          try {
-            l.userPermissionChanged(event);
-          } catch (Exception e) {
-            LOG.error("Failed to broker user permission change event: {}", event, e);
-          }
-        }
-
-      } else {
-        LOG.error("Unknown event type: " + obj.getClass().getSimpleName());
-      }
-    }
+  default void close() throws Exception {
+    stop();
   }
 }

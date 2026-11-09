@@ -232,21 +232,28 @@ public class DatasetInfoCache implements DatasetListener {
   public void datasetChanged(DatasetChanged event){
     if (event.isDeletion()) {
       LOG.info("Deletion event registered for dataset {}", event.key);
-      update(event.key, event.old, true);
+      update(event, true);
 
     } else if (event.isUpdated()) {
       LOG.debug("Update event registered for dataset {}", event.key);
-      update(event.key, event.obj, event.obj.hasDeletedDate());
+      update(event, event.deleted);
     }
   }
 
+  @Override
+  public void flushCaches() {
+    clear();
+  }
+
   /**
-   * Update the cache for the given dataset
-   * @param key
+   * Update the cache for the given dataset from the facts the event carries, so it never has to be reloaded
+   * from a standby that might not have replayed the change yet.
    */
-  private void update(int key, Dataset d, boolean deleted) {
+  private void update(DatasetChanged event, boolean deleted) {
+    final int key = event.key;
+    labels.invalidate(key);
     try {
-      infos.put(key, new DatasetInfo(key, d.getOrigin(), d.getSourceKey(), d.getGbifPublisherKey(), deleted));
+      infos.put(key, new DatasetInfo(key, event.origin, event.sourceKey, event.publisherKey, deleted));
     } catch (Exception e) {
       // we sometimes see this for yet unknown reasons - lets rather remove the entry
       // java.lang.NullPointerException: sourceKey is required for release 100000003
