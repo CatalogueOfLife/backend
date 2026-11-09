@@ -71,8 +71,37 @@
     job j
   </sql>
 
+  <!--
+    Hides the jobs of private datasets from callers who cannot read them, see gbif/informatics#85 (A6): the listing
+    shows the job keys, and those address the job results and logs on the download host. A job without a dataset and
+    a callers own jobs stay visible. userKey is null for anonymous callers and -42 for admins, who see everything.
+    Expects the job alias j and the property dsKey naming the dataset key column of the job.
+  -->
+  <sql id="VISIBLE">
+    <if test="userKey != -42">
+      AND (${dsKey} IS NULL
+        <if test="userKey != null">OR j.created_by = #{userKey}</if>
+        OR EXISTS (
+          SELECT 1 FROM dataset d
+          <if test="userKey != null">
+            <!-- the project of a release decides who can read it -->
+            LEFT JOIN dataset proj ON d.source_key=proj.key AND <include refid="life.catalogue.db.mapper.DatasetMapper.IS_RELEASE"/>
+          </if>
+          WHERE d.key = ${dsKey}
+          <include refid="life.catalogue.db.mapper.DatasetMapper.PRIVATE">
+            <property name="alias" value="d"/>
+            <property name="projAlias" value="proj"/>
+          </include>
+        )
+      )
+    </if>
+  </sql>
+
   <sql id="WHERE">
     <where>
+      <include refid="VISIBLE">
+        <property name="dsKey" value="j.dataset_key"/>
+      </include>
       <if test="req.key != null">AND j.key = #{req.key}</if>
       <if test="req.datasetKey != null">AND j.dataset_key = #{req.datasetKey}</if>
       <if test="req.sectorKey != null">AND j.sector_key = #{req.sectorKey}</if>

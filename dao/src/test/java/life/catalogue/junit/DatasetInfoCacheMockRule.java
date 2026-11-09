@@ -8,12 +8,14 @@ import life.catalogue.db.mapper.DatasetMapper;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.junit.rules.ExternalResource;
 
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -53,11 +55,23 @@ public class DatasetInfoCacheMockRule extends ExternalResource {
     return put(d);
   }
 
+  /** Register a private dataset by key and origin. */
+  public DatasetInfoCacheMockRule putPrivate(int key, DatasetOrigin origin, Integer sourceKey) {
+    DatasetSimple d = new DatasetSimple();
+    d.setKey(key);
+    d.setOrigin(origin);
+    d.setSourceKey(sourceKey);
+    d.setPrivat(true);
+    return put(d);
+  }
+
   /** Register a fully populated DatasetSimple. */
   public DatasetInfoCacheMockRule put(DatasetSimple d) {
     datasets.put(d.getKey(), d);
     if (mapper != null) {
       when(mapper.getSimple(d.getKey())).thenReturn(d);
+      // the private keys might be cached already
+      DatasetInfoCache.CACHE.clear();
     }
     return this;
   }
@@ -75,6 +89,11 @@ public class DatasetInfoCacheMockRule extends ExternalResource {
     when(factory.openSession()).thenReturn(session);
     when(session.getMapper(DatasetMapper.class)).thenReturn(mapper);
     when(mapper.getSimple(anyInt())).thenAnswer(inv -> datasets.get((Integer) inv.getArgument(0)));
+    // lenient, as only searches across datasets ask for the private ones and strict stubbing tests fail on unused stubs
+    lenient().when(mapper.privateKeys()).thenAnswer(inv -> datasets.values().stream()
+      .filter(d -> d.isPrivat() && !d.isDeleted())
+      .map(DatasetSimple::getKey)
+      .collect(Collectors.toSet()));
     // clear so previous test's entries don't leak, then inject the mocked factory
     DatasetInfoCache.CACHE.clear();
     DatasetInfoCache.CACHE.setFactory(factory);

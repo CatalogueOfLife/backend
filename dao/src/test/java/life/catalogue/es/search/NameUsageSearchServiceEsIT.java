@@ -408,6 +408,54 @@ public class NameUsageSearchServiceEsIT extends EsTestBase {
     assertEquals(11, dsFacet.iterator().next().getCount());
   }
 
+  /**
+   * The index holds private datasets too, so the search across datasets excludes those the caller cannot read, see
+   * gbif/informatics#85 (A6). Neither the hits, nor a facet - in query or global context - may show them.
+   */
+  @Test
+  public void testExcludedDatasets() {
+    NameUsageSearchRequest req = new NameUsageSearchRequest();
+    req.setExcludedDatasetKeys(Set.of(DS1));
+    req.addFacet(DATASET_KEY);
+    req.setFacetLimit(20);
+    NameUsageSearchResponse resp = search(req, 0);
+    assertEquals("only DS2 usages", 11, resp.getTotal());
+    Set<FacetValue<?>> dsFacet = resp.getFacets().get(DATASET_KEY);
+    assertEquals(1, dsFacet.size());
+    assertEquals(DS2, dsFacet.iterator().next().getValue());
+
+    // asking for the excluded dataset explicitly finds nothing
+    req = new NameUsageSearchRequest();
+    req.setExcludedDatasetKeys(Set.of(DS1));
+    req.addFilter(DATASET_KEY, String.valueOf(DS1));
+    assertEquals(0, search(req, 0).getTotal());
+
+    // a facet ignoring its own filter is computed in the global context, which must exclude the dataset as well
+    req = new NameUsageSearchRequest();
+    req.setExcludedDatasetKeys(Set.of(DS1));
+    req.addFilter(DATASET_KEY, String.valueOf(DS2));
+    req.addFacet(DATASET_KEY);
+    req.addFacet(RANK);
+    req.setFacetLimit(20);
+    resp = search(req, 0);
+    assertEquals(11, resp.getTotal());
+    dsFacet = resp.getFacets().get(DATASET_KEY);
+    assertEquals("the global context must not offer the excluded dataset", 1, dsFacet.size());
+    assertEquals(DS2, dsFacet.iterator().next().getValue());
+
+    // a full text query is restricted too
+    NameUsageSearchRequest q = new NameUsageSearchRequest();
+    q.setQ("Felis");
+    NameUsageSearchRequest qDS1 = q.copy();
+    qDS1.addFilter(DATASET_KEY, String.valueOf(DS1));
+    NameUsageSearchRequest qExcl = q.copy();
+    qExcl.setExcludedDatasetKeys(Set.of(DS1));
+    int all = search(q, 0).getTotal();
+    int inDS1 = search(qDS1, 0).getTotal();
+    assertTrue("the query must hit the excluded dataset to prove anything", inDS1 > 0);
+    assertEquals(all - inDS1, search(qExcl, 0).getTotal());
+  }
+
   // -----------------------------------------------------------------------
   // Test: sort options
   // -----------------------------------------------------------------------

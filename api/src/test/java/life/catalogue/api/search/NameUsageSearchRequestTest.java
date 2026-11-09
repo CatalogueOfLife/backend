@@ -111,6 +111,28 @@ public class NameUsageSearchRequestTest extends SerdeTestBase<NameUsageSearchReq
     r.copy();
   }
 
+  /**
+   * The excluded datasets hide private ones from a search across datasets. Only the server sets them: a client must
+   * not be able to send any, nor see them echoed, and a copy - e.g. for the facets - must keep them.
+   */
+  @Test
+  public void excludedDatasets() throws Exception {
+    var r = ApiModule.MAPPER.readValue("{\"q\":\"Abies\",\"excludedDatasetKeys\":[1,2]}", NameUsageSearchRequest.class);
+    assertFalse(r.hasExcludedDatasets());
+    assertTrue(r.getExcludedDatasetKeys().isEmpty());
+
+    r.setExcludedDatasetKeys(Set.of(3, 4));
+    assertTrue(r.hasExcludedDatasets());
+    assertFalse(ApiModule.MAPPER.writeValueAsString(r).contains("xcluded"));
+    var copy = r.copy();
+    assertEquals(Set.of(3, 4), copy.getExcludedDatasetKeys());
+    assertEquals(r, copy);
+
+    r.setExcludedDatasetKeys(null);
+    assertTrue(r.getExcludedDatasetKeys().isEmpty());
+    assertNotEquals(r, copy);
+  }
+
   @Test
   public void copy02() {
     NameUsageSearchRequest r0 = new NameUsageSearchRequest();

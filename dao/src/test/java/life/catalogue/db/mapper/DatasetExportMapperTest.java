@@ -70,7 +70,7 @@ public class DatasetExportMapperTest extends CRUDEntityTestBase<UUID, DatasetExp
     f.setSynonyms(false);
     f.setTaxonID("abcde");
     f.setMinRank(Rank.BIOVAR);
-    var res = mapper().search(f, new Page());
+    var res = mapper().search(f, User.ADMIN_MAGIC_KEY, new Page());
     assertNotNull(res);
     assertTrue(res.isEmpty());
 
@@ -85,12 +85,43 @@ public class DatasetExportMapperTest extends CRUDEntityTestBase<UUID, DatasetExp
     }
     Page p = new Page(0, 25);
     var filter = ExportSearchRequest.fullDataset(TestDataRule.APPLE.key);
-    res = mapper().search(filter, p);
+    res = mapper().search(filter, User.ADMIN_MAGIC_KEY, p);
     assertNotNull(res);
     assertFalse(res.isEmpty());
     assertEquals(4, res.size());
-    var resp = new ResultPage<>(p, res, () -> mapper().count(filter));
+    var resp = new ResultPage<>(p, res, () -> mapper().count(filter, User.ADMIN_MAGIC_KEY));
     assertEquals(4, resp.getResult().size());
+  }
+
+  /**
+   * Exports of private datasets are only listed for those who can read them and for their creator, as the export key
+   * addresses the file on the download host, see gbif/informatics#85 (A6).
+   */
+  @Test
+  public void searchHidesPrivateDatasets() throws Exception {
+    final int datasetKey = TestDataRule.APPLE.key;
+    var exp = createTestEntity(datasetKey);
+    ExportRequest req = new ExportRequest();
+    req.setDatasetKey(datasetKey);
+    req.setFormat(DataFormat.COLDP);
+    exp.setRequest(req);
+    mapper().create(exp);
+    commit();
+
+    var filter = ExportSearchRequest.fullDataset(datasetKey);
+    assertEquals(1, mapper().count(filter, null));
+
+    var apple = mapper(DatasetMapper.class).get(datasetKey);
+    apple.setPrivat(true);
+    mapper(DatasetMapper.class).update(apple);
+    commit();
+
+    assertEquals(0, mapper().count(filter, null));
+    assertTrue(mapper().search(filter, null, new Page()).isEmpty());
+    assertEquals(0, mapper().count(filter, Users.TESTER));
+    // the creator and admins still see it
+    assertEquals(1, mapper().count(filter, Users.DB_INIT));
+    assertEquals(1, mapper().search(filter, User.ADMIN_MAGIC_KEY, new Page()).size());
   }
 
   /**
@@ -112,15 +143,15 @@ public class DatasetExportMapperTest extends CRUDEntityTestBase<UUID, DatasetExp
 
     JobMapper jm = session().getMapper(JobMapper.class);
     var req = new JobSearchRequest();
-    assertEquals(3, jm.count(req));
+    assertEquals(3, jm.count(req, User.ADMIN_MAGIC_KEY));
 
     req.setFormat(DataFormat.COLDP);
-    var res = jm.search(req, new Page());
+    var res = jm.search(req, User.ADMIN_MAGIC_KEY, new Page());
     assertEquals(1, res.size());
     assertEquals("DatasetExportJob", res.get(0).getJob());
 
     req.setFormat(DataFormat.TEXT_TREE);
-    assertEquals(0, jm.count(req));
+    assertEquals(0, jm.count(req, User.ADMIN_MAGIC_KEY));
   }
 
   /**

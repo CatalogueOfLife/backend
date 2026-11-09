@@ -13,8 +13,12 @@ import org.apache.ibatis.annotations.Param;
 
 public interface DatasetExportMapper extends CRUD<UUID, DatasetExport>, DatasetProcessable<DatasetExport> {
 
-  List<DatasetExport> search(@Param("req") ExportSearchRequest req, @Param("page") Page page);
+  /**
+   * @param userKey the caller, null for anonymous callers and {@link life.catalogue.api.model.User#ADMIN_MAGIC_KEY} for
+   *                admins and internal use. Exports of private datasets the caller cannot read are left out
+   */
+  List<DatasetExport> search(@Param("req") ExportSearchRequest req, @Param("userKey") Integer userKey, @Param("page") Page page);
 
-  int count(@Param("req") ExportSearchRequest req);
+  int count(@Param("req") ExportSearchRequest req, @Param("userKey") Integer userKey);
 
 }

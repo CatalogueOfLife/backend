@@ -123,17 +123,17 @@
     WHERE vn.dataset_key = #{key.datasetKey} AND vn.id = #{key.id}
   </select>
 
+  <!-- a search across all datasets never shows private ones, see gbif/informatics#85 (A6) -->
   <select id="searchAll" resultMap="vernacularNameUsageResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    <where>
+    WHERE vn.dataset_key IN (SELECT d.key FROM dataset d WHERE NOT d.private AND d.deleted IS NULL)
       <if test="q != null">
-        vn.doc @@ plainto_tsquery('vernacular', #{q})
+        AND vn.doc @@ plainto_tsquery('vernacular', #{q})
       </if>
       <if test="lang != null">
         AND vn.language = #{lang}
       </if>
-    </where>
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
 

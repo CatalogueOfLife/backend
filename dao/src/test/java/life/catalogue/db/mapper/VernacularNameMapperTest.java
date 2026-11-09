@@ -80,6 +80,14 @@ public class VernacularNameMapperTest extends TaxonExtensionMapperTest<Vernacula
     // work with spaces and quotes
     mapper().searchAll("grüner adler", null, new Page());
     mapper().searchAll("adler's", null, new Page());
+
+    // never names of a private dataset, see gbif/informatics#85 (A6)
+    var d = mapper(DatasetMapper.class).get(datasetKey);
+    d.setPrivat(true);
+    mapper(DatasetMapper.class).update(d);
+    commit();
+    assertTrue(mapper().searchAll("adler", null, new Page()).isEmpty());
+    assertTrue(mapper().searchAll(null, "deu", new Page()).isEmpty());
   }
 
   @Test

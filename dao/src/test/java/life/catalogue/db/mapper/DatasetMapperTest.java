@@ -383,6 +383,7 @@ public class DatasetMapperTest extends CRUDEntityTestBase<Integer, Dataset, Data
     assertFalse(d1.isPrivat());
     assertFalse(mapper().isPrivate(d1.getKey()));
     assertFalse(mapper().isPrivate(-528));
+    assertFalse(mapper().privateKeys().contains(d1.getKey()));
 
     // now add a real user (not a bot) as a creator
     User user = new User();
@@ -398,6 +399,7 @@ public class DatasetMapperTest extends CRUDEntityTestBase<Integer, Dataset, Data
     assertTrue(d1.isPrivat());
     assertTrue(mapper().isPrivate(d1.getKey()));
     assertFalse(mapper().isPrivate(-528));
+    assertTrue(mapper().privateKeys().contains(d1.getKey()));
 
 
     // 5 datasets, 1 names index, 3 creator=DB_INIT, 1 creator ukey and private
