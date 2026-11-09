@@ -44,6 +44,12 @@ public class EmlParser {
   
   static {
     factory = XMLInputFactory.newInstance();
+    // no DTDs and no external entities: EML is user supplied and would otherwise read local files or urls (XXE)
+    factory.setProperty(XMLInputFactory.SUPPORT_DTD, false);
+    factory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
+    factory.setXMLResolver((publicID, systemID, baseURI, namespace) -> {
+      throw new XMLStreamException("External entities are not supported: " + systemID);
+    });
   }
 
   public static Optional<DatasetWithSettings> parse(Path file) throws IOException {

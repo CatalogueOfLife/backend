@@ -9,6 +9,7 @@ import life.catalogue.api.vocab.Users;
 import life.catalogue.common.ws.MoreMediaTypes;
 import life.catalogue.config.NormalizerConfig;
 import life.catalogue.dao.DatasetDao;
+import life.catalogue.dw.auth.AuthFilter;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.importer.ImportManager;
 import life.catalogue.importer.ImportRequest;
@@ -62,6 +63,7 @@ public class ImporterResource {
   @Consumes(MediaType.APPLICATION_JSON)
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public ImportRequest schedule(@Auth User user, @Valid ImportRequest request) {
+    assertWritable(user, request.datasetKey);
     request.createdBy = user.getKey();
     return importManager.submit(request);
   }
@@ -99,6 +101,7 @@ public class ImporterResource {
   @Path("{key}/reimport")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public ImportRequest reimport(@PathParam("key") int datasetKey, @QueryParam("callback") URI callback, @Auth User user) throws IOException {
+    assertWritable(user, datasetKey);
     File latest = cfg.normalizer.lastestArchive(datasetKey);
     if (latest == null) {
       throw new IllegalArgumentException("No previous archive existing for dataset "+datasetKey+" to reimport");
@@ -115,6 +118,7 @@ public class ImporterResource {
   @Consumes(MediaType.APPLICATION_JSON)
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public ImportRequest triggerImport(@PathParam("key") int datasetKey, @QueryParam("force") boolean force, @QueryParam("callback") URI callback, @Auth User user) throws IOException {
+    assertWritable(user, datasetKey);
     var req = ImportRequest.external(datasetKey, user.getKey(), force);
     req.callback = callback;
     return importManager.submit(req);
@@ -131,6 +135,7 @@ public class ImporterResource {
   })
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public ImportRequest uploadArchive(@PathParam("key") int datasetKey, @QueryParam("callback") URI callback, @Auth User user, @Context HttpHeaders headers, InputStream archive) throws IOException {
+    assertWritable(user, datasetKey);
     return importManager.upload(datasetKey, archive, false, ResourceUtils.filenameFromHeaders(headers), null, user, callback);
   }
 
@@ -141,6 +146,7 @@ public class ImporterResource {
       MoreMediaTypes.TEXT_WILDCARD})
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public ImportRequest uploadCsv(@PathParam("key") int datasetKey, @QueryParam("callback") URI callback, @Auth User user, @Context HttpHeaders headers, InputStream archive) throws IOException {
+    assertWritable(user, datasetKey);
     return importManager.upload(datasetKey, archive, true, ResourceUtils.filenameFromHeaders(headers), contentType2Suffix(headers), user, callback);
   }
 
@@ -149,6 +155,7 @@ public class ImporterResource {
   @Consumes({MoreMediaTypes.APP_XLS, MoreMediaTypes.APP_XLSX})
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public ImportRequest uploadXls(@PathParam("key") int datasetKey, @QueryParam("callback") URI callback, @Auth User user, @Context HttpHeaders headers, InputStream spreadsheet) throws IOException {
+    assertWritable(user, datasetKey);
     return importManager.uploadXls(datasetKey, spreadsheet, user, callback);
   }
   
@@ -156,7 +163,18 @@ public class ImporterResource {
   @Path("{key}")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public void cancel(@PathParam("key") int datasetKey, @Auth User user) {
+    assertWritable(user, datasetKey);
     importManager.cancel(datasetKey, user.getKey());
+  }
+
+  /**
+   * The importer is not a /dataset/{key} resource, so AuthFilter.isUserInRole cannot scope the EDITOR role to the
+   * dataset and @RolesAllowed(EDITOR) lets an editor of any dataset through. See gbif/informatics#85 (B2).
+   */
+  private static void assertWritable(User user, Integer datasetKey) {
+    if (datasetKey == null || !AuthFilter.hasWriteAccess(user, datasetKey)) {
+      throw new ForbiddenException("You are not authorized to import dataset " + datasetKey);
+    }
   }
 
   public static String contentType2Suffix(HttpHeaders h) {

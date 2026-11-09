@@ -596,6 +596,13 @@ public class JobExecutorTest {
   }
 
   /**
+   * A job is BLOCKED before its worker parks it, so whatever acts on a parked job awaits the parking.
+   */
+  private static void awaitParked(JobExecutor ex, BackgroundJob job) throws InterruptedException {
+    await("job " + job.getKey() + " is parked for its dataset lock", () -> ex.isLockParked(job.getKey()));
+  }
+
+  /**
    * A job is FINISHED before its onFinish runs, which is where a DatasetBlockingJob releases its lock and BlockJob records
    * it in finished. Anything done there has to be awaited after the status, not asserted right away.
    */
@@ -620,6 +627,7 @@ public class JobExecutorTest {
       var blocked = new BlockJob(7);
       ex.submit(blocked);
       awaitStatus(blocked, JobStatus.BLOCKED);
+      awaitParked(ex, blocked);
       assertEquals(1, ex.queueSize());
 
       // the single worker is free for other jobs
@@ -647,6 +655,7 @@ public class JobExecutorTest {
       var blocked = new BlockJob(7);
       ex.submit(blocked);
       awaitStatus(blocked, JobStatus.BLOCKED);
+      awaitParked(ex, blocked);
       ex.cancel(blocked.getKey(), user.getKey());
       assertEquals(JobStatus.CANCELED, blocked.getStatus());
       assertTrue(ex.hasEmptyQueue());
@@ -670,8 +679,49 @@ public class JobExecutorTest {
       var blocked = new BlockJob(7);
       ex.submit(blocked);
       awaitStatus(blocked, JobStatus.BLOCKED);
+      awaitParked(ex, blocked);
       ex.stop();
       assertEquals(JobStatus.CANCELED, blocked.getStatus());
+    } finally {
+      DatasetLock.unlockAll(holder);
+    }
+  }
+
+  /**
+   * A job reports BLOCKED from inside run(), but its worker parks it only afterwards, once it persisted that state.
+   * A stop in between found nothing to drain and the job was parked by a stopped executor, staying BLOCKED for good.
+   */
+  @Test
+  public void stopCancelsJobBlockedBeforeParked() throws Exception {
+    class SlowBlockJob extends BlockJob {
+      SlowBlockJob() {
+        super(7);
+      }
+
+      @Override
+      protected void persist() {
+        super.persist();
+        if (getStatus() == JobStatus.BLOCKED) {
+          // a db write on a busy server: the executor is stopped while this worker has not parked the job yet
+          try {
+            TimeUnit.MILLISECONDS.sleep(500);
+          } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+          }
+        }
+      }
+    }
+    var ex = singleThreaded();
+    ex.start();
+    var holder = lockDataset7();
+    try {
+      var blocked = new SlowBlockJob();
+      ex.submit(blocked);
+      awaitStatus(blocked, JobStatus.BLOCKED);
+      assertFalse(ex.isLockParked(blocked.getKey()));
+      ex.stop();
+      assertEquals(JobStatus.CANCELED, blocked.getStatus());
+      assertFalse(ex.isLockParked(blocked.getKey()));
     } finally {
       DatasetLock.unlockAll(holder);
     }

@@ -5,6 +5,7 @@ import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.MetadataFormat;
+import life.catalogue.common.io.UrlPolicy;
 import life.catalogue.common.ws.MoreMediaTypes;
 import life.catalogue.dw.jersey.provider.DatasetMessageBodyReader;
 import life.catalogue.metadata.coldp.ColdpMetadataParser;
@@ -12,8 +13,9 @@ import life.catalogue.metadata.datacite.DataciteParser;
 import life.catalogue.metadata.eml.EmlParser;
 import life.catalogue.metadata.zenodo.ZenodoParser;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.net.URL;
+import java.net.URI;
 import java.util.Optional;
 
 import jakarta.ws.rs.*;
@@ -42,13 +44,12 @@ public class MetadataParserResource {
 
   /**
    * Parsing metadata hosted on a URL given as a GET query parameters.
+   * Only public http(s) urls are fetched, see {@link UrlPolicy}.
    */
   @GET
-  public Optional<Dataset> parseGet(@QueryParam("url") String url, @QueryParam("format") MetadataFormat format) throws Exception {
-    // the parsers do not close the stream they read, e.g. the EML parser only closes its xml reader
-    try (InputStream in = new URL(url).openStream()) {
-      return parseAny(in, format);
-    }
+  public Optional<Dataset> parseGet(@QueryParam("url") URI url, @QueryParam("format") MetadataFormat format) throws Exception {
+    byte[] data = UrlPolicy.PUBLIC.get(url, UrlPolicy.DEFAULT_MAX_BYTES);
+    return parseAny(new ByteArrayInputStream(data), format);
   }
   
   /**

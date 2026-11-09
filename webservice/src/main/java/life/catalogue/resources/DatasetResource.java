@@ -3,6 +3,7 @@ package life.catalogue.resources;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.DatasetSearchRequest;
+import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.common.ws.MoreMediaTypes;
 import life.catalogue.concurrent.JobExecutor;
@@ -26,6 +27,7 @@ import java.util.stream.Stream;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 
 import io.dropwizard.auth.Auth;
@@ -65,7 +67,27 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   @POST
   @Override
   public Integer create(Dataset obj, @Auth User user) {
+    assertCreatable(obj, user);
     return super.create(obj, user);
+  }
+
+  /**
+   * Releases are created by the release jobs only, and the GBIF registry sync assigns GBIF keys.
+   * A user created dataset claiming either would be picked up by the release aliases like 3LXR or gbif-{uuid}.
+   * See gbif/informatics#85 (B7).
+   */
+  @VisibleForTesting
+  static void assertCreatable(Dataset obj, User user) {
+    if (obj == null || user.isAdmin()) return;
+    if (obj.getOrigin() != null && obj.getOrigin() != DatasetOrigin.EXTERNAL && obj.getOrigin() != DatasetOrigin.PROJECT) {
+      throw new IllegalArgumentException("Only external datasets and projects can be created, not " + obj.getOrigin());
+    }
+    if (obj.getSourceKey() != null) {
+      throw new IllegalArgumentException("A new dataset cannot have a sourceKey");
+    }
+    if (obj.getGbifKey() != null || obj.getGbifPublisherKey() != null) {
+      throw new IllegalArgumentException("GBIF keys are assigned by the GBIF registry sync only");
+    }
   }
 
   @GET

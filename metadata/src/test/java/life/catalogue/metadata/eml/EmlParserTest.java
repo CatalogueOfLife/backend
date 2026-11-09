@@ -7,13 +7,21 @@ import life.catalogue.api.vocab.License;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.common.io.Resources;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 
 import life.catalogue.metadata.coldp.ColdpMetadataParser;
 import org.junit.Test;
+
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamReader;
 
 import static org.apache.commons.lang3.StringUtils.trimToNull;
 import static org.junit.Assert.*;
@@ -25,6 +33,35 @@ public class EmlParserTest {
 
   private DatasetWithSettings read(String name) throws IOException {
     return EmlParser.parse(getClass().getResourceAsStream("/metadata/" + name)).get();
+  }
+
+  /**
+   * An external entity must never be resolved: EML is user supplied, e.g. POST /parser/metadata, and the title
+   * would return the content of any local file or url. See gbif/informatics#85 (A4).
+   */
+  @Test
+  public void externalEntitiesIgnored() throws Exception {
+    Path secret = Files.createTempFile("secret", ".txt");
+    try {
+      Files.writeString(secret, "TOP-SECRET-CONTENT");
+      String eml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+        "<!DOCTYPE eml [<!ENTITY xxe SYSTEM \"" + secret.toUri() + "\">]>\n" +
+        "<eml:eml xmlns:eml=\"eml://ecoinformatics.org/eml-2.1.1\"><dataset><title>Title &xxe;</title></dataset></eml:eml>";
+      byte[] bytes = eml.getBytes(StandardCharsets.UTF_8);
+
+      // make sure the fixture really is an XXE a default parser falls for
+      XMLStreamReader r = XMLInputFactory.newInstance().createXMLStreamReader(new ByteArrayInputStream(bytes), "UTF-8");
+      StringBuilder sb = new StringBuilder();
+      while (r.hasNext()) {
+        if (r.next() == XMLStreamConstants.CHARACTERS) sb.append(r.getText());
+      }
+      assertTrue(sb.toString().contains("TOP-SECRET-CONTENT"));
+
+      Optional<DatasetWithSettings> m = EmlParser.parse(new ByteArrayInputStream(bytes), StandardCharsets.UTF_8);
+      m.ifPresent(d -> assertFalse(String.valueOf(d.getDataset().getTitle()).contains("TOP-SECRET-CONTENT")));
+    } finally {
+      Files.deleteIfExists(secret);
+    }
   }
 
   /**

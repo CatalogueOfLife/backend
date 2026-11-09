@@ -1,5 +1,6 @@
 package life.catalogue.resources;
 
+import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetSimple;
 import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.DatasetOrigin;
@@ -10,6 +11,7 @@ import life.catalogue.junit.DatasetInfoCacheMockRule;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.junit.Before;
@@ -17,6 +19,7 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -77,5 +80,36 @@ public class DatasetResourceTest {
     admin.setKey(102);
     admin.addRole(User.Role.ADMIN);
     assertEquals(Arrays.asList(pub, project, release, null), resource.projectSourceSimple(keys, Optional.of(admin)));
+  }
+
+  /**
+   * Only admins may create releases or datasets claiming a source or GBIF key, see gbif/informatics#85 (B7).
+   */
+  @Test
+  public void createRestricted() {
+    var user = new User();
+    user.setKey(100);
+    var admin = new User();
+    admin.setKey(102);
+    admin.addRole(User.Role.ADMIN);
+
+    for (DatasetOrigin o : new DatasetOrigin[]{null, DatasetOrigin.EXTERNAL, DatasetOrigin.PROJECT}) {
+      DatasetResource.assertCreatable(dataset(o, null, null), user);
+    }
+    for (DatasetOrigin o : new DatasetOrigin[]{DatasetOrigin.RELEASE, DatasetOrigin.XRELEASE}) {
+      assertThrows(IllegalArgumentException.class, () -> DatasetResource.assertCreatable(dataset(o, null, null), user));
+      DatasetResource.assertCreatable(dataset(o, PROJECT, null), admin);
+    }
+    assertThrows(IllegalArgumentException.class, () -> DatasetResource.assertCreatable(dataset(DatasetOrigin.EXTERNAL, PROJECT, null), user));
+    assertThrows(IllegalArgumentException.class, () -> DatasetResource.assertCreatable(dataset(DatasetOrigin.EXTERNAL, null, UUID.randomUUID()), user));
+    DatasetResource.assertCreatable(dataset(DatasetOrigin.EXTERNAL, null, UUID.randomUUID()), admin);
+  }
+
+  private static Dataset dataset(DatasetOrigin origin, Integer sourceKey, UUID gbifKey) {
+    var d = new Dataset();
+    d.setOrigin(origin);
+    d.setSourceKey(sourceKey);
+    d.setGbifKey(gbifKey);
+    return d;
   }
 }

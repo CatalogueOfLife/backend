@@ -54,6 +54,11 @@ public class RematchRequest implements DSID<Integer> {
     return allowImmutableDatasets;
   }
 
+  /**
+   * Internal use only, never bound from a request body: it skips the guard against rematching releases.
+   * See gbif/informatics#85 (B6).
+   */
+  @JsonIgnore
   public void setAllowImmutableDatasets(boolean allowImmutableDatasets) {
     this.allowImmutableDatasets = allowImmutableDatasets;
   }

@@ -80,6 +80,8 @@ public class DecisionResource extends AbstractDatasetScopedResource<Integer, Edi
 
   @POST
   @Path("/rematch")
+  @ProjectOnly
+  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public RematcherBase.MatchCounter rematch(@PathParam("key") int projectKey, DecisionRematchRequest req, @Auth User user) {
     req.setDatasetKey(projectKey);
     return DecisionRematcher.match(dao, req, user.getKey());

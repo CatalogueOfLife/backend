@@ -52,6 +52,13 @@ public class DwcaReader extends CsvReader {
     factory = (XMLInputFactory2) XMLInputFactory2.newFactory();
     factory.configureForConvenience();
     factory.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, false);
+    // no DTDs and no external entities: meta.xml is user supplied and would otherwise read local files or urls (XXE).
+    // Set after configureForConvenience, which turns entity handling on
+    factory.setProperty(XMLInputFactory.SUPPORT_DTD, false);
+    factory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
+    factory.setXMLResolver((publicID, systemID, baseURI, namespace) -> {
+      throw new XMLStreamException("External entities are not supported: " + systemID);
+    });
   }
   
   private static final Map<Term, Term> ROW_TYPE_TO_ID = Map.of(

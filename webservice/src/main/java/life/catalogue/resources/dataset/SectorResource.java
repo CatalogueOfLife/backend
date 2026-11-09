@@ -250,6 +250,8 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
 
   @POST
   @Path("/rematch")
+  @ProjectOnly
+  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public RematcherBase.MatchCounter rematch(@PathParam("key") int projectKey, SectorRematchRequest req, @Auth User user) {
     req.setDatasetKey(projectKey);
     return SectorRematcher.match(dao, req, user.getKey());

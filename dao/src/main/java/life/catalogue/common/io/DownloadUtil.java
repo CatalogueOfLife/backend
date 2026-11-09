@@ -11,6 +11,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.IOUtils;
@@ -19,12 +20,13 @@ import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.client5.http.utils.URIUtils;
 import org.apache.hc.core5.http.*;
-import org.apache.hc.core5.http.io.support.ClassicRequestBuilder;
 import org.apache.hc.core5.net.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
+
+import com.google.common.annotations.VisibleForTesting;
 
 /**
  *
@@ -34,7 +36,9 @@ public class DownloadUtil {
   private static final String LAST_MODIFIED = "Last-Modified";
   private static final String MODIFIED_SINCE = "If-Modified-Since";
   private static final String AUTHORIZATION = "Authorization";
-  private static final Pattern GITHUB_DOMAINS = Pattern.compile("github(usercontent)?\\.com", Pattern.CASE_INSENSITIVE);
+  private static final Set<String> GITHUB_HOSTS = Set.of(
+    "github.com", "api.github.com", "codeload.github.com", "raw.githubusercontent.com", "objects.githubusercontent.com"
+  );
   private static final Pattern GEOFF = Pattern.compile("^/gdower", Pattern.CASE_INSENSITIVE);
   //https://codeload.github.com/gdower/data-cycads/zip/master
 
@@ -88,8 +92,26 @@ public class DownloadUtil {
       return downloadIfModifiedSinceFTP(url, downloadTo);
     }
     
-    HttpGet get = new HttpGet(url.toString());
-    
+    // execute, we do 2 manual redirect as HC avoids authenticated redirects.
+    // Every request is built anew for its own url, so a GitHub token never follows a redirect to another host
+    try {
+      return exec(buildGet(url, lastModified), url, downloadTo);
+    } catch (RedirectException e) {
+      try {
+        return exec(buildGet(e.location, lastModified), e.location, downloadTo);
+      } catch (RedirectException e2) {
+        try {
+          return exec(buildGet(e2.location, lastModified), e2.location, downloadTo);
+        } catch (RedirectException ex) {
+          throw new DownloadException(e2.location, ex);
+        }
+      }
+    }
+  }
+
+  private HttpGet buildGet(final URI url, @Nullable final LocalDateTime lastModified) {
+    HttpGet get = new HttpGet(url);
+
     // prepare conditional GET request headers
     if (lastModified != null) {
       // DateTimeFormatter is threadsafe these days
@@ -97,33 +119,39 @@ public class DownloadUtil {
       LOG.debug("Conditional GET: {}", DateTimeFormatter.RFC_1123_DATE_TIME.format(lastModifiedZoned));
       get.addHeader(MODIFIED_SINCE, DateTimeFormatter.RFC_1123_DATE_TIME.format(lastModifiedZoned));
     }
-    
-    if (githubToken != null && GITHUB_DOMAINS.matcher(url.getHost()).find()) {
-      if (githubTokenGeoff != null && GEOFF.matcher(url.getPath()).find()) {
+
+    String token = githubToken(url);
+    if (token != null) {
+      get.addHeader(AUTHORIZATION, "token " + token);
+    }
+    return get;
+  }
+
+  /**
+   * @return the GitHub token to send to this url, or null if it is not a GitHub host
+   */
+  @VisibleForTesting
+  String githubToken(URI url) {
+    if (githubToken != null && isGithubHost(url)) {
+      if (githubTokenGeoff != null && url.getPath() != null && GEOFF.matcher(url.getPath()).find()) {
         LOG.debug("Adding Github API token from Geoff");
-        get.addHeader(AUTHORIZATION, "token " + githubTokenGeoff);
-      } else {
-        LOG.debug("Adding Github API token");
-        get.addHeader(AUTHORIZATION, "token " + githubToken);
+        return githubTokenGeoff;
       }
+      LOG.debug("Adding Github API token");
+      return githubToken;
     }
-    
-    // execute, we do 2 manual redirect as HC avoids authenticated redirects
-    try {
-      return exec(get, url, downloadTo);
-    } catch (RedirectException e) {
-      var redirect = ClassicRequestBuilder.copy(get).setUri(e.location).build();
-      try {
-        return exec(redirect, e.location, downloadTo);
-      } catch (RedirectException e2) {
-        redirect = ClassicRequestBuilder.copy(get).setUri(e2.location).build();
-        try {
-          return exec(redirect, e2.location, downloadTo);
-        } catch (RedirectException ex) {
-          throw new DownloadException(e2.location, ex);
-        }
-      }
-    }
+    return null;
+  }
+
+  /**
+   * Only https urls of the exact GitHub hosts get a token: a pattern found anywhere in the host also matched
+   * github.com.example.org, see gbif/informatics#85 (B5).
+   */
+  @VisibleForTesting
+  static boolean isGithubHost(URI url) {
+    return url != null && url.getHost() != null
+      && "https".equalsIgnoreCase(url.getScheme())
+      && GITHUB_HOSTS.contains(url.getHost().toLowerCase(Locale.ROOT));
   }
 
   private boolean exec(ClassicHttpRequest get, final URI url, final File downloadTo) throws DownloadException, RedirectException {
