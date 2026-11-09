@@ -39,6 +39,7 @@ import org.slf4j.LoggerFactory;
 import com.codahale.metrics.Gauge;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
+import com.google.common.annotations.VisibleForTesting;
 
 /**
  * The background job executor with several priority ordered queues, one per JobLane.
@@ -64,6 +65,9 @@ public class JobExecutor implements Managed, Idle, SomeExecutor {
   private final SerialGate gate = new SerialGate();
   // blocked jobs waiting for a dataset lock, by dataset key. Not in any lane queue, they hold no worker
   private final Map<Integer, List<ComparableFutureTask>> lockParked = new HashMap<>();
+  // set by stop() under the lockParked monitor when it drains the parking, so a job a worker only parks afterwards -
+  // it is BLOCKED from inside run(), but parked in afterExecute - is ended instead of being left there forever
+  private boolean parkingClosed;
   private final IntConsumer unlockListener = this::unparkLocked;
   private final UserCrudDao udao;
   private final @Nullable EmailNotification emailer;
@@ -90,6 +94,9 @@ public class JobExecutor implements Managed, Idle, SomeExecutor {
         var exec = new ColExecutor(lane, cfg.threads(lane), queues.get(lane));
         exec.allowCoreThreadTimeOut(true);
         execs.put(lane, exec);
+      }
+      synchronized (lockParked) {
+        parkingClosed = false;
       }
       DatasetLock.addListener(unlockListener);
       // last, as the handlers resubmit and therefore need the pools
@@ -166,6 +173,7 @@ public class JobExecutor implements Managed, Idle, SomeExecutor {
     synchronized (lockParked) {
       lockParked.values().forEach(drained::addAll);
       lockParked.clear();
+      parkingClosed = true;
     }
     return drained;
   }
@@ -497,16 +505,26 @@ public class JobExecutor implements Managed, Idle, SomeExecutor {
    * Parks a job that could not get the lock on its dataset until the dataset is unlocked.
    * The lock might have been released in the meantime, while the unlock listener found nothing to unpark yet,
    * so availability is checked again under the same monitor the listener uses.
+   * A job blocked while stop() drained the parking comes too late to be drained, so it is ended right here instead.
    */
   private void parkBlocked(DatasetBlockingJob job, ComparableFutureTask ftask, DatasetBlockedException be) {
     var next = ftask.rerun();
-    futures.put(job.getKey(), next);
+    boolean stopped;
     synchronized (lockParked) {
-      if (!DatasetLock.isAvailable(be.datasetKey, job.getKey(), job.lockMode())) {
-        LOG.info("Park {} job {} until dataset {} is unlocked by job {}", job.getJobName(), job.getKey(), be.datasetKey, be.blockedBy);
-        lockParked.computeIfAbsent(be.datasetKey, k -> new ArrayList<>()).add(next);
-        return;
+      stopped = parkingClosed;
+      if (!stopped) {
+        futures.put(job.getKey(), next);
+        if (!DatasetLock.isAvailable(be.datasetKey, job.getKey(), job.lockMode())) {
+          LOG.info("Park {} job {} until dataset {} is unlocked by job {}", job.getJobName(), job.getKey(), be.datasetKey, be.blockedBy);
+          lockParked.computeIfAbsent(be.datasetKey, k -> new ArrayList<>()).add(next);
+          return;
+        }
       }
+    }
+    if (stopped) {
+      LOG.info("Executor stopped before {} job {} blocked by dataset {} could be parked", job.getJobName(), job.getKey(), be.datasetKey);
+      endBeforeStart(next);
+      return;
     }
     LOG.info("Rerun {} job {} as dataset {} got unlocked meanwhile", job.getJobName(), job.getKey(), be.datasetKey);
     requeue(next);
@@ -526,6 +544,17 @@ public class JobExecutor implements Managed, Idle, SomeExecutor {
         LOG.info("Unpark job {} as dataset {} got unlocked", t.task.getKey(), datasetKey);
         requeue(t);
       }
+    }
+  }
+
+  /**
+   * A job reports BLOCKED from inside run() but is only parked once its worker reaches afterExecute.
+   * Tests that act on a parked job have to await this, not the status.
+   */
+  @VisibleForTesting
+  boolean isLockParked(UUID key) {
+    synchronized (lockParked) {
+      return lockParked.values().stream().flatMap(List::stream).anyMatch(t -> t.task.getKey().equals(key));
     }
   }
 
