@@ -50,6 +50,8 @@ import jakarta.validation.Validator;
 public class TaxonDao extends NameUsageBaseDao<Taxon, TaxonMapper> implements TaxonCounter {
   private static final Logger LOG = LoggerFactory.getLogger(TaxonDao.class);
   private static final Pattern TAG = Pattern.compile("(?<!<)([ib])>(.+)</\\1(?!>)");
+  // the most superseded redirects followed to find the last successor of an archived id
+  private static final int MAX_REDIRECT_HOPS = 5;
   private SectorDao sectorDao;
   private TaxGroupAnalyzer groupAnalyzer = new TaxGroupAnalyzer();
   private final NameUsageSearchService searchService;
@@ -159,14 +161,41 @@ public class TaxonDao extends NameUsageBaseDao<Taxon, TaxonMapper> implements Ta
       var info = DatasetInfoCache.CACHE.info(key.getDatasetKey());
       if (info.origin.isRelease()) {
         var projectKey = DSID.of(info.sourceKey, key.getId());
-        var anu = session.getMapper(ArchivedNameUsageMapper.class).get(projectKey);
+        var anum = session.getMapper(ArchivedNameUsageMapper.class);
+        var anu = anum.get(projectKey);
         if (anu != null) {
+          anu.setSupersededBy(lastSuccessor(anum, info.sourceKey, anu));
           return new ArchivedException(projectKey, anu);
         }
       }
       // nothing better to say, keep the original 404
       return notFound;
     }
+  }
+
+  /**
+   * Follows the superseded redirects of an archived id to the last id of the chain: a redirect target was live when it
+   * was recorded but may have been dropped and superseded itself since. Stops after MAX_REDIRECT_HOPS, or at an id seen
+   * before, and returns the last id reached.
+   *
+   * @return the last successor of the archived usage, null if it has no redirect
+   */
+  @VisibleForTesting
+  static String lastSuccessor(ArchivedNameUsageMapper anum, int projectKey, ArchivedNameUsage anu) {
+    String successor = anu.getSupersededBy();
+    if (successor == null) {
+      return null;
+    }
+    Set<String> seen = new HashSet<>();
+    seen.add(anu.getId());
+    for (int hop = 1; hop < MAX_REDIRECT_HOPS && seen.add(successor); hop++) {
+      var next = anum.get(DSID.of(projectKey, successor));
+      if (next == null || next.getSupersededBy() == null || seen.contains(next.getSupersededBy())) {
+        break;
+      }
+      successor = next.getSupersededBy();
+    }
+    return successor;
   }
 
   /**

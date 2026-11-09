@@ -395,6 +395,20 @@ public class AdminResource {
     return runJob(new ArchiveRefreshJob(user.getKey(), factory, namesIndex, projectKey, dryRun));
   }
 
+  /**
+   * Backfills the missing superseded redirects of the archived ids of a project, see ArchiveRedirectJob.
+   * @param since optional release key; only ids carried by this release or a later one get a redirect
+   */
+  @POST
+  @Path("/archive/redirects")
+  public JobInfo archiveRedirects(@QueryParam("projectKey") Integer projectKey,
+                                  @QueryParam("since") Integer since,
+                                  @QueryParam("dryRun") boolean dryRun,
+                                  @Auth User user) {
+    Preconditions.checkArgument(projectKey != null, "A projectKey parameter must be given");
+    return runJob(new ArchiveRedirectJob(user.getKey(), factory, projectKey, since, dryRun));
+  }
+
   @GET
   @Path("/rematch/scheduler/preview")
   public Response rematchPreview(@Auth User user, @QueryParam("threshold") @DefaultValue("0") double threshold) {

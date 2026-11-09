@@ -61,6 +61,11 @@ public class ArchivedNameUsageMapperTest extends MapperTestBase<ArchivedNameUsag
     assertEquals(0, mapper().clearSuperseded(Datasets.COL, rel));
     assertEquals(0, mapper().applySuperseded(Datasets.COL, rel, List.of()));
     assertEquals(0, mapper().applySuperseded(Datasets.COL, rel, List.of(1, 2)));
+    mapper().processRedirectCandidates(Datasets.COL, List.of(), List.of()).forEach(o -> fail("no archive data"));
+    mapper().processRedirectCandidates(Datasets.COL, List.of(rel), List.of(1, 2)).forEach(o -> fail("no archive data"));
+    var redirects = List.of(new ArchivedNameUsageMapper.Redirect("B", "C"), new ArchivedNameUsageMapper.Redirect("D", "E"));
+    assertEquals(0, mapper().fillSuperseded(Datasets.COL, redirects, List.of()));
+    assertEquals(0, mapper().fillSuperseded(Datasets.COL, redirects, List.of(rel, 1)));
   }
 
   public static ArchivedNameUsage create() {

@@ -1,0 +1,171 @@
+package life.catalogue.jobs;
+
+import life.catalogue.api.model.SimpleName;
+import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.db.mapper.ArchivedNameUsageMapper.ArchivedSimpleName;
+import life.catalogue.jobs.RedirectPairing.Outcome;
+import life.catalogue.matching.NameIdentity;
+import life.catalogue.matching.TaxGroupAnalyzer;
+
+import org.gbif.nameparser.api.NomCode;
+import org.gbif.nameparser.api.Rank;
+
+import java.util.List;
+
+import org.junit.Test;
+
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+
+import static org.junit.Assert.*;
+
+public class RedirectPairingTest {
+  // 20 is the newest base release, 21 its extended release, 10 and 11 older releases
+  static final int BASE = 20;
+  static final int XR = 21;
+  final RedirectPairing pairing = new RedirectPairing(new TaxGroupAnalyzer(),
+    new IntOpenHashSet(new int[]{BASE, XR}), new IntOpenHashSet(new int[]{BASE}));
+
+  static ArchivedSimpleName sn(String id, String name, String authorship, Rank rank, int... releaseKeys) {
+    var sn = new ArchivedSimpleName();
+    sn.setId(id);
+    sn.setName(name);
+    sn.setAuthorship(authorship);
+    sn.setRank(rank);
+    sn.setStatus(TaxonomicStatus.ACCEPTED);
+    sn.setCode(NomCode.BOTANICAL);
+    sn.setNamesIndexId(1);
+    sn.setReleaseKeys(releaseKeys);
+    return sn;
+  }
+
+  static ArchivedSimpleName species(String id, String authorship, int... releaseKeys) {
+    return sn(id, "Abies alba", authorship, Rank.SPECIES, releaseKeys);
+  }
+
+  RedirectPairing.Pair single(ArchivedSimpleName... group) {
+    var pairs = pairing.pair(List.of(group));
+    assertEquals(1, pairs.size());
+    return pairs.get(0);
+  }
+
+  static void assertRedirect(RedirectPairing.Pair p, String deadId, String liveId) {
+    assertEquals(Outcome.REDIRECT, p.outcome());
+    assertTrue(p.isRedirect());
+    assertEquals(deadId, p.dead().getId());
+    assertEquals(liveId, p.live().getId());
+  }
+
+  /**
+   * data#1867: the COL21 id of Helosciadium lost to the id of an extended release duplicate in COL26.7
+   */
+  @Test
+  public void helosciadium() {
+    var p = single(
+      sn("637G6", "Helosciadium", "W.D.J.Koch", Rank.GENUS, 10, 11),
+      sn("VJTPP", "Helosciadium", "W. D. J. Koch", Rank.GENUS, 11, BASE, XR)
+    );
+    assertRedirect(p, "637G6", "VJTPP");
+    assertEquals(NameIdentity.Evidence.CONFIRMED, p.verdict().evidence);
+  }
+
+  @Test
+  public void authorCitedDifferently() {
+    assertRedirect(single(species("BB", "Miller", 10), species("CC", "Mill.", BASE)), "BB", "CC");
+  }
+
+  @Test
+  public void authorshipAddedIsPlausible() {
+    var p = single(species("BB", null, 10), species("CC", "Mill.", BASE));
+    assertRedirect(p, "BB", "CC");
+    assertEquals(NameIdentity.Evidence.PLAUSIBLE, p.verdict().evidence);
+  }
+
+  @Test
+  public void differentAuthorIsContradicted() {
+    var p = single(species("BB", "DC.", 10), species("CC", "Mill.", BASE));
+    assertEquals(Outcome.CONTRADICTED, p.outcome());
+    assertNull(p.live());
+  }
+
+  @Test
+  public void misappliedNameIsADifferentName() {
+    var dead = species("BB", "Mill.", 10);
+    dead.setStatus(TaxonomicStatus.MISAPPLIED);
+    assertEquals(Outcome.CONTRADICTED, single(dead, species("CC", "Mill.", BASE)).outcome());
+  }
+
+  @Test
+  public void nothingCorroboratesIsWeak() {
+    // an unranked name tells nothing about the rank, and neither side has an authorship
+    var p = single(
+      sn("BB", "Abies", null, Rank.UNRANKED, 10),
+      sn("CC", "Abies", null, Rank.GENUS, BASE)
+    );
+    assertEquals(Outcome.WEAK, p.outcome());
+    assertFalse(p.isRedirect());
+    assertEquals("CC", p.live().getId());
+  }
+
+  @Test
+  public void tieGoesToTheIdABaseReleaseCarries() {
+    assertRedirect(single(
+      species("BB", "Mill.", 10),
+      species("CC", "Mill.", XR),
+      species("DD", "Mill.", BASE, XR)
+    ), "BB", "DD");
+  }
+
+  @Test
+  public void remainingTieIsAmbiguous() {
+    var p = single(
+      species("BB", "Mill.", 10),
+      species("CC", "Mill.", XR),
+      species("DD", "Mill.", XR)
+    );
+    assertEquals(Outcome.AMBIGUOUS, p.outcome());
+    assertFalse(p.isRedirect());
+  }
+
+  @Test
+  public void betterEvidenceWinsOverBaseRelease() {
+    // CC agrees on the author, DD only on the rank
+    assertRedirect(single(
+      species("BB", "Mill.", 10),
+      species("CC", "Miller", XR),
+      species("DD", null, BASE)
+    ), "BB", "CC");
+  }
+
+  @Test
+  public void equalAuthorshipOverrulesDisparateGroups() {
+    var dead = sn("BB", "Oenanthe", "L.", Rank.GENUS, 10);
+    dead.setClassification(List.of(new SimpleName(null, "Animalia", Rank.KINGDOM)));
+    dead.setCode(NomCode.ZOOLOGICAL);
+    var live = sn("CC", "Oenanthe", "L.", Rank.GENUS, BASE);
+    live.setClassification(List.of(new SimpleName(null, "Plantae", Rank.KINGDOM)));
+    var p = single(dead, live);
+    assertRedirect(p, "BB", "CC");
+    assertEquals(NameIdentity.Evidence.PLAUSIBLE, p.verdict().evidence);
+  }
+
+  @Test
+  public void noLiveId() {
+    var p = single(species("BB", "Mill.", 10), species("A", "Mill.", BASE));
+    // A is no LATIN29 id, so it is no redirect target
+    assertEquals(Outcome.NO_TARGET, p.outcome());
+    assertNull(p.live());
+  }
+
+  @Test
+  public void manyDeadIdsOneLiveId() {
+    var pairs = pairing.pair(List.of(
+      species("BB", "Mill.", 10),
+      species("CC", "Miller", 11),
+      species("DD", "Mill.", BASE),
+      species("E", "Mill.", 11) // a temporary id is never redirected
+    ));
+    assertEquals(2, pairs.size());
+    assertRedirect(pairs.get(0), "BB", "DD");
+    assertRedirect(pairs.get(1), "CC", "DD");
+  }
+}

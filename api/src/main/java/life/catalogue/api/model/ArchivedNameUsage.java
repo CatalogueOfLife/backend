@@ -20,6 +20,7 @@ public class ArchivedNameUsage extends NameUsageBase {
   private String publishedIn; // citation
   private Boolean extinct;
   private int[] releaseKeys; // release datasetKey
+  private String supersededBy; // the id that took this one over, if any
 
   public ArchivedNameUsage() {
   }
@@ -36,6 +37,7 @@ public class ArchivedNameUsage extends NameUsageBase {
     this.publishedIn = other.publishedIn;
     this.extinct = other.extinct;
     this.releaseKeys = other.releaseKeys;
+    this.supersededBy = other.supersededBy;
   }
 
   @Override
@@ -106,6 +108,19 @@ public class ArchivedNameUsage extends NameUsageBase {
     this.releaseKeys = releaseKeys;
   }
 
+  /**
+   * @return the identifier of the usage that took this archived identifier over, typically because both were the same
+   *   name and this one was dropped. It is live in the newest releases of the project when it was recorded, but
+   *   may since have been superseded itself. Null if no successor is known.
+   */
+  public String getSupersededBy() {
+    return supersededBy;
+  }
+
+  public void setSupersededBy(String supersededBy) {
+    this.supersededBy = supersededBy;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -117,11 +132,12 @@ public class ArchivedNameUsage extends NameUsageBase {
            && Objects.equals(classification, that.classification)
            && Objects.equals(publishedIn, that.publishedIn)
            && Objects.equals(extinct, that.extinct)
-           && Arrays.equals(releaseKeys, that.releaseKeys);
+           && Arrays.equals(releaseKeys, that.releaseKeys)
+           && Objects.equals(supersededBy, that.supersededBy);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), accepted, basionym, classification, publishedIn, extinct, Arrays.hashCode(releaseKeys));
+    return Objects.hash(super.hashCode(), accepted, basionym, classification, publishedIn, extinct, Arrays.hashCode(releaseKeys), supersededBy);
   }
 }

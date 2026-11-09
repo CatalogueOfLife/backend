@@ -353,6 +353,12 @@ staged per release in `usage_id_superseded`). Redirects are decided by the newes
 ranked supplying base and extended release apply their pairs, skipping ids another supplying release of that
 generation carries, and each of its supplying releases clears the redirects of the ids it carries. See
 [`docs/2026-09-15-name-usage-archive-migration.md`](docs/2026-09-15-name-usage-archive-migration.md).
+The redirect is served as `supersededBy` of the archived usage in the 404 body of a dead id (`TaxonDao.enrich404`
+follows a chain up to 5 hops). Publishing only redirects ids the previous release had, so `ArchiveRedirectJob`
+(`POST /admin/archive/redirects?projectKey=&since=&dryRun=`) backfills the missing ones: dead ids against the ids of
+`ReleaseRanking.liveKeys()` - the newest generation plus the newest base and newest extended release, so a base release
+without its XR yet does not count the last XR's ids as dead - paired by `RedirectPairing` on `NameIdentity`, never
+overwriting. See [`docs/2026-11-09-superseded-id-redirects.md`](docs/2026-11-09-superseded-id-redirects.md).
 `XIdProvider` mints nothing but temp ids during the merge; the one `mapTempIds()` pass at the end of `XRelease`
 assigns the stable ones, so the whole canonical group competes at once instead of usage by usage in sector order.
 `name` records take the stable id of one of their own usages (`idmap_name_<key>`), off by default behind

@@ -157,8 +157,27 @@ it, and no other of those releases - the base release and the extended releases 
 identifier. An extended release does not reconsider the identifiers it inherits from its base release, so removing
 the extended copy of a name that is also in the base release records no pairing.
 
-> Requesting a dead identifier does **not** redirect you to its survivor. The replacement is recorded, but
-> the API does not resolve it, so an old identifier still returns nothing.
+### Finding the replacement of a dead identifier
+
+Requesting a dead identifier from a release still answers `404 Not Found`. The response body carries the
+archived record of the identifier, though, and where a replacement is known its `supersededBy` names it:
+
+```
+GET https://api.checklistbank.org/dataset/3LXR/taxon/637G6/info
+404 {"code": 404, "message": "Usage 3:637G6 was deleted and archived in release: 315557, superseded by VJTPP",
+     "usage": {"id": "637G6", ..., "supersededBy": "VJTPP"}}
+```
+
+The replacement belongs to the newest releases, which is not necessarily the release you asked. If the replacement
+has been dropped and replaced in turn, `supersededBy` follows the chain and names the last identifier. The portal's
+page for a dead identifier, `catalogueoflife.org/data/taxon/{id}`, links to the replacement.
+
+Releases only record a replacement for an identifier the previous release still had. Identifiers dropped earlier,
+in particular those lost in COL26.7 to COL26.9, whose identifier assignment preferred old or duplicate identifiers
+over the one in use ([data#1867](https://github.com/CatalogueOfLife/data/issues/1867)), got their replacement added
+afterwards. The rules are the same as above: the dead identifier's last version and the identifier in use must not
+contradict each other, authorship or rank must positively agree, and where two identifiers in use are equally good
+candidates no replacement is recorded.
 
 ## What can still change your identifier
 

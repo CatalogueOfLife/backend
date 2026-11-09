@@ -75,6 +75,37 @@ public class ReleaseRankingTest {
   }
 
   @Test
+  public void liveKeys() {
+    var older = new ArchivableRelease[]{
+      base(10, 1, JAN),
+      xr(11, 2, JAN.plusDays(3), 10),
+      base(20, 3, JAN.plusMonths(1)),
+      xr(21, 4, JAN.plusMonths(1).plusDays(3), 20),
+      xr(22, 5, JAN.plusMonths(1).plusDays(9), 20)
+    };
+    // the newest generation is complete
+    assertEquals(List.of(20, 22, 21), rank(older).liveKeys());
+
+    // a new base release without its extended release yet: the last extended release is still live
+    var r = rank(
+      older[0], older[1], older[2], older[3], older[4],
+      base(30, 6, JAN.plusMonths(2))
+    );
+    assertEquals(List.of(30), r.newestGenerationSupplyingKeys());
+    assertEquals(List.of(30, 22), r.liveKeys());
+
+    // ignored and deleted releases are never live
+    r = rank(new IntOpenHashSet(new int[]{22}),
+      older[0], older[1], older[2], older[3], older[4],
+      new ArchivableRelease(30, RELEASE, 6, JAN.plusMonths(2), JAN.plusMonths(3), null)
+    );
+    assertEquals(List.of(20, 21), r.liveKeys());
+
+    // a project with base releases only
+    assertEquals(List.of(20), rank(base(10, 1, JAN), base(20, 3, JAN.plusMonths(1))).liveKeys());
+  }
+
+  @Test
   public void ignoredReleaseDecidesNoRedirects() {
     var r = rank(new IntOpenHashSet(new int[]{22}),
       base(20, 3, JAN.plusMonths(1)),
