@@ -19,6 +19,9 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.jupiter.api.Disabled;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+
 public class DownloadUtilTest {
   CloseableHttpClient hc;
   File f;
@@ -125,5 +128,28 @@ public class DownloadUtilTest {
     //d.download(URI.create("https://github.com/CatalogueOfLife/data-scarabs/archive/master.zip"), f);
     //d.download(URI.create("https://github.com/CatalogueOfLife/data-world-spider-catalog/archive/master.zip"), f);
     //d.download(URI.create("https://github.com/gdower/data-cycads/archive/master.zip"), f);
+  }
+
+  /**
+   * The GitHub tokens go to the exact GitHub hosts over https only, see gbif/informatics#85 (B5).
+   * Redirects build their request from their own url, so they follow the same rule.
+   */
+  @Test
+  public void githubToken() {
+    DownloadUtil d = new DownloadUtil(hc, "TOKEN", "GEOFF");
+    assertEquals("TOKEN", d.githubToken(URI.create("https://github.com/CatalogueOfLife/data-scarabs/archive/master.zip")));
+    assertEquals("TOKEN", d.githubToken(URI.create("https://codeload.github.com/CatalogueOfLife/data-scarabs/zip/master")));
+    assertEquals("TOKEN", d.githubToken(URI.create("https://raw.githubusercontent.com/CatalogueOfLife/coldp/master/metadata.yaml")));
+    assertEquals("TOKEN", d.githubToken(URI.create("https://GitHub.com/x/y")));
+    assertEquals("GEOFF", d.githubToken(URI.create("https://github.com/gdower/data-cycads/archive/master.zip")));
+
+    assertNull(d.githubToken(URI.create("http://github.com/x/y")));
+    assertNull(d.githubToken(URI.create("https://github.com.example.org/x/y")));
+    assertNull(d.githubToken(URI.create("https://evilgithub.com/x/y")));
+    assertNull(d.githubToken(URI.create("https://githubusercontent.com.example.org/x")));
+    assertNull(d.githubToken(URI.create("https://pages.github.com.evil/x")));
+    assertNull(d.githubToken(URI.create("https://example.org/github.com/x")));
+
+    assertNull(new DownloadUtil(hc).githubToken(URI.create("https://github.com/x/y")));
   }
 }
