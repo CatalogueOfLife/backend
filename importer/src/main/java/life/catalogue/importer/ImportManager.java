@@ -232,6 +232,9 @@ public class ImportManager implements DatasetListener, AutoCloseable {
     Path upload;
     if (filename == null) {
       filename = "upload-" + System.currentTimeMillis() + (suffix == null ? "" : "." + suffix);
+    } else {
+      // the name comes from the client, keep only its last path element. scratchFile rejects anything else unsafe
+      filename = filename.substring(Math.max(filename.lastIndexOf('/'), filename.lastIndexOf('\\')) + 1);
     }
     upload = nCfg.scratchFile(datasetKey, filename).toPath();
     Files.createDirectories(upload.getParent());

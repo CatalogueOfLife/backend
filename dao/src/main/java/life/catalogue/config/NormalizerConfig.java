@@ -19,6 +19,9 @@ import jakarta.validation.constraints.NotNull;
  */
 @SuppressWarnings("PublicField")
 public class NormalizerConfig {
+  // path separators and control characters incl. NUL
+  private static final Pattern INVALID_FILENAME = Pattern.compile("[/\\\\\\p{Cntrl}]");
+
   
   private static final Logger LOG = LoggerFactory.getLogger(NormalizerConfig.class);
   public static final String ARCHIVE_SUFFIX = "archive";
@@ -103,9 +106,24 @@ public class NormalizerConfig {
     return new File(scratchDir(datasetKey), "source");
   }
   
+  /**
+   * A file directly inside the scratch dir of a dataset.
+   * The name can come from a client, e.g. the X-File-Name header of an upload, and is therefore restricted to a plain
+   * file name: no path separators, no relative segments, no control characters. See gbif/informatics#85 (B1).
+   *
+   * @throws IllegalArgumentException if the name is not a plain file name or a reserved one
+   */
   public File scratchFile(int datasetKey, String fileName) {
-    Preconditions.checkArgument(!fileName.equalsIgnoreCase("normalizer") && !fileName.equalsIgnoreCase("source"));
-    return new File(scratchDir(datasetKey), fileName);
+    Preconditions.checkArgument(fileName != null && !fileName.isBlank(), "File name required");
+    Preconditions.checkArgument(!INVALID_FILENAME.matcher(fileName).find()
+        && !fileName.equals(".") && !fileName.equals(".."),
+      "Invalid file name %s", fileName);
+    Preconditions.checkArgument(!fileName.equalsIgnoreCase("normalizer") && !fileName.equalsIgnoreCase("source"),
+      "Reserved file name %s", fileName);
+    final Path dir = scratchDir(datasetKey).toPath().toAbsolutePath().normalize();
+    final Path file = dir.resolve(fileName).normalize();
+    Preconditions.checkArgument(file.getParent() != null && file.getParent().equals(dir), "Invalid file name %s", fileName);
+    return file.toFile();
   }
 
   /**
