@@ -5,7 +5,7 @@ import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.License;
-import life.catalogue.common.io.HttpUtils;
+import life.catalogue.common.io.UrlPolicy;
 import life.catalogue.common.ws.MoreMediaTypes;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.importer.ImportManager;
@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,12 +33,10 @@ public class ValidatorResource {
   private static final Logger LOG = LoggerFactory.getLogger(ValidatorResource.class);
   private final ImportManager importManager;
   private final DatasetDao ddao;
-  private final HttpUtils http;
 
-  public ValidatorResource(ImportManager importManager, DatasetDao ddao, HttpUtils http) {
+  public ValidatorResource(ImportManager importManager, DatasetDao ddao) {
     this.importManager = importManager;
     this.ddao = ddao;
-    this.http = http;
   }
 
 
@@ -74,10 +73,11 @@ public class ValidatorResource {
 
   @GET
   @Path("/txtree")
-  public Tree.VerificationResult validateTxtTree(@QueryParam("url") URI url) throws IOException, InterruptedException {
+  public Tree.VerificationResult validateTxtTree(@QueryParam("url") URI url, @Auth User user) throws IOException, InterruptedException {
     if (url == null) throw new IllegalArgumentException("URL of text tree document required");
 
-    String content = http.get(url);
+    // only public http(s) urls, see gbif/informatics#85 (A8)
+    String content = new String(UrlPolicy.PUBLIC.get(url, UrlPolicy.DEFAULT_MAX_BYTES), StandardCharsets.UTF_8);
     return Tree.verify(new StringReader(content));
   }
 
