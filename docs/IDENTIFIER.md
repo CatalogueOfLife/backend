@@ -85,13 +85,26 @@ the information got better, the name did not change.
 | | a **different** name | the **same** name | tells us **nothing** |
 |---|---|---|---|
 | scientific name | a different name once epithet spellings are folded | gender endings and common epithet spellings: `Felis rufus` ↔ `Felis rufa`, `baileyi` ↔ `baileii` | |
-| authorship | a different author: `Mill.` → `DC.`; the same author with publication years more than 11 apart | the same author cited differently: `Mill.` = `Miller`, `L.` = `Linné`, publication years up to 11 apart; the same combination author, whatever the basionym author in brackets: `(Lamb.) G.Don` = `(Roxb. ex D.Don) G.Don`; one side's basionym author matching the other side's combination author: `(Bryk, 1949)` = `Bryk, 1948`; a name cited with the work it was published in, as either author: `Natterer in Kuhl, 1817` = `Kuhl, 1817` = `Natterer, 1817`, but not `Smith in Kuhl, 1817` or `Kuhl, 1822` | authorship added or removed; an authorship that cannot be parsed; one side's basionym author not matching the other side's combination author |
+| authorship | a different author: `Mill.` → `DC.`; the same author with publication years more than 11 apart; an author without brackets that is neither the other side's author in brackets nor its combination author: `Harrington, 1899` against `(Kirby, 1837)` | the same author cited differently: `Mill.` = `Miller`, `L.` = `Linné`, publication years up to 11 apart; the same combination author, whatever the basionym author in brackets: `(Lamb.) G.Don` = `(Roxb. ex D.Don) G.Don`, also when one side leaves the basionym author out: `Suksd.` = `(G.S.Torr.) Suksd.`; the same original author cited once with and once without brackets: `(Bryk, 1949)` = `Bryk, 1948`, `L.` = `(L.) Mill.`; a name cited with the work it was published in, as either author: `Natterer in Kuhl, 1817` = `Kuhl, 1817` = `Natterer, 1817`, but not `Smith in Kuhl, 1817` or `Kuhl, 1822` | authorship added or removed; an authorship that cannot be parsed |
 | rank | two different concrete ranks: species against genus; the catch-all rank "other" against any other rank | the same rank | unranked against any rank but "other"; a vague rank against a rank it covers: "suprageneric name" against family |
 | taxonomic status | a misapplied name against anything that is not one | the same kind of status: accepted ↔ provisionally accepted, synonym ↔ ambiguous synonym | a taxon sunk into synonymy, or a synonym raised to accepted |
 | nomenclatural code | two different codes: zoological against botanical — the *Oenanthe* case — unless the authorship agrees | the same code | one side not stated |
 | taxonomic group | groups on separate branches: an animal against a plant — unless the authorship agrees | the same group | one side unplaced; one group within the other: insects against arthropods |
 | name phrase (`sensu …`) | a different phrase on two misapplied names | the same phrase | one side missing; a different phrase on names that are not misapplied |
 | accepted name | never on its own | the same accepted name for two synonyms — this is what keeps pro parte synonyms of one and the same name apart | |
+
+**An author without brackets is the original author**, in every nomenclatural code. Against an author in brackets
+on the other side it is either the same name, the brackets added or lost, or a different original author.
+`Harrington, 1899` against `(Kirby, 1837)` is how zoological catalogues cite a later user of a name as its author,
+sometimes for a misidentification of another species, so it costs the identifier. Only when the other side has a
+combination author after the brackets can the author without brackets also be that combination author, with the basionym
+author left out, as botanists often cite. Name matching never merges two such names either.
+
+`L.` against `(L.) Mill.` is the same original author, but only probably the same name. Both often exist side by
+side, an original name and a later transfer of a basionym of the same author from another genus: *Aechmea blanchetii*
+Baker and *Aechmea blanchetii* (Baker) Mez. COL26.10 holds 1,583 such pairs. So a name keeps its identifier when a
+source adds the combination author, but this never confirms a candidate: an identifier whose authorship matches
+exactly always comes first, and the two names of a pair never swap their identifiers.
 
 **Placement does not outweigh the author.** The code and the taxonomic group describe where a name sits and what
 its source says about it, not the name itself, and both change for one and the same name from one release to the
@@ -212,7 +225,7 @@ bundled in `id-reports.gz`; two sit alongside it.
 | `deleted.tsv` | identifiers the previous release had and this one does not | a link of yours stopped working |
 | `resurrected.tsv` | identifiers this release brought back that the previous release did not have | an identifier reappeared |
 | `superseded.tsv` | deleted identifiers that another identifier took over, with the surviving name | a duplicate you cited was cleaned up |
-| `unstable.txt` | names whose identifiers churned, grouped by scientific name | you are auditing instability for a group |
+| `unstable.txt` | names whose identifiers churned, grouped by scientific name; a dropped identifier says why, e.g. `why: contradicted authorship different author across brackets` or `why: outranked` | you are auditing instability for a group |
 | `temporary.tsv` | usages that could not be given a stable identifier | a name has an unexpectedly long identifier |
 | `nomatch.txt` | usages with no names index match at all | you are diagnosing why a name never stabilises |
 

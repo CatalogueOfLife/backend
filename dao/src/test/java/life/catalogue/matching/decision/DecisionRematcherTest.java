@@ -14,6 +14,7 @@ import life.catalogue.junit.MybatisTestUtils;
 import life.catalogue.junit.PgSetupRule;
 import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.junit.TestDataRule;
+import life.catalogue.parser.NameParser;
 
 import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.NameType;
@@ -173,6 +174,44 @@ public class DecisionRematcherTest {
     }
   }
 
+  /**
+   * L. and (L.) Mill. are only probably the same name, and a source often holds both: an original name and a later
+   * transfer of a basionym of the same author from another genus. A decision keeps to the name with its very
+   * authorship then, while a decision on the original name still follows a source citing only the combination.
+   */
+  @Test
+  public void isonymPair() {
+    final int datasetKey = TestDataRule.APPLE.key;
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      usage(session, datasetKey, "aec", null, "Aechmea", null, Rank.GENUS);
+      species(session, datasetKey, "bak", "aec", "Aechmea", "blanchetii", "Baker");
+      species(session, datasetKey, "mez", "aec", "Aechmea", "blanchetii", "(Baker) Mez");
+      species(session, datasetKey, "lin", "aec", "Aechmea", "lingulata", "(L.) Baker");
+    }
+    var baker = createDecision(datasetKey, link("gone7", "Aechmea blanchetii", "Baker", Rank.SPECIES, null));
+    var mez = createDecision(datasetKey, link("gone8", "Aechmea blanchetii", "(Baker) Mez", Rank.SPECIES, null));
+    var lingulata = createDecision(datasetKey, link("gone9", "Aechmea lingulata", "L.", Rank.SPECIES, null));
+
+    DecisionDao dao = new DecisionDao(SqlSessionFactoryRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), validator);
+    DecisionRematchRequest req = new DecisionRematchRequest(Datasets.COL, false);
+    req.setSubjectDatasetKey(datasetKey);
+    DecisionRematcher.match(dao, req, Users.TESTER);
+
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      DecisionMapper dm = session.getMapper(DecisionMapper.class);
+      assertEquals("bak", dm.get(baker).getSubject().getId());
+      assertEquals("mez", dm.get(mez).getSubject().getId());
+      assertEquals("lin", dm.get(lingulata).getSubject().getId());
+
+      var m = new MatchingDao(session).matchDataset(SimpleNameLink.of(null, "Aechmea blanchetii", "Baker", Rank.SPECIES), datasetKey);
+      assertEquals(1, m.size());
+      assertEquals("bak", m.getMatches().getFirst().getId());
+      assertEquals(1, m.getIgnored().size());
+      assertEquals("mez", m.getIgnored().getFirst().usage.getId());
+      assertEquals("Authorship not exactly equal", m.getIgnored().getFirst().reason);
+    }
+  }
+
   static SimpleNameLink link(String id, String name, String authorship, Rank rank, String parent) {
     var sn = SimpleNameLink.of(id, name, authorship, rank);
     sn.setParent(parent);
@@ -189,6 +228,26 @@ public class DecisionRematcherTest {
     if (authorship != null) {
       n.setCombinationAuthorship(authorship);
     }
+    persist(session, n, parentID);
+  }
+
+  static void species(SqlSession session, int datasetKey, String id, String parentID, String genus, String epithet,
+                      String authorship) {
+    Name n = new Name();
+    n.applyUser(TestDataRule.TEST_USER);
+    n.setId(id);
+    n.setDatasetKey(datasetKey);
+    n.setGenus(genus);
+    n.setSpecificEpithet(epithet);
+    n.setRank(Rank.SPECIES);
+    var a = NameParser.PARSER.parseAuthorship(authorship).orElseThrow();
+    n.setCombinationAuthorship(a.getCombinationAuthorship());
+    n.setBasionymAuthorship(a.getBasionymAuthorship());
+    persist(session, n, parentID);
+  }
+
+  private static void persist(SqlSession session, Name n, String parentID) {
+    final String id = n.getId();
     n.setOrigin(Origin.SOURCE);
     n.setType(NameType.SCIENTIFIC);
     n.rebuildScientificName();

@@ -41,6 +41,24 @@ public class MatchingResult {
     this.ignored.add(new IgnoredUsage(usage, reason));
   }
 
+  /**
+   * Keeps a single match and moves all other matches to the ignored ones.
+   * @param match one of the matches
+   * @param reason why the others are ignored
+   */
+  public void keepOnly(NameUsage match, String reason) {
+    if (!matches.contains(match)) {
+      throw new IllegalArgumentException("Not a match: " + match.getId());
+    }
+    for (var m : matches) {
+      if (m != match) {
+        ignore(m, reason);
+      }
+    }
+    matches.clear();
+    matches.add(match);
+  }
+
   public int size() {
     return matches.size();
   }

@@ -777,7 +777,9 @@ public class UsageMatcher implements AutoCloseable {
         if (u.hasAuthorship()) {
           var uSci = parseSciName(u);
           if (uSci.hasAuthorship()) {
-            return authComp.compare(uSci, nuSci) == Equality.DIFFERENT;
+            // a probable difference removes a candidate too, a probable equality keeps it: Stellaria media L.
+            // without a rank is Stellaria media (L.) Vill., see #1660. Of several the exact authorship wins below
+            return authComp.compare(uSci, nuSci).isDifferent();
           }
         }
         return false;
@@ -968,7 +970,8 @@ public class UsageMatcher implements AutoCloseable {
 
   /**
    * @return true if the two same-canonical names have clearly different authorship, so they should be
-   *         treated as different names. Names without comparable authorship are not considered different.
+   *         treated as different names. Names without comparable authorship are not considered different,
+   *         and neither are probably different or probably equal ones.
    */
   private boolean differentAuthorship(SimpleNameCached u, SimpleNameCached nu) {
     if (!u.hasAuthorship() || !nu.hasAuthorship()) {
@@ -978,11 +981,25 @@ public class UsageMatcher implements AutoCloseable {
   }
 
   /**
+   * @return true if the two same-canonical names may be different names judged by their authorship: anything but a
+   *         certain equality or nothing to compare. A probable equality may be one, L. and (L.) Mill. are often both
+   *         names in their own right.
+   */
+  private boolean authorshipMayDiffer(SimpleNameCached u, SimpleNameCached nu) {
+    if (!u.hasAuthorship() || !nu.hasAuthorship()) {
+      return false;
+    }
+    var eq = authComp.compare(parseSciName(u), parseSciName(nu));
+    return eq != Equality.EQUAL && eq != Equality.UNKNOWN;
+  }
+
+  /**
    * Merge policy for two qualified (authored) names: they may only be treated as the same name when
-   * their authorship compares {@link Equality#EQUAL}. A merely uncertain (UNKNOWN) comparison is not
-   * enough - e.g. a combination author ("Sadowsky & Amorim, 1977") lined up against a basionym author
-   * ("(Bigelow & Schroeder, 1944)") yields UNKNOWN on purpose (a basionym author can be shared by many
-   * combinations) - so such names must stay separate rather than be merged. Callers guard this with
+   * their authorship compares {@link Equality#EQUAL}. A merely uncertain comparison is not enough:
+   * a combination author ("Sadowsky & Amorim, 1977") lined up against a basionym author
+   * ("(Bigelow & Schroeder, 1944)") is {@link Equality#PROBABLY_DIFFERENT}, and the basionym author cited alone,
+   * Aus bus Mill. against Aus bus (Mill.) Smith, only {@link Equality#PROBABLY_EQUAL} - both are often names in their
+   * own right - so such names must stay separate rather than be merged. Callers guard this with
    * {@code u.hasAuthorship()} and an incoming qualified name, so both sides are always authored here.
    */
   private boolean notEqualAuthorship(SimpleNameCached u, SimpleNameCached nu) {
@@ -1162,8 +1179,8 @@ public class UsageMatcher implements AutoCloseable {
 
   /**
    * @return true unless all candidates are duplicates of one name: they have an authorship, no two of them compare
-   *         DIFFERENT and they belong to no disparate taxonomic groups. Without an authorship a homonym cannot be
-   *         told from a duplicate.
+   *         anything but EQUAL or UNKNOWN and they belong to no disparate taxonomic groups. Without an authorship a
+   *         homonym cannot be told from a duplicate, and a probable equality or difference may be one.
    */
   private boolean mayBeHomonyms(List<SimpleNameClassified<SimpleNameCached>> candidates) {
     if (candidates.stream().anyMatch(u -> !u.hasAuthorship())) {
@@ -1171,7 +1188,7 @@ public class UsageMatcher implements AutoCloseable {
     }
     for (int i = 0; i < candidates.size(); i++) {
       for (int j = i + 1; j < candidates.size(); j++) {
-        if (differentAuthorship(candidates.get(i), candidates.get(j))) {
+        if (authorshipMayDiffer(candidates.get(i), candidates.get(j))) {
           return true;
         }
       }

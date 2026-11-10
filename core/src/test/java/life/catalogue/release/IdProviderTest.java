@@ -432,6 +432,80 @@ public class IdProviderTest {
     IdProvider.IdReport report = provider.getReport();
     assertEquals(1, report.created.size());
     assertEquals(1, report.deleted.size());
+    // the unstable report tells why
+    assertEquals("contradicted authorship different author", provider.dropReason(IdConverter.LATIN29.encode(62)));
+  }
+
+  @Test
+  public void differentAuthorAcrossBracketsGetsANewId() throws Exception {
+    // an author without brackets is the original author: a zoological catalogue citing a later user of the name
+    // as its author is a different name, see docs/2026-11-10-author-brackets.md
+    prevIdsByAttempt.put(1, List.of(
+      sn(63, 9, SPECIES, "Monohammus confusor", "Saunders, 1881", ACCEPTED)
+    ));
+
+    testNames = new ArrayList<>(List.of(
+      sn(9, SPECIES, "Monohammus confusor", "(Kirby, 1837)", ACCEPTED)
+    ));
+
+    IdTestProvider provider = new IdTestProvider();
+    provider.mapAllIds();
+    IdProvider.IdReport report = provider.getReport();
+    assertEquals(1, report.created.size());
+    assertEquals(1, report.deleted.size());
+    assertEquals("contradicted authorship different author across brackets",
+      provider.dropReason(IdConverter.LATIN29.encode(63)));
+  }
+
+  @Test
+  public void sameOriginalAuthorKeepsTheId() throws Exception {
+    // the original author cited without brackets, the combination author added later: Stellaria media L.
+    prevIdsByAttempt.put(1, List.of(
+      sn(64, 9, SPECIES, "Stellaria media", "L.", ACCEPTED),
+      sn(65, 10, SPECIES, "Agrochola pauli", "Staudinger, 1891", ACCEPTED)
+    ));
+
+    testNames = new ArrayList<>(List.of(
+      sn(9, SPECIES, "Stellaria media", "(L.) Vill.", ACCEPTED),
+      sn(10, SPECIES, "Agrochola pauli", "(Staudinger, 1892)", ACCEPTED)
+    ));
+
+    IdTestProvider provider = new IdTestProvider();
+    provider.mapAllIds();
+    IdProvider.IdReport report = provider.getReport();
+    assertEquals(0, report.created.size());
+    assertEquals(0, report.deleted.size());
+    assertID(64, testNames.get(0));
+    assertID(65, testNames.get(1));
+  }
+
+  /**
+   * An original name and a later transfer of a basionym of the same author from another genus, both in COL26.10 like
+   * 1,582 other such pairs. Every usage pairs with both ids without a contradiction, but only its own one is
+   * confirmed by the exact authorship, so the two never swap ids - not even when the other id is more senior.
+   */
+  @Test
+  public void basionymAuthorCitedNeverSwapsIds() throws Exception {
+    prevIdsByAttempt.put(1, List.of(
+      sn(66, 9, SPECIES, "Aechmea blanchetii", "(Baker) Mez", SYNONYM)
+    ));
+    prevIdsByAttempt.put(2, List.of(
+      sn(66, 9, SPECIES, "Aechmea blanchetii", "(Baker) Mez", SYNONYM),
+      sn(67, 9, SPECIES, "Aechmea blanchetii", "Baker", SYNONYM)
+    ));
+
+    testNames = new ArrayList<>(List.of(
+      sn(9, SPECIES, "Aechmea blanchetii", "Baker", SYNONYM),
+      sn(9, SPECIES, "Aechmea blanchetii", "(Baker) Mez", SYNONYM)
+    ));
+
+    IdTestProvider provider = new IdTestProvider();
+    provider.mapAllIds();
+    IdProvider.IdReport report = provider.getReport();
+    assertEquals(0, report.created.size());
+    assertEquals(0, report.deleted.size());
+    assertID(67, testNames.get(0));
+    assertID(66, testNames.get(1));
   }
 
   @Test

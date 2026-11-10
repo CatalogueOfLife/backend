@@ -1569,8 +1569,9 @@ public class HierarchySync extends SectorRunnable {
    * Is a source synonym the same name as a project usage it would be copied next to? The source id alone does not tell:
    * a project name demoted by phase 2 is matched to one source synonym and can share its name with another one, like
    * Chlamys opercularis next to Chlamys (Aequipecten) opercularis, see https://github.com/CatalogueOfLife/backend/issues/1594
-   * Only a contradicting authorship keeps two names apart - a missing one does not, the project name usually only gains
-   * its authorship in phase 4.
+   * Only an equal or a missing authorship makes two names the same - the project name usually only gains its
+   * authorship in phase 4. A probable difference keeps them apart, and so does a probable equality: Aus bus Mill. and
+   * Aus bus (Mill.) Smith are often both names in their own right.
    */
   private boolean sameName(NameUsageBase pu, Synonym syn) {
     Name pn = pu.getName();
@@ -1578,7 +1579,8 @@ public class HierarchySync extends SectorRunnable {
     if (pn == null || sn == null || !Objects.equals(pn.getScientificName(), sn.getScientificName())) return false;
     if (pn.getRank() != sn.getRank() && ranked(pn.getRank()) && ranked(sn.getRank())) return false;
     if ((pu.getStatus() == TaxonomicStatus.MISAPPLIED) != (syn.getStatus() == TaxonomicStatus.MISAPPLIED)) return false;
-    return authComp.compare(pn, sn) != Equality.DIFFERENT;
+    var eq = authComp.compare(pn, sn);
+    return eq == Equality.EQUAL || eq == Equality.UNKNOWN;
   }
 
   private static boolean ranked(@Nullable Rank rank) {

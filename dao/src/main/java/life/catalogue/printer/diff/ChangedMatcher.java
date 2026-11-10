@@ -154,9 +154,9 @@ public class ChangedMatcher {
   /**
    * Author/year comparison of the effective authorship, treating a missing authorship on either side as
    * UNKNOWN (poolable, not DIFFERENT). We compare the effective {@link Authorship} rather than the whole
-   * {@link ScientificName}, because AuthorComparator's ScientificName overload can only promote a
-   * cross basionym/combination match to EQUAL or UNKNOWN, never DIFFERENT — so year-differing parenthetical
-   * synonyms (author in the basionym slot on one side, combination slot on the other) would wrongly pool.
+   * {@link ScientificName}, because AuthorComparator's ScientificName overload calls a cross basionym/combination
+   * mismatch only PROBABLY_DIFFERENT — so year-differing parenthetical synonyms (author in the basionym slot on one
+   * side, combination slot on the other) would wrongly pool.
    */
   private static Equality authorEquality(ScientificName a1, ScientificName a2) {
     Authorship e1 = effectiveAuthorship(a1);

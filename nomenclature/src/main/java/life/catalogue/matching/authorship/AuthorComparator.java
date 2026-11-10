@@ -4,6 +4,7 @@ import life.catalogue.api.model.ScientificName;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.matching.Equality;
+import life.catalogue.matching.authorship.AuthorshipComparison.Reason;
 import life.catalogue.matching.similarity.JaroWinkler;
 
 import org.gbif.nameparser.api.Authorship;
@@ -54,24 +55,40 @@ public class AuthorComparator {
    * with a small difference of 11 years being accepted.
    */
   public Equality compare(@Nullable Authorship a1, @Nullable Authorship a2) {
+    return compareWithReason(a1, a2).equality();
+  }
+
+  /**
+   * Like {@link #compare(Authorship, Authorship)}, also telling why.
+   */
+  public AuthorshipComparison compareWithReason(@Nullable Authorship a1, @Nullable Authorship a2) {
     // compare year first - simpler to calculate
     var yc = new YearComparator(11, a1, a2);
-    Equality result = yc.compare();
-    // compare authors if it's not already different
-    if (result != Equality.DIFFERENT) {
-      Equality aresult;
-      if (result == Equality.EQUAL || !yc.hasYears()) {
-        aresult = compareAuthorteam(a1, a2, minCommonSubstring, MIN_AUTHOR_LENGTH_WITHOUT_LOOKUP, MIN_JARO_SURNAME_DISTANCE, null);
-      } else {
-        aresult = compareAuthorteam(a1, a2, minCommonSubstring * 3, MIN_AUTHOR_LENGTH_WITHOUT_LOOKUP, 99, null);
-        // if unknown years and author is also unknown, make this a mismatch
-        if (aresult == Equality.UNKNOWN) {
-          return Equality.DIFFERENT;
-        }
-      }
-      return result.and(aresult);
+    Equality years = yc.compare();
+    if (years == Equality.DIFFERENT) {
+      // the years decide, but if the authors differ as well that is the better explanation
+      var authors = authorteams(a1, a2, minCommonSubstring, MIN_AUTHOR_LENGTH_WITHOUT_LOOKUP, MIN_JARO_SURNAME_DISTANCE, null);
+      return new AuthorshipComparison(Equality.DIFFERENT,
+        authors.equality() == Equality.DIFFERENT ? Reason.DIFFERENT_AUTHOR : Reason.DIFFERENT_YEAR);
     }
-    return result;
+    // compare authors as the years are not different
+    AuthorshipComparison authors;
+    if (years == Equality.EQUAL || !yc.hasYears()) {
+      authors = authorteams(a1, a2, minCommonSubstring, MIN_AUTHOR_LENGTH_WITHOUT_LOOKUP, MIN_JARO_SURNAME_DISTANCE, null);
+    } else {
+      authors = authorteams(a1, a2, minCommonSubstring * 3, MIN_AUTHOR_LENGTH_WITHOUT_LOOKUP, 99, null);
+      // if unknown years and author is also unknown, make this a mismatch. One side has no author then, so only the
+      // years, close but not the same, tell the authorships apart: 1837 against Kirby, 1840
+      if (authors.equality() == Equality.UNKNOWN) {
+        return new AuthorshipComparison(Equality.DIFFERENT, Reason.DIFFERENT_YEAR);
+      }
+    }
+    Equality eq = years.and(authors.equality());
+    if (eq == Equality.EQUAL && authors.equality() == Equality.UNKNOWN) {
+      // only the years could tell, e.g. an anonymous work against a named author
+      return new AuthorshipComparison(eq, Reason.SAME_YEAR);
+    }
+    return new AuthorshipComparison(eq, authors.reason());
   }
 
   /**
@@ -115,9 +132,36 @@ public class AuthorComparator {
   
   /**
    * Does a comparison of recombination and basionym authorship using the author compare method once for the recombination authorship and once for the basionym.
+   *
+   * The rules are the same for every nomenclatural code, see {@link #compareWithReason(ScientificName, ScientificName)}.
+   * For authors cited in different roles, one with and one without brackets, it can return
+   * {@link Equality#PROBABLY_EQUAL} or {@link Equality#PROBABLY_DIFFERENT}, which callers checking for
+   * {@link Equality#EQUAL} or {@link Equality#DIFFERENT} read like {@link Equality#UNKNOWN}.
    */
   public Equality compare(ScientificName n1, ScientificName n2) {
-    return compare(n1, n2, this::compare);
+    return compareWithReason(n1, n2).equality();
+  }
+
+  /**
+   * Compares the authorships of two names and tells why. The rules do not depend on the nomenclatural code:
+   * <ul>
+   *   <li>Two combination authors decide alone: {@code (Kunth) Desv.} is {@code (Humb. & Bonpl.) Desv.}.
+   *   An unbracketed author on one side may also be the combination author with the basionym author left out,
+   *   {@code Suksd.} is {@code (G.S.Torr.) Suksd.}</li>
+   *   <li>Otherwise the bracketed authors decide, if both sides have one.</li>
+   *   <li>An unbracketed author without a bracketed one is the original author. It is the same name as the other
+   *   side's bracketed author, the brackets added or lost: {@code Pascoe, 1864} is {@code (Pascoe, 1859)}. Next to a
+   *   combination author it is only {@link Equality#PROBABLY_EQUAL}, {@code L.} against {@code (L.) Mill.}: both often
+   *   exist, an original name and a later transfer of a basionym of the same author from another genus, like
+   *   {@code Aechmea blanchetii Baker} and {@code Aechmea blanchetii (Baker) Mez}. A different author against a
+   *   bracketed one only is {@link Equality#PROBABLY_DIFFERENT}:
+   *   {@code Harrington, 1899} against {@code (Kirby, 1837)} is the zoological way of citing two different original
+   *   authors, and only a botanical citation leaving out both the basionym and the combination author could make
+   *   them the same name.</li>
+   * </ul>
+   */
+  public AuthorshipComparison compareWithReason(ScientificName n1, ScientificName n2) {
+    return compare(n1, n2, this::compareWithReason);
   }
 
   /**
@@ -125,31 +169,66 @@ public class AuthorComparator {
    * This is used by GBIF matching algorithm.
    */
   public Equality compareAuthorsFirst(ScientificName n1, ScientificName n2) {
-    return compare(n1, n2, this::compareAuthorsFirst);
+    return compare(n1, n2, (a1, a2) -> withoutReason(compareAuthorsFirst(a1, a2))).equality();
   }
 
-  private Equality compare(
+  private static AuthorshipComparison withoutReason(Equality eq) {
+    return switch (eq) {
+      case EQUAL -> new AuthorshipComparison(eq, Reason.SAME_AUTHOR);
+      case PROBABLY_EQUAL -> new AuthorshipComparison(eq, Reason.BASIONYM_AUTHOR_CITED);
+      case DIFFERENT, PROBABLY_DIFFERENT -> new AuthorshipComparison(eq, Reason.DIFFERENT_AUTHOR);
+      case UNKNOWN -> AuthorshipComparison.MISSING;
+    };
+  }
+
+  private static boolean isEmpty(@Nullable Authorship a) {
+    return a == null || a.isEmpty();
+  }
+
+  private AuthorshipComparison compare(
     ScientificName n1,
     ScientificName n2,
-    BiFunction<Authorship, Authorship, Equality> comparator
+    BiFunction<Authorship, Authorship, AuthorshipComparison> comparator
   ) {
-    Equality recomb = comparator.apply(n1.getCombinationAuthorship(), n2.getCombinationAuthorship());
-    if (recomb != Equality.UNKNOWN) {
+    final Authorship c1 = n1.getCombinationAuthorship();
+    final Authorship c2 = n2.getCombinationAuthorship();
+    final Authorship b1 = n1.getBasionymAuthorship();
+    final Authorship b2 = n2.getBasionymAuthorship();
+
+    final var recomb = comparator.apply(c1, c2);
+    if (recomb.equality() == Equality.EQUAL) {
+      // the same combination author, whatever the basionym authors are - also when one side leaves them out
+      return isEmpty(b1) != isEmpty(b2) ? new AuthorshipComparison(Equality.EQUAL, Reason.BASIONYM_OMITTED) : recomb;
+    }
+    if (recomb.equality() == Equality.DIFFERENT) {
+      // L. against (L.) Mill.: the same original author, but often two names that both exist - an original name and
+      // a later transfer of a basionym of that author from another genus - so only probably equal
+      if (isEmpty(b1) && !isEmpty(b2) && comparator.apply(c1, b2).equality() == Equality.EQUAL
+          || isEmpty(b2) && !isEmpty(b1) && comparator.apply(b1, c2).equality() == Equality.EQUAL) {
+        return new AuthorshipComparison(Equality.PROBABLY_EQUAL, Reason.BASIONYM_AUTHOR_CITED);
+      }
       return recomb;
     }
 
-    Equality original = comparator.apply(n1.getBasionymAuthorship(), n2.getBasionymAuthorship());
-    if (original == Equality.UNKNOWN) {
-      Equality across = Equality.UNKNOWN;
-      if (n1.getCombinationAuthorship().isEmpty()) {
-        across = comparator.apply(n1.getBasionymAuthorship(), n2.getCombinationAuthorship());
-      } else if (n1.getBasionymAuthorship().isEmpty()) {
-        across = comparator.apply(n1.getCombinationAuthorship(), n2.getBasionymAuthorship());
-      }
-      return across == Equality.EQUAL ? Equality.EQUAL : Equality.UNKNOWN;
+    // at least one side has no combination author: the bracketed authors decide if both have one
+    final var original = comparator.apply(b1, b2);
+    if (original.equality() != Equality.UNKNOWN) {
+      return original;
     }
-
-    return recomb.and(original);
+    // an unbracketed author on one side, a bracketed one on the other: both are the original author
+    AuthorshipComparison across = null;
+    if (isEmpty(c1)) {
+      across = comparator.apply(b1, c2);
+    } else if (isEmpty(b1)) {
+      across = comparator.apply(c1, b2);
+    }
+    if (across == null || across.equality() == Equality.UNKNOWN) {
+      return original;
+    }
+    if (across.equality() == Equality.EQUAL) {
+      return new AuthorshipComparison(Equality.EQUAL, Reason.BRACKETS);
+    }
+    return new AuthorshipComparison(Equality.PROBABLY_DIFFERENT, across.reason());
   }
 
   public boolean compareStrict(ScientificName n1, ScientificName n2) {
@@ -205,25 +284,32 @@ public class AuthorComparator {
                                      final int minCommonSubstring, final int maxAuthorLengthWithoutLookup, final int jaroDistance,
                                      NomCode code
   ) {
-    Equality equality = compareTeams(a1, a2, minCommonSubstring, maxAuthorLengthWithoutLookup, jaroDistance, code);
+    return authorteams(a1, a2, minCommonSubstring, maxAuthorLengthWithoutLookup, jaroDistance, code).equality();
+  }
+
+  private AuthorshipComparison authorteams(@Nullable Authorship a1, @Nullable Authorship a2,
+                                           final int minCommonSubstring, final int maxAuthorLengthWithoutLookup,
+                                           final int jaroDistance, NomCode code
+  ) {
+    var teams = compareTeams(a1, a2, minCommonSubstring, maxAuthorLengthWithoutLookup, jaroDistance, code);
     // X in Y: the name is X's, published in a work of Y, and cited either way, Natterer in Kuhl as Kuhl.
     // Two in citations are told apart by their own authors, Natterer in Kuhl is not Smith in Kuhl.
     // As Y may well have named the same epithet himself a few years on, the work only tells when the years agree.
     // See https://github.com/CatalogueOfLife/backend/issues/1652
-    if (equality != Equality.EQUAL && a1 != null && a2 != null && a1.hasInAuthors() != a2.hasInAuthors()
+    if (teams.equality() != Equality.EQUAL && a1 != null && a2 != null && a1.hasInAuthors() != a2.hasInAuthors()
         && new YearComparator(IN_YEAR_DIFF_ALLOWED, a1.getYear(), a2.getYear()).compare() != Equality.DIFFERENT) {
       var in = a1.hasInAuthors() ? new Authorship(a1.getInAuthors()) : new Authorship(a2.getInAuthors());
       var other = a1.hasInAuthors() ? a2 : a1;
-      if (compareTeams(in, other, minCommonSubstring, maxAuthorLengthWithoutLookup, jaroDistance, code) == Equality.EQUAL) {
-        return Equality.EQUAL;
+      if (compareTeams(in, other, minCommonSubstring, maxAuthorLengthWithoutLookup, jaroDistance, code).equality() == Equality.EQUAL) {
+        return new AuthorshipComparison(Equality.EQUAL, Reason.PUBLISHED_IN);
       }
     }
-    return equality;
+    return teams;
   }
 
-  private Equality compareTeams(@Nullable Authorship a1, @Nullable Authorship a2,
-                                final int minCommonSubstring, final int maxAuthorLengthWithoutLookup, final int jaroDistance,
-                                NomCode code
+  private AuthorshipComparison compareTeams(@Nullable Authorship a1, @Nullable Authorship a2,
+                                            final int minCommonSubstring, final int maxAuthorLengthWithoutLookup,
+                                            final int jaroDistance, NomCode code
   ) {
     // convert to all lower case, ascii only, no punctuation but commas seperating authors and normed whitespace
     List<String> authorTeam1 = normalizer.lookup(AuthorshipNormalizer.normalize(a1, code), maxAuthorLengthWithoutLookup, code);
@@ -239,13 +325,13 @@ public class AuthorComparator {
           equality = compareNormalizedAuthorteam(authorTeam1l, authorTeam2l, minCommonSubstring, jaroDistance);
         }
       }
-      return equality;
+      return new AuthorshipComparison(equality, equality == Equality.EQUAL ? Reason.SAME_AUTHOR : Reason.DIFFERENT_AUTHOR);
     }
     // two anonymous works: only authors attributed on both sides could tell them apart, compared above
     if (a1 != null && a2 != null && a1.isAnonymous() && a2.isAnonymous()) {
-      return Equality.EQUAL;
+      return new AuthorshipComparison(Equality.EQUAL, Reason.ANONYMOUS);
     }
-    return Equality.UNKNOWN;
+    return AuthorshipComparison.MISSING;
   }
 
   /**

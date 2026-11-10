@@ -4,6 +4,7 @@ import life.catalogue.api.model.Name;
 import life.catalogue.common.io.Resources;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.matching.Equality;
+import life.catalogue.matching.authorship.AuthorshipComparison.Reason;
 import life.catalogue.parser.NameParser;
 
 import org.gbif.nameparser.api.Authorship;
@@ -519,17 +520,90 @@ public class AuthorComparatorTest {
     assertAuth("Mill.", null, "L.", null, Equality.EQUAL, "Mill.", "1768", null, null);
     
     assertAuth("Debreczy & I. Rácz", null, null, null, Equality.EQUAL, "Debreczy & Rácz", null, null, null);
-    assertAuth("Debreczy & I.Rácz", null, null, null, Equality.DIFFERENT, "Silba", null, "Debreczy & I.Rácz", null);
+    // the basionym author of the other cited alone is only probably equal, merges keep these apart, see #1660
+    assertAuth("Debreczy & I.Rácz", null, null, null, Equality.PROBABLY_EQUAL, "Silba", null, "Debreczy & I.Rácz", null);
+    assertAuth("Debreczy & I.Rácz", null, null, null, Equality.DIFFERENT, "Silba", null, "Farjon", null);
     
     assertAuth(null, null, "Pauly", "1986", Equality.EQUAL, null, null, "Pauly", "1986");
     assertAuth(null, null, "Moure", "1956", Equality.DIFFERENT, null, null, "Pauly", "1986");
     // missing brackets is a common error so make this a positive comparison!
     assertAuth("Pauly", "1986", null, null, Equality.EQUAL, null, null, "Pauly", "1986");
     
-    assertAuth("Erichson", "1847", null, null, Equality.UNKNOWN, null, null, "Linnaeus", "1758");
+    // two different original authors, one cited with and one without brackets
+    assertAuth("Erichson", "1847", null, null, Equality.PROBABLY_DIFFERENT, null, null, "Linnaeus", "1758");
 
     // missing brackets - do we want this to compare as equal???
     assertAuth("Linnaeus", null, null, null, Equality.EQUAL, null, null, "L.", null);
+  }
+
+  /**
+   * The cases of comparing authorships cited in different roles, with and without brackets, all with real examples
+   * from COL releases. The rules do not depend on the nomenclatural code.
+   */
+  @Test
+  public void bracketsAndRoles() throws Exception {
+    // both unbracketed or both bracketed: compared as they are
+    assertReason("Marti, 1940", Equality.EQUAL, Reason.SAME_AUTHOR, "Marty, 1940");
+    assertReason("Dyar, 1880", Equality.DIFFERENT, Reason.DIFFERENT_YEAR, "Dyar, 1902");
+    assertReason("(Thiele, 1909)", Equality.EQUAL, Reason.SAME_AUTHOR, "(Thiele, 1910)");
+    assertReason("(Moure, 1986)", Equality.DIFFERENT, Reason.DIFFERENT_AUTHOR, "(Pauly, 1986)");
+    // when years and authors differ, the author is the reason
+    assertReason("(Moure, 1956)", Equality.DIFFERENT, Reason.DIFFERENT_AUTHOR, "(Pauly, 1986)");
+    // the combination author decides, whatever the basionym author
+    assertReason("(Kunth) Desv.", Equality.EQUAL, Reason.SAME_AUTHOR, "(Humb. & Bonpl.) Desv.");
+    assertReason("(Olsson, 1869)", Equality.EQUAL, Reason.SAME_AUTHOR, "(Olsson, 1869) Stunkard, 1962");
+    // the basionym author left out
+    assertReason("Suksd.", Equality.EQUAL, Reason.BASIONYM_OMITTED, "(G.S.Torr.) Suksd.");
+    // an unbracketed author is the original author: brackets added or lost
+    assertReason("Pascoe, 1864", Equality.EQUAL, Reason.BRACKETS, "(Pascoe, 1859)");
+    // next to a combination author only probably: both names often exist, an original name and a later transfer of a
+    // basionym of the same author from another genus. Merges keep them apart, see #1660
+    assertReason("L.", Equality.PROBABLY_EQUAL, Reason.BASIONYM_AUTHOR_CITED, "(L.) Mill.");
+    assertReason("Kirby, 1837", Equality.PROBABLY_EQUAL, Reason.BASIONYM_AUTHOR_CITED, "(Kirby, 1837) LeConte, 1850");
+    assertReason("Baker", Equality.PROBABLY_EQUAL, Reason.BASIONYM_AUTHOR_CITED, "(Baker) Mez");
+    // or a different original author
+    assertReason("Harrington, 1899", Equality.PROBABLY_DIFFERENT, Reason.DIFFERENT_AUTHOR, "(Kirby, 1837)");
+    assertReason("(Linnaeus, 1758)", Equality.PROBABLY_DIFFERENT, Reason.DIFFERENT_AUTHOR, "Matsumura, 1925");
+    assertReason("Kennel, 1879", Equality.PROBABLY_DIFFERENT, Reason.DIFFERENT_YEAR, "(Kennel, 1899)");
+    // a year alone is told apart by the year only, close or not, with brackets or without
+    assertReason("1837", Equality.PROBABLY_DIFFERENT, Reason.DIFFERENT_YEAR, "(Kirby, 1840)");
+    assertReason("1837", Equality.DIFFERENT, Reason.DIFFERENT_YEAR, "Kirby, 1840");
+    assertReason("1840", Equality.EQUAL, Reason.BRACKETS, "(Kirby, 1840)");
+    // matching neither the combination nor the basionym author
+    assertReason("DC.", Equality.DIFFERENT, Reason.DIFFERENT_AUTHOR, "(L.) Mill.");
+    // nothing to compare
+    assertReason("Mill.", Equality.UNKNOWN, Reason.MISSING, null);
+    assertReason("Natterer in Kuhl, 1817", Equality.EQUAL, Reason.PUBLISHED_IN, "Kuhl, 1817");
+  }
+
+  @Test
+  public void probablyDifferentIsNoDifferenceForMatching() {
+    // callers checking for DIFFERENT, like the usage matcher, keep reading it as unknown
+    var eq = comp.compare(name("Harrington, 1899"), name("(Kirby, 1837)"));
+    assertEquals(Equality.PROBABLY_DIFFERENT, eq);
+    assertNotEquals(Equality.DIFFERENT, eq);
+    assertTrue(eq.isDifferent());
+    assertEquals(Equality.DIFFERENT, Equality.PROBABLY_DIFFERENT.and(Equality.DIFFERENT));
+    assertEquals(Equality.PROBABLY_DIFFERENT, Equality.EQUAL.and(Equality.PROBABLY_DIFFERENT));
+    assertEquals(Equality.PROBABLY_DIFFERENT, Equality.UNKNOWN.and(Equality.PROBABLY_DIFFERENT));
+  }
+
+  private static Name name(String authorship) {
+    Name n = new Name();
+    if (authorship != null) {
+      NameParser.PARSER.parseAuthorship(authorship).ifPresent(a -> {
+        n.setCombinationAuthorship(a.getCombinationAuthorship());
+        n.setBasionymAuthorship(a.getBasionymAuthorship());
+      });
+    }
+    return n;
+  }
+
+  private void assertReason(String a1, Equality eq, Reason reason, String a2) {
+    var c = comp.compareWithReason(name(a1), name(a2));
+    assertEquals(a1 + " vs " + a2, new AuthorshipComparison(eq, reason), c);
+    // symmetric
+    assertEquals(a2 + " vs " + a1, c, comp.compareWithReason(name(a2), name(a1)));
   }
   
   @Test

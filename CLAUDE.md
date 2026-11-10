@@ -359,7 +359,15 @@ a contradiction (changed authorship, incompatible rank, misapplied against non m
 missing information - an authorship added or removed, an unranked name - never does. A disparate `TaxGroup` or two
 concrete nomenclatural codes contradict too, unless the authorship positively agrees: both follow placement and source
 metadata, which flip for one and the same usage (a species under a homonym genus of another kingdom, a fungus coded
-zoological until the next import), so equal authorship keeps such a pairing, capped at PLAUSIBLE. Evidence gates a pairing rather than ranking it: a contradicted pairing is dropped before
+zoological until the next import), so equal authorship keeps such a pairing, capped at PLAUSIBLE.
+An author without brackets is the original author, in every code. Against a different one in brackets
+(`Harrington, 1899` / `(Kirby, 1837)`) `AuthorComparator` answers `Equality.PROBABLY_DIFFERENT`; `L.` against
+`(L.) Mill.` is `PROBABLY_EQUAL`, as both are often names in their own right (1,583 such pairs in COL26.10, #1660).
+A test for `== EQUAL`/`== DIFFERENT` acts on certain answers only, `isEqual()`/`isDifferent()` on probable ones too:
+`NameIdentity` contradicts on `isDifferent()` and confirms only on `EQUAL`, merges join only on `EQUAL`.
+`compareWithReason` and the `Verdict`'s `Conflict` explain every decision: in the redirect report and as `why:` of a
+dropped id in `unstable.txt`. See [`docs/2026-11-10-author-brackets.md`](docs/2026-11-10-author-brackets.md).
+Evidence gates a pairing rather than ranking it: a contradicted pairing is dropped before
 it is a candidate at all, and resurrecting an id the last release no longer had needs positive agreement on authorship
 or rank on top of that. `IdCandidate` then orders what is left: an id the last release still had first - the world
 already cites it, and a better corroborated resurrection must not take it away - then the evidence, then seniority,
