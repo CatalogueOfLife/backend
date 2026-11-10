@@ -1,8 +1,9 @@
 # Durable outbox commands, then events over Postgres LISTEN/NOTIFY
 
 Date: 2026-11-09
-Status: Phase 1 (outbox commands, PR #1702) and phase 2 (LISTEN/NOTIFY, PR #1703) both merged on 2026-11-09, to
-go out in one deploy. Not deployed.
+Status: Shipped. Phase 1 (outbox commands, PR #1702) and phase 2 (LISTEN/NOTIFY, PR #1703) were merged on
+2026-11-09 and deployed together, with the strict broker config, to dev, test and prod on 2026-11-10. The broadcast
+cache flush ran and `/srv/events` is deleted.
 
 ## Why
 
