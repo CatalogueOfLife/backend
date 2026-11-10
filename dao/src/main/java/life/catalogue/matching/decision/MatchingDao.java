@@ -5,7 +5,6 @@ import com.google.common.annotations.VisibleForTesting;
 import life.catalogue.api.model.*;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.db.mapper.NameUsageMapper;
-import life.catalogue.matching.Equality;
 import life.catalogue.matching.authorship.AuthorComparator;
 import life.catalogue.parser.NameParser;
 
@@ -98,7 +97,9 @@ public class MatchingDao {
       n2.setCombinationAuthorship(parsed.get().getCombinationAuthorship());
       n2.setBasionymAuthorship(parsed.get().getBasionymAuthorship());
       if (n2.hasAuthorship()) {
-        return AUTHOR_COMPARATOR.compare(n2, n) == Equality.DIFFERENT;
+        // a probable difference rules it out as well, a probable equality does not: a decision on Aus bus L. still
+        // applies once the source cites Aus bus (L.) Mill.
+        return AUTHOR_COMPARATOR.compare(n2, n).isDifferent();
       }
     }
     return !norm(authorship).equals(norm(n.getAuthorship()));

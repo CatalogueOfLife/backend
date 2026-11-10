@@ -157,7 +157,7 @@ public class ArchiveRedirectJobIT {
     var outcomes = outcomes(report(job));
     assertEquals(Map.of(
       "CC", "BB REDIRECT",
-      "DD", " CONTRADICTED",
+      "DD", "BB CONTRADICTED", // the closest live id tells why there is no redirect
       "FF", "BB REDIRECT",
       "KK", "JJ REDIRECT",
       "NN", "LL AMBIGUOUS"
@@ -191,7 +191,7 @@ public class ArchiveRedirectJobIT {
     // a second run finds nothing left to do
     var again = run(job(null, false));
     assertEquals(0, again.getUpdated());
-    assertEquals(Map.of("DD", " CONTRADICTED", "NN", "LL AMBIGUOUS"), outcomes(report(again)));
+    assertEquals(Map.of("DD", "BB CONTRADICTED", "NN", "LL AMBIGUOUS"), outcomes(report(again)));
 
     // publishing keeps the redirects of ids no live release carries
     new NameUsageArchiver(SqlSessionFactoryRule.getSqlSessionFactory()).archiveProject(

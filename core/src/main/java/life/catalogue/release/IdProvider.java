@@ -108,6 +108,8 @@ public class IdProvider {
   private final Int2IntMap resurrected = new Int2IntOpenHashMap(); // maps to release attempt for reporting!
   // a dying id -> the id of the usage that took it over, see #recordSuperseded
   private final Int2IntMap superseded = new Int2IntOpenHashMap();
+  // an id of the last release no usage of this one takes -> why, shown in the unstable report, see #recordDropReasons
+  private final Int2ObjectMap<String> dropReasons = new Int2ObjectOpenHashMap<>();
   private final SortedMap<String, List<InstableName>> unstable = new TreeMap<>();
   private final CountMap<String> uniteVersions = new CountMap<>();
   protected IdMapMapper idm;
@@ -384,6 +386,13 @@ public class IdProvider {
         writer.write(n.parent);
       }
       writer.write(']');
+      if (n.del) {
+        final String why = dropReason(n.id);
+        if (why != null) {
+          writer.write(" why: ");
+          writer.write(why);
+        }
+      }
       writer.write('\n');
     } catch (IOException e) {
       LOG.error("Failed to report unstable name {}", n.fullname, e);
@@ -892,19 +901,27 @@ public class IdProvider {
       relFacts[i] = new NameIdentity.Facts(r.rank, r.authorship, r.phrase, r.status, r.code, r.group, r.parent);
     }
     final List<IdCandidate> candidates = new ArrayList<>();
+    // per released id: was it a candidate at all, and the contradicted pairing that came closest otherwise
+    final boolean[] isCandidate = new boolean[rids.length];
+    final NameIdentity.Verdict[] closest = new NameIdentity.Verdict[rids.length];
     for (var n : names) {
       var facts = new NameIdentity.Facts(n, acceptedNames.apply(n));
       for (int i = 0; i < rids.length; i++) {
         var r = rids[i];
         var verdict = identity.compare(facts, relFacts[i]);
         if (verdict.isContradicted()) {
-          continue; // a different name, whatever else agrees
+          // a different name, whatever else agrees
+          if (closest[i] == null || verdict.conflict.compareTo(closest[i].conflict) > 0) {
+            closest[i] = verdict;
+          }
+          continue;
         }
         // resurrecting an id that is not in the last release needs more than "nothing speaks against it":
         // an erroneous duplicate that was removed must not silently come back on a usage we know little about
         if (!r.isCurrent && verdict.evidence.compareTo(NameIdentity.Evidence.PLAUSIBLE) < 0) {
           continue;
         }
+        isCandidate[i] = true;
         candidates.add(new IdCandidate(n, r, verdict));
       }
     }
@@ -916,6 +933,7 @@ public class IdProvider {
         taken.add(c.rid.id);
       }
     }
+    recordDropReasons(rids, isCandidate, closest);
     boolean dropping = false; // does the last release lose an id of this group at all?
     for (var r : rids) {
       dropping |= r.isCurrent && ids.containsId(r.id);
@@ -942,6 +960,37 @@ public class IdProvider {
       }
       Collections.sort(redirects);
       recordSuperseded(redirects, survivors);
+    }
+  }
+
+  /**
+   * @return why the id of the last release was dropped, null if unknown or the id is no stable LATIN29 one
+   */
+  @VisibleForTesting
+  @Nullable String dropReason(String id) {
+    try {
+      return dropReasons.get(IdConverter.LATIN29.decode(id));
+    } catch (IllegalArgumentException | NullPointerException e) {
+      return null;
+    }
+  }
+
+  /**
+   * Remembers why the ids of the last release that no usage of this canonical group takes are dropped: either every
+   * usage of the group is a different name, explained by the contradicted pairing that came closest - the one that got
+   * furthest through {@link NameIdentity#compare}, see {@link NameIdentity.Conflict} - or the id was a candidate but
+   * lost to a better one. The reasons only ever end up in the unstable report.
+   */
+  private void recordDropReasons(ReleasedId[] rids, boolean[] isCandidate, NameIdentity.Verdict[] closest) {
+    for (int i = 0; i < rids.length; i++) {
+      var r = rids[i];
+      if (r.isCurrent && ids.containsId(r.id)) {
+        if (isCandidate[i]) {
+          dropReasons.put(r.id, "outranked");
+        } else if (closest[i] != null) {
+          dropReasons.put(r.id, "contradicted " + closest[i].explain());
+        }
+      }
     }
   }
 

@@ -84,7 +84,31 @@ public class RedirectPairingTest {
   public void differentAuthorIsContradicted() {
     var p = single(species("BB", "DC.", 10), species("CC", "Mill.", BASE));
     assertEquals(Outcome.CONTRADICTED, p.outcome());
-    assertNull(p.live());
+    // the closest live id and why it is not the same name
+    assertEquals("CC", p.live().getId());
+    assertEquals(NameIdentity.Conflict.AUTHORSHIP, p.verdict().conflict);
+    assertEquals("authorship different author", p.verdict().explain());
+  }
+
+  /**
+   * Dry run of the redirect backfill on prod, 2026-11-10: a catalogue citing a later user of a name as its author
+   * gave 23,738 redirects onto the original name cited with its author in brackets. Some of them are misidentifications
+   * of another species, like this synonym of a different Abraxas.
+   */
+  @Test
+  public void differentAuthorAcrossBracketsIsContradicted() {
+    var p = single(species("92QX8", "Matsumura, 1925", 10), species("8LSG", "(Linnaeus, 1758)", BASE));
+    assertEquals(Outcome.CONTRADICTED, p.outcome());
+    assertEquals("8LSG", p.live().getId());
+    assertEquals("authorship different author across brackets", p.verdict().explain());
+  }
+
+  @Test
+  public void sameAuthorAcrossBracketsRedirects() {
+    var p = single(species("BB", "Pascoe, 1864", 10), species("CC", "(Pascoe, 1859)", BASE));
+    assertRedirect(p, "BB", "CC");
+    assertEquals(NameIdentity.Evidence.CONFIRMED, p.verdict().evidence);
+    assertEquals("authorship brackets", p.verdict().explain());
   }
 
   @Test

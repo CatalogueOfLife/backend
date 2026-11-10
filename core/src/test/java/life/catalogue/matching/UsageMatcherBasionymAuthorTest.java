@@ -30,7 +30,7 @@ import static org.mockito.Mockito.when;
  */
 public class UsageMatcherBasionymAuthorTest {
   static final Map<String, Integer> NIDX = Map.of("Stellaria", 1, "Stellaria media", 2, "Abies", 3, "Abies alba", 4,
-    "Picea", 5, "Picea abies", 6, "Larix", 7, "Larix alba", 8);
+    "Picea", 5, "Picea abies", 6, "Larix", 7, "Larix alba", 8, "Aechmea", 9, "Aechmea blanchetii", 10);
   UsageMatcher matcher;
 
   @Before
@@ -49,6 +49,10 @@ public class UsageMatcherBasionymAuthorTest {
     add(store, "la", "Larix", "Mill.", Rank.GENUS, null, TaxonomicStatus.ACCEPTED);
     add(store, "la1", "Larix alba", "(L.) Smith", Rank.SPECIES, "la", TaxonomicStatus.ACCEPTED);
     add(store, "la2", "Larix alba", "(L.) Jones", Rank.SPECIES, "la", TaxonomicStatus.ACCEPTED);
+    // an original name next to a later transfer of a basionym of the same author, both names in their own right
+    add(store, "ae", "Aechmea", "Ruiz & Pav.", Rank.GENUS, null, TaxonomicStatus.ACCEPTED);
+    add(store, "ab1", "Aechmea blanchetii", "Baker", Rank.SPECIES, "ae", TaxonomicStatus.SYNONYM);
+    add(store, "ab2", "Aechmea blanchetii", "(Baker) Mez", Rank.SPECIES, "ae", TaxonomicStatus.SYNONYM);
 
     var ni = mock(NameIndex.class);
     when(ni.match(any(SimpleName.class), anyBoolean(), anyBoolean())).thenAnswer(inv -> {
@@ -143,6 +147,29 @@ public class UsageMatcherBasionymAuthorTest {
     m = matcher.match(query("Larix alba", "(L.) Pers.", Rank.SPECIES), MatchingMode.RELAXED, false);
     assertEquals(MatchType.HIGHERRANK, m.type);
     assertEquals("la", m.usage.getId());
+  }
+
+  /**
+   * Baker and (Baker) Mez only compare PROBABLY_EQUAL: each query finds its own name, in every mode and in merges.
+   */
+  @Test
+  public void basionymAuthorCitedNextToItsTransfer() throws Exception {
+    for (var mode : new MatchingMode[]{MatchingMode.RELAXED, MatchingMode.STRICT}) {
+      var m = matcher.match(query("Aechmea blanchetii", "Baker", Rank.SPECIES), mode, false);
+      assertEquals("ab1", m.usage.getId());
+      assertEquals(MatchType.EXACT, m.type);
+      m = matcher.match(query("Aechmea blanchetii", "(Baker) Mez", Rank.SPECIES), mode, false);
+      assertEquals("ab2", m.usage.getId());
+      assertEquals(MatchType.EXACT, m.type);
+    }
+    // merges
+    assertEquals("ab1", matcher.match(new SimpleNameClassified<>(query("Aechmea blanchetii", "Baker", Rank.SPECIES)), false, false).usage.getId());
+    assertEquals("ab2", matcher.match(new SimpleNameClassified<>(query("Aechmea blanchetii", "(Baker) Mez", Rank.SPECIES)), false, false).usage.getId());
+    // without a rank the exact authorship decides too
+    var m = matcher.match(query("Aechmea blanchetii", "Baker", Rank.UNRANKED), MatchingMode.RELAXED, false);
+    assertEquals("ab1", m.usage.getId());
+    m = matcher.match(query("Aechmea blanchetii", "(Baker) Mez", Rank.UNRANKED), MatchingMode.RELAXED, false);
+    assertEquals("ab2", m.usage.getId());
   }
 
   @Test

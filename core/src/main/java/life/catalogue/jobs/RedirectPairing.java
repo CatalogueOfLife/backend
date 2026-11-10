@@ -48,7 +48,10 @@ public class RedirectPairing {
 
   /**
    * The decision for one dead id.
-   * @param live the redirect target, or for any other outcome the best live id considered. Null if there was none
+   * @param live the redirect target, or for any other outcome the best live id considered. For a contradicted dead id
+   *             it is the live id that came closest, the one told apart by the attribute compared last
+   *             ({@link NameIdentity.Conflict} order), so the verdict explains why there is no redirect.
+   *             Null if there was none
    * @param verdict the evidence for the pairing with live, null without one
    */
   public record Pair(ArchivedSimpleName dead, @Nullable ArchivedSimpleName live, @Nullable NameIdentity.Verdict verdict,
@@ -67,6 +70,11 @@ public class RedirectPairing {
   // best verdict first, then an id a base release carries
   private static final Comparator<Scored> BEST_FIRST = Comparator
     .comparing(Scored::verdict, Comparator.reverseOrder())
+    .thenComparing(s -> !s.c.base);
+
+  // of contradicted pairings the one that got furthest through the comparison first, then an id a base release carries
+  private static final Comparator<Scored> CLOSEST_FIRST = Comparator
+    .comparing((Scored s) -> s.verdict.conflict, Comparator.nullsLast(Comparator.reverseOrder()))
     .thenComparing(s -> !s.c.base);
 
   /**
@@ -109,14 +117,17 @@ public class RedirectPairing {
     }
     final var facts = facts(dead);
     List<Scored> scored = new ArrayList<>(live.size());
+    Scored closest = null;
     for (var c : live) {
       var v = identity.compare(facts, c.facts);
       if (!v.isContradicted()) {
         scored.add(new Scored(c, v));
+      } else if (closest == null || CLOSEST_FIRST.compare(new Scored(c, v), closest) < 0) {
+        closest = new Scored(c, v);
       }
     }
     if (scored.isEmpty()) {
-      return new Pair(dead, null, null, Outcome.CONTRADICTED);
+      return new Pair(dead, closest.c.live, closest.verdict, Outcome.CONTRADICTED);
     }
     scored.sort(BEST_FIRST);
     var best = scored.get(0);
