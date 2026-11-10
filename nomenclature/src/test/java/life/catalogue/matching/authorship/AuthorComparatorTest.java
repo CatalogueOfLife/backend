@@ -538,42 +538,68 @@ public class AuthorComparatorTest {
 
   /**
    * The cases of comparing authorships cited in different roles, with and without brackets, all with real examples
-   * from COL releases. The rules do not depend on the nomenclatural code.
+   * from COL releases, numbered as in the case table of docs/2026-11-10-author-brackets.md, every example of the
+   * table included. The rules do not depend on the nomenclatural code.
    */
   @Test
   public void bracketsAndRoles() throws Exception {
-    // both unbracketed or both bracketed: compared as they are
+    // 1 one side without author: nothing to compare
+    assertReason(null, Equality.UNKNOWN, Reason.MISSING, "J.St.-Hil.");
+    assertReason("Mill.", Equality.UNKNOWN, Reason.MISSING, null);
+
+    // 2 both without brackets: compared as they are
     assertReason("Marti, 1940", Equality.EQUAL, Reason.SAME_AUTHOR, "Marty, 1940");
     assertReason("Dyar, 1880", Equality.DIFFERENT, Reason.DIFFERENT_YEAR, "Dyar, 1902");
+    assertReason("Natterer in Kuhl, 1817", Equality.EQUAL, Reason.PUBLISHED_IN, "Kuhl, 1817");
+
+    // 3 both only bracketed: compared as they are
     assertReason("(Thiele, 1909)", Equality.EQUAL, Reason.SAME_AUTHOR, "(Thiele, 1910)");
     assertReason("(Moure, 1986)", Equality.DIFFERENT, Reason.DIFFERENT_AUTHOR, "(Pauly, 1986)");
     // when years and authors differ, the author is the reason
     assertReason("(Moure, 1956)", Equality.DIFFERENT, Reason.DIFFERENT_AUTHOR, "(Pauly, 1986)");
-    // the combination author decides, whatever the basionym author
+
+    // 4 both with brackets and combination author: the combination author decides, whatever the basionym author
     assertReason("(Kunth) Desv.", Equality.EQUAL, Reason.SAME_AUTHOR, "(Humb. & Bonpl.) Desv.");
+
+    // 5 only bracketed against a full authorship: the basionym authors are compared
     assertReason("(Olsson, 1869)", Equality.EQUAL, Reason.SAME_AUTHOR, "(Olsson, 1869) Stunkard, 1962");
-    // the basionym author left out
+
+    // 6a without brackets = the other's combination author: the basionym author left out
     assertReason("Suksd.", Equality.EQUAL, Reason.BASIONYM_OMITTED, "(G.S.Torr.) Suksd.");
-    // an unbracketed author is the original author: brackets added or lost
-    assertReason("Pascoe, 1864", Equality.EQUAL, Reason.BRACKETS, "(Pascoe, 1859)");
-    // next to a combination author only probably: both names often exist, an original name and a later transfer of a
-    // basionym of the same author from another genus. Merges keep them apart, see #1660
+
+    // 6b without brackets = the other's bracketed author, next to a combination author: only probably equal.
+    // Both names often exist, an original name and a later transfer of a basionym of the same author from another
+    // genus. Merges keep them apart, see #1660
     assertReason("L.", Equality.PROBABLY_EQUAL, Reason.BASIONYM_AUTHOR_CITED, "(L.) Mill.");
+    assertReason("Kirby, 1837", Equality.PROBABLY_EQUAL, Reason.BASIONYM_AUTHOR_CITED, "(Kirby, 1837) LeConte");
     assertReason("Kirby, 1837", Equality.PROBABLY_EQUAL, Reason.BASIONYM_AUTHOR_CITED, "(Kirby, 1837) LeConte, 1850");
     assertReason("Baker", Equality.PROBABLY_EQUAL, Reason.BASIONYM_AUTHOR_CITED, "(Baker) Mez");
-    // or a different original author
-    assertReason("Harrington, 1899", Equality.PROBABLY_DIFFERENT, Reason.DIFFERENT_AUTHOR, "(Kirby, 1837)");
-    assertReason("(Linnaeus, 1758)", Equality.PROBABLY_DIFFERENT, Reason.DIFFERENT_AUTHOR, "Matsumura, 1925");
+
+    // 6c matching neither the combination nor the basionym author
+    assertReason("Mill.", Equality.DIFFERENT, Reason.DIFFERENT_AUTHOR, "(L.) DC.");
+    assertReason("DC.", Equality.DIFFERENT, Reason.DIFFERENT_AUTHOR, "(L.) Mill.");
+
+    // an author without brackets is the original author, so against an only bracketed one it is ...
+    // 7a ... the same author: brackets added or lost
+    assertReason("Pascoe, 1864", Equality.EQUAL, Reason.BRACKETS, "(Pascoe, 1859)");
+    assertReason("1840", Equality.EQUAL, Reason.BRACKETS, "(Kirby, 1840)");
+    // 7b ... the same author with years more than 11 apart: probably different
     assertReason("Kennel, 1879", Equality.PROBABLY_DIFFERENT, Reason.DIFFERENT_YEAR, "(Kennel, 1899)");
     // a year alone is told apart by the year only, close or not, with brackets or without
     assertReason("1837", Equality.PROBABLY_DIFFERENT, Reason.DIFFERENT_YEAR, "(Kirby, 1840)");
     assertReason("1837", Equality.DIFFERENT, Reason.DIFFERENT_YEAR, "Kirby, 1840");
-    assertReason("1840", Equality.EQUAL, Reason.BRACKETS, "(Kirby, 1840)");
-    // matching neither the combination nor the basionym author
-    assertReason("DC.", Equality.DIFFERENT, Reason.DIFFERENT_AUTHOR, "(L.) Mill.");
-    // nothing to compare
-    assertReason("Mill.", Equality.UNKNOWN, Reason.MISSING, null);
-    assertReason("Natterer in Kuhl, 1817", Equality.EQUAL, Reason.PUBLISHED_IN, "Kuhl, 1817");
+    // 7c ... a different author: probably different
+    assertReason("Gemminger & Harold, 1873", Equality.PROBABLY_DIFFERENT, Reason.DIFFERENT_AUTHOR, "(Bates, 1864)");
+    assertReason("Matsumura, 1925", Equality.PROBABLY_DIFFERENT, Reason.DIFFERENT_AUTHOR, "(Linnaeus, 1758)");
+    assertReason("Harrington, 1899", Equality.PROBABLY_DIFFERENT, Reason.DIFFERENT_AUTHOR, "(Kirby, 1837)");
+
+    // 8 notes inside the authorship: the parser moves them out, the rest is compared as above.
+    // A misapplication note leaves no author at all: Cicer songaricum auct. non (DC.) Bunge
+    assertReason("auct. non (DC.) Bunge", Equality.UNKNOWN, Reason.MISSING, "Jaub. & Spach");
+    // the note keeps the basionym author only, a different original author: Cicada annulata
+    assertReason("(Hagen, 1856) non Brullé, 1832", Equality.PROBABLY_DIFFERENT, Reason.DIFFERENT_AUTHOR, "Germar, 1830");
+    // a nomenclatural status: Abax brunnipes
+    assertReason("Letzner, 1852 unavailable name", Equality.EQUAL, Reason.SAME_AUTHOR, "Letzner, 1852");
   }
 
   @Test

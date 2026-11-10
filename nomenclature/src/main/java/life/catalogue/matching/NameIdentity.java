@@ -6,6 +6,7 @@ import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.vocab.TaxGroup;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.tax.AuthorshipNormalizer;
+import life.catalogue.common.tax.MisappliedNameMatcher;
 import life.catalogue.common.text.StringUtils;
 import life.catalogue.matching.authorship.AuthorComparator;
 import life.catalogue.matching.authorship.AuthorshipComparison;
@@ -161,6 +162,9 @@ public class NameIdentity {
     /** scientific name of the accepted name for synonyms, never an identifier. Null if unknown. */
     final String parentName;
     private ScientificName sciName;
+    // the taxonomic note the parser found in the authorship, set by sciName()
+    private String authorshipNote;
+    private Boolean misapplied;
 
     public Facts(Rank rank, String authorship, String phrase, TaxonomicStatus status,
                  @Nullable NomCode code, @Nullable TaxGroup group, @Nullable String parentName) {
@@ -196,10 +200,33 @@ public class NameIdentity {
         NameParser.PARSER.parseAuthorship(authorship, code).ifPresent(a -> {
           n.setCombinationAuthorship(a.getCombinationAuthorship());
           n.setBasionymAuthorship(a.getBasionymAuthorship());
+          authorshipNote = a.getTaxonomicNote();
         });
         sciName = n;
       }
       return sciName;
+    }
+
+    /**
+     * A misapplied name by its status, or a synonym of species rank or below whose name phrase or authorship carries a
+     * note that marks a misapplication, like <code>auct. non (DC.) Bunge</code>. The importer derives the status from
+     * the very same notes with {@link MisappliedNameMatcher}, but archived usages of older releases kept the plain
+     * synonym status: <i>Cicer songaricum</i> auct. non (DC.) Bunge of COL21 must not pass for the name of Jaubert &
+     * Spach, nor lose its identifier once an import does derive the status.
+     */
+    boolean misapplied() {
+      if (misapplied == null) {
+        misapplied = status == MISAPPLIED || isSynonym(status) && rank != null && rank.isSpeciesOrBelow()
+          && (MisappliedNameMatcher.isMisappliedNote(phrase) || hasAuthorship() && authorshipNote() != null
+              && MisappliedNameMatcher.isMisappliedNote(authorshipNote()));
+      }
+      return misapplied;
+    }
+
+    @Nullable
+    private String authorshipNote() {
+      sciName();
+      return authorshipNote;
     }
   }
 
@@ -218,8 +245,8 @@ public class NameIdentity {
    */
   public Verdict compare(Facts a, Facts b) {
     // a misapplied name is never the same name as anything else - it is a statement about a misuse, not about a taxon
-    final boolean misA = a.status == MISAPPLIED;
-    if (misA != (b.status == MISAPPLIED)) {
+    final boolean misA = a.misapplied();
+    if (misA != b.misapplied()) {
       return contradicted(Conflict.MISAPPLIED, null);
     }
     // the name phrase (sensu ...) is what tells two misapplied names apart
@@ -254,7 +281,7 @@ public class NameIdentity {
     if (authorship == Equality.EQUAL) corroboration++;
     if (rank == Equality.EQUAL) corroboration++;
     if (phrase == Equality.EQUAL) corroboration++;
-    if (statusClass(a.status) == statusClass(b.status)) corroboration++;
+    if (statusClass(a) == statusClass(b)) corroboration++;
     if (a.group != null && a.group == b.group) corroboration++;
     if (a.code != null && a.code == b.code) corroboration++;
     // the accepted name keeps pro parte synonyms of one and the same name apart, and only those:
@@ -308,13 +335,13 @@ public class NameIdentity {
 
   /**
    * Accepted and provisionally accepted are the same kind of thing, and so are the synonym flavours - a taxon that is
-   * sunk into synonymy keeps its identifier. Only a misapplied name is a class of its own, and that is already a
-   * contradiction above.
+   * sunk into synonymy keeps its identifier. Only a misapplied name is a class of its own, also when only its note says
+   * so, and against anything else that is already a contradiction above.
    */
-  private static TaxonomicStatus statusClass(@Nullable TaxonomicStatus status) {
-    if (status == null) return null;
-    if (status == MISAPPLIED) return MISAPPLIED;
-    return status.isSynonym() ? TaxonomicStatus.SYNONYM : TaxonomicStatus.ACCEPTED;
+  private static TaxonomicStatus statusClass(Facts f) {
+    if (f.status == null) return null;
+    if (f.misapplied()) return MISAPPLIED;
+    return f.status.isSynonym() ? TaxonomicStatus.SYNONYM : TaxonomicStatus.ACCEPTED;
   }
 
 }

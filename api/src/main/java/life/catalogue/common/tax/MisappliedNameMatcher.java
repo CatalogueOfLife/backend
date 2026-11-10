@@ -4,6 +4,8 @@ import life.catalogue.api.model.ParsedNameUsage;
 
 import java.util.regex.Pattern;
 
+import javax.annotation.Nullable;
+
 /**
  * Utility class that detects misapplied names mostly based on their taxonomic remarks.
  */
@@ -27,10 +29,19 @@ public class MisappliedNameMatcher {
    * @return true if a misapplied name format was detected
    */
   public static boolean isMisappliedName(ParsedNameUsage nat) {
-    if (nat != null && nat.getName() != null && nat.getTaxonomicNote() != null && nat.getName().getRank().isSpeciesOrBelow()) {
-      return MIS_PATTERN.matcher(nat.getTaxonomicNote()).find() && !MISSPELLING.matcher(nat.getTaxonomicNote()).find();
+    if (nat != null && nat.getName() != null && nat.getName().getRank().isSpeciesOrBelow()) {
+      return isMisappliedNote(nat.getTaxonomicNote());
     }
     return false;
   }
-  
+
+  /**
+   * The rule of {@link #isMisappliedName(ParsedNameUsage)} for the taxonomic note alone, e.g. a name phrase: it does
+   * not look at the rank.
+   * @return true if the note marks a misapplied name
+   */
+  public static boolean isMisappliedNote(@Nullable String note) {
+    return note != null && MIS_PATTERN.matcher(note).find() && !MISSPELLING.matcher(note).find();
+  }
+
 }

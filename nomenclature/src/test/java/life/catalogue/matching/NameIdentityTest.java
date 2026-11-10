@@ -169,6 +169,40 @@ public class NameIdentityTest {
     assertEquals(CONFIRMED, identity.compare(a, c).evidence);
   }
 
+  /**
+   * A synonym whose note marks a misapplication is a misapplied name, as the importer derives it with
+   * MisappliedNameMatcher. Archived usages of older releases kept the plain synonym status.
+   */
+  @Test
+  public void misappliedByTheirNote() {
+    // Cicer songaricum auct. non (DC.) Bunge, an ambiguous synonym in COL21, is no name of Jaubert & Spach
+    var auct = new NameIdentity.Facts(SPECIES, null, "auct. non (DC.) Bunge", AMBIGUOUS_SYNONYM, null, null, null);
+    var verdict = identity.compare(auct, f(SPECIES, "Jaub. & Spach", ACCEPTED));
+    assertEquals(CONTRADICTED, verdict.evidence);
+    assertEquals(NameIdentity.Conflict.MISAPPLIED, verdict.conflict);
+    assertEquals(CONTRADICTED, ev(auct, f(SPECIES, null, SYNONYM)));
+    // and keeps its identity once an import derives the status, corroborated by it like any misapplied name
+    var derived = new NameIdentity.Facts(SPECIES, null, "auct. non (DC.) Bunge", MISAPPLIED, null, null, null);
+    assertEquals(identity.compare(derived, derived), identity.compare(auct, derived));
+    assertEquals(PLAUSIBLE, ev(auct, derived));
+    // also when the note stayed in the authorship
+    assertEquals(CONTRADICTED, ev(f(SPECIES, "L. sensu auct.", SYNONYM), f(SPECIES, "L.", SYNONYM)));
+    assertEquals(CONFIRMED, ev(f(SPECIES, "L. sensu auct.", SYNONYM), f(SPECIES, "L.", MISAPPLIED)));
+    // a non or nec note, too: in a synonymy it marks the later misidentification of an author
+    var hagen = new NameIdentity.Facts(SPECIES, "(Hagen, 1856)", "non Brullé, 1832", SYNONYM, null, null, null);
+    assertEquals(CONTRADICTED, ev(hagen, f(SPECIES, "(Hagen, 1856)", SYNONYM)));
+
+    // just as the importer: never for an accepted name, nor above species, nor for a concept or a misspelling
+    var accepted = new NameIdentity.Facts(SPECIES, "Mill.", "auct. non L.", ACCEPTED, null, null, null);
+    assertEquals(CONFIRMED, ev(accepted, f(SPECIES, "Mill.", ACCEPTED)));
+    var genus = new NameIdentity.Facts(GENUS, "Mill.", "sensu auct.", SYNONYM, null, null, null);
+    assertEquals(CONFIRMED, ev(genus, f(GENUS, "Mill.", SYNONYM)));
+    var lato = new NameIdentity.Facts(SPECIES, "Mill.", "s.l.", SYNONYM, null, null, null);
+    assertEquals(CONFIRMED, ev(lato, f(SPECIES, "Mill.", SYNONYM)));
+    var lapsus = new NameIdentity.Facts(SPECIES, "Mill.", "auct. lapsus", SYNONYM, null, null, null);
+    assertEquals(CONFIRMED, ev(lapsus, f(SPECIES, "Mill.", SYNONYM)));
+  }
+
   @Test
   public void differentCodesContradict() {
     // Oenanthe the bird versus Oenanthe the plant, once without an authorship to tell them apart

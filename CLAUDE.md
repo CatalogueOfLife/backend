@@ -356,7 +356,8 @@ A release maps every usage to a stable LATIN29 int id (`IdProvider` → `idmap_n
 `coalesce(mu.id2, u.id)`). Candidates are the ids of `name_usage_archive` sharing the usage's canonical names index
 id - which, the index being canonical-only, is the entire name based grouping, so authorship, rank and status carry
 all the discriminating power. `NameIdentity` compares them three valued on `AuthorComparator` and `RankComparator`:
-a contradiction (changed authorship, incompatible rank, misapplied against non misapplied) rules a pairing out, while
+a contradiction (changed authorship, incompatible rank, misapplied against non misapplied - by status, or for a synonym
+by its phrase or authorship note, the importer's `MisappliedNameMatcher` rule) rules a pairing out, while
 missing information - an authorship added or removed, an unranked name - never does. A disparate `TaxGroup` or two
 concrete nomenclatural codes contradict too, unless the authorship positively agrees: both follow placement and source
 metadata, which flip for one and the same usage (a species under a homonym genus of another kingdom, a fungus coded

@@ -1,7 +1,8 @@
 # Authors with and without brackets, and why a name lost its identifier
 
 Date: 2026-11-10
-Status: implemented on branch `feat/author-brackets`, not merged, not deployed
+Status: merged (#1704) and deployed on prod 2026-11-10; misapplication notes (see Outcome) on branch
+`feat/misapplied-notes`, not merged
 
 ## Problem
 
@@ -35,6 +36,9 @@ Counted on the redirect pairs of the dry run and on the identifiers COL26.9 and 
 | 7a | without brackets against only bracketed, same author | `Pascoe, 1864` / `(Pascoe, 1859)` | equal | equal, `BRACKETS` |
 | 7b | … same author, years more than 11 apart | `Kennel, 1879` / `(Kennel, 1899)` | **unknown** | **probably different** |
 | 7c | … different author | `Harrington, 1899` / `(Kirby, 1837)` | **unknown** | **probably different** |
+| 8 | notes inside the authorship | `(Hagen, 1856) non Brullé, 1832` / `Germar, 1830`, `auct. non (DC.) Bunge` / `Jaub. & Spach` | the parser moves the note out, the rest is one of the cases above | same, so the first is now 7c |
+
+`AuthorComparatorTest.bracketsAndRoles` tests every example of this table, numbered by case.
 
 ## Decisions
 
@@ -111,3 +115,18 @@ and the next XR show their size.
 To do after the deploy: a new dry run of the redirect backfill, then the real run. Old identifiers of BOLD BINs and
 UNITE species hypotheses (1.52M "no target" rows in the dry run) still get no redirect: they are not matched to the
 names index the pairing groups by.
+
+The dry run after the deploy (job `60a89831`, the same dead ids as `75e69804`) gave 809,715 redirects instead of
+830,350. 24,620 former redirects are contradicted now: 23,181 across brackets, 633 the same author with years too
+far apart, and among them about 750 carrying a note like `Tindale, 1932 non Donovan, 1805`. About a dozen are spellings
+of one author the comparator does not recognise (`M'Coy`/`McCoy`, `Cox`/`(J. C. Cox)`), which without brackets
+were different names already. 2,564 ids gained a redirect as 6b, 1,627 more as the bracket mismatch was the only
+competitor, 206 became ambiguous, in 14 of them an exact author tied with a 6b author. The existing redirects of
+the first, real backfill (`since` COL26.6 XR) and of the releases since COL26.9 XR were all decided by the old rule
+and are never overwritten, so they are cleared before the backfill runs again.
+
+The case 8 examples showed 3,205 redirects leaving a name whose note marks a misapplication, like *Cicer songaricum*
+auct. non (DC.) Bunge, an ambiguous synonym of COL21, redirected to *Cicer songaricum* Jaub. & Spach. Imports derive
+the misapplied status from such notes (`MisappliedNameMatcher`), but archived usages of older releases kept the
+synonym status. `NameIdentity` now applies the same rule to a synonym's name phrase and to a note left in its
+authorship.

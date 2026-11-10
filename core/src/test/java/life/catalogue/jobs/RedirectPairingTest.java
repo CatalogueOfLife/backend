@@ -118,6 +118,20 @@ public class RedirectPairingTest {
     assertEquals(Outcome.CONTRADICTED, single(dead, species("CC", "Mill.", BASE)).outcome());
   }
 
+  /**
+   * Dry run of the redirect backfill on prod, 2026-11-10: a synonym archived from COL21 with its misapplication only in
+   * the name phrase redirected to the name of Jaubert & Spach.
+   */
+  @Test
+  public void misappliedByItsNoteIsADifferentName() {
+    var dead = sn("5YSRT", "Cicer songaricum", null, Rank.SPECIES, 10);
+    dead.setStatus(TaxonomicStatus.AMBIGUOUS_SYNONYM);
+    dead.setPhrase("auct. non (DC.) Bunge");
+    var p = single(dead, sn("9CQP9", "Cicer songaricum", "Jaub. & Spach", Rank.SPECIES, BASE));
+    assertEquals(Outcome.CONTRADICTED, p.outcome());
+    assertEquals("misapplied", p.verdict().explain());
+  }
+
   @Test
   public void nothingCorroboratesIsWeak() {
     // an unranked name tells nothing about the rank, and neither side has an authorship

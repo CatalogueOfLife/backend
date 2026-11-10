@@ -87,7 +87,7 @@ the information got better, the name did not change.
 | scientific name | a different name once epithet spellings are folded | gender endings and common epithet spellings: `Felis rufus` ↔ `Felis rufa`, `baileyi` ↔ `baileii` | |
 | authorship | a different author: `Mill.` → `DC.`; the same author with publication years more than 11 apart; an author without brackets that is neither the other side's author in brackets nor its combination author: `Harrington, 1899` against `(Kirby, 1837)` | the same author cited differently: `Mill.` = `Miller`, `L.` = `Linné`, publication years up to 11 apart; the same combination author, whatever the basionym author in brackets: `(Lamb.) G.Don` = `(Roxb. ex D.Don) G.Don`, also when one side leaves the basionym author out: `Suksd.` = `(G.S.Torr.) Suksd.`; the same original author cited once with and once without brackets: `(Bryk, 1949)` = `Bryk, 1948`, `L.` = `(L.) Mill.`; a name cited with the work it was published in, as either author: `Natterer in Kuhl, 1817` = `Kuhl, 1817` = `Natterer, 1817`, but not `Smith in Kuhl, 1817` or `Kuhl, 1822` | authorship added or removed; an authorship that cannot be parsed |
 | rank | two different concrete ranks: species against genus; the catch-all rank "other" against any other rank | the same rank | unranked against any rank but "other"; a vague rank against a rank it covers: "suprageneric name" against family |
-| taxonomic status | a misapplied name against anything that is not one | the same kind of status: accepted ↔ provisionally accepted, synonym ↔ ambiguous synonym | a taxon sunk into synonymy, or a synonym raised to accepted |
+| taxonomic status | a misapplied name against anything that is not one; a synonym of species rank or below whose name phrase or authorship notes a misapplication, like `auct. non (DC.) Bunge`, is a misapplied name | the same kind of status: accepted ↔ provisionally accepted, synonym ↔ ambiguous synonym | a taxon sunk into synonymy, or a synonym raised to accepted |
 | nomenclatural code | two different codes: zoological against botanical — the *Oenanthe* case — unless the authorship agrees | the same code | one side not stated |
 | taxonomic group | groups on separate branches: an animal against a plant — unless the authorship agrees | the same group | one side unplaced; one group within the other: insects against arthropods |
 | name phrase (`sensu …`) | a different phrase on two misapplied names | the same phrase | one side missing; a different phrase on names that are not misapplied |
@@ -105,6 +105,11 @@ side, an original name and a later transfer of a basionym of the same author fro
 Baker and *Aechmea blanchetii* (Baker) Mez. COL26.10 holds 1,583 such pairs. So a name keeps its identifier when a
 source adds the combination author, but this never confirms a candidate: an identifier whose authorship matches
 exactly always comes first, and the two names of a pair never swap their identifiers.
+
+**A note can make a misapplied name.** Imports turn a synonym into a misapplied name when its note says so: `auct.`,
+`sensu` (but not `sensu lato` or `s.str.`), `non` or `nec`, never a misspelling like `auct. lapsus`. Identifiers apply
+the same rule to the name phrase and to a note left in the authorship, because names of older releases kept the plain
+synonym status: *Cicer songaricum* auct. non (DC.) Bunge, a synonym in COL21, is not the name of Jaubert & Spach.
 
 **Placement does not outweigh the author.** The code and the taxonomic group describe where a name sits and what
 its source says about it, not the name itself, and both change for one and the same name from one release to the

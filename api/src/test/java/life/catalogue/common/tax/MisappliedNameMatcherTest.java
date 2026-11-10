@@ -49,6 +49,20 @@ public class MisappliedNameMatcherTest {
     nonMisapplied("misspelling");
   }
 
+  @Test
+  public void isMisappliedNote() {
+    assertTrue(MisappliedNameMatcher.isMisappliedNote("auct. non (DC.) Bunge"));
+    assertTrue(MisappliedNameMatcher.isMisappliedNote("non Brullé, 1832"));
+    assertFalse(MisappliedNameMatcher.isMisappliedNote(null));
+    assertFalse(MisappliedNameMatcher.isMisappliedNote("s.l."));
+    assertFalse(MisappliedNameMatcher.isMisappliedNote("auct. lapsus"));
+    // the rank only matters for a whole name
+    n.setRank(Rank.GENUS);
+    nat.setTaxonomicNote("sensu auct.");
+    assertFalse(MisappliedNameMatcher.isMisappliedName(nat));
+    assertTrue(MisappliedNameMatcher.isMisappliedNote(nat.getTaxonomicNote()));
+  }
+
   private void nonMisapplied(String accordingTo) {
     nat.setTaxonomicNote(accordingTo);
     assertFalse(MisappliedNameMatcher.isMisappliedName(nat));
