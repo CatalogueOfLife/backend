@@ -565,6 +565,10 @@ public class AuthorComparatorTest {
     assertReason("Harrington, 1899", Equality.PROBABLY_DIFFERENT, Reason.DIFFERENT_AUTHOR, "(Kirby, 1837)");
     assertReason("(Linnaeus, 1758)", Equality.PROBABLY_DIFFERENT, Reason.DIFFERENT_AUTHOR, "Matsumura, 1925");
     assertReason("Kennel, 1879", Equality.PROBABLY_DIFFERENT, Reason.DIFFERENT_YEAR, "(Kennel, 1899)");
+    // a year alone is told apart by the year only, close or not, with brackets or without
+    assertReason("1837", Equality.PROBABLY_DIFFERENT, Reason.DIFFERENT_YEAR, "(Kirby, 1840)");
+    assertReason("1837", Equality.DIFFERENT, Reason.DIFFERENT_YEAR, "Kirby, 1840");
+    assertReason("1840", Equality.EQUAL, Reason.BRACKETS, "(Kirby, 1840)");
     // matching neither the combination nor the basionym author
     assertReason("DC.", Equality.DIFFERENT, Reason.DIFFERENT_AUTHOR, "(L.) Mill.");
     // nothing to compare

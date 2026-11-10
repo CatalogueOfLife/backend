@@ -43,7 +43,10 @@ public record AuthorshipComparison(Equality equality, Reason reason) {
     BASIONYM_AUTHOR_CITED,
     /** different authors */
     DIFFERENT_AUTHOR,
-    /** the same authors, but years more than 11 apart */
+    /**
+     * the years differ: more than 11 apart while the authors do not differ, or not the same year where only the years
+     * can be compared, {@code 1837} against {@code Kirby, 1840}
+     */
     DIFFERENT_YEAR
   }
 

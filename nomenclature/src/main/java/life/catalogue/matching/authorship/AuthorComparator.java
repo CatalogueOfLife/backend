@@ -77,9 +77,10 @@ public class AuthorComparator {
       authors = authorteams(a1, a2, minCommonSubstring, MIN_AUTHOR_LENGTH_WITHOUT_LOOKUP, MIN_JARO_SURNAME_DISTANCE, null);
     } else {
       authors = authorteams(a1, a2, minCommonSubstring * 3, MIN_AUTHOR_LENGTH_WITHOUT_LOOKUP, 99, null);
-      // if unknown years and author is also unknown, make this a mismatch
+      // if unknown years and author is also unknown, make this a mismatch. One side has no author then, so only the
+      // years, close but not the same, tell the authorships apart: 1837 against Kirby, 1840
       if (authors.equality() == Equality.UNKNOWN) {
-        return new AuthorshipComparison(Equality.DIFFERENT, Reason.DIFFERENT_AUTHOR);
+        return new AuthorshipComparison(Equality.DIFFERENT, Reason.DIFFERENT_YEAR);
       }
     }
     Equality eq = years.and(authors.equality());

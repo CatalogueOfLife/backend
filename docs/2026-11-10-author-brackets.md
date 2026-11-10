@@ -66,7 +66,7 @@ Counted on the redirect pairs of the dry run and on the identifiers COL26.9 and 
   | `UsageMatcher`, names without a rank | removes `isDifferent()` | 6b now matches directly (#1660), 7c is removed |
   | `UsageMatcher.mayBeHomonyms` | anything but `EQUAL` or `UNKNOWN` may be a homonym | 6b as before, 7c now ambiguous instead of guessed |
   | `HierarchySync.sameName` | same only on `EQUAL` or `UNKNOWN` | 6b as before, 7c no longer joined |
-  | `MatchingDao` decision rematch | rules out `isDifferent()` | a decision survives `L.` becoming `(L.) Mill.`, 7c rules it out |
+  | `MatchingDao` decision rematch | rules out `isDifferent()`; of several matches a single `EQUAL` one wins | a decision survives `L.` becoming `(L.) Mill.`, 7c rules it out, and with both names in the source each decision keeps to its own |
   | genus checks, `PlacementChecker`, diff printer | `== DIFFERENT`, single authorships | unchanged |
 
   The relaxed fallback of #1660 stays for qualified names and for a shared basionym author with another combination
@@ -96,6 +96,17 @@ Identifiers kept across an authorship change that is now 7b or 7c, i.e. identifi
 A few dozen identifiers per release, the same as an unbracketed author changing already costs.
 
 ## Outcome
+
+The review of the change found that the decision rematch matched both names of an isonym pair once `L.` and
+`(L.) Mill.` were no longer different: a sector target or decision on either one became ambiguous and was lost, an XR
+override decision skipped. `MatchingDao.matchDataset` now keeps the single match with an equal authorship, if there is
+one. A year alone against an author with a close year, `1837` against `(Kirby, 1840)`, is explained as
+`DIFFERENT_YEAR`, not `DIFFERENT_AUTHOR`.
+
+Two effects are intended but were not measured before the merge: redirects between the two names of an isonym pair
+when only one of them is live (6b is no contradiction any more; the verdict column says `basionym author cited`), and
+more names skipped as `AMBIGUOUS_HOMONYM` in merges, as 7c candidates now count as possible homonyms. The next dry run
+and the next XR show their size.
 
 To do after the deploy: a new dry run of the redirect backfill, then the real run. Old identifiers of BOLD BINs and
 UNITE species hypotheses (1.52M "no target" rows in the dry run) still get no redirect: they are not matched to the

@@ -5,6 +5,7 @@ import com.google.common.annotations.VisibleForTesting;
 import life.catalogue.api.model.*;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.db.mapper.NameUsageMapper;
+import life.catalogue.matching.Equality;
 import life.catalogue.matching.authorship.AuthorComparator;
 import life.catalogue.parser.NameParser;
 
@@ -54,15 +55,21 @@ public class MatchingDao {
   /**
    * Strictly matches a simple name to name usages from a given dataset.
    * Name and rank must be equal, authorship, status, code and parent are optional filters which only apply if the
-   * simple name has them. Authorship and parent are compared leniently, see {@link #authorshipDiffers} and {@link #parentDiffers}.
+   * simple name has them. Authorship and parent are compared leniently, see {@link #compareAuthorship} and {@link #parentDiffers}.
+   * Of several matches a single one with an equal authorship is the name: {@code L.} and {@code (L.) Mill.} are only
+   * probably the same name, and a dataset often holds both, an original name and a later transfer of a basionym of the
+   * same author from another genus, like {@code Aechmea blanchetii Baker} and {@code Aechmea blanchetii (Baker) Mez}.
    * @param name
    * @param datasetKey
    */
   public MatchingResult matchDataset(SimpleName name, int datasetKey) {
     var result = new MatchingResult(name);
+    final Name authorship = parseAuthorship(name.getAuthorship());
+    final List<NameUsageBase> equal = new ArrayList<>();
     // https://github.com/Sp2000/colplus-backend/issues/283
     for (NameUsageBase t : uMapper.listByName(datasetKey, name.getName(), name.getRank(), new Page(0,1000))) {
-      if (authorshipDiffers(name.getAuthorship(), t.getName())) {
+      final Equality authEq = compareAuthorship(name.getAuthorship(), authorship, t.getName());
+      if (authEq.isDifferent()) {
         result.ignore(t, "Authorship differs");
         continue;
       }
@@ -79,30 +86,50 @@ public class MatchingDao {
         continue;
       }
       result.addMatch(t);
+      if (authEq == Equality.EQUAL) {
+        equal.add(t);
+      }
+    }
+    if (result.size() > 1 && equal.size() == 1) {
+      result.keepOnly(equal.getFirst(), "Authorship not exactly equal");
     }
     return result;
   }
 
   /**
-   * Only a contradicting authorship rules a usage out, a missing one on either side never does.
-   * An authorship that cannot be parsed has to be equal once normalised.
+   * @return the parsed authorship as a name, null if there is none or it cannot be parsed
    */
-  private static boolean authorshipDiffers(@Nullable String authorship, Name n) {
-    if (StringUtils.isBlank(authorship) || StringUtils.isBlank(n.getAuthorship())) {
-      return false;
+  private static @Nullable Name parseAuthorship(@Nullable String authorship) {
+    if (StringUtils.isBlank(authorship)) {
+      return null;
     }
     var parsed = NameParser.PARSER.parseAuthorship(authorship);
-    if (parsed.isPresent() && n.hasAuthorship()) {
-      Name n2 = new Name();
-      n2.setCombinationAuthorship(parsed.get().getCombinationAuthorship());
-      n2.setBasionymAuthorship(parsed.get().getBasionymAuthorship());
-      if (n2.hasAuthorship()) {
-        // a probable difference rules it out as well, a probable equality does not: a decision on Aus bus L. still
-        // applies once the source cites Aus bus (L.) Mill.
-        return AUTHOR_COMPARATOR.compare(n2, n).isDifferent();
+    if (parsed.isPresent()) {
+      Name n = new Name();
+      n.setCombinationAuthorship(parsed.get().getCombinationAuthorship());
+      n.setBasionymAuthorship(parsed.get().getBasionymAuthorship());
+      if (n.hasAuthorship()) {
+        return n;
       }
     }
-    return !norm(authorship).equals(norm(n.getAuthorship()));
+    return null;
+  }
+
+  /**
+   * Only a contradicting authorship rules a usage out, a missing one on either side never does: that is UNKNOWN.
+   * A probable difference rules it out as well, a probable equality does not: a decision on Aus bus L. still applies
+   * once the source cites Aus bus (L.) Mill.
+   * An authorship that cannot be parsed has to be equal once normalised.
+   * @param parsed the authorship parsed by {@link #parseAuthorship}
+   */
+  private static Equality compareAuthorship(@Nullable String authorship, @Nullable Name parsed, Name n) {
+    if (StringUtils.isBlank(authorship) || StringUtils.isBlank(n.getAuthorship())) {
+      return Equality.UNKNOWN;
+    }
+    if (parsed != null && n.hasAuthorship()) {
+      return AUTHOR_COMPARATOR.compare(parsed, n);
+    }
+    return norm(authorship).equals(norm(n.getAuthorship())) ? Equality.EQUAL : Equality.DIFFERENT;
   }
 
   /**
