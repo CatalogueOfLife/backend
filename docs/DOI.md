@@ -75,9 +75,11 @@ Metadata is read when the command runs. Every step is safe to repeat: a create o
   are merged into it, so a burst of dataset edits ends up in a single DataCite call.
 - DOIs with a foreign prefix or of an unknown dataset are dropped with a log line.
 
-`DoiHandler` is the `DoiUpdater` component. While it is stopped, e.g. on the old app of a deploy or during a
-DataCite outage, DOI commands wait in the outbox. Where the component is `DISABLED` (dev) the handler runs
-without being started against `DoiService.passThru()`, so the commands drain without touching DataCite.
+`DoiHandler` runs two commands at a time, and a finished command makes room for the next due one at once.
+It is the `DoiUpdater` component. While it is stopped, e.g. on the old app of a deploy or during a DataCite outage,
+DOI commands wait in the outbox, and the outbox health check does not report them as overdue. Where the component is
+`DISABLED` (dev) the handler runs without being started against `DoiService.passThru()`, so the commands drain
+without touching DataCite.
 
 **Retry**:
 - A failed command is retried after `attempts²` hours, at most `outbox.maxAttempts` times (12 by default).

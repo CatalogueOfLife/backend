@@ -14,6 +14,7 @@ import java.lang.management.ManagementFactory;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;
@@ -29,8 +30,9 @@ import com.google.common.annotations.VisibleForTesting;
  * Producers write a command in the transaction of the change that causes it, see {@link Outbox}, so it can neither
  * get lost when no app is listening, as an event of the broker can, nor exist without the change.
  * A single poll thread claims due commands with SKIP LOCKED and runs each on a virtual thread, at most
- * {@link OutboxHandler#concurrency()} per type. A successful command is deleted, a failing one retried with a backoff
- * and eventually marked failed, see {@link OutboxHandler} for the rules.
+ * {@link OutboxHandler#concurrency()} per type. A finished command wakes it to claim the next one at once.
+ * A successful command is deleted, a failing one retried with a backoff and eventually marked failed,
+ * see {@link OutboxHandler} for the rules.
  *
  * This is the Outbox component and only ever started on the active app, so a command is run by one app only.
  * Stopping it hands every command still running back as pending, starting it takes over whatever a dead app left
@@ -49,6 +51,7 @@ public class OutboxRunner implements Managed {
   private volatile ScheduledExecutorService poller;
   private volatile ExecutorService workers;
   private volatile boolean stopping;
+  private final AtomicBoolean wakeRequested = new AtomicBoolean();
   private long lastPurge;
 
   public OutboxRunner(OutboxConfig cfg, SqlSessionFactory factory) {
@@ -138,6 +141,7 @@ public class OutboxRunner implements Managed {
                 run(handler, entry);
               } finally {
                 sem.release();
+                wakeUp();
               }
             });
           } catch (RejectedExecutionException ex) {
@@ -149,6 +153,26 @@ public class OutboxRunner implements Managed {
       purgeDaily();
     } catch (Throwable t) {
       LOG.error("Outbox poll failed", t);
+    }
+  }
+
+  /**
+   * Asks the poll thread to claim the next due commands right away for the permit a finished command freed, instead
+   * of at the next scheduled poll, which would cap a handler at its concurrency per poll interval.
+   * A poll asked for but not yet started already sees the freed permit, so requests are not piled up.
+   */
+  private void wakeUp() {
+    var p = poller;
+    if (p != null && !stopping && wakeRequested.compareAndSet(false, true)) {
+      try {
+        p.execute(() -> {
+          wakeRequested.set(false);
+          poll();
+        });
+      } catch (RejectedExecutionException e) {
+        // stopping
+        wakeRequested.set(false);
+      }
     }
   }
 
@@ -250,12 +274,20 @@ public class OutboxRunner implements Managed {
 
   public record Health(int pending, int overdue, int failed) {}
 
+  /**
+   * @return the outbox counts, where the commands of a handler that is offline on purpose, e.g. a stopped DoiUpdater,
+   *         are pending but never overdue
+   */
   public Health health() {
+    var offline = handlers.entrySet().stream()
+      .filter(e -> !e.getValue().isOnline())
+      .map(Map.Entry::getKey)
+      .toList();
     try (SqlSession session = factory.openSession(true)) {
       var m = session.getMapper(OutboxMapper.class);
       return new Health(
         m.count(null, OutboxStatus.PENDING),
-        m.countOverdue(cfg.overdueMinutes),
+        m.countOverdue(cfg.overdueMinutes, offline),
         m.count(null, OutboxStatus.FAILED)
       );
     }

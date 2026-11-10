@@ -54,7 +54,8 @@ abstract class AbstractEventBroker implements EventBroker {
     for (Listener l : listeners) {
       try {
         l.flushCaches();
-      } catch (Exception e) {
+      } catch (Throwable e) {
+        // an Error too: it would end the single thread listening for events, leaving every cache of the app stale
         LOG.error("Failed to flush the caches of {}", l, e);
       }
     }
@@ -79,7 +80,8 @@ abstract class AbstractEventBroker implements EventBroker {
       if (type.isInstance(l)) {
         try {
           action.accept(type.cast(l));
-        } catch (Exception e) {
+        } catch (Throwable e) {
+          // an Error too: it would end the single thread listening for events, leaving every cache of the app stale
           LOG.error("Failed to broker event {} to {}", event, l.getClass().getSimpleName(), e);
         }
       }

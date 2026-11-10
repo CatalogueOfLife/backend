@@ -600,6 +600,10 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
     // a private dataset gets a matcher on demand only, so refresh one that already exists - leaving it on the
     // previous attempt would silently serve stale data - but never create one for every private import
     if (d.isPrivat() && !matcherExists(event.datasetKey)) return;
+    // a small dataset is served live from postgres, so without a persistent store there is nothing to refresh.
+    // Its stored size tells, counting the usages would hold up the event thread. Most imports are small, so this
+    // spares a job for each of them and for every dataset a global rematch touched
+    if (d.getSize() != null && d.getSize() < cfg.pgMatcherThreshold && !matcherExists(event.datasetKey)) return;
     try {
       refresh(event.datasetKey, event.user); // refresh to new attempt; creates if missing
     } catch (Exception e) {

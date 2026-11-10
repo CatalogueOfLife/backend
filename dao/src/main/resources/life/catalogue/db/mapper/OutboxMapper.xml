@@ -82,6 +82,9 @@
     SELECT count(*)
     FROM outbox o
     WHERE o.status = 'PENDING' AND o.due &lt; now() - #{minutes} * interval '1 minute'
+    <if test="exclude != null and !exclude.isEmpty()">
+      AND o.type NOT IN <foreach item="t" collection="exclude" open="(" separator="," close=")">#{t}::OUTBOXTYPE</foreach>
+    </if>
   </select>
 
   <!--

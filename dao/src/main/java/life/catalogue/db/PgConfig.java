@@ -147,15 +147,19 @@ public class PgConfig extends PgDbConfig {
   }
 
   /**
+   * @param socketTimeoutSeconds seconds after which a read of the connection gives up. Keepalives only probe an idle
+   *                             connection: a query sent down a path that died silently waits for TCP to give up on
+   *                             its retransmissions instead, about 15 minutes on linux
    * @return a new long lived postgres jdbc connection with its own application name, sending TCP keepalives so a
    *         dead network path is noticed on an otherwise idle connection
    */
-  public PgConnection connectLongLived(String applicationName) throws SQLException {
+  public PgConnection connectLongLived(String applicationName, int socketTimeoutSeconds) throws SQLException {
     Properties props = new Properties();
     if (!Strings.isNullOrEmpty(user)) props.setProperty("user", user);
     if (!Strings.isNullOrEmpty(password)) props.setProperty("password", password);
     props.setProperty("ApplicationName", applicationName);
     props.setProperty("tcpKeepAlive", "true");
+    props.setProperty("socketTimeout", String.valueOf(socketTimeoutSeconds));
     PgConnection c = DriverManager.getConnection("jdbc:postgresql://" + location(database), props).unwrap(PgConnection.class);
     try (Statement st = c.createStatement()) {
       st.execute("SET client_encoding = 'UTF8'");

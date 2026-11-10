@@ -6,7 +6,8 @@ import com.codahale.metrics.health.HealthCheck;
 
 /**
  * Reports commands that have waited in the outbox for too long while its runner is started, a sign that their
- * handler is stuck or offline. A stopped runner, the old app of a deploy, is healthy: its commands wait on purpose.
+ * handler is stuck. A stopped runner, the old app of a deploy, is healthy: its commands wait on purpose, and so do
+ * those of a handler that is offline, like the DOI commands while the DoiUpdater is stopped to pause DataCite.
  */
 public class OutboxHealthCheck extends HealthCheck {
   private final OutboxRunner runner;

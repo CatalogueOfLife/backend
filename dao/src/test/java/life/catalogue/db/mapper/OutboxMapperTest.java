@@ -234,7 +234,7 @@ public class OutboxMapperTest extends MapperTestBase<OutboxMapper> {
     assertEquals(2, dois.size());
     // earliest due first
     assertEquals("10.80631/l1", dois.get(0).getKey());
-    assertEquals(0, (int) om(m -> m.countOverdue(15)));
+    assertEquals(0, (int) om(m -> m.countOverdue(15, null)));
 
     // overdue and failed long ago
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
@@ -243,7 +243,7 @@ public class OutboxMapperTest extends MapperTestBase<OutboxMapper> {
       session.getConnection().createStatement().execute(
         "UPDATE outbox SET status = 'FAILED', modified = now() - interval '40 days' WHERE key = '3:12'");
     }
-    assertEquals(1, (int) om(m -> m.countOverdue(15)));
+    assertEquals(1, (int) om(m -> m.countOverdue(15, null)));
     assertEquals(0, (int) om(m -> m.purgeFailed(50)));
     assertEquals(1, (int) om(m -> m.purgeFailed(30)));
     assertEquals(2, (int) om(m -> m.count(null, null)));

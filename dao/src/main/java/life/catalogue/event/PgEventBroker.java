@@ -87,7 +87,7 @@ public class PgEventBroker extends AbstractEventBroker {
   }
 
   private PgConnection connect() throws SQLException {
-    PgConnection c = listenDb.connectLongLived(applicationName);
+    PgConnection c = listenDb.connectLongLived(applicationName, cfg.checkSeconds);
     try {
       c.setAutoCommit(true);
       try (Statement st = c.createStatement()) {

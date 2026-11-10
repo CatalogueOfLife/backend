@@ -227,6 +227,55 @@ public class OutboxRunnerTest extends MapperTestBase<OutboxMapper> {
     }
   }
 
+  /**
+   * A finished command makes room for the next due one right away, not only at the next poll, so a burst of DOI
+   * updates drains as fast as DataCite answers.
+   */
+  @Test
+  public void finishedCommandsMakeRoomAtOnce() throws Exception {
+    var runner = new OutboxRunner(cfg(), SqlSessionFactoryRule.getSqlSessionFactory());
+    var latch = new CountDownLatch(5);
+    var h = new Handler() {
+      @Override
+      public void handle(OutboxEntry entry) {
+        super.handle(entry);
+        latch.countDown();
+      }
+    };
+    runner.register(OutboxType.SECTOR_DELETE, h);
+    for (int i = 10; i < 15; i++) {
+      enqueue("3:" + i);
+    }
+    runner.start();
+    try {
+      // a single poll, the next one is an hour away
+      runner.poll();
+      assertTrue("Only " + h.handled.size() + " of 5 commands ran", latch.await(10, TimeUnit.SECONDS));
+    } finally {
+      runner.stop();
+    }
+  }
+
+  /**
+   * The commands of a handler that is offline on purpose, like those of a stopped DoiUpdater, wait without being
+   * reported as overdue.
+   */
+  @Test
+  public void offlineHandlersAreNotOverdue() throws Exception {
+    var runner = new OutboxRunner(cfg(), SqlSessionFactoryRule.getSqlSessionFactory());
+    var h = new Handler();
+    runner.register(OutboxType.SECTOR_DELETE, h);
+    enqueue("3:15");
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      session.getConnection().createStatement().execute("UPDATE outbox SET due = now() - interval '1 day'");
+    }
+    assertEquals(1, runner.health().overdue());
+    h.online = false;
+    var health = runner.health();
+    assertEquals(0, health.overdue());
+    assertEquals(1, health.pending());
+  }
+
   @Test
   public void startTakesOverAndStopHandsBack() throws Exception {
     var factory = SqlSessionFactoryRule.getSqlSessionFactory();

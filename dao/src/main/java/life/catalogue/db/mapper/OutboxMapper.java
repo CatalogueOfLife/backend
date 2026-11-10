@@ -5,6 +5,7 @@ import life.catalogue.api.model.Page;
 import life.catalogue.api.vocab.OutboxStatus;
 import life.catalogue.api.vocab.OutboxType;
 
+import java.util.Collection;
 import java.util.List;
 
 import javax.annotation.Nullable;
@@ -44,8 +45,9 @@ public interface OutboxMapper {
 
   /**
    * Counts pending commands that have been due for longer than the given minutes, a sign that nothing runs them.
+   * @param exclude types not to count, e.g. those whose handler is offline on purpose
    */
-  int countOverdue(@Param("minutes") int minutes);
+  int countOverdue(@Param("minutes") int minutes, @Param("exclude") @Nullable Collection<OutboxType> exclude);
 
   /**
    * Claims up to limit due pending commands of one type for the given runner instance, earliest due first,

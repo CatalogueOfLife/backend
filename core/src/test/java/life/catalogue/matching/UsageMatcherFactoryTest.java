@@ -227,6 +227,20 @@ public class UsageMatcherFactoryTest {
     verify(executor, never()).submit(any());
   }
 
+  /**
+   * A small dataset without a persistent store is served live from postgres, so there is nothing to refresh.
+   * Its stored size says so without counting on the event thread, and spares a job for every small import.
+   */
+  @Test
+  public void dataChangedSkipsSmallDatasetWithoutStore() {
+    var f = factory();
+    var d = dataset(306, DatasetOrigin.EXTERNAL, false);
+    d.setSize(5);
+    stubDataChanged(306, 5, d);
+    f.datasetDataChanged(new DatasetDataChanged(306, 1));
+    verify(executor, never()).submit(any());
+  }
+
   @Test
   public void dataChangedBelowThresholdRemovesExistingMatcher() throws Exception {
     var f = factory();

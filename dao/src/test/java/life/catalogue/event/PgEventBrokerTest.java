@@ -110,6 +110,54 @@ public class PgEventBrokerTest {
   }
 
   /**
+   * A listener throwing an Error neither keeps an event from the other listeners nor stops the broker listening.
+   */
+  @Test
+  public void listenerErrorsKeepListening() throws Exception {
+    var cfg = cfg();
+    var failing = new Recorder() {
+      @Override
+      public void datasetDataChanged(DatasetDataChanged e) {
+        super.datasetDataChanged(e);
+        throw new StackOverflowError("listener too deep");
+      }
+
+      @Override
+      public void flushCaches() {
+        super.flushCaches();
+        throw new StackOverflowError("flush too deep");
+      }
+    };
+    var r = new Recorder();
+    try (var a = broker(cfg)) {
+      a.register(failing);
+      a.register(r);
+      a.start();
+      a.publish(new DatasetDataChanged(1, 1));
+      a.publish(new FlushCaches());
+      a.publish(new DatasetDataChanged(2, 2));
+      await(() -> r.events.size() == 2);
+      assertEquals(1, r.flushes.get());
+      assertEquals(2, failing.events.size());
+      assertEquals(1, failing.flushes.get());
+      assertTrue(a.hasStarted());
+    }
+  }
+
+  /**
+   * Reads on the listening connection time out, so a connection that died without a word is noticed by the next
+   * check instead of blocking the listener until TCP gives up. Waiting for notifications must not lift the timeout.
+   */
+  @Test
+  public void listenConnectionTimesOut() throws Exception {
+    try (var c = SqlSessionFactoryRule.getCfg().connectLongLived("test-events", 7)) {
+      assertEquals(7000, c.getNetworkTimeout());
+      c.getNotifications(50);
+      assertEquals(7000, c.getNetworkTimeout());
+    }
+  }
+
+  /**
    * The broker listens from the moment it is built, so an event sent before it is started is still delivered.
    */
   @Test
