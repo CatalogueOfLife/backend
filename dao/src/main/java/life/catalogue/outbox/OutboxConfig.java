@@ -46,7 +46,8 @@ public class OutboxConfig {
   /**
    * Hours a command may wait since it was requested before the health check reports it as stuck. A command that is
    * put off again and again, e.g. the deletion of a sector that is always busy, is never overdue.
+   * An extended release can hold up the syncs and deletions of its project for 36 hours, so it must not count.
    */
   @Min(1)
-  public int stuckHours = 24;
+  public int stuckHours = 48;
 }

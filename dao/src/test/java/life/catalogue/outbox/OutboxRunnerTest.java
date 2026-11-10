@@ -310,7 +310,7 @@ public class OutboxRunnerTest extends MapperTestBase<OutboxMapper> {
     assertEquals(0, runner.health().stuck());
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       session.getConnection().createStatement()
-        .execute("UPDATE outbox SET created = now() - interval '2 days', due = now() + interval '1 minute'");
+        .execute("UPDATE outbox SET created = now() - interval '3 days', due = now() + interval '1 minute'");
     }
     var health = runner.health();
     assertEquals(0, health.overdue());
