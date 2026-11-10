@@ -1,8 +1,8 @@
 # Authors with and without brackets, and why a name lost its identifier
 
 Date: 2026-11-10
-Status: merged (#1704) and deployed on prod 2026-11-10; misapplication notes (see Outcome) on branch
-`feat/misapplied-notes`, not merged
+Status: merged (#1704) and deployed on prod 2026-11-10; misapplication notes (see Outcome) on master since
+2026-11-10 (c9b600705), not deployed
 
 ## Problem
 
