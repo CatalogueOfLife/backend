@@ -31,6 +31,8 @@ public class DatasetChanged implements Event {
   public boolean privatChanged;
   /** the users with access rights to a deleted dataset, whose cached permissions are outdated */
   public Set<String> usernamesToInvalidate = new HashSet<>();
+  /** true if the cached permissions of all users are outdated, as there were too many users to name */
+  public boolean invalidateAllUsers;
 
   public DatasetChanged() {
   }
@@ -63,6 +65,27 @@ public class DatasetChanged implements Event {
   public static DatasetChanged deleted(Dataset d, int user) {
     var e = new DatasetChanged(EventType.DELETE, d, user);
     e.deleted = true;
+    return e;
+  }
+
+  /**
+   * @return a copy that asks to invalidate all users instead of naming them, or null if it names none
+   */
+  @Override
+  public DatasetChanged smaller() {
+    if (usernamesToInvalidate.isEmpty()) return null;
+    var e = new DatasetChanged();
+    e.type = type;
+    e.key = key;
+    e.user = user;
+    e.origin = origin;
+    e.sourceKey = sourceKey;
+    e.publisherKey = publisherKey;
+    e.createdBy = createdBy;
+    e.deleted = deleted;
+    e.privat = privat;
+    e.privatChanged = privatChanged;
+    e.invalidateAllUsers = true;
     return e;
   }
 
@@ -100,12 +123,14 @@ public class DatasetChanged implements Event {
     return key == that.key && user == that.user && deleted == that.deleted && privat == that.privat
       && privatChanged == that.privatChanged && type == that.type && origin == that.origin
       && Objects.equals(sourceKey, that.sourceKey) && Objects.equals(publisherKey, that.publisherKey)
-      && Objects.equals(createdBy, that.createdBy) && Objects.equals(usernamesToInvalidate, that.usernamesToInvalidate);
+      && Objects.equals(createdBy, that.createdBy) && Objects.equals(usernamesToInvalidate, that.usernamesToInvalidate)
+      && invalidateAllUsers == that.invalidateAllUsers;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(type, key, user, origin, sourceKey, publisherKey, createdBy, deleted, privat, privatChanged, usernamesToInvalidate);
+    return Objects.hash(type, key, user, origin, sourceKey, publisherKey, createdBy, deleted, privat, privatChanged,
+      usernamesToInvalidate, invalidateAllUsers);
   }
 
   @Override

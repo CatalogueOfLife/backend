@@ -65,10 +65,6 @@ public class WsBundleServer extends WsROServer<WsBundleServerConfig> {
   }
 
   /**
-   * A bundle always ships elastic, so a missing or empty es section is a configuration error, not a reason
-   * to silently serve empty search results.
-   */
-  /**
    * A bundle is the only app on its database, so events stay within this JVM.
    */
   @Override
@@ -76,6 +72,10 @@ public class WsBundleServer extends WsROServer<WsBundleServerConfig> {
     return new LocalEventBroker();
   }
 
+  /**
+   * A bundle always ships elastic, so a missing or empty es section is a configuration error, not a reason
+   * to silently serve empty search results.
+   */
   @Override
   protected boolean esRequired() {
     return true;

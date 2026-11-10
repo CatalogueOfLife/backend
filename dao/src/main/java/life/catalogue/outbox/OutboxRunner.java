@@ -6,7 +6,7 @@ import life.catalogue.api.model.OutboxEntry;
 import life.catalogue.api.vocab.OutboxStatus;
 import life.catalogue.api.vocab.OutboxType;
 import life.catalogue.common.Managed;
-import life.catalogue.common.lang.InterruptedRuntimeException;
+import life.catalogue.common.lang.Exceptions;
 import life.catalogue.concurrent.NamedThreadFactory;
 import life.catalogue.db.mapper.OutboxMapper;
 
@@ -15,6 +15,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
+import java.util.function.ToIntFunction;
+
+import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;
@@ -189,7 +193,8 @@ public class OutboxRunner implements Managed {
       retry(entry, 0, cfg.retryLaterSeconds, e);
 
     } catch (Exception e) {
-      if (stopping && isInterruption(e)) {
+      // a handler may also swallow the interrupt of the stop and fail for it in its own words
+      if (stopping && (Exceptions.isInterruption(e) || Thread.currentThread().isInterrupted())) {
         LOG.info("Outbox command {} interrupted by stop", entry);
         update(m -> m.requeue(entry.getId(), instance));
       } else {
@@ -206,12 +211,17 @@ public class OutboxRunner implements Managed {
 
   private void failOrRetry(OutboxHandler handler, OutboxEntry entry, int attempt, Exception e, boolean permanent) {
     if (permanent || attempt >= cfg.maxAttempts) {
-      LOG.error("Outbox command {} failed for good after {} attempts", entry, attempt, e);
-      update(m -> m.fail(entry.getId(), entry.getVersion(), instance, errorMessage(e)));
-      try {
-        handler.onFailed(entry, e);
-      } catch (RuntimeException ex) {
-        LOG.error("Failure notification for outbox command {} failed", entry, ex);
+      OutboxStatus status = record(m -> m.fail(entry.getId(), entry.getVersion(), instance, errorMessage(e)));
+      if (status == OutboxStatus.FAILED) {
+        LOG.error("Outbox command {} failed for good after {} attempts", entry, attempt, e);
+        try {
+          handler.onFailed(entry, e);
+        } catch (RuntimeException ex) {
+          LOG.error("Failure notification for outbox command {} failed", entry, ex);
+        }
+      } else {
+        // a request merged in while it ran gets a try of its own, or the outcome could not be recorded at all
+        LOG.warn("Outbox command {} failed after {} attempts, but is not given up: {}", entry, attempt, status, e);
       }
 
     } else {
@@ -236,13 +246,22 @@ public class OutboxRunner implements Managed {
     update(m -> m.retry(entry.getId(), instance, inc, delaySeconds, errorMessage(e)));
   }
 
-  private int update(java.util.function.ToIntFunction<OutboxMapper> action) {
+  private int update(ToIntFunction<OutboxMapper> action) {
+    Integer changed = record(action::applyAsInt);
+    return changed == null ? 0 : changed;
+  }
+
+  /**
+   * @return the result of the action or null if it failed
+   */
+  @Nullable
+  private <T> T record(Function<OutboxMapper, T> action) {
     try (SqlSession session = factory.openSession(true)) {
-      return action.applyAsInt(session.getMapper(OutboxMapper.class));
+      return action.apply(session.getMapper(OutboxMapper.class));
     } catch (RuntimeException e) {
       // the command stays running and claimed by this instance, stop() or the next start() hands it back
       LOG.error("Failed to record the outcome of an outbox command", e);
-      return 0;
+      return null;
     }
   }
 
@@ -261,22 +280,11 @@ public class OutboxRunner implements Managed {
     return StringUtils.abbreviate(e.toString(), MAX_ERROR_LENGTH);
   }
 
-  private static boolean isInterruption(Throwable e) {
-    Throwable t = e;
-    while (t != null) {
-      if (t instanceof InterruptedException || t instanceof InterruptedRuntimeException) {
-        return true;
-      }
-      t = t.getCause();
-    }
-    return Thread.currentThread().isInterrupted();
-  }
-
-  public record Health(int pending, int overdue, int failed) {}
+  public record Health(int pending, int overdue, int stuck, int failed) {}
 
   /**
    * @return the outbox counts, where the commands of a handler that is offline on purpose, e.g. a stopped DoiUpdater,
-   *         are pending but never overdue
+   *         are pending but never overdue or stuck
    */
   public Health health() {
     var offline = handlers.entrySet().stream()
@@ -288,6 +296,7 @@ public class OutboxRunner implements Managed {
       return new Health(
         m.count(null, OutboxStatus.PENDING),
         m.countOverdue(cfg.overdueMinutes, offline),
+        m.countStuck(cfg.stuckHours, offline),
         m.count(null, OutboxStatus.FAILED)
       );
     }

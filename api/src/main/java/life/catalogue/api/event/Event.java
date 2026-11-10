@@ -18,4 +18,12 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
   @JsonSubTypes.Type(value = FlushCaches.class, name = "flush")
 })
 public interface Event {
+
+  /**
+   * @return a smaller copy of this event that still serves its listeners, sent when the event is too big for a
+   *         notification. Null if there is none, which makes every app flush its caches instead.
+   */
+  default Event smaller() {
+    return null;
+  }
 }

@@ -94,7 +94,8 @@ public class PgEventBroker extends AbstractEventBroker {
         try (ResultSet rs = st.executeQuery("SELECT pg_is_in_recovery()")) {
           rs.next();
           if (rs.getBoolean(1)) {
-            throw new IllegalStateException(listenDb.location() + " is a standby which cannot LISTEN, configure broker.db with the primary");
+            throw new IllegalStateException(listenDb.location()
+              + " is a standby which cannot LISTEN, configure broker.db with the primary");
           }
         }
         // the channel is validated by BrokerConfig, an identifier cannot be bound

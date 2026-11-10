@@ -276,6 +276,49 @@ public class OutboxRunnerTest extends MapperTestBase<OutboxMapper> {
     assertEquals(1, health.pending());
   }
 
+  /**
+   * A request merged into a command while it ran gives it another try, so its failure is not reported as final.
+   */
+  @Test
+  public void failedAfterMergeIsNotReported() throws Exception {
+    var runner = new OutboxRunner(cfg(), SqlSessionFactoryRule.getSqlSessionFactory());
+    var h = new Handler() {
+      @Override
+      public void handle(OutboxEntry entry) {
+        super.handle(entry);
+        enqueue(entry.getKey());
+        throw new IllegalArgumentException("rejected");
+      }
+    };
+    enqueue("3:16");
+    claimAndRun(runner, h);
+    var x = get("3:16");
+    assertEquals(OutboxStatus.PENDING, x.getStatus());
+    assertTrue(h.failed.isEmpty());
+  }
+
+  /**
+   * A command that keeps being put off, e.g. a sector deletion while the sector is always busy, is never overdue as
+   * its due time moves on. It is reported once it was requested long ago, unless its handler is offline on purpose.
+   */
+  @Test
+  public void stuckCommandsAreReported() throws Exception {
+    var runner = new OutboxRunner(cfg(), SqlSessionFactoryRule.getSqlSessionFactory());
+    var h = new Handler();
+    runner.register(OutboxType.SECTOR_DELETE, h);
+    enqueue("3:17");
+    assertEquals(0, runner.health().stuck());
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      session.getConnection().createStatement()
+        .execute("UPDATE outbox SET created = now() - interval '2 days', due = now() + interval '1 minute'");
+    }
+    var health = runner.health();
+    assertEquals(0, health.overdue());
+    assertEquals(1, health.stuck());
+    h.online = false;
+    assertEquals(0, runner.health().stuck());
+  }
+
   @Test
   public void startTakesOverAndStopHandsBack() throws Exception {
     var factory = SqlSessionFactoryRule.getSqlSessionFactory();

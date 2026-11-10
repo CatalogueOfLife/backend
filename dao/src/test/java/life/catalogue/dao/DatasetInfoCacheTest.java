@@ -55,7 +55,8 @@ public class DatasetInfoCacheTest {
    */
   @Test
   public void updatedThroughBroker() throws Exception {
-    try (EventBroker bus = EventBrokers.build(new BrokerConfig(), SqlSessionFactoryRule.getCfg(), SqlSessionFactoryRule.getSqlSessionFactory())) {
+    try (EventBroker bus = EventBrokers.build(new BrokerConfig(), SqlSessionFactoryRule.getCfg(),
+      SqlSessionFactoryRule.getSqlSessionFactory())) {
       bus.register(DatasetInfoCache.CACHE);
       bus.start();
 

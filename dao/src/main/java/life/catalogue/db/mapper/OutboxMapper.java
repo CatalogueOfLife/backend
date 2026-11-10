@@ -50,6 +50,12 @@ public interface OutboxMapper {
   int countOverdue(@Param("minutes") int minutes, @Param("exclude") @Nullable Collection<OutboxType> exclude);
 
   /**
+   * Counts pending commands requested longer than the given hours ago, which catches those put off again and again.
+   * @param exclude types not to count, e.g. those whose handler is offline on purpose
+   */
+  int countStuck(@Param("hours") int hours, @Param("exclude") @Nullable Collection<OutboxType> exclude);
+
+  /**
    * Claims up to limit due pending commands of one type for the given runner instance, earliest due first,
    * skipping rows another runner has locked.
    * @return the claimed commands, now RUNNING
@@ -81,8 +87,11 @@ public interface OutboxMapper {
   /**
    * Marks a command claimed by this instance as failed for good.
    * If a request was merged in during the run it becomes pending again instead, the new request deserves its own try.
+   * @return the status the command was left in, FAILED or PENDING, or null if this instance no longer held it
    */
-  int fail(@Param("id") long id, @Param("version") int version, @Param("instance") String instance, @Param("error") String error);
+  @Nullable
+  OutboxStatus fail(@Param("id") long id, @Param("version") int version, @Param("instance") String instance,
+                    @Param("error") String error);
 
   /**
    * Hands every command this instance still has running back as pending, used when a runner stops.

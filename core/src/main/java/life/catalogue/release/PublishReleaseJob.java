@@ -125,7 +125,8 @@ public class PublishReleaseJob extends BackgroundJob {
     });
 
     if (!errors.isEmpty()) {
-      var e = new IllegalStateException(errors.size() + " publishing steps failed for release " + releaseKey + ": " + errors.getFirst().getMessage());
+      var e = new IllegalStateException(errors.size() + " publishing steps failed for release " + releaseKey + ": "
+        + errors.getFirst().getMessage());
       errors.forEach(e::addSuppressed);
       throw e;
     }

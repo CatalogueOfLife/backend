@@ -177,7 +177,7 @@ public class OutboxMapperTest extends MapperTestBase<OutboxMapper> {
 
     // fail for good
     var r3 = om(m -> m.claim(OutboxType.DOI, 1, A)).get(0);
-    assertEquals(1, (int) om(m -> m.fail(r3.getId(), r3.getVersion(), A, "rejected")));
+    assertEquals(OutboxStatus.FAILED, om(m -> m.fail(r3.getId(), r3.getVersion(), A, "rejected")));
     var f = get("10.80631/r");
     assertEquals(OutboxStatus.FAILED, f.getStatus());
     assertEquals(1, f.getAttempts());
@@ -200,7 +200,9 @@ public class OutboxMapperTest extends MapperTestBase<OutboxMapper> {
     enqueue("10.80631/m", "CREATE", 0);
     var m1 = om(m -> m.claim(OutboxType.DOI, 1, A)).get(0);
     enqueue("10.80631/m", "UPDATE", 0);
-    om(m -> m.fail(m1.getId(), m1.getVersion(), A, "rejected"));
+    assertEquals(OutboxStatus.PENDING, om(m -> m.fail(m1.getId(), m1.getVersion(), A, "rejected")));
+    // a command no longer claimed by this instance is left alone
+    assertNull(om(m -> m.fail(m1.getId(), m1.getVersion(), A, "rejected")));
     var e = get("10.80631/m");
     assertEquals(OutboxStatus.PENDING, e.getStatus());
     assertEquals(0, e.getAttempts());

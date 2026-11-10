@@ -59,4 +59,18 @@ public class ExceptionsTest {
     t = new RuntimeException(new IllegalStateException(new IOException(new InterruptedException("Hallo"))));
     assertEquals("IllegalStateException; IOException; InterruptedException: Hallo", Exceptions.simpleLogWithCauses(t));
   }
+
+  /**
+   * Libraries wrap the interrupt they saw, the elasticsearch client e.g. in a RuntimeException.
+   * A socket timeout is an InterruptedIOException, but a plain timeout and no interrupt.
+   */
+  @Test
+  public void isInterruption() {
+    assertTrue(Exceptions.isInterruption(new InterruptedException("stop")));
+    assertTrue(Exceptions.isInterruption(new RuntimeException(new IOException(new InterruptedException("stop")))));
+    assertTrue(Exceptions.isInterruption(new IllegalStateException(new InterruptedRuntimeException("stop"))));
+    assertFalse(Exceptions.isInterruption(new java.net.SocketTimeoutException("slow")));
+    assertFalse(Exceptions.isInterruption(new RuntimeException("boom", new IOException("disk"))));
+    assertFalse(Exceptions.isInterruption(null));
+  }
 }

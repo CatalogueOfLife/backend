@@ -33,7 +33,8 @@ public class EventBrokers {
     }
     final boolean standby = isStandby(mainFactory);
     if (standby && cfg.db == null) {
-      throw new IllegalStateException("The main database " + mainDb.location() + " is a read only standby. Configure broker.db with the primary to listen on");
+      throw new IllegalStateException("The main database " + mainDb.location()
+        + " is a read only standby. Configure broker.db with the primary to listen on");
     }
     final PgConfig listenDb = cfg.db == null ? mainDb : cfg.db;
     LOG.info("Use a postgres event broker on {}{}", listenDb.location(), standby ? ", main database is a standby" : "");

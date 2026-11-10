@@ -148,7 +148,8 @@ public class WsServerConfigTest {
       );
       assertTrue(e.getMessage(), e.getMessage().contains("Unrecognized field at: broker." + old.substring(0, old.indexOf(':'))));
     }
-    WsServerConfig cfg = strict.build(path -> new ByteArrayInputStream("broker:\n  name: rw\n".getBytes(StandardCharsets.UTF_8)), "config.yml");
+    WsServerConfig cfg = strict.build(
+      path -> new ByteArrayInputStream("broker:\n  name: rw\n".getBytes(StandardCharsets.UTF_8)), "config.yml");
     assertEquals("rw", cfg.broker.name);
   }
 

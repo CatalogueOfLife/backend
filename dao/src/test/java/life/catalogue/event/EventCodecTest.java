@@ -74,12 +74,33 @@ class EventCodecTest {
     assertEquals(new DatasetLogoChanged(7), codec.decode("{\"t\":\"logo\",\"datasetKey\":7,\"color\":\"red\"}"));
   }
 
+  /**
+   * A deletion with too many users to name is still sent, without the names: every app drops all its cached users
+   * instead, but still cancels the dataset's jobs and removes its matcher.
+   */
   @Test
-  void oversizeBecomesFlush() {
+  void oversizeDeletionDropsUsernames() {
     var e = DatasetChanged.deleted(dataset(false), 1);
     for (int i = 0; i < 1000; i++) {
       e.usernamesToInvalidate.add("user" + i);
     }
+    var json = codec.encode(e);
+    assertTrue(json.getBytes(StandardCharsets.UTF_8).length < EventCodec.MAX_BYTES);
+    var d = (DatasetChanged) codec.decode(json);
+    assertTrue(d.isDeletion());
+    assertEquals(3001, d.key);
+    assertEquals(3, (int) d.sourceKey);
+    assertTrue(d.usernamesToInvalidate.isEmpty());
+    assertTrue(d.invalidateAllUsers);
+    assertFalse(e.invalidateAllUsers, "the published event itself is left as it is");
+  }
+
+  /**
+   * An event that cannot be made smaller asks every app to flush its caches instead.
+   */
+  @Test
+  void oversizeBecomesFlush() {
+    var e = new UserPermissionChanged("x".repeat(EventCodec.MAX_BYTES));
     assertEquals(new FlushCaches(), codec.decode(codec.encode(e)));
   }
 }

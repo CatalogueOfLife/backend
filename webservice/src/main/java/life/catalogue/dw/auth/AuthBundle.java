@@ -88,8 +88,13 @@ public class AuthBundle implements ConfiguredBundle<WsServerConfig>, UserListene
     if (event.isDeletion()) {
       privateFilter.updateCache(event.key, false);
       // remove all users from the cache that are on the acl lists of this dataset
-      for (var uname : event.usernamesToInvalidate) {
-        idService.invalidate(uname);
+      if (event.invalidateAllUsers) {
+        // too many to name in the event
+        idService.flushCache();
+      } else {
+        for (var uname : event.usernamesToInvalidate) {
+          idService.invalidate(uname);
+        }
       }
     } else {
       privateFilter.updateCache(event.key, event.privat);

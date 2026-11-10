@@ -24,6 +24,20 @@ public class Exceptions {
     return (t instanceof RuntimeException) ? (RuntimeException) t : new RuntimeException(t);
   }
 
+  /**
+   * @return true if the exception or any of its causes is an interrupt. Libraries report an interrupt in their own
+   * wrapping, the elasticsearch client e.g. as a RuntimeException "thread waiting for the response was interrupted".
+   * An InterruptedIOException is deliberately not one: its SocketTimeoutException subclass is a plain timeout.
+   */
+  public static boolean isInterruption(@Nullable Throwable e) {
+    for (Throwable t = e; t != null; t = t.getCause()) {
+      if (t instanceof InterruptedException || t instanceof InterruptedRuntimeException) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   public static void interruptIfCancelled() throws InterruptedException {
     if (Thread.currentThread().isInterrupted()) {
       throw new InterruptedException();

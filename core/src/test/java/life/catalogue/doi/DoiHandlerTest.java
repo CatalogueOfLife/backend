@@ -172,7 +172,8 @@ class DoiHandlerTest {
     when(factory.openSession()).thenReturn(session);
     when(factory.openSession(anyBoolean())).thenReturn(session);
 
-    var converter = new DatasetConverter(URI.create("https://www.catalogueoflife.org"), URI.create("https://www.checklistbank.org"), k -> null);
+    var converter = new DatasetConverter(URI.create("https://www.catalogueoflife.org"),
+      URI.create("https://www.checklistbank.org"), k -> null);
     return new DoiHandler(factory, doiService, mock(LatestDatasetKeyCache.class), converter, CFG, alwaysOnline);
   }
 }

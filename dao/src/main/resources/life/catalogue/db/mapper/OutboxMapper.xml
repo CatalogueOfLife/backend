@@ -78,13 +78,24 @@
     <include refid="WHERE"/>
   </select>
 
+  <sql id="EXCLUDE_TYPES">
+    <if test="exclude != null and !exclude.isEmpty()">
+      AND o.type NOT IN <foreach item="t" collection="exclude" open="(" separator="," close=")">#{t}::OUTBOXTYPE</foreach>
+    </if>
+  </sql>
+
   <select id="countOverdue" resultType="integer">
     SELECT count(*)
     FROM outbox o
     WHERE o.status = 'PENDING' AND o.due &lt; now() - #{minutes} * interval '1 minute'
-    <if test="exclude != null and !exclude.isEmpty()">
-      AND o.type NOT IN <foreach item="t" collection="exclude" open="(" separator="," close=")">#{t}::OUTBOXTYPE</foreach>
-    </if>
+    <include refid="EXCLUDE_TYPES"/>
+  </select>
+
+  <select id="countStuck" resultType="integer">
+    SELECT count(*)
+    FROM outbox o
+    WHERE o.status = 'PENDING' AND o.created &lt; now() - #{hours} * interval '1 hour'
+    <include refid="EXCLUDE_TYPES"/>
   </select>
 
   <!--
@@ -124,7 +135,7 @@
     WHERE id = #{id} AND claimed_by = #{instance}
   </update>
 
-  <update id="fail">
+  <select id="fail" resultType="life.catalogue.api.vocab.OutboxStatus" flushCache="true">
     UPDATE outbox SET
       status = CASE WHEN version = #{version} THEN 'FAILED'::OUTBOXSTATUS ELSE 'PENDING'::OUTBOXSTATUS END,
       attempts = CASE WHEN version = #{version} THEN attempts + 1 ELSE 0 END,
@@ -132,7 +143,8 @@
       last_error = #{error},
       modified = now()
     WHERE id = #{id} AND claimed_by = #{instance}
-  </update>
+    RETURNING status
+  </select>
 
   <update id="releaseMine">
     UPDATE outbox SET status = 'PENDING'::OUTBOXSTATUS, claimed_by = NULL, modified = now()

@@ -191,8 +191,11 @@ public class PgEventBrokerTest {
     }
   }
 
+  /**
+   * A deletion naming too many users still reaches the listeners, without the names.
+   */
   @Test
-  public void oversizeEventFlushesCaches() throws Exception {
+  public void oversizeDeletionIsDelivered() throws Exception {
     var cfg = cfg();
     var r = new Recorder();
     try (var a = broker(cfg)) {
@@ -205,8 +208,12 @@ public class PgEventBrokerTest {
         e.usernamesToInvalidate.add("user" + i);
       }
       a.publish(e);
-      await(() -> r.flushes.get() == 1);
-      assertTrue(r.events.isEmpty());
+      await(() -> r.events.size() == 1);
+      var d = (DatasetChanged) r.events.get(0);
+      assertEquals(13, d.key);
+      assertTrue(d.isDeletion());
+      assertTrue(d.invalidateAllUsers);
+      assertEquals(0, r.flushes.get());
     }
   }
 

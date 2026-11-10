@@ -153,8 +153,9 @@ Records are unique only within a dataset. Combined key = `datasetKey + id`. Enab
 `EventBroker` publishes `DatasetChanged`, `UserChanged` and similar events to every app on the database - the rw and
 ro server and both apps of a blue-green deploy - with Postgres `LISTEN/NOTIFY` (`PgEventBroker`, channel
 `broker.channel`). An event is a thin JSON document (`EventCodec`, type in `"t"`, unknown types and properties
-ignored, under 8000 bytes or it degrades to `FlushCaches`) carrying keys and the facts its listeners need, never a
-whole entity, so two app versions read each other's events. Each app listens on one dedicated autocommit connection
+ignored, under 8000 bytes, else it is sent as its `smaller()` version - a dataset deletion without the user names -
+or degrades to `FlushCaches`) carrying keys and the facts its listeners need, never a whole entity, so two app
+versions read each other's events. Each app listens on one dedicated autocommit connection
 to the primary, opened when the broker is built so nothing sent before `start()` is lost; a standby cannot LISTEN, so
 the ro server, whose main db is pg2, sets `broker.db` to pg1 and waits for pg2 to replay up to the primary's WAL insert
 position before dispatching, as its listeners reload from pg2. Notifications are not stored: after a reconnect every

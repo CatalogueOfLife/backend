@@ -29,19 +29,31 @@ public class EventCodec {
     .configure(DeserializationFeature.FAIL_ON_INVALID_SUBTYPE, false);
 
   /**
-   * @return the JSON of the event, or of a FlushCaches event if it is too big to be sent
+   * @return the JSON of the event, of its smaller version if it is too big to be sent, or of a FlushCaches event
+   *         if that is too big still
    */
   public String encode(Event event) {
     try {
       String json = mapper.writeValueAsString(event);
-      if (json.getBytes(StandardCharsets.UTF_8).length >= MAX_BYTES) {
-        LOG.warn("Event {} is too big to be broadcast, ask every app to flush its caches instead", event);
-        json = mapper.writeValueAsString(new FlushCaches());
+      if (tooBig(json)) {
+        Event smaller = event.smaller();
+        if (smaller != null) {
+          LOG.info("Event {} is too big to be broadcast, send a smaller version", event);
+          json = mapper.writeValueAsString(smaller);
+        }
+        if (smaller == null || tooBig(json)) {
+          LOG.warn("Event {} is too big to be broadcast, ask every app to flush its caches instead", event);
+          json = mapper.writeValueAsString(new FlushCaches());
+        }
       }
       return json;
     } catch (JsonProcessingException e) {
       throw new IllegalArgumentException("Cannot encode event " + event, e);
     }
+  }
+
+  private static boolean tooBig(String json) {
+    return json.getBytes(StandardCharsets.UTF_8).length >= MAX_BYTES;
   }
 
   /**

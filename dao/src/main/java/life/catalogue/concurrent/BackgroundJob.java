@@ -7,7 +7,7 @@ import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.JobLane;
 import life.catalogue.api.vocab.JobPriority;
 import life.catalogue.api.vocab.JobStatus;
-import life.catalogue.common.lang.InterruptedRuntimeException;
+import life.catalogue.common.lang.Exceptions;
 import life.catalogue.common.util.LoggingUtils;
 import life.catalogue.config.MailConfig;
 
@@ -307,7 +307,7 @@ public abstract class BackgroundJob implements Runnable {
       onCancel();
 
     } catch (Throwable e) {
-      if (e instanceof Exception && isCancellation(e)) {
+      if (e instanceof Exception && Exceptions.isInterruption(e)) {
         // libraries report the interrupt of a cancelled job in their own wrapping, the elasticsearch client e.g. as a
         // RuntimeException "thread waiting for the response was interrupted". It is still a cancel, not a failure
         status = JobStatus.CANCELED;
@@ -474,20 +474,6 @@ public abstract class BackgroundJob implements Runnable {
     if (Thread.currentThread().isInterrupted()) {
       throw new InterruptedException(getClass().getSimpleName() + " job " + key + " was cancelled while " + status);
     }
-  }
-
-  /**
-   * @return true if the exception or any of its causes is an interrupt, i.e. the job was cancelled.
-   * An InterruptedIOException is deliberately not one: its SocketTimeoutException subclass is a plain timeout.
-   */
-  @VisibleForTesting
-  static boolean isCancellation(Throwable e) {
-    for (Throwable t = e; t != null; t = t.getCause() == t ? null : t.getCause()) {
-      if (t instanceof InterruptedException || t instanceof InterruptedRuntimeException) {
-        return true;
-      }
-    }
-    return false;
   }
 
   /**
