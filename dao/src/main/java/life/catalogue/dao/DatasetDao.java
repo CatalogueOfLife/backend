@@ -475,10 +475,15 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
       // Simplify the DOI updates by deleting ALL DOIs for ALL releases and ALL sources at the beginning
       LOG.warn("Request deletion of all DOIs from project {}", key);
       postDoiDeletionForSources(session, dsm, key, user);
+      for (var d : releases) {
+        postDoiDeletionForSources(session, dsm, d.getKey(), user);
+      }
+      // Each release is deleted in a session of its own that requests updates of the very same source DOIs.
+      // Uncommitted, our requests would make it wait forever for this session, which waits for it.
+      session.commit();
       // cascade to releases first before we remove the mother project dataset
       for (var d : releases) {
         LOG.info("Deleting release {} of project {}", d.getKey(), key);
-        postDoiDeletionForSources(session, dsm, d.getKey(), user);
         deleteEntirely(d.getKey(), user);
       }
     } else if (old != null) {

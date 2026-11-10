@@ -156,6 +156,37 @@ public class OutboxRunnerTest extends MapperTestBase<OutboxMapper> {
     assertEquals(1, h.failed.size());
   }
 
+  /**
+   * An Error is recorded as a failed attempt before it is rethrown, so the command does not stay running and claimed
+   * by this app until it restarts.
+   */
+  @Test
+  public void errorIsRecordedAndRethrown() throws Exception {
+    var runner = new OutboxRunner(cfg(), SqlSessionFactoryRule.getSqlSessionFactory());
+    var h = new Handler() {
+      @Override
+      public void handle(OutboxEntry entry) {
+        super.handle(entry);
+        throw new StackOverflowError("too deep");
+      }
+    };
+    enqueue("3:9");
+    for (int attempt = 1; attempt <= 3; attempt++) {
+      try {
+        claimAndRun(runner, h);
+        fail("The error must be rethrown");
+      } catch (StackOverflowError e) {
+        // expected
+      }
+      var x = get("3:9");
+      assertEquals(attempt, x.getAttempts());
+      assertNull(x.getClaimedBy());
+      assertTrue(x.getLastError().contains("too deep"));
+      assertEquals(attempt < 3 ? OutboxStatus.PENDING : OutboxStatus.FAILED, x.getStatus());
+    }
+    assertEquals(1, h.failed.size());
+  }
+
   @Test
   public void pollRunsOnlineHandlers() throws Exception {
     var runner = new OutboxRunner(cfg(), SqlSessionFactoryRule.getSqlSessionFactory());

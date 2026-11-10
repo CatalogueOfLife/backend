@@ -168,21 +168,32 @@ public class OutboxRunner implements Managed {
       if (stopping && isInterruption(e)) {
         LOG.info("Outbox command {} interrupted by stop", entry);
         update(m -> m.requeue(entry.getId(), instance));
-
-      } else if (handler.isPermanent(e) || attempt >= cfg.maxAttempts) {
-        LOG.error("Outbox command {} failed for good after {} attempts", entry, attempt, e);
-        update(m -> m.fail(entry.getId(), entry.getVersion(), instance, errorMessage(e)));
-        try {
-          handler.onFailed(entry, e);
-        } catch (RuntimeException ex) {
-          LOG.error("Failure notification for outbox command {} failed", entry, ex);
-        }
-
       } else {
-        long delay = handler.retryDelay(attempt).toSeconds();
-        LOG.warn("Outbox command {} failed, attempt {} of {}, retry in {}s", entry, attempt, cfg.maxAttempts, delay, e);
-        retry(entry, 1, (int) Math.min(delay, Integer.MAX_VALUE), e);
+        failOrRetry(handler, entry, attempt, e, handler.isPermanent(e));
       }
+
+    } catch (Error e) {
+      // recorded like any failure, else the command stays running and claimed by this app until it restarts.
+      // Rethrown as BackgroundJob does: whether the JVM can carry on is not a single command's call
+      failOrRetry(handler, entry, attempt, new ExecutionException(e), false);
+      throw e;
+    }
+  }
+
+  private void failOrRetry(OutboxHandler handler, OutboxEntry entry, int attempt, Exception e, boolean permanent) {
+    if (permanent || attempt >= cfg.maxAttempts) {
+      LOG.error("Outbox command {} failed for good after {} attempts", entry, attempt, e);
+      update(m -> m.fail(entry.getId(), entry.getVersion(), instance, errorMessage(e)));
+      try {
+        handler.onFailed(entry, e);
+      } catch (RuntimeException ex) {
+        LOG.error("Failure notification for outbox command {} failed", entry, ex);
+      }
+
+    } else {
+      long delay = handler.retryDelay(attempt).toSeconds();
+      LOG.warn("Outbox command {} failed, attempt {} of {}, retry in {}s", entry, attempt, cfg.maxAttempts, delay, e);
+      retry(entry, 1, (int) Math.min(delay, Integer.MAX_VALUE), e);
     }
   }
 

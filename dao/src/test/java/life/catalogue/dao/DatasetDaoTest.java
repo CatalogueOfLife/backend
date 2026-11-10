@@ -19,6 +19,7 @@ import life.catalogue.config.NormalizerConfig;
 import life.catalogue.config.ReleaseConfig;
 import life.catalogue.db.mapper.DatasetMapperTest;
 import life.catalogue.db.mapper.DatasetPartitionMapper;
+import life.catalogue.db.mapper.DatasetSourceMapper;
 import life.catalogue.db.mapper.OutboxMapper;
 import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.db.mapper.SectorMapperTest;
@@ -38,6 +39,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 import org.apache.ibatis.session.SqlSession;
@@ -292,6 +296,53 @@ public class DatasetDaoTest extends DaoTestBase {
     assertDeleted(proj.getKey());
     for (int key : releaseKeys) {
       assertDeleted(key);
+    }
+  }
+
+  /**
+   * A project delete requests the deletion of all source DOIs of its releases and then deletes each release in a
+   * session of its own, which requests an update of the very same DOIs. Requests left uncommitted by the project
+   * session made the release session wait for them forever.
+   */
+  @Test
+  public void deleteProjectWithSourceDois() throws Exception {
+    Dataset proj = DatasetMapperTest.create();
+    proj.setOrigin(DatasetOrigin.PROJECT);
+    dao.create(proj, Users.TESTER);
+    int rkey = createRelease(proj.getKey());
+
+    final DOI srcDoi = DOI.col("source-1");
+    Dataset src = DatasetMapperTest.create();
+    dao.create(src, Users.TESTER);
+    src.setDoi(srcDoi);
+    try (SqlSession session = factory().openSession(true)) {
+      session.getMapper(DatasetSourceMapper.class).create(rkey, src);
+    }
+    clearOutbox();
+
+    var exec = Executors.newSingleThreadExecutor();
+    try {
+      var delete = exec.submit(() -> dao.delete(proj.getKey(), Users.TESTER));
+      try {
+        delete.get(30, TimeUnit.SECONDS);
+      } catch (TimeoutException e) {
+        terminateWaitingSessions();
+        fail("Deleting the project waits for its own uncommitted DOI requests");
+      }
+    } finally {
+      exec.shutdownNow();
+    }
+    assertDeleted(proj.getKey());
+    assertDeleted(rkey);
+    // a delete makes the update pointless
+    assertTrue(doiActions(srcDoi).contains(DoiAction.DELETE));
+  }
+
+  private void terminateWaitingSessions() throws Exception {
+    try (SqlSession session = factory().openSession(true);
+         var st = session.getConnection().createStatement()) {
+      st.execute("SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = current_database()"
+        + " AND pid <> pg_backend_pid() AND (wait_event_type = 'Lock' OR state = 'idle in transaction')");
     }
   }
 
