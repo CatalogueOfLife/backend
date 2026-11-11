@@ -33,6 +33,8 @@ public class FakeGbifRegistry implements AutoCloseable {
   private final AtomicInteger subKeys = new AtomicInteger(100);
   // the status to answer the next request with instead of processing it
   public volatile Integer failNext;
+  // the key to give the next dataset created, a random one if null
+  public volatile UUID nextKey;
 
   public FakeGbifRegistry() throws IOException {
     server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
@@ -86,7 +88,8 @@ public class FakeGbifRegistry implements AutoCloseable {
       String method = ex.getRequestMethod();
       if (parts.length == 0 && method.equals("POST")) {
         ObjectNode d = (ObjectNode) ApiModule.MAPPER.readTree(body(ex));
-        UUID key = UUID.randomUUID();
+        UUID key = nextKey == null ? UUID.randomUUID() : nextKey;
+        nextKey = null;
         d.put("key", key.toString());
         datasets.put(key, d);
         send(ex, 201, "\"" + key + "\"");
