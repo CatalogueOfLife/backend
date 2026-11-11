@@ -1,0 +1,4 @@
+id,name_id,parent_id,status
+k1,n1,,ACCEPTED
+s1,n2,k1,SYNONYM
+t1,n3,,ACCEPTED

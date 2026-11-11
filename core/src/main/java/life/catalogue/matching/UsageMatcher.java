@@ -12,6 +12,7 @@ import life.catalogue.common.tax.SciNameNormalizer;
 import life.catalogue.matching.authorship.AuthorComparator;
 import life.catalogue.matching.authorship.YearComparator;
 import life.catalogue.matching.nidx.NameIndex;
+import life.catalogue.matching.nidx.NameIndexFactory;
 import life.catalogue.matching.nidx.NameIndexImpl;
 import life.catalogue.parser.NameParser;
 
@@ -80,6 +81,44 @@ public class UsageMatcher implements AutoCloseable {
       this.authComp = new AuthorComparator(AuthorshipNormalizer.INSTANCE);
     }
     this.groupAnalyzer = new TaxGroupAnalyzer();
+  }
+
+  /**
+   * Matches one usage of a dataset against another dataset, reading both live from postgres.
+   * This is the strict counterpart of NameUsageDao.related, which lists every usage sharing the same canonical names
+   * index id: candidates here must agree in rank and authorship, homonyms are resolved by their classification
+   * and an accepted usage wins over a synonym of the same name.
+   * If several candidates remain the matcher still picks one, an ambiguous match.
+   * There is no higher rank fallback, so a missing name never matches its genus or another parent.
+   * The names index is never consulted, as the usage to match already carries its names index id.
+   *
+   * GBIF uses this to find the single IUCN Red List entry of a taxon, where IUCN often holds a name twice:
+   * accepted with its own assessment and as the synonym of another assessed species.
+   * See https://github.com/CatalogueOfLife/backend/issues/1705
+   *
+   * @param key the usage to match
+   * @param targetDatasetKey the dataset to find the usage in
+   * @return the matched usage of the target dataset or null if there is none
+   * @throws NotFoundException if the usage to match does not exist
+   */
+  @Nullable
+  public static SimpleNameClassified<SimpleNameCached> matchRelated(SqlSessionFactory factory, DSID<String> key, int targetDatasetKey)
+      throws NotFoundException {
+    SimpleNameClassified<SimpleNameCached> snc;
+    try (var src = new UsageMatcherPgStore(key.getDatasetKey(), factory)) {
+      var sn = src.get(key.getId());
+      if (sn == null) {
+        throw NotFoundException.notFound(NameUsage.class, key);
+      }
+      snc = new SimpleNameClassified<>(sn, src.getClassification(sn.getParent()));
+    }
+    try (var matcher = new UsageMatcher(targetDatasetKey, NameIndexFactory.passThru(), new UsageMatcherPgStore(targetDatasetKey, factory), false)) {
+      var match = matcher.match(snc, false, false);
+      if (match.isMatch() && match.type != MatchType.HIGHERRANK) {
+        return match.usage;
+      }
+    }
+    return null;
   }
 
   public int getDatasetKey() {

@@ -104,6 +104,11 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
   public final static TestData DRAFT_NAME_UPD = new TestData("draft_name_upd", 3, Set.of(3, 100, 101));
   public final static TestData DUPLICATES = new TestData("duplicates", 1000, Set.of(3, 1000));
   public final static TestData NIDX = new TestData("nidx", null, Set.of(100, 101, 102));
+  /**
+   * Betula pubescens accepted in dataset 100, and in dataset 101 both accepted and as a synonym of Betula klokovii,
+   * the way the IUCN Red List holds it. See UsageMatcherMatchRelatedTest.
+   */
+  public final static TestData RELATED = new TestData("related", null, Set.of(100, 101));
   public final static TestData COL_SYNCED = new TestData("colsynced", 3, null);
   /**
    * A project with base releases 11 (deleted), 12 and 14, extended release 13 built on 12, and an archive that still
@@ -318,6 +323,10 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
 
   public static TestDataRule nidx() {
     return new TestDataRule(NIDX);
+  }
+
+  public static TestDataRule related() {
+    return new TestDataRule(RELATED);
   }
 
   public static TestDataRule colSynced() {
