@@ -100,6 +100,32 @@ To see your application's health open the admin port at `http://localhost:8081/h
 | `importer` | Dataset imports and normalisation for ColDP, DwC-A, ACEF and text trees |
 | `webservice` | The Dropwizard applications, JSON resources and CLI commands |
 
+### Module dependencies
+The compile time dependencies between the modules, leaving out those already implied by another branch.
+`api` sits under almost every module, so its own dependencies are shown once at the bottom.
+`bom` is the parent of the root pom and no dependency of any module.
+
+```
+webservice
+└── importer
+    └── core
+        ├── reader-xls
+        │   └── reader ──────── api
+        └── dao
+            ├── pgcopy
+            ├── kryo ────────── api
+            ├── doi ─────────── api
+            ├── nomenclature
+            │   └── parser ──── api
+            └── metadata
+                ├── parser ──── api
+                └── reference ─ api
+
+api
+└── vocab
+    └── coldp
+```
+
 The [bundle](bundle) folder holds the Docker images of the single release "CLB in a box".
 
 
