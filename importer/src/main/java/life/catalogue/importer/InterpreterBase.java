@@ -421,7 +421,9 @@ public class InterpreterBase {
     d.setRemarks(getFormattedText(rec, tRemarks));
     addReference.accept(d, rec);
 
-    if (d.getEstablishmentMeans() == null) {
+    // the status only stands in for a missing establishment means. A given but unparsable one stays empty and flagged:
+    // guessing from a status like occurrenceStatus=present turned introduced GRIIS species native
+    if (d.getEstablishmentMeans() == null && (tEstablishmentMeans == null || StringUtils.isBlank(rec.get(tEstablishmentMeans)))) {
       var status = parse(DistributionStatusParser.PARSER, rec.get(tStatus));
       if (status.isPresent()) {
         switch (status.get()) {

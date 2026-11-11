@@ -886,9 +886,9 @@ public class NormalizerDwcaIT extends NormalizerITBase {
           assertEquals(EstablishmentMeans.NATIVE, d.getEstablishmentMeans());
           break;
         case "Baltic Sea":
-          // no establishmentMeans given: the explicit Invasiveness degree must survive the occurrenceStatus guess
+          // no establishmentMeans given and occurrenceStatus=present is no establishment: the Invasiveness degree stays alone
           assertEquals(DegreeOfEstablishment.INVASIVE, d.getDegreeOfEstablishment());
-          assertEquals(EstablishmentMeans.NATIVE, d.getEstablishmentMeans());
+          assertNull(d.getEstablishmentMeans());
           break;
         default:
           fail("unexpected area " + d.getArea().getName());

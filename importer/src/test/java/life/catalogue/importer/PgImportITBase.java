@@ -241,24 +241,25 @@ public class PgImportITBase {
 
   public static List<Distribution> expectedDwca24Distributions() {
     // TDWG:MOR-CE & TDWG:MOR-ME do not exist - will be removed
+    // occurrenceStatus=present, also the meta.xml default, says nothing about the establishment means
     List<Distribution> expD = new ArrayList<>();
-    expD.add(dist(area("Deutschland"), EstablishmentMeans.NATIVE, DegreeOfEstablishment.NATIVE));
-    expD.add(dist(area("France"), EstablishmentMeans.NATIVE, DegreeOfEstablishment.NATIVE));
-    expD.add(dist(area("All of Austria and the alps"), EstablishmentMeans.NATIVE, DegreeOfEstablishment.NATIVE));
-    expD.add(dist(iso("DK,UK"), EstablishmentMeans.NATIVE, DegreeOfEstablishment.NATIVE));
-    expD.add(dist(area("Nigeria,Kenia"), EstablishmentMeans.NATIVE, DegreeOfEstablishment.NATIVE));
-    expD.add(dist(Country.fromIsoCode("NG"), EstablishmentMeans.NATIVE, DegreeOfEstablishment.NATIVE));
-    expD.add(dist(Country.fromIsoCode("NG"), EstablishmentMeans.NATIVE, DegreeOfEstablishment.NATIVE));
-    expD.add(dist(new GenericArea(Gazetteer.TDWG, "AGS"), EstablishmentMeans.NATIVE, DegreeOfEstablishment.NATIVE));
-    expD.add(dist(new GenericArea(Gazetteer.FAO, "37.4.1"), EstablishmentMeans.NATIVE, DegreeOfEstablishment.NATIVE));
-    expD.add(dist(new GenericArea(Gazetteer.TDWG, "MOR-MO"), EstablishmentMeans.NATIVE, DegreeOfEstablishment.NATIVE));
-    expD.add(dist(area("TDWG:MOR-MO,TDWG:MOR-CE,TDWG:MOR-ME"), EstablishmentMeans.NATIVE, DegreeOfEstablishment.NATIVE));
-    expD.add(dist(area("tdwg:cpp; tdwg:of; tdwg:nam"), EstablishmentMeans.NATIVE, DegreeOfEstablishment.NATIVE));
-    expD.add(dist(iso("IT-82"), EstablishmentMeans.NATIVE, DegreeOfEstablishment.NATIVE));
-    expD.add(dist(iso("ES-CN"), EstablishmentMeans.NATIVE, DegreeOfEstablishment.NATIVE));
-    expD.add(dist(iso("FR-H"), EstablishmentMeans.NATIVE, DegreeOfEstablishment.NATIVE));
-    expD.add(dist(iso("FM-PNI"), EstablishmentMeans.NATIVE, DegreeOfEstablishment.NATIVE));
-    expD.add(dist(iso("BE-VLG", "Flemish Region"), EstablishmentMeans.NATIVE, DegreeOfEstablishment.NATIVE));
+    expD.add(dist(area("Deutschland"), null, null));
+    expD.add(dist(area("France"), null, null));
+    expD.add(dist(area("All of Austria and the alps"), null, null));
+    expD.add(dist(iso("DK,UK"), null, null));
+    expD.add(dist(area("Nigeria,Kenia"), null, null));
+    expD.add(dist(Country.fromIsoCode("NG"), null, null));
+    expD.add(dist(Country.fromIsoCode("NG"), null, null));
+    expD.add(dist(new GenericArea(Gazetteer.TDWG, "AGS"), null, null));
+    expD.add(dist(new GenericArea(Gazetteer.FAO, "37.4.1"), null, null));
+    expD.add(dist(new GenericArea(Gazetteer.TDWG, "MOR-MO"), null, null));
+    expD.add(dist(area("TDWG:MOR-MO,TDWG:MOR-CE,TDWG:MOR-ME"), null, null));
+    expD.add(dist(area("tdwg:cpp; tdwg:of; tdwg:nam"), null, null));
+    expD.add(dist(iso("IT-82"), null, null));
+    expD.add(dist(iso("ES-CN"), null, null));
+    expD.add(dist(iso("FR-H"), null, null));
+    expD.add(dist(iso("FM-PNI"), null, null));
+    expD.add(dist(iso("BE-VLG", "Flemish Region"), null, null));
     return expD;
   }
   

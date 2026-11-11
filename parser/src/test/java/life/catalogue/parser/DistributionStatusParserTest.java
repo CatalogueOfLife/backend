@@ -1,11 +1,24 @@
 package life.catalogue.parser;
 
+import life.catalogue.api.vocab.DistributionStatus;
+
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class DistributionStatusParserTest {
+
+  /**
+   * A presence says nothing about how a taxon got there. It used to parse as native, which made every
+   * introduced GRIIS species with an unparsable establishment means native.
+   */
+  @Test
+  public void presentIsNotNative() throws Exception {
+    assertFalse(SafeParser.parse(DistributionStatusParser.PARSER, "present").isPresent());
+    assertEquals(DistributionStatus.NATIVE, DistributionStatusParser.PARSER.parse("endemic").get());
+  }
 
   @Test
   public void isAbsent() {

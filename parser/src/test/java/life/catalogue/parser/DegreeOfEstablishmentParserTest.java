@@ -23,6 +23,24 @@ public class DegreeOfEstablishmentParserTest extends ParserTestBase<DegreeOfEsta
   }
 
   /**
+   * Blackburn et al. category codes, alone or as in GRIIS
+   */
+  @Test
+  public void categories() throws Exception {
+    assertParse(DegreeOfEstablishment.ESTABLISHED, "established (category C3)");
+    assertParse(DegreeOfEstablishment.INVASIVE, "invasive (category D2)");
+    assertParse(DegreeOfEstablishment.WIDESPREAD_INVASIVE, "widespread invasive (category E)");
+    assertParse(DegreeOfEstablishment.CAPTIVE, "B1");
+    assertParse(DegreeOfEstablishment.CULTIVATED, "b2");
+    assertParse(DegreeOfEstablishment.RELEASED, "category B3");
+    assertParse(DegreeOfEstablishment.FAILING, "C0");
+    assertParse(DegreeOfEstablishment.COLONISING, "colonising (Category D1)");
+    assertParse(DegreeOfEstablishment.WIDESPREAD_INVASIVE, "E");
+    assertUnparsable("A");
+    assertUnparsable("category A");
+  }
+
+  /**
    * WoRMS uses its Invasiveness vocabulary for the degree of establishment. Apart from "Invasive" none of its
    * values map to a TDWG degree of establishment, so they must be accepted silently as empty rather than invalid.
    * "NA"/"N/A" are common not-applicable placeholders, e.g. in GRIIS archives.

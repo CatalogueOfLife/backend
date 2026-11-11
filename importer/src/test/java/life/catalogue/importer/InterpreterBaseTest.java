@@ -1,6 +1,8 @@
 package life.catalogue.importer;
 
 import life.catalogue.api.model.*;
+import life.catalogue.api.vocab.DegreeOfEstablishment;
+import life.catalogue.api.vocab.EstablishmentMeans;
 import life.catalogue.api.vocab.area.Country;
 import life.catalogue.api.vocab.area.Gazetteer;
 import life.catalogue.api.vocab.Issue;
@@ -400,6 +402,54 @@ public class InterpreterBaseTest {
       assertEquals(String.valueOf(status), 1, dis.size());
       assertFalse(String.valueOf(status), v.contains(Issue.DISTRIBUTION_ABSENT));
     }
+  }
+
+  /**
+   * The house sparrow of GRIIS US, dataset 307745, came out native: neither value parsed and occurrenceStatus=present
+   * was taken for native instead.
+   */
+  @Test
+  public void establishment() throws Exception {
+    BiConsumer<Distribution, VerbatimRecord> noRef = (d, v) -> {};
+    var v = new VerbatimRecord();
+    v.put(DwcTerm.occurrenceStatus, "present");
+    v.put(DwcTerm.establishmentMeans, "introduced: assisted colonization");
+    v.put(DwcTerm.degreeOfEstablishment, "widespread invasive (category E)");
+    var d = createGriisDistribution(v, noRef);
+    assertEquals(EstablishmentMeans.INTRODUCED_ASSISTED_COLONISATION, d.getEstablishmentMeans());
+    assertEquals(DegreeOfEstablishment.WIDESPREAD_INVASIVE, d.getDegreeOfEstablishment());
+    assertFalse(v.contains(Issue.DISTRIBUTION_INVALID));
+
+    // an unparsable establishment means stays empty and flagged
+    v = new VerbatimRecord();
+    v.put(DwcTerm.occurrenceStatus, "native");
+    v.put(DwcTerm.establishmentMeans, "deuter");
+    d = createGriisDistribution(v, noRef);
+    assertNull(d.getEstablishmentMeans());
+    assertNull(d.getDegreeOfEstablishment());
+    assertTrue(v.contains(Issue.DISTRIBUTION_INVALID));
+
+    // a presence alone says nothing about the establishment
+    v = new VerbatimRecord();
+    v.put(DwcTerm.occurrenceStatus, "present");
+    d = createGriisDistribution(v, noRef);
+    assertNull(d.getEstablishmentMeans());
+    assertNull(d.getDegreeOfEstablishment());
+    assertFalse(v.contains(Issue.DISTRIBUTION_INVALID));
+
+    // only a missing establishment means is derived from the status
+    v = new VerbatimRecord();
+    v.put(DwcTerm.occurrenceStatus, "native");
+    d = createGriisDistribution(v, noRef);
+    assertEquals(EstablishmentMeans.NATIVE, d.getEstablishmentMeans());
+    assertEquals(DegreeOfEstablishment.NATIVE, d.getDegreeOfEstablishment());
+  }
+
+  private static Distribution createGriisDistribution(VerbatimRecord v, BiConsumer<Distribution, VerbatimRecord> noRef) {
+    var dis = InterpreterBase.createDistribution(Gazetteer.ISO, "US", null, v, DwcTerm.occurrenceStatus,
+      DwcTerm.establishmentMeans, DwcTerm.degreeOfEstablishment, DwcTerm.pathway, null, null, null, null, null, noRef);
+    assertEquals(1, dis.size());
+    return dis.get(0);
   }
 
   private void assertDistributions(Gazetteer std, String loc, String expectedID) {
