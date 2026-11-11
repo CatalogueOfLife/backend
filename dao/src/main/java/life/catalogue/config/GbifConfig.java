@@ -36,6 +36,12 @@ public class GbifConfig {
   public UUID installationKey;
 
   /**
+   * Seconds to wait after a metadata change of a dataset registered in GBIF from ChecklistBank before GBIF is asked to
+   * crawl it again, so a burst of edits ends up in a single crawl. New imports are passed on straight away.
+   */
+  public int registryUpdateDelay = 300;
+
+  /**
    * Incremental GBIF registry sync frequency in minutes.
    * Incremental syncs only look at changes for the day and cannot spot deleted datasets in GBIF.
    * If zero or negative GBIF sync is off.

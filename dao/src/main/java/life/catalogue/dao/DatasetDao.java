@@ -93,6 +93,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
   private final EventBroker bus;
   private final TempIdProvider tempIds;
   private final URI gbifDatasetApi;
+  private final int gbifRegistryDelay;
 
 
   /**
@@ -121,6 +122,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     this.bus = bus;
     this.tempIds = new TempIdProvider();
     this.gbifDatasetApi = URI.create(gbifCfg.api).resolve("dataset/");
+    this.gbifRegistryDelay = Math.max(0, gbifCfg.registryUpdateDelay);
   }
 
   /**
@@ -625,6 +627,10 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     if (old.getDoi() != null) {
       Outbox.doi(session, dCfg, old.getDoi(), DoiAction.DELETE, user);
     }
+    // a dataset registered in GBIF from ChecklistBank is deleted in GBIF too, its registration still holds the GBIF key
+    if (session.getMapper(GbifRegistrationMapper.class).exists(key)) {
+      Outbox.gbifRegistry(session, key, 0, user);
+    }
     session.commit();
     session.close();
 
@@ -758,6 +764,10 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     if (!java.util.Objects.equals(obj.getOrigin(), old.getOrigin())) {
       throw new IllegalArgumentException("origin is immutable and must remain " + old.getOrigin());
     }
+    final boolean gbifRegistered = session.getMapper(GbifRegistrationMapper.class).exists(obj.getKey());
+    if (gbifRegistered) {
+      guardGbifRegistration(obj, old);
+    }
     // update alias for ARTICLE datasets when none existed: https://github.com/CatalogueOfLife/backend/issues/1421
     if (obj.getAlias() == null && obj.getType() == DatasetType.ARTICLE) {
       obj.setAlias(articleAlias(obj));
@@ -777,9 +787,69 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     super.updateBefore(obj, old, user, mapper, session);
     // everything below is written in the transaction of the update, so it happens exactly once and only if it commits
     enqueueUpdateCommands(obj, old, user, session);
+    if (gbifRegistered) {
+      // GBIF reads the metadata from our EML endpoint when it crawls the dataset
+      Outbox.gbifRegistry(session, obj.getKey(), gbifRegistryDelay, user);
+    }
     if (!java.util.Objects.equals(old.getGbifPublisherKey(), obj.getGbifPublisherKey())) {
       addChangedPublisherToProjects(obj, old.getGbifPublisherKey(), obj.getGbifPublisherKey(), user, session);
     }
+  }
+
+  /**
+   * A dataset ChecklistBank registered in GBIF must stay public and openly licensed as GBIF requires,
+   * and its GBIF key and organisation are only changed through {@link #updateGbif}.
+   */
+  private static void guardGbifRegistration(Dataset obj, Dataset old) {
+    if (obj.isPrivat()) {
+      throw new IllegalArgumentException("Dataset " + obj.getKey() + " is registered in GBIF and cannot be made private."
+        + " Note that a dataset is private unless it says otherwise.");
+    }
+    if (obj.getLicense() == null || !obj.getLicense().isCreativeCommons()) {
+      throw new IllegalArgumentException("Dataset " + obj.getKey() + " is registered in GBIF and requires one of the licenses "
+        + License.CC0 + ", " + License.CC_BY + " or " + License.CC_BY_NC);
+    }
+    obj.setGbifKey(old.getGbifKey());
+    obj.setGbifPublisherKey(old.getGbifPublisherKey());
+  }
+
+  /**
+   * Changes the GBIF registration of a dataset ChecklistBank registers in GBIF itself, together with the dataset's GBIF
+   * key and organisation, and requests the GBIF registry update through the outbox, all in one transaction.
+   * Use it to record a new registration, to move a registered dataset to another organisation and to deregister it.
+   *
+   * @param registration the new registration, null to keep or remove the existing one depending on gbifKey
+   * @param gbifKey the dataset's GBIF key, null to deregister it
+   * @param publisherKey the GBIF publishing organisation, null to deregister it
+   * @throws NotFoundException if the dataset does not exist
+   */
+  public void updateGbif(int key, @Nullable GbifRegistration registration, @Nullable UUID gbifKey, @Nullable UUID publisherKey, int user) {
+    Dataset old;
+    Dataset changed;
+    try (SqlSession session = factory.openSession(false)) {
+      var dm = session.getMapper(DatasetMapper.class);
+      var rm = session.getMapper(GbifRegistrationMapper.class);
+      old = dm.get(key);
+      if (old == null) {
+        throw NotFoundException.notFound(Dataset.class, key);
+      }
+      if (registration != null) {
+        rm.create(registration);
+        Outbox.gbifRegistry(session, key, 0, user);
+      } else if (gbifKey == null) {
+        var existing = rm.get(key);
+        if (existing != null) {
+          rm.delete(key);
+          Outbox.gbifDeregister(session, key, existing.getGbifKey(), user);
+        }
+      } else {
+        Outbox.gbifRegistry(session, key, 0, user);
+      }
+      dm.updateGbif(key, gbifKey, publisherKey, user);
+      changed = dm.get(key);
+      session.commit();
+    }
+    bus.publish(DatasetChanged.changed(changed, old, user));
   }
 
   /**

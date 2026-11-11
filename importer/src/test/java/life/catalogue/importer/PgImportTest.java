@@ -6,13 +6,20 @@ import life.catalogue.api.model.DOI;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetSettings;
 import life.catalogue.api.model.DatasetWithSettings;
+import life.catalogue.api.model.GbifRegistration;
+import life.catalogue.api.vocab.OutboxType;
+import life.catalogue.api.vocab.Setting;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.config.ImporterConfig;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.db.mapper.DatasetMapper;
+import life.catalogue.db.mapper.GbifRegistrationMapper;
+import life.catalogue.db.mapper.OutboxMapper;
 import life.catalogue.junit.PgSetupRule;
 import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.junit.TestDataRule;
+
+import java.util.UUID;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -21,6 +28,8 @@ import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.Mockito;
+
+import static org.junit.Assert.assertNotNull;
 
 /**
  *
@@ -53,6 +62,29 @@ public class PgImportTest {
     PgImport imp = new PgImport(1, DOI.test(RandomUtils.randomLatinString(20)), ds, Users.TESTER, null,
       SqlSessionFactoryRule.getSqlSessionFactory(), new ImporterConfig(), ddao, null, null, null);
     imp.updateMetadata();
+  }
+
+  /**
+   * A dataset registered in GBIF from ChecklistBank serves the archive of a new import straight away,
+   * so GBIF is asked to crawl it again, even if the dataset's metadata is locked and no dataset update happens.
+   */
+  @Test
+  public void gbifRegistered() throws Exception {
+    Dataset d = TestEntityGenerator.setUser(TestEntityGenerator.newDataset("registered"));
+    var settings = new DatasetSettings();
+    settings.enable(Setting.LOCK_METADATA);
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      session.getMapper(DatasetMapper.class).create(d);
+      session.getMapper(GbifRegistrationMapper.class).create(new GbifRegistration(d.getKey(), UUID.randomUUID(), Users.TESTER));
+    }
+
+    PgImport imp = new PgImport(1, DOI.test(RandomUtils.randomLatinString(20)), new DatasetWithSettings(d, settings), Users.TESTER,
+      null, SqlSessionFactoryRule.getSqlSessionFactory(), new ImporterConfig(), ddao, null, null, null);
+    imp.updateMetadata();
+
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession()) {
+      assertNotNull(session.getMapper(OutboxMapper.class).getByKey(OutboxType.GBIF_REGISTRY, d.getKey().toString()));
+    }
   }
 
 }

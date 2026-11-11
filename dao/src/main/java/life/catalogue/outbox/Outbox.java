@@ -9,6 +9,7 @@ import life.catalogue.doi.service.DoiConfig;
 
 import java.util.EnumSet;
 import java.util.Set;
+import java.util.UUID;
 
 import javax.annotation.Nullable;
 
@@ -29,6 +30,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 public final class Outbox {
   private static final Logger LOG = LoggerFactory.getLogger(Outbox.class);
   private static final String RELEASE_KEY = "releaseKey";
+  private static final String GBIF_DEREGISTER = "deregister";
 
   private Outbox() {
   }
@@ -88,6 +90,37 @@ public final class Outbox {
       throw new IllegalArgumentException("Bad sector key " + key);
     }
     return DSID.of(Integer.parseInt(key.substring(0, idx)), Integer.parseInt(key.substring(idx + 1)));
+  }
+
+  /**
+   * Requests that the GBIF registry record of a dataset ChecklistBank registered in GBIF is brought in line with
+   * ChecklistBank and crawled again, or deleted if the dataset is gone. The handler reads the current registration and
+   * dataset when it runs, so all requests for a dataset merge into a single command.
+   *
+   * @param delaySeconds lets a burst of metadata edits end up in a single call to GBIF
+   */
+  public static void gbifRegistry(SqlSession session, int datasetKey, int delaySeconds, int user) {
+    enqueue(session, OutboxType.GBIF_REGISTRY, String.valueOf(datasetKey), ApiModule.MAPPER.createObjectNode(), delaySeconds, user);
+  }
+
+  /**
+   * Requests the deletion of a GBIF registry record of a dataset that is no longer registered in GBIF from ChecklistBank.
+   * It merges with any waiting request for the dataset, which might by then be registered again under a new GBIF key.
+   */
+  public static void gbifDeregister(SqlSession session, int datasetKey, UUID gbifKey, int user) {
+    ObjectNode params = ApiModule.MAPPER.createObjectNode();
+    params.put(GBIF_DEREGISTER, gbifKey.toString());
+    enqueue(session, OutboxType.GBIF_REGISTRY, String.valueOf(datasetKey), params, 0, user);
+  }
+
+  /**
+   * @return the GBIF key a GBIF_REGISTRY command has to delete, if any
+   */
+  public static @Nullable UUID gbifDeregisterKey(JsonNode params) {
+    if (params != null && params.hasNonNull(GBIF_DEREGISTER)) {
+      return UUID.fromString(params.get(GBIF_DEREGISTER).asText());
+    }
+    return null;
   }
 
   /**
