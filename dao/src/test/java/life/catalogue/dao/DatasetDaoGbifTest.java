@@ -18,6 +18,7 @@ import life.catalogue.img.ImageService;
 import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.outbox.Outbox;
 
+import java.util.Set;
 import java.util.UUID;
 
 import javax.annotation.Nullable;
@@ -62,7 +63,7 @@ public class DatasetDaoGbifTest extends DaoTestBase {
     assertEquals(gbifKey, d.getGbifKey());
     assertEquals(org, d.getGbifPublisherKey());
     assertNotNull(command());
-    assertNull(Outbox.gbifDeregisterKey(command().getParams()));
+    assertTrue(Outbox.gbifDeregisterKeys(command().getParams()).isEmpty());
     deleteCommand();
 
     // a metadata edit is passed on to GBIF and never touches the GBIF keys
@@ -100,13 +101,30 @@ public class DatasetDaoGbifTest extends DaoTestBase {
     d = dao.get(KEY);
     assertNull(d.getGbifKey());
     assertNull(d.getGbifPublisherKey());
-    assertEquals(gbifKey, Outbox.gbifDeregisterKey(command().getParams()));
+    assertEquals(Set.of(gbifKey), Outbox.gbifDeregisterKeys(command().getParams()));
     deleteCommand();
 
     // an unregistered dataset can be made private again and passes nothing on
     d.setPrivat(true);
     dao.update(d, USER);
     assertNull(command());
+  }
+
+  /**
+   * Deregistering twice before the command ran must keep both GBIF keys to delete, they merge into one command.
+   */
+  @Test
+  public void deregisterTwice() throws Exception {
+    final UUID key1 = UUID.randomUUID();
+    final UUID key2 = UUID.randomUUID();
+    final UUID org = UUID.randomUUID();
+    dao.updateGbif(KEY, new GbifRegistration(KEY, key1, USER), key1, org, USER);
+    dao.updateGbif(KEY, null, null, null, USER);
+    dao.updateGbif(KEY, new GbifRegistration(KEY, key2, USER), key2, org, USER);
+    dao.updateGbif(KEY, null, null, null, USER);
+    assertEquals(Set.of(key1, key2), Outbox.gbifDeregisterKeys(command().getParams()));
+    // deregistering a dataset that is not registered is refused and changes nothing
+    assertThrows(IllegalArgumentException.class, () -> dao.updateGbif(KEY, null, null, null, USER));
   }
 
   /**

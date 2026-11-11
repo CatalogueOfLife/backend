@@ -82,6 +82,7 @@ public class SingleDatasetRewriteFilterTest {
     "diff",       // DatasetDiffResource
     "editor",     // DatasetEditorResource, a write resource
     "export",     // DatasetExportResource, only the global /export is mounted
+    "gbif",       // DatasetGbifResource, rw server only - registers datasets in the GBIF registry
     "match",      // served globally and already keyless by FixedNameUsageMatchingResource, only match/gbif is rewritten
     "review",     // DatasetReviewResource, rw server only - its POST triggers a paid AI review job
     "reviewer",   // DatasetReviewerResource, a write resource

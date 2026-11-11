@@ -44,7 +44,7 @@ import jakarta.ws.rs.core.UriBuilder;
  * A registered dataset is published by the chosen GBIF organisation and hosted by ChecklistBank's own GBIF installation.
  * Its GBIF record carries the dataset's ChecklistBank DOI, a CLB_DATASET_KEY identifier and two endpoints: the original
  * archive of its last successful import, typed by its format, and the EML metadata of the dataset.
- * Every change is passed on through the GBIF_REGISTRY outbox command, see {@link #reconcile(int, UUID)}.
+ * Every change is passed on through the GBIF_REGISTRY outbox command, see {@link #reconcile(int, Set)}.
  */
 public class GbifRegistrar {
   private static final Logger LOG = LoggerFactory.getLogger(GbifRegistrar.class);
@@ -271,9 +271,9 @@ public class GbifRegistrar {
    * Brings the GBIF record of a dataset in line with ChecklistBank and asks GBIF to crawl it,
    * or deletes it in GBIF if the dataset was deleted. Safe to run again, as the outbox may.
    *
-   * @param deregisterKey a GBIF dataset to delete, as the dataset was deregistered, maybe registered again since
+   * @param deregisterKeys GBIF datasets to delete, as the dataset was deregistered, maybe registered again since
    */
-  public void reconcile(int datasetKey, @Nullable UUID deregisterKey) {
+  public void reconcile(int datasetKey, Set<UUID> deregisterKeys) {
     final GbifRegistration reg;
     final Dataset d;
     final DatasetImport imp;
@@ -282,8 +282,10 @@ public class GbifRegistrar {
       d = session.getMapper(DatasetMapper.class).get(datasetKey);
       imp = d == null || d.getAttempt() == null ? null : session.getMapper(DatasetImportMapper.class).current(datasetKey);
     }
-    if (deregisterKey != null && (reg == null || !deregisterKey.equals(reg.getGbifKey()))) {
-      deleteInGbif(datasetKey, deregisterKey);
+    for (UUID key : deregisterKeys) {
+      if (reg == null || !key.equals(reg.getGbifKey())) {
+        deleteInGbif(datasetKey, key);
+      }
     }
     if (reg == null) {
       return;

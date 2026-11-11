@@ -8,6 +8,7 @@ import life.catalogue.db.mapper.OutboxMapper;
 import life.catalogue.doi.service.DoiConfig;
 
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
@@ -30,7 +31,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 public final class Outbox {
   private static final Logger LOG = LoggerFactory.getLogger(Outbox.class);
   private static final String RELEASE_KEY = "releaseKey";
-  private static final String GBIF_DEREGISTER = "deregister";
+  private static final String GBIF_DEREGISTER = "deregister:";
 
   private Outbox() {
   }
@@ -106,21 +107,27 @@ public final class Outbox {
   /**
    * Requests the deletion of a GBIF registry record of a dataset that is no longer registered in GBIF from ChecklistBank.
    * It merges with any waiting request for the dataset, which might by then be registered again under a new GBIF key.
+   * Every GBIF key gets a params field of its own, so merging a second deregistration keeps the first one.
    */
   public static void gbifDeregister(SqlSession session, int datasetKey, UUID gbifKey, int user) {
     ObjectNode params = ApiModule.MAPPER.createObjectNode();
-    params.put(GBIF_DEREGISTER, gbifKey.toString());
+    params.put(GBIF_DEREGISTER + gbifKey, true);
     enqueue(session, OutboxType.GBIF_REGISTRY, String.valueOf(datasetKey), params, 0, user);
   }
 
   /**
-   * @return the GBIF key a GBIF_REGISTRY command has to delete, if any
+   * @return the GBIF keys a GBIF_REGISTRY command has to delete, empty if none
    */
-  public static @Nullable UUID gbifDeregisterKey(JsonNode params) {
-    if (params != null && params.hasNonNull(GBIF_DEREGISTER)) {
-      return UUID.fromString(params.get(GBIF_DEREGISTER).asText());
+  public static Set<UUID> gbifDeregisterKeys(JsonNode params) {
+    Set<UUID> keys = new HashSet<>();
+    if (params != null) {
+      params.fieldNames().forEachRemaining(f -> {
+        if (f.startsWith(GBIF_DEREGISTER)) {
+          keys.add(UUID.fromString(f.substring(GBIF_DEREGISTER.length())));
+        }
+      });
     }
-    return null;
+    return keys;
   }
 
   /**

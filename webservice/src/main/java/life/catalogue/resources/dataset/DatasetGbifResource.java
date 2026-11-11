@@ -36,9 +36,11 @@ public class DatasetGbifResource {
   }
 
   /**
-   * @return the GBIF registration of the dataset with any outbox command still to update the GBIF registry
+   * @return the GBIF registration of the dataset with any outbox command still to update the GBIF registry.
+   *   The command carries GBIF's raw error responses, so this is for editors of the dataset only.
    */
   @GET
+  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public GbifRegistrar.Status status(@PathParam("key") int key) {
     var status = registrar.status(key);
     if (status == null) {

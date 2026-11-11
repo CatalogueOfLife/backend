@@ -22,7 +22,7 @@ public class GbifRegistryHandler implements OutboxHandler {
 
   @Override
   public void handle(OutboxEntry entry) throws Exception {
-    registrar.reconcile(Integer.parseInt(entry.getKey()), Outbox.gbifDeregisterKey(entry.getParams()));
+    registrar.reconcile(Integer.parseInt(entry.getKey()), Outbox.gbifDeregisterKeys(entry.getParams()));
   }
 
   @Override

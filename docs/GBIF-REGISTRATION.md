@@ -40,7 +40,7 @@ The dataset must be:
 | Request | Who | Does |
 |---|---|---|
 | `POST /dataset/{key}/gbif` | editors of the dataset | Registers it. The body is `{"publisherKey": "<organisation>", "acceptTerms": true}`; `acceptTerms` confirms the [GBIF data publisher agreement](https://www.gbif.org/terms/data-publisher). |
-| `GET /dataset/{key}/gbif` | anyone | The registration: the GBIF key, the organisation, who registered it and when, and any GBIF_REGISTRY command still waiting or failed. 404 if the dataset is not registered from ChecklistBank. |
+| `GET /dataset/{key}/gbif` | editors of the dataset | The registration: the GBIF key, the organisation, who registered it and when, and any GBIF_REGISTRY command still waiting or failed. 404 if the dataset is not registered from ChecklistBank. |
 | `PUT /dataset/{key}/gbif/publisher/{publisherKey}` | admins | Moves the dataset to another organisation. |
 | `DELETE /dataset/{key}/gbif` | admins | Deregisters it, which deletes it in GBIF. |
 | `POST /dataset/{key}/gbif/sync` | admins | Updates the GBIF record and asks GBIF to crawl again. |
@@ -96,6 +96,12 @@ for good, for example bad credentials or a record deleted in GBIF. Fix the cause
 
 While a dataset is registered it cannot be made private or given another licence than CC0, CC BY or CC BY-NC. Its
 GBIF key and organisation are only changed through the endpoints above.
+
+Creating the GBIF dataset is the one step that runs on the request rather than through the outbox. If recording the
+registration fails afterwards, the GBIF dataset is deleted again. A timeout in the creation call itself, though, can
+leave a GBIF dataset that ChecklistBank never learnt the key of. Each full GBIF registry sync logs every dataset
+hosted by ChecklistBank's installation that no ChecklistBank dataset carries ("is hosted by ChecklistBank, but no
+dataset carries its key"); delete those orphans in GBIF by hand.
 
 ## The GBIF registry sync
 

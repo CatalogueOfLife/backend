@@ -29,6 +29,7 @@ import life.catalogue.junit.TreeRepoRule;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.net.URI;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
@@ -144,14 +145,14 @@ public class GbifRegistrarTest {
     assertEquals(1, gbif.crawls(gbifKey));
 
     // running it again changes nothing but crawls again
-    registrar.reconcile(KEY, null);
+    registrar.reconcile(KEY, Set.of());
     assertEquals(2, gbif.endpoints(gbifKey).size());
     assertEquals(1, gbif.identifiers(gbifKey).size());
     assertEquals(2, gbif.crawls(gbifKey));
 
     // a new import in another format replaces the data endpoint
     imported(DataFormat.TEXT_TREE, new DatasetImportDao(SqlSessionFactoryRule.getSqlSessionFactory(), TreeRepoRule.getRepo()));
-    registrar.reconcile(KEY, null);
+    registrar.reconcile(KEY, Set.of());
     assertEquals("EML=https://api.checklistbank.org/dataset/12.xml,TEXT_TREE=https://api.checklistbank.org/dataset/12/archive.zip",
       endpoints(gbifKey));
 
@@ -171,7 +172,7 @@ public class GbifRegistrarTest {
     runCommand();
     assertTrue(gbif.deleted.contains(gbifKey));
     // a second run finds nothing to delete anymore
-    registrar.reconcile(KEY, gbifKey);
+    registrar.reconcile(KEY, Set.of(gbifKey));
   }
 
   @Test

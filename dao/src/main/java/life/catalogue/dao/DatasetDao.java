@@ -822,6 +822,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
    * @param gbifKey the dataset's GBIF key, null to deregister it
    * @param publisherKey the GBIF publishing organisation, null to deregister it
    * @throws NotFoundException if the dataset does not exist
+   * @throws IllegalArgumentException if a dataset that is not registered is to be changed or deregistered
    */
   public void updateGbif(int key, @Nullable GbifRegistration registration, @Nullable UUID gbifKey, @Nullable UUID publisherKey, int user) {
     Dataset old;
@@ -836,14 +837,18 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
       if (registration != null) {
         rm.create(registration);
         Outbox.gbifRegistry(session, key, 0, user);
-      } else if (gbifKey == null) {
+      } else {
+        // never touch the GBIF keys of a dataset the GBIF registry sync owns
         var existing = rm.get(key);
-        if (existing != null) {
+        if (existing == null) {
+          throw new IllegalArgumentException("Dataset " + key + " is not registered in GBIF from ChecklistBank");
+        }
+        if (gbifKey == null) {
           rm.delete(key);
           Outbox.gbifDeregister(session, key, existing.getGbifKey(), user);
+        } else {
+          Outbox.gbifRegistry(session, key, 0, user);
         }
-      } else {
-        Outbox.gbifRegistry(session, key, 0, user);
       }
       dm.updateGbif(key, gbifKey, publisherKey, user);
       changed = dm.get(key);
