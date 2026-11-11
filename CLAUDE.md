@@ -170,7 +170,8 @@ Anything that must happen exactly once and must not be lost is an **outbox comma
 `outbox` table written with `Outbox.*` in the transaction of the change that causes it, claimed with
 `FOR UPDATE SKIP LOCKED` and run once by the `OutboxRunner` (the `Outbox` component) through the `OutboxHandler`
 of its `OutboxType` - DOI changes (`DoiHandler`), sector deletions (`SectorDeleteHandler`) and the work of publishing
-a release (`ReleasePublishedHandler` submits a `PublishReleaseJob`). A request hitting a waiting command of the same
+a release (`ReleasePublishedHandler` submits a `PublishReleaseJob`) and the GBIF registry records of datasets registered
+in GBIF from ChecklistBank (`GbifRegistryHandler`). A request hitting a waiting command of the same
 type and key is merged into it (jsonb `||`, the earlier `due` wins, `version` bumped so a running command is
 requeued instead of completed); failures retry with a backoff and end as `FAILED`, listed and retried under
 `/admin/outbox`. See
@@ -307,6 +308,21 @@ hand started scheduler alive on the app being replaced - so `restart-all` leaves
 tell "deliberately off here" from "should be running and is not".
 See [`docs/2026-09-01-job-component-consolidation.md`](docs/2026-09-01-job-component-consolidation.md) and
 [`docs/2026-09-04-per-environment-components.md`](docs/2026-09-04-per-environment-components.md).
+
+**GBIF registry, both ways:**
+The `GbifSyncJob` (component `GBIFRegistrySync`) creates and updates external datasets from the GBIF registry. It
+keeps its hands off every GBIF dataset hosted by ChecklistBank's own installation (`gbif.installationKey`), and never
+links one by its `CLB_DATASET_KEY`, as the COL record is hosted there and names a release.
+The other way, `GbifRegistrar` registers external datasets in GBIF (`/dataset/{key}/gbif`, recorded in
+`gbif_registration`).
+- **Endpoints:** the original archive of the last successful import (`/dataset/{key}/archive.zip`) and the EML
+  (`/dataset/{key}.xml`).
+- **DOI:** the ChecklistBank DOI.
+- **Updates:** every change reaches GBIF as a `GBIF_REGISTRY` outbox command written by `DatasetDao` and `PgImport`.
+- **Organisation roles:** a user's are `orgPublisher` (may register datasets under the organisation, no access) and
+  `orgEditor` (edits the organisation's external datasets, never projects or releases), both granted by admins.
+
+See [`docs/GBIF-REGISTRATION.md`](docs/GBIF-REGISTRATION.md).
 
 **Sector Synchronization (Assembly):**
 `SectorSync` in core module merges portions of source datasets into managed projects. A "sector" defines which subtree from a source dataset contributes to a project. The sync process:
