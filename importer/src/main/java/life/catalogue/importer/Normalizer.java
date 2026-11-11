@@ -10,6 +10,7 @@ import life.catalogue.common.collection.CollectionUtils;
 import life.catalogue.common.collection.CountMap;
 import life.catalogue.common.lang.Exceptions;
 import life.catalogue.common.tax.MisappliedNameMatcher;
+import life.catalogue.common.tax.SciNameNormalizer;
 import life.catalogue.csv.MappingInfos;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.ParentStack;
@@ -926,8 +927,9 @@ public class Normalizer implements Callable<Boolean> {
         // test for existing usage with that name & rank (allowing also unranked names)
         boolean found = false;
         // we need to lookup the name by its normed form as we create them via createHigherTaxon
-        // to be safe we query for both versions
-        var rnn = new RanKnName(hr, cl.getByRankCleaned(hr));
+        // to be safe we query for both versions.
+        // The raw value is parsed, as its dagger marks the taxon extinct
+        var rnn = new RanKnName(hr, cl.getByRank(hr));
         final ParsedHigherName normedName = parseCache.get(rnn);
         final Name normedPName = normedName.name().pname;
         for (String uid : store.usageIDsByName(normedPName == null ? cl.getByRankCleaned(hr) : normedPName.getScientificName(), null, hr, true)) {
@@ -1039,10 +1041,12 @@ public class Normalizer implements Callable<Boolean> {
   private record ParsedHigherName(ExtinctName name, IssueContainer issues) {}
 
   private ParsedHigherName parse(RanKnName rnn) throws InterruptedException {
+    // the raw classification value, a dagger in it marks the taxon extinct
     var ename = new ExtinctName(rnn.name);
     ename.pname = new Name();
     ename.pname.setRank(rnn.rank);
-    ename.pname.setScientificName(rnn.name);
+    // the name itself is cleaned exactly like Classification.getByRankCleaned
+    ename.pname.setScientificName(SciNameNormalizer.removeHybridMarker(SciNameNormalizer.removeDagger(rnn.name)));
     ename.pname.setCode(dataset.getCode());
     // parses the instance and determines the type - can e.g. be placeholders.
     // the issues are kept so createHigherTaxon can put them on the verbatim record of the usage it creates

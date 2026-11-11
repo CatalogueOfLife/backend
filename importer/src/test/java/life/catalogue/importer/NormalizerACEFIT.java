@@ -463,11 +463,16 @@ public class NormalizerACEFIT extends NormalizerITBase {
     assertTrue(usages.isEmpty());
     u = byName(Rank.GENUS, "Coleoscyta");
     assertEquals("Coleoscyta", u.usage.getName().getLabel());
+    // the dagger leaves the name but marks the taxon extinct
+    assertEquals(Boolean.TRUE, u.asTaxon().isExtinct());
 
     usages = store.usageIDsByName("Coleoscytidae†", null, Rank.FAMILY, true);
     assertTrue(usages.isEmpty());
     u = byName(Rank.FAMILY, "Coleoscytidae");
     assertEquals("Coleoscytidae", u.usage.getName().getLabel());
+    assertEquals(Boolean.TRUE, u.asTaxon().isExtinct());
+    // no dagger, nothing said about being extant
+    assertNull(byName(Rank.SUPERFAMILY, "Fulgoroidea").asTaxon().isExtinct());
   }
 
   private void assertProParte(UsageData syn, String... acceptedNames) {
