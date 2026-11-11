@@ -3,20 +3,24 @@ package life.catalogue.resources;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.Page;
+import life.catalogue.api.model.Publisher;
 import life.catalogue.api.model.ResultPage;
 import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.dao.DatasetInfoCache;
+import life.catalogue.dao.PublisherDao;
 import life.catalogue.dao.UserDao;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.dw.auth.AuthFilter;
 import life.catalogue.dw.auth.IdentityService;
 import life.catalogue.dw.auth.JwtCodec;
 import life.catalogue.dw.auth.Roles;
+import life.catalogue.gbifsync.GbifRegistryCache;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.apache.ibatis.session.SqlSession;
@@ -41,11 +45,15 @@ public class UserResource {
   private final JwtCodec jwt;
   private final UserDao dao;
   private final IdentityService idService;
+  private final GbifRegistryCache registry;
+  private final PublisherDao pdao;
 
-  public UserResource(JwtCodec jwt, UserDao dao, IdentityService idService) {
+  public UserResource(JwtCodec jwt, UserDao dao, IdentityService idService, GbifRegistryCache registry, PublisherDao pdao) {
     this.jwt = jwt;
     this.dao = dao;
     this.idService = idService;
+    this.registry = registry;
+    this.pdao = pdao;
   }
 
   /**
@@ -161,6 +169,61 @@ public class UserResource {
   @RolesAllowed({Roles.ADMIN})
   public void changeRole(@PathParam("key") int key, @PathParam("role") User.Role role, @Auth User admin) {
     dao.revokeRoleOnAllDatasets(key, admin, role);
+  }
+
+  /**
+   * Lets the user edit all external datasets published by a GBIF organisation.
+   */
+  @POST
+  @Path("/{key}/orgEditor/{publisherKey}")
+  @RolesAllowed({Roles.ADMIN})
+  public void addOrgEditor(@PathParam("key") int key, @PathParam("publisherKey") UUID publisherKey, @Auth User admin) {
+    storeOrganisation(publisherKey);
+    dao.changeOrgEditor(key, admin, publisherKey, true);
+  }
+
+  @DELETE
+  @Path("/{key}/orgEditor/{publisherKey}")
+  @RolesAllowed({Roles.ADMIN})
+  public void removeOrgEditor(@PathParam("key") int key, @PathParam("publisherKey") UUID publisherKey, @Auth User admin) {
+    dao.changeOrgEditor(key, admin, publisherKey, false);
+  }
+
+  /**
+   * Lets the user register datasets in GBIF under a GBIF organisation. Grant it only once the organisation agreed.
+   */
+  @POST
+  @Path("/{key}/orgPublisher/{publisherKey}")
+  @RolesAllowed({Roles.ADMIN})
+  public void addOrgPublisher(@PathParam("key") int key, @PathParam("publisherKey") UUID publisherKey, @Auth User admin) {
+    storeOrganisation(publisherKey);
+    dao.changeOrgPublisher(key, admin, publisherKey, true);
+  }
+
+  @DELETE
+  @Path("/{key}/orgPublisher/{publisherKey}")
+  @RolesAllowed({Roles.ADMIN})
+  public void removeOrgPublisher(@PathParam("key") int key, @PathParam("publisherKey") UUID publisherKey, @Auth User admin) {
+    dao.changeOrgPublisher(key, admin, publisherKey, false);
+  }
+
+  /**
+   * Makes sure the organisation exists in GBIF and stores it, so its title can be shown for the granted role.
+   */
+  private void storeOrganisation(UUID publisherKey) {
+    Publisher p;
+    try {
+      p = registry.publisherEntity(publisherKey);
+    } catch (WebApplicationException e) {
+      if (e.getResponse() != null && e.getResponse().getStatus() == 404) {
+        throw new IllegalArgumentException("GBIF organisation " + publisherKey + " does not exist");
+      }
+      throw e;
+    }
+    if (p == null) {
+      throw new IllegalArgumentException("GBIF organisation " + publisherKey + " does not exist");
+    }
+    pdao.upsert(p);
   }
 
   @POST

@@ -536,7 +536,7 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new JobResource(cfg.job, executor, jobDao));
     j.register(new NamesIndexResource(ni, getSqlSessionFactory(), cfg));
     j.register(new ResolverResource(doiResolver));
-    j.register(new UserResource(auth.getJwtCodec(), udao, auth.getIdService()));
+    j.register(new UserResource(auth.getJwtCodec(), udao, auth.getIdService(), gbifSync.getRegistryCache(), pdao));
     j.register(new ValidatorResource(importManager, ddao));
 
     // healthchecks

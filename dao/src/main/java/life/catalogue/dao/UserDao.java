@@ -14,6 +14,9 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
@@ -64,6 +67,32 @@ public class UserDao extends UserCrudDao {
     // update user
     user.setRoles(newRoles);
     update(user, admin.getKey());
+  }
+
+  /**
+   * Grants or revokes the organisation editor role, which lets the user edit all external datasets published by a GBIF
+   * organisation. Revoking it changes nothing else.
+   */
+  public void changeOrgEditor(int key, User admin, UUID publisherKey, boolean grant) {
+    changeOrgRole(key, admin, publisherKey, grant, User::getOrgEditor);
+  }
+
+  /**
+   * Grants or revokes the organisation publisher role, which lets the user register datasets in GBIF under a GBIF
+   * organisation. Revoking it does not deregister any dataset.
+   */
+  public void changeOrgPublisher(int key, User admin, UUID publisherKey, boolean grant) {
+    changeOrgRole(key, admin, publisherKey, grant, User::getOrgPublisher);
+  }
+
+  private void changeOrgRole(int key, User admin, UUID publisherKey, boolean grant, Function<User, Set<UUID>> role) {
+    Preconditions.checkArgument(admin.isAdmin());
+    Preconditions.checkNotNull(publisherKey, "GBIF publisher key required");
+    User user = getOr404(key);
+    boolean changed = grant ? role.apply(user).add(publisherKey) : role.apply(user).remove(publisherKey);
+    if (changed) {
+      update(user, admin.getKey());
+    }
   }
 
   /**

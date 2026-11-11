@@ -451,7 +451,7 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
   UUID getPublisherKey(@Param("key") int key);
 
   /**
-   * @return list of unique publisher keys
+   * @return list of unique GBIF publisher keys of all datasets and of the organisation roles granted to users
    */
   List<UUID> listPublisherKeys();
 

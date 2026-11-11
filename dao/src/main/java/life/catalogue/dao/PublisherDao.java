@@ -40,4 +40,19 @@ public class PublisherDao extends EntityDao<UUID, Publisher, PublisherMapper> {
       return session.getMapper(PublisherMapper.class).search(q, new Page(0, 100));
     }
   }
+
+  /**
+   * Stores a GBIF organisation as it was read from the GBIF registry, creating or updating it.
+   */
+  public void upsert(Publisher p) {
+    try (SqlSession session = factory.openSession(true)) {
+      var pm = session.getMapper(PublisherMapper.class);
+      var existing = pm.get(p.getKey());
+      if (existing == null) {
+        pm.create(p);
+      } else if (!existing.equals(p)) {
+        pm.update(p);
+      }
+    }
+  }
 }
