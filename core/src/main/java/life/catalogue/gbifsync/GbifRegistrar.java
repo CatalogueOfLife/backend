@@ -1,6 +1,7 @@
 package life.catalogue.gbifsync;
 
 import life.catalogue.api.exception.NotFoundException;
+import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetImport;
@@ -85,7 +86,7 @@ public class GbifRegistrar {
 
   private void checkEnabled() {
     if (!isEnabled()) {
-      throw new UnsupportedOperationException("Registering datasets in GBIF is not configured");
+      throw new UnavailableException("Registering datasets in GBIF is not configured");
     }
   }
 

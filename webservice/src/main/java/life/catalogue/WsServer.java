@@ -54,6 +54,9 @@ import life.catalogue.exporter.ExportManager;
 import life.catalogue.feedback.EmailEncryption;
 import life.catalogue.feedback.FeedbackService;
 import life.catalogue.feedback.GithubFeedback;
+import life.catalogue.gbifsync.GbifRegistrar;
+import life.catalogue.gbifsync.GbifRegistryClient;
+import life.catalogue.gbifsync.GbifRegistryHandler;
 import life.catalogue.gbifsync.GbifSyncManager;
 import life.catalogue.img.ImageService;
 import life.catalogue.img.ImageServiceFS;
@@ -445,6 +448,13 @@ public class WsServer extends Application<WsServerConfig> {
     // gbif sync
     GbifSyncManager gbifSync = new GbifSyncManager(cfg.gbif, cfg.importer, ddao, getSqlSessionFactory(), jerseyClient);
     managedService.manage(Component.GBIFRegistrySync, gbifSync);
+    // registering datasets in GBIF from ChecklistBank, see docs/GBIF-REGISTRATION.md
+    GbifRegistrar gbifRegistrar = new GbifRegistrar(cfg.gbif, cfg.apiURI, cfg.normalizer, getSqlSessionFactory(), ddao,
+      new GbifRegistryClient(jerseyClient, cfg.gbif)
+    );
+    if (!gbifRegistrar.isEnabled()) {
+      LOG.warn("Registering datasets in GBIF is not configured: gbif.installationKey, gbif credentials and apiURI are required");
+    }
 
     //github feedback
     FeedbackService feedback;
@@ -494,6 +504,7 @@ public class WsServer extends Application<WsServerConfig> {
     outbox.register(OutboxType.RELEASE_PUBLISHED,
       new ReleasePublishedHandler(cfg.release, cfg, cfg.doi, getSqlSessionFactory(), matcherFactory, httpClient, executor)
     );
+    outbox.register(OutboxType.GBIF_REGISTRY, new GbifRegistryHandler(gbifRegistrar));
     managedService.manage(Component.Outbox, outbox);
 
     // admin resources
@@ -532,6 +543,7 @@ public class WsServer extends Application<WsServerConfig> {
     // global
     j.register(new DataPackageResource(http));
     j.register(new OpenApiResource(OpenApiFactory.build(cfg, env)));
+    j.register(new DatasetGbifResource(gbifRegistrar));
     j.register(new ImporterResource(cfg, importManager, ddao));
     j.register(new JobResource(cfg.job, executor, jobDao));
     j.register(new NamesIndexResource(ni, getSqlSessionFactory(), cfg));
