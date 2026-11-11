@@ -15,7 +15,6 @@ import life.catalogue.api.vocab.JobPriority;
 import life.catalogue.config.GbifConfig;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.db.mapper.DatasetMapper;
-import life.catalogue.doi.service.BasicAuthenticator;
 
 import java.net.URI;
 import java.time.LocalDate;
@@ -32,19 +31,13 @@ import com.google.common.annotations.VisibleForTesting;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import jakarta.ws.rs.client.Client;
-import jakarta.ws.rs.client.Entity;
-import jakarta.ws.rs.client.WebTarget;
-import jakarta.ws.rs.core.HttpHeaders;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.UriBuilder;
 
 public class GbifSyncJob extends GlobalBlockingJob {
   private static final Logger LOG = LoggerFactory.getLogger(GbifSyncJob.class);
   static final String CLB_DATASET_KEY = "CLB_DATASET_KEY";
 
   private final Client client;
-  private final String auth;
-  private final WebTarget datasetTarget;
+  private final GbifRegistryClient registryClient;
   private final SqlSessionFactory sessionFactory;
   private final DatasetDao dao;
   private final GbifConfig cfg;
@@ -93,15 +86,7 @@ public class GbifSyncJob extends GlobalBlockingJob {
     this.registry = registry;
     this.keys = keys == null ? new HashSet<>() : keys;
     this.incremental = incremental;
-    this.datasetTarget = client.target(UriBuilder
-      .fromUri(cfg.api)
-      .path("/dataset")
-    );
-    if (cfg.username != null && cfg.password != null) {
-      auth = BasicAuthenticator.basicAuthentication(cfg.username, cfg.password);
-    } else {
-      auth = null;
-    }
+    this.registryClient = new GbifRegistryClient(client, cfg);
   }
 
   @Override
@@ -376,30 +361,24 @@ public class GbifSyncJob extends GlobalBlockingJob {
   }
 
   private void addDatasetKey(UUID key, Integer datasetKey) {
-    if (key != null && datasetKey != null && auth != null) {
-      DatasetPager.GIdentifier gIdentifier = new DatasetPager.GIdentifier();
-      gIdentifier.type = CLB_DATASET_KEY;
-      gIdentifier.identifier = datasetKey.toString();
-
+    if (key != null && datasetKey != null && registryClient.hasCredentials()) {
       LOG.info("Add CLB dataset key {} to GBIF checklist {} in registry", datasetKey, key);
-      var target = datasetTarget.path(key + "/identifier");
-      try (var resp = target.request()
-        .accept(MediaType.APPLICATION_JSON_TYPE)
-        .header(HttpHeaders.AUTHORIZATION, auth)
-        .post(Entity.json(gIdentifier))) {
+      try {
+        registryClient.addIdentifier(key, CLB_DATASET_KEY, datasetKey.toString());
+      } catch (RuntimeException e) {
+        LOG.warn("Failed to add CLB dataset key {} to GBIF checklist {}: {}", datasetKey, key, e.getMessage());
       }
     }
   }
 
   private void delDatasetKeys(UUID datasetKey, List<Integer> identifierKeys) {
-    if (identifierKeys != null) {
+    if (identifierKeys != null && registryClient.hasCredentials()) {
       for (Integer idKey : identifierKeys) {
         LOG.info("Delete existing CLB_DATASET_KEY identifier {} in GBIF for checklist {}", idKey, datasetKey);
-        var target = datasetTarget.path(datasetKey + "/identifier/" + idKey);
-        try (var resp = target.request()
-          .accept(MediaType.APPLICATION_JSON_TYPE)
-          .header(HttpHeaders.AUTHORIZATION, auth)
-          .delete()) {
+        try {
+          registryClient.deleteIdentifier(datasetKey, idKey);
+        } catch (RuntimeException e) {
+          LOG.warn("Failed to delete identifier {} of GBIF checklist {}: {}", idKey, datasetKey, e.getMessage());
         }
       }
     }
