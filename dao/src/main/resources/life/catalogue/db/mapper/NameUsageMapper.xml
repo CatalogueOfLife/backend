@@ -409,6 +409,12 @@
     WHERE u.dataset_key = #{key.datasetKey} AND u.id = #{key.id}
   </select>
 
+  <select id="getSimpleInDataset" resultMap="simpleInDatasetResultMap">
+    SELECT <include refid="SELECT_SIMPLE_IN_DATASET"/>
+    FROM <include refid="FROM_SIMPLE"/>
+    WHERE u.dataset_key = #{key.datasetKey} AND u.id = #{key.id}
+  </select>
+
   <select id="getSimpleVerbatim" resultMap="simpleVerbatimResultMap">
     SELECT <include refid="SELECT_SIMPLE_VERBATIM"/>
     FROM <include refid="FROM_SIMPLE"/>
@@ -1242,6 +1248,27 @@
     </if>
     <if test="minLength != null">
       AND length(id) >= #{minLength}
+    </if>
+  </select>
+
+  <select id="pageIds" parameterType="map" resultType="string">
+    SELECT id FROM name_usage WHERE dataset_key=#{datasetKey}
+    <if test="!synonyms">
+      AND NOT is_synonym(status)
+    </if>
+    <if test="maxLength != null">
+      AND length(id) &lt;= #{maxLength}
+    </if>
+    <include refid="life.catalogue.db.Common.limit"/>
+  </select>
+
+  <select id="countIds" parameterType="map" resultType="integer">
+    SELECT count(*) FROM name_usage WHERE dataset_key=#{datasetKey}
+    <if test="!synonyms">
+      AND NOT is_synonym(status)
+    </if>
+    <if test="maxLength != null">
+      AND length(id) &lt;= #{maxLength}
     </if>
   </select>
 

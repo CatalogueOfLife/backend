@@ -103,6 +103,34 @@ public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
   }
 
   @Test
+  public void pageIds() throws Exception {
+    assertEquals(4, mapper().pageIds(testDataRule.testData.key, true, null, new Page()).size());
+    assertEquals(4, mapper().pageIds(testDataRule.testData.key, true, null, new Page(0,5)).size());
+    assertEquals(2, mapper().pageIds(testDataRule.testData.key, false, null, new Page(0,10)).size());
+    assertEquals(2, mapper().pageIds(testDataRule.testData.key, true, null, new Page(0,2)).size());
+    assertEquals(0, mapper().pageIds(testDataRule.testData.key, true, null, new Page(10, 10)).size());
+    assertEquals(2, mapper().pageIds(testDataRule.testData.key, true, 2, new Page()).size());
+  }
+
+  @Test
+  public void countIds() throws Exception {
+    assertEquals(4, mapper().countIds(testDataRule.testData.key, true, null));
+    assertEquals(2, mapper().countIds(testDataRule.testData.key, false, null));
+    assertEquals(4, mapper().countIds(testDataRule.testData.key, true, 100));
+    assertEquals(2, mapper().countIds(testDataRule.testData.key, true, 2));
+    assertEquals(0, mapper().countIds(testDataRule.testData.key, true, 1));
+  }
+
+  @Test
+  public void getSimpleInDataset() throws Exception {
+    var t = TestEntityGenerator.TAXON1;
+    var sn = mapper().getSimpleInDataset(DSID.of(t.getDatasetKey(), t.getId()));
+    assertEquals(t.getId(), sn.getId());
+    assertEquals((int) t.getDatasetKey(), sn.getDatasetKey());
+    assertEquals(t.getName().getScientificName(), sn.getName());
+  }
+
+  @Test
   public void getVerbatim() throws Exception {
     mapper().getSimpleVerbatim(DSID.of(TestEntityGenerator.TAXON1.getDatasetKey(), TestEntityGenerator.TAXON1.getId()));
     mapper().getSimpleParent(DSID.of(TestEntityGenerator.TAXON1.getDatasetKey(), TestEntityGenerator.TAXON1.getId()));

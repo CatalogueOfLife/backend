@@ -107,6 +107,12 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
    */
   SimpleName getSimple(@Param("key") DSID<String> key);
 
+  /**
+   * Nothing in ChecklistBank calls this, but GBIF's taxon-ws does: keep it.
+   * @return the simple usage with its dataset key and link
+   */
+  SimpleNameInDataset getSimpleInDataset(@Param("key") DSID<String> key);
+
   SimpleNameVerbatim getSimpleVerbatim(@Param("key") DSID<String> key);
   /**
    * SimpleName.parent=parent.id
@@ -614,6 +620,26 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
   Cursor<String> processIds(@Param("datasetKey") int datasetKey,
                             @Param("synonyms") boolean includeSynonyms,
                             @Param("minLength") Integer minLength);
+
+  /**
+   * Lists a page of usage ids for a given dataset, optionally filtered by a maximum, inclusive string length.
+   * Nothing in ChecklistBank calls this, but the sitemap of GBIF's taxon-ws does: keep it.
+   * @param maxLength maximum length of the usage identifier. Usages with longer ids will be excluded.
+   */
+  List<String> pageIds(@Param("datasetKey") int datasetKey,
+                       @Param("synonyms") boolean includeSynonyms,
+                       @Param("maxLength") Integer maxLength,
+                       @Param("page") Page page
+  );
+
+  /**
+   * Counts the usage ids pageIds lists.
+   * Nothing in ChecklistBank calls this, but the sitemap of GBIF's taxon-ws does: keep it.
+   */
+  int countIds(@Param("datasetKey") int datasetKey,
+               @Param("synonyms") boolean includeSynonyms,
+               @Param("maxLength") Integer maxLength
+  );
 
   /**
    * Looks for synonyms of synonyms and assigns them the (hopefully accepted) parent of their former synonym parent.
