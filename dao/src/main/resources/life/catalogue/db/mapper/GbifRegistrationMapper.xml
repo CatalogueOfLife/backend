@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="life.catalogue.db.mapper.GbifRegistrationMapper">
+
+  <sql id="SELECT">
+    r.dataset_key,
+    r.gbif_key,
+    r.created_by,
+    r.created
+  </sql>
+
+  <resultMap id="gbifRegistrationResultMap" type="GbifRegistration" autoMapping="true">
+    <id property="datasetKey" column="dataset_key"/>
+  </resultMap>
+
+  <select id="get" resultMap="gbifRegistrationResultMap">
+    SELECT <include refid="SELECT"/>
+    FROM gbif_registration r
+    WHERE r.dataset_key = #{datasetKey}
+  </select>
+
+  <select id="exists" resultType="boolean">
+    SELECT EXISTS (SELECT 1 FROM gbif_registration WHERE dataset_key = #{datasetKey})
+  </select>
+
+  <select id="list" resultMap="gbifRegistrationResultMap">
+    SELECT <include refid="SELECT"/>
+    FROM gbif_registration r
+    ORDER BY r.dataset_key
+  </select>
+
+  <insert id="create" parameterType="GbifRegistration">
+    INSERT INTO gbif_registration (dataset_key, gbif_key, created_by)
+    VALUES (#{datasetKey}, #{gbifKey}, #{createdBy})
+  </insert>
+
+  <delete id="delete">
+    DELETE FROM gbif_registration WHERE dataset_key = #{datasetKey}
+  </delete>
+
+</mapper>

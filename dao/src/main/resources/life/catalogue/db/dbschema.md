@@ -11,6 +11,30 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2026-11-11 GBIF registration of ChecklistBank datasets
+ChecklistBank registers external datasets in the GBIF registry itself (#1438). The single per user organisation
+right `publisher` is split into `org_editor` (edit all external datasets of the organisation, what `publisher` meant)
+and `org_publisher` (register your own datasets under the organisation). Run the first block before the deploy, the
+old app still reads `publisher` until it is stopped, and drop the old column once it is gone.
+Also run before the deploy, taxon-ws shares the db but reads neither table.
+```sql
+ALTER TABLE "user" ADD COLUMN org_editor UUID[];
+ALTER TABLE "user" ADD COLUMN org_publisher UUID[];
+UPDATE "user" SET org_editor = publisher WHERE publisher IS NOT NULL;
+ALTER TYPE OUTBOXTYPE ADD VALUE 'GBIF_REGISTRY';
+
+CREATE TABLE gbif_registration (
+  dataset_key INTEGER PRIMARY KEY REFERENCES dataset,
+  gbif_key UUID NOT NULL UNIQUE,
+  created_by INTEGER NOT NULL,
+  created TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT now()
+);
+```
+After the deploy, once the old apps are stopped:
+```sql
+ALTER TABLE "user" DROP COLUMN publisher;
+```
+
 #### 2026-11-09 durable outbox commands
 DOI changes, sector deletions and the work of publishing a release no longer travel over the Chronicle event queue,
 which lost them whenever no app was listening, e.g. between stop-all and start-all of a deploy, and ran them on both

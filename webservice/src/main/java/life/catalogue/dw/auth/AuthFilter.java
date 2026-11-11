@@ -2,6 +2,7 @@ package life.catalogue.dw.auth;
 
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.User;
+import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.dw.jersey.exception.JsonExceptionMapperBase;
 
@@ -214,10 +215,18 @@ public class AuthFilter implements ContainerRequestFilter {
       // use the project key to evaluate permissions
       var info = DatasetInfoCache.CACHE.info(datasetKey, true);
       int masterKey = info.keyOrProjectKey();
-      return user.isAdmin() || user.isEditor(masterKey) || user.isReviewer(masterKey) || user.isPublisher(info.publisherKey);
+      return user.isAdmin() || user.isEditor(masterKey) || user.isReviewer(masterKey) || isOrgEditor(user, info);
     } catch (NotFoundException e) {
       return false;
     }
+  }
+
+  /**
+   * An organisation editor may edit the external datasets of the GBIF publisher organisation, but never its projects or
+   * releases: the COL project carries the COL organisation as its publisher.
+   */
+  private static boolean isOrgEditor(User user, DatasetInfoCache.DatasetInfo info) {
+    return info.origin == DatasetOrigin.EXTERNAL && user.isOrgEditor(info.publisherKey);
   }
 
   /**
@@ -235,7 +244,7 @@ public class AuthFilter implements ContainerRequestFilter {
         // use the project key to evaluate permissions
         var info = DatasetInfoCache.CACHE.info(datasetKey, true);
         int masterKey = info.keyOrProjectKey();
-        return user.isAdmin() || user.isEditor(masterKey) || user.isPublisher(info.publisherKey);
+        return user.isAdmin() || user.isEditor(masterKey) || isOrgEditor(user, info);
       } catch (NotFoundException e) {
       }
     }

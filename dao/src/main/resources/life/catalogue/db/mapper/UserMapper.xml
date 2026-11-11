@@ -21,7 +21,8 @@
     u.email,
     u.settings,
     u.last_login,
-    u.publisher,
+    u.org_editor,
+    u.org_publisher,
     u.created,
     u.blocked
   </sql>
@@ -36,7 +37,8 @@
     roles,
     settings,
     last_login,
-    publisher,
+    org_editor,
+    org_publisher,
     blocked
   </sql>
 
@@ -50,7 +52,8 @@
     #{roles, typeHandler=life.catalogue.db.type.RoleSetTypeHandler},
     #{settings, typeHandler=life.catalogue.db.type2.HstoreMapTypeHandler}::hstore,
     #{lastLogin},
-    #{publisher, typeHandler=life.catalogue.db.type2.UuidSetTypeHandler},
+    #{orgEditor, typeHandler=life.catalogue.db.type2.UuidSetTypeHandler},
+    #{orgPublisher, typeHandler=life.catalogue.db.type2.UuidSetTypeHandler},
     #{blocked}
   </sql>
 
@@ -73,7 +76,8 @@
     <result property="settings" column="settings" typeHandler="life.catalogue.db.type2.HstoreMapTypeHandler"/>
     <result property="editor" column="editor" typeHandler="life.catalogue.db.type.IntSetTypeHandler"/>
     <result property="reviewer" column="reviewer" typeHandler="life.catalogue.db.type.IntSetTypeHandler"/>
-    <result property="publisher" column="publisher" typeHandler="life.catalogue.db.type2.UuidSetTypeHandler"/>
+    <result property="orgEditor" column="org_editor" typeHandler="life.catalogue.db.type2.UuidSetTypeHandler"/>
+    <result property="orgPublisher" column="org_publisher" typeHandler="life.catalogue.db.type2.UuidSetTypeHandler"/>
   </resultMap>
 
 

@@ -469,7 +469,8 @@ CREATE TYPE OUTBOXSTATUS AS ENUM (
 CREATE TYPE OUTBOXTYPE AS ENUM (
   'DOI',
   'SECTOR_DELETE',
-  'RELEASE_PUBLISHED'
+  'RELEASE_PUBLISHED',
+  'GBIF_REGISTRY'
 );
 
 CREATE TYPE RANK AS ENUM (
@@ -867,7 +868,8 @@ CREATE TABLE "user" (
   orcid TEXT,
   country TEXT,
   roles USER_ROLE[],
-  publisher UUID[],
+  org_editor UUID[],     -- GBIF publisher organisations whose external datasets the user may edit
+  org_publisher UUID[],  -- GBIF publisher organisations the user may register datasets for in GBIF
   settings HSTORE
 );
 
@@ -1214,6 +1216,14 @@ CREATE TABLE outbox (
   UNIQUE (type, key)
 );
 CREATE INDEX ON outbox (due) WHERE status = 'PENDING';
+
+-- datasets ChecklistBank registered itself in the GBIF registry, see docs/GBIF-REGISTRATION.md
+CREATE TABLE gbif_registration (
+  dataset_key INTEGER PRIMARY KEY REFERENCES dataset,
+  gbif_key UUID NOT NULL UNIQUE,  -- kept here as a soft dataset deletion nulls dataset.gbif_key
+  created_by INTEGER NOT NULL,    -- the user who registered it and thereby accepted the GBIF data publisher agreement
+  created TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT now()
+);
 
 CREATE TABLE sector (
   id INTEGER NOT NULL,

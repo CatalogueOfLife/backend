@@ -21,5 +21,11 @@ public enum OutboxType {
    * A release was made public: archive its names, build the COL exports and fire the publish actions.
    * Keyed by the release key.
    */
-  RELEASE_PUBLISHED;
+  RELEASE_PUBLISHED,
+
+  /**
+   * Bring the GBIF registry record of a dataset ChecklistBank registered in GBIF in line with ChecklistBank and ask
+   * GBIF to crawl it, or delete the record of a deleted dataset. Keyed by the dataset key.
+   */
+  GBIF_REGISTRY;
 }

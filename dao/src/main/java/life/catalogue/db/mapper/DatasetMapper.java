@@ -456,9 +456,10 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
   List<UUID> listPublisherKeys();
 
   /**
-   * Lists all dataset keys of non deleted datasets that have a UUID GBIF registry key.
+   * Lists the keys of all non deleted datasets that have a GBIF registry key, but were not registered in GBIF by
+   * ChecklistBank itself. These are the datasets the GBIF registry sync owns and deletes once GBIF dropped them.
    */
-  List<Integer> listKeysGBIF();
+  List<Integer> listKeysSyncedFromGBIF();
 
   List<DatasetGBIF> listGBIF();
 
@@ -467,6 +468,14 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
    * Used by the GBIF sync to track per-dataset deltas without touching any other dataset metadata.
    */
   int updateGbifModified(@Param("key") int key, @Param("modified") LocalDateTime modified);
+
+  /**
+   * Updates only the GBIF registry key and publishing organisation of a dataset.
+   * Used when ChecklistBank registers a dataset in GBIF, changes its organisation or deregisters it,
+   * as dataset updates otherwise keep the stored GBIF keys of a registered dataset.
+   */
+  int updateGbif(@Param("key") int key, @Nullable @Param("gbifKey") UUID gbifKey, @Nullable @Param("publisherKey") UUID publisherKey,
+                 @Param("userKey") int userKey);
 
   /**
    * Updates only the created timestamp of a dataset.

@@ -59,9 +59,14 @@ public class User implements Entity<Integer>, Principal {
   @JsonInclude(value = JsonInclude.Include.NON_EMPTY)
   private final IntSet reviewer = new IntOpenHashSet();
 
-  // publisher specific editor role
+  // GBIF publisher organisation specific editor role: edit all EXTERNAL datasets published by the organisation
   @JsonInclude(value = JsonInclude.Include.NON_EMPTY)
-  private final Set<UUID> publisher = new HashSet<>();
+  private final Set<UUID> orgEditor = new HashSet<>();
+
+  // GBIF publisher organisation specific publishing role: register your own datasets in GBIF under the organisation.
+  // It grants no access to any dataset.
+  @JsonInclude(value = JsonInclude.Include.NON_EMPTY)
+  private final Set<UUID> orgPublisher = new HashSet<>();
 
   @JsonInclude(JsonInclude.Include.NON_EMPTY)
   private Map<String, String> settings = new HashMap<>();
@@ -88,7 +93,8 @@ public class User implements Entity<Integer>, Principal {
     setRoles(src.roles);
     setEditor(src.editor);
     setReviewer(src.reviewer);
-    setPublisher(src.publisher);
+    setOrgEditor(src.orgEditor);
+    setOrgPublisher(src.orgPublisher);
     settings = src.settings;
     blocked = src.blocked;
     created = src.created;
@@ -122,10 +128,19 @@ public class User implements Entity<Integer>, Principal {
   }
 
   /**
-   * @return true if the user is managing datasets on behalf of a given gbif publisher organisation.
+   * @return true if the user may edit the external datasets published by the given GBIF publisher organisation.
+   *   Whether a dataset is external is up to the caller, see AuthFilter.
    */
-  public boolean isPublisher(UUID publisherKey) {
-    return publisherKey != null && publisher.contains(publisherKey);
+  public boolean isOrgEditor(UUID publisherKey) {
+    return publisherKey != null && orgEditor.contains(publisherKey);
+  }
+
+  /**
+   * @return true if the user may register datasets in GBIF under the given GBIF publisher organisation.
+   *   This grants no access to any dataset, the dataset to be registered needs its own write access.
+   */
+  public boolean isOrgPublisher(UUID publisherKey) {
+    return publisherKey != null && orgPublisher.contains(publisherKey);
   }
 
   public Integer getKey() {
@@ -231,13 +246,25 @@ public class User implements Entity<Integer>, Principal {
     }
   }
 
-  public Set<UUID> getPublisher() {
-    return publisher;
+  public Set<UUID> getOrgEditor() {
+    return orgEditor;
   }
-  public void setPublisher(Set<UUID> publisher) {
-    this.publisher.clear();
-    if (publisher != null && !publisher.isEmpty()) {
-      this.publisher.addAll(publisher);;
+
+  public void setOrgEditor(Set<UUID> orgEditor) {
+    this.orgEditor.clear();
+    if (orgEditor != null) {
+      this.orgEditor.addAll(orgEditor);
+    }
+  }
+
+  public Set<UUID> getOrgPublisher() {
+    return orgPublisher;
+  }
+
+  public void setOrgPublisher(Set<UUID> orgPublisher) {
+    this.orgPublisher.clear();
+    if (orgPublisher != null) {
+      this.orgPublisher.addAll(orgPublisher);
     }
   }
 
@@ -311,6 +338,8 @@ public class User implements Entity<Integer>, Principal {
            Objects.equals(roles, user.roles) &&
            Objects.equals(editor, user.editor) &&
            Objects.equals(reviewer, user.reviewer) &&
+           Objects.equals(orgEditor, user.orgEditor) &&
+           Objects.equals(orgPublisher, user.orgPublisher) &&
            Objects.equals(settings, user.settings) &&
            Objects.equals(lastLogin, user.lastLogin) &&
            Objects.equals(created, user.created) &&
@@ -319,7 +348,8 @@ public class User implements Entity<Integer>, Principal {
 
   @Override
   public int hashCode() {
-    return Objects.hash(key, username, firstname, lastname, email, orcid, country, roles, editor, reviewer, settings, lastLogin, created, blocked);
+    return Objects.hash(key, username, firstname, lastname, email, orcid, country, roles, editor, reviewer, orgEditor, orgPublisher,
+      settings, lastLogin, created, blocked);
   }
 
   @Override

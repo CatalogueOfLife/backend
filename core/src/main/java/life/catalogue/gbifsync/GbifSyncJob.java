@@ -198,7 +198,7 @@ public class GbifSyncJob extends GlobalBlockingJob {
     if (!incremental) {
       try (SqlSession session = sessionFactory.openSession()) {
         var dm = session.getMapper(DatasetMapper.class);
-        dm.listKeysGBIF().forEach(key -> {
+        dm.listKeysSyncedFromGBIF().forEach(key -> {
           if (!seenKeys.contains((int)key)) {
             // this key was not seen in this registry sync round before - delete it
             Dataset d = dm.get(key);

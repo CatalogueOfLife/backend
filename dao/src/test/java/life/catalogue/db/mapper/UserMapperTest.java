@@ -122,8 +122,9 @@ public class UserMapperTest extends MapperTestBase<UserMapper> {
   public void roundtrip() throws Exception {
     User u1 = createTestEntity();
     u1.getEditor().addAll(List.of(1,2,3));
-    u1.getPublisher().add(UUID.randomUUID());
-    u1.getPublisher().add(UUID.randomUUID());
+    u1.getOrgEditor().add(UUID.randomUUID());
+    u1.getOrgEditor().add(UUID.randomUUID());
+    u1.getOrgPublisher().add(UUID.randomUUID());
     mapper().create(u1);
     commit();
 
