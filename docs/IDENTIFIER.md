@@ -90,7 +90,7 @@ the information got better, the name did not change.
 | taxonomic status | a misapplied name against anything that is not one; a synonym of species rank or below whose name phrase or authorship notes a misapplication, like `auct. non (DC.) Bunge`, is a misapplied name | the same kind of status: accepted ↔ provisionally accepted, synonym ↔ ambiguous synonym | a taxon sunk into synonymy, or a synonym raised to accepted |
 | nomenclatural code | two different codes: zoological against botanical — the *Oenanthe* case — unless the authorship agrees | the same code | one side not stated |
 | taxonomic group | groups on separate branches: an animal against a plant — unless the authorship agrees | the same group | one side unplaced; one group within the other: insects against arthropods |
-| name phrase (`sensu …`) | a different phrase on two misapplied names | the same phrase | one side missing; a different phrase on names that are not misapplied |
+| name phrase (`sensu …`) | two misapplied names used in the sense of different authors, `sensu Burton, 1959` against `sensu Tsurnamal, 1969`, or of authors in general against a named one, `auct.` against `sensu Dall, 1890`, or excluding different names, `auct. non L.` against `auct. non Wight & Arn.` | the same phrase; the same authors cited differently: `sensu Hutton, 1873` = `sensu F. W. Hutton, 1873`, `auct. non Gould, 1850` = `auct. non A. A. Gould, 1850` | one side missing; a part only one side has: `sensu A.Adams, 1852, not Lamarck, 1822` = `sensu A. Adams, 1852`; a different phrase on names that are not misapplied |
 | accepted name | never on its own | the same accepted name for two synonyms — this is what keeps pro parte synonyms of one and the same name apart | |
 
 **An author without brackets is the original author**, in every nomenclatural code. Against an author in brackets
@@ -110,6 +110,13 @@ exactly always comes first, and the two names of a pair never swap their identif
 `sensu` (but not `sensu lato` or `s.str.`), `non` or `nec`, never a misspelling like `auct. lapsus`. Identifiers apply
 the same rule to the name phrase and to a note left in the authorship, because names of older releases kept the plain
 synonym status: *Cicer songaricum* auct. non (DC.) Bunge, a synonym in COL21, is not the name of Jaubert & Spach.
+
+**Two misapplied names are told apart by their authors.** The note names the author whose sense the name is used in
+(`sensu`, or `auct.` for authors in general) and the names it is not (`non`, `nec`, `not`), and sources cite these
+authors as differently as any authorship. So they are compared like an authorship, not as text, wherever the source
+put the note: in the name phrase, in the authorship (`Smith, 1890 non Smith, 1893`) or split between both. A part
+only one side has tells nothing, and a list of names it is not may be shorter or in another order. A note without
+such authors, like `sp. 1`, still has to match as text.
 
 **Placement does not outweigh the author.** The code and the taxonomic group describe where a name sits and what
 its source says about it, not the name itself, and both change for one and the same name from one release to the

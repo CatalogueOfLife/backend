@@ -132,6 +132,40 @@ public class RedirectPairingTest {
     assertEquals("misapplied", p.verdict().explain());
   }
 
+  static ArchivedSimpleName misapplied(String id, String name, String authorship, String phrase, int... releaseKeys) {
+    var sn = sn(id, name, authorship, Rank.SPECIES, releaseKeys);
+    sn.setStatus(TaxonomicStatus.MISAPPLIED);
+    sn.setCode(NomCode.ZOOLOGICAL);
+    sn.setPhrase(phrase);
+    return sn;
+  }
+
+  /**
+   * Redirect backfill on prod, 2026-11-10: misapplied names archived from older releases were contradicted on their
+   * phrase by the same misapplication, its author cited differently.
+   */
+  @Test
+  public void sameMisapplicationCitedDifferentlyRedirects() {
+    // the dead synonym of COL21 reads as misapplied by its phrase
+    var dead = misapplied("9JRNK", "Anatina tasmanica", "Reeve, 1863", "sensu Hutton, 1873", 10);
+    dead.setStatus(TaxonomicStatus.SYNONYM);
+    assertRedirect(single(dead, misapplied("V966D", "Anatina tasmanica", null, "sensu F. W. Hutton, 1873", BASE)),
+      "9JRNK", "V966D");
+
+    assertRedirect(single(
+      misapplied("4MGHJ", "Prionovolva brevis", null, "sensu Allan, 1956", 10),
+      misapplied("V95WW", "Prionovolva brevis", "(G. B. Sowerby I, 1828)", "sensu J. K. Allan, 1956", BASE)
+    ), "4MGHJ", "V95WW");
+
+    // another author's sense is another misapplication
+    var p = single(
+      misapplied("BFSB3", "Chrotella cavernosa", null, "sensu Burton, 1959", 10),
+      misapplied("V94RB", "Chrotella cavernosa", null, "sensu Tsurnamal, 1969", BASE)
+    );
+    assertEquals(Outcome.CONTRADICTED, p.outcome());
+    assertEquals("phrase", p.verdict().explain());
+  }
+
   @Test
   public void nothingCorroboratesIsWeak() {
     // an unranked name tells nothing about the rank, and neither side has an authorship

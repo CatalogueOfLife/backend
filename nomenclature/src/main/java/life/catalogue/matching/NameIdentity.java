@@ -165,6 +165,9 @@ public class NameIdentity {
     // the taxonomic note the parser found in the authorship, set by sciName()
     private String authorshipNote;
     private Boolean misapplied;
+    // the authorship note and the name phrase, see note()
+    private String note;
+    private MisapplicationNote misapplicationNote;
 
     public Facts(Rank rank, String authorship, String phrase, TaxonomicStatus status,
                  @Nullable NomCode code, @Nullable TaxGroup group, @Nullable String parentName) {
@@ -228,6 +231,27 @@ public class NameIdentity {
       sciName();
       return authorshipNote;
     }
+
+    /**
+     * The note of a misapplied name wherever the source put it: the note left in the authorship and the name phrase
+     * joined. Sources split it at random, prod has <code>Smith, 1890</code> with the phrase <code>non Smith, 1893</code>
+     * next to an authorship <code>Smith, 1890 non Smith, 1893</code> without a phrase. Never null.
+     */
+    String note() {
+      if (note == null) {
+        String an = hasAuthorship() ? authorshipNote() : null;
+        note = isBlank(an) ? (isBlank(phrase) ? "" : phrase.trim())
+          : (isBlank(phrase) ? an.trim() : an.trim() + " " + phrase.trim());
+      }
+      return note;
+    }
+
+    MisapplicationNote misapplicationNote() {
+      if (misapplicationNote == null) {
+        misapplicationNote = MisapplicationNote.parse(note(), code);
+      }
+      return misapplicationNote;
+    }
   }
 
   private final AuthorComparator authComp;
@@ -249,8 +273,8 @@ public class NameIdentity {
     if (misA != b.misapplied()) {
       return contradicted(Conflict.MISAPPLIED, null);
     }
-    // the name phrase (sensu ...) is what tells two misapplied names apart
-    final Equality phrase = compareText(a.phrase, b.phrase);
+    // the note (sensu ...) is what tells two misapplied names apart
+    final Equality phrase = misA ? compareNotes(a, b) : compareText(a.phrase, b.phrase);
     if (misA && phrase == Equality.DIFFERENT) {
       return contradicted(Conflict.PHRASE, null);
     }
@@ -312,6 +336,24 @@ public class NameIdentity {
       return AuthorshipComparison.MISSING;
     }
     return authComp.compareWithReason(a.sciName(), b.sciName());
+  }
+
+  /**
+   * Compares the notes of two misapplied names: the same text is the same note, otherwise the authors of their sense and
+   * of their exclusion decide, as cited as differently as any authorship. Notes without such authors stay apart by
+   * their text.
+   * @return EQUAL, DIFFERENT or, if a note is missing, UNKNOWN
+   */
+  private Equality compareNotes(Facts a, Facts b) {
+    final Equality text = compareText(a.note(), b.note());
+    if (text != Equality.DIFFERENT) {
+      return text;
+    }
+    final Equality authors = a.misapplicationNote().compare(b.misapplicationNote(), authComp);
+    if (authors.isDifferent()) {
+      return Equality.DIFFERENT;
+    }
+    return authors.isEqual() ? Equality.EQUAL : text;
   }
 
   /**

@@ -166,7 +166,43 @@ public class NameIdentityTest {
     var b = new NameIdentity.Facts(SPECIES, "Mill.", "sensu Jones", MISAPPLIED, null, null, null);
     var c = new NameIdentity.Facts(SPECIES, "Mill.", "sensu Smith", MISAPPLIED, null, null, null);
     assertEquals(CONTRADICTED, identity.compare(a, b).evidence);
+    assertEquals(NameIdentity.Conflict.PHRASE, identity.compare(a, b).conflict);
     assertEquals(CONFIRMED, identity.compare(a, c).evidence);
+  }
+
+  static NameIdentity.Facts mis(String authorship, String phrase) {
+    return new NameIdentity.Facts(SPECIES, authorship, phrase, MISAPPLIED, null, null, null);
+  }
+
+  /**
+   * Redirect backfill on prod, 2026-11-10: 44 dead ids of misapplied names were contradicted on their phrase by the
+   * very same misapplication, its author cited differently.
+   */
+  @Test
+  public void misappliedNamesAreToldApartByTheirSensuAuthor() {
+    // Anatina tasmanica, 9JRNK and V966D
+    assertEquals(PLAUSIBLE, ev(mis("Reeve, 1863", "sensu Hutton, 1873"), mis(null, "sensu F. W. Hutton, 1873")));
+    // Prionovolva brevis, 4MGHJ and V95WW
+    assertEquals(PLAUSIBLE, ev(mis(null, "sensu Allan, 1956"), mis("(G. B. Sowerby I, 1828)", "sensu J. K. Allan, 1956")));
+    // Buccinum polygonatum, 8W6ZN and V96X5: the name it is not on one side only
+    assertEquals(PLAUSIBLE, ev(mis(null, "sensu A.Adams, 1852, not Lamarck, 1822"), mis("Lamarck, 1822", "sensu A. Adams, 1852")));
+    // Nassarius castus, 45RLM and V969N
+    assertEquals(PLAUSIBLE, ev(mis(null, "auct. non Gould, 1850"), mis(null, "auct. non A. A. Gould, 1850")));
+    // the note in the authorship on one side and in the phrase on the other
+    assertEquals(CONFIRMED, ev(mis("Smith, 1890 non Smith, 1893", null), mis("Smith, 1890", "non Smith, 1893")));
+
+    // a different author of the sense is a different misapplication
+    var burton = mis(null, "sensu Burton, 1959");
+    var verdict = identity.compare(burton, mis(null, "sensu Tsurnamal, 1969"));
+    assertEquals(CONTRADICTED, verdict.evidence);
+    assertEquals(NameIdentity.Conflict.PHRASE, verdict.conflict);
+    assertEquals(CONTRADICTED, ev(mis(null, "sensu Coe, 1943"), mis(null, "sensu Riser, 1993")));
+    assertEquals(CONTRADICTED, ev(mis(null, "auct."), mis(null, "sensu Smith")));
+    assertEquals(CONTRADICTED, ev(mis(null, "auct. non Wight & Arn."), mis(null, "auct. non L.")));
+    // also when the note sits in the authorship, which only the parser can tell
+    assertEquals(CONTRADICTED, ev(mis("Reeve, 1863 sensu Burton, 1959", null), mis(null, "sensu Tsurnamal, 1969")));
+    // a phrase that is no note at all still only matches itself
+    assertEquals(CONTRADICTED, ev(mis("Mill.", "sp. 1"), mis("Mill.", "sp. 2")));
   }
 
   /**

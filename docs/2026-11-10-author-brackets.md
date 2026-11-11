@@ -1,8 +1,8 @@
 # Authors with and without brackets, and why a name lost its identifier
 
 Date: 2026-11-10
-Status: merged (#1704) and deployed on prod 2026-11-10; misapplication notes (see Outcome) on master since
-2026-11-10 (c9b600705), not deployed
+Status: merged (#1704) and deployed on prod 2026-11-10, misapplication notes (see Outcome) too; sensu authors on
+branch `feat/sensu-authors`, not merged
 
 ## Problem
 
@@ -130,3 +130,12 @@ auct. non (DC.) Bunge, an ambiguous synonym of COL21, redirected to *Cicer songa
 the misapplied status from such notes (`MisappliedNameMatcher`), but archived usages of older releases kept the
 synonym status. `NameIdentity` now applies the same rule to a synonym's name phrase and to a note left in its
 authorship.
+
+The real backfill after the deploy (job `3323ba1a`, 2026-11-10) wrote 1,054,345 redirects and left 148 dead ids
+contradicted on the phrase, the very same misapplication in most of them: `sensu Hutton, 1873` against
+`sensu F. W. Hutton, 1873`, or the note in the phrase on one side and in the authorship on the other.
+`MisapplicationNote` (2026-11-11) reads a note as its sensu author, `auct.` and the excluded names, and `NameIdentity`
+compares these with the `AuthorComparator` for two misapplied names. Replayed on prod data, 109 of the 148 pair now. Of
+the 39 left, 12 fail on `s.` and `s.auct.`, which the parser reads as author names, and the rest name different senses.
+The matcher was left alone: `UsageMatcher` does not look at phrases or notes at all, and what that costs merges is to be
+measured on an XR before it changes.
