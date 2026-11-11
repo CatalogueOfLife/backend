@@ -88,6 +88,7 @@
     <fastutil.version>8.5.15</fastutil.version>
     <fory.version>0.13.2</fory.version>
     <gbif-api.version>2.1.3</gbif-api.version>
+    <gbif-metadata-profile.version>3.0</gbif-metadata-profile.version><!-- GBIF's EML parser, only to test our EML -->
     <hikaricp.version>7.0.2</hikaricp.version>
     <icu4j.version>78.1</icu4j.version>
     <java-diff-utils.version>4.12</java-diff-utils.version>

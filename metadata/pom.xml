@@ -128,6 +128,13 @@
       <classifier>tests</classifier>
       <scope>test</scope>
     </dependency>
+    <!-- the EML parser the GBIF registry reads our EML with, see EmlWriterGbifTest -->
+    <dependency>
+      <groupId>org.gbif</groupId>
+      <artifactId>gbif-metadata-profile-eml</artifactId>
+      <version>${gbif-metadata-profile.version}</version>
+      <scope>test</scope>
+    </dependency>
 
   </dependencies>
 

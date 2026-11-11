@@ -24,7 +24,7 @@
 <#list 0..<indent as i> </#list><address>
     <@tag name="city" value=a.city! indent=indent+2 />
     <@tag name="administrativeArea" value=a.state! indent=indent+2 />
-    <@tag name="country" value=a.country! indent=indent+2 />
+    <@tag name="country" value=a.countryCode! indent=indent+2 />
 <#list 0..<indent as i> </#list></address>
 </#if>
 <@tag name="electronicMailAddress" value=a.email! indent=indent />
@@ -60,8 +60,8 @@
     <alternateIdentifier>${id}</alternateIdentifier>
    </#list>
   </#if>
-  <@tag name="title" value=title indent=2 />
   <@tag name="shortName" value=alias! indent=2 />
+  <@tag name="title" value=title indent=2 />
   <#if creator?has_content>
    <#list creator as c>
   <creator>
