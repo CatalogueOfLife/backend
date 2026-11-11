@@ -2,7 +2,7 @@
 
 Date: 2026-11-10
 Status: merged (#1704) and deployed on prod 2026-11-10, misapplication notes (see Outcome) too; sensu authors on
-branch `feat/sensu-authors`, not merged
+master since 2026-11-11 (0baaf9ee5), not deployed
 
 ## Problem
 
