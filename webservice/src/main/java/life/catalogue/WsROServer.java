@@ -354,7 +354,7 @@ public class WsROServer<C extends WsServerConfig> extends Application<C> {
                                         NameUsageSearchService searchService, NameUsageSuggestionService suggestService,
                                         ImageService imgService, ThumborService thumborService, FeedbackService feedbackService, DoiResolver doiResolver, AreaLabelLookup areaLookup) {
     // dataset scoped resources
-    j.register(new DatasetArchiveResource(cfg));
+    j.register(new DatasetArchiveResource(cfg, factory));
     j.register(new DatasetImportResource(diDao));
     j.register(new DatasetIssuesResource(factory));
     j.register(new DatasetPatchResource());
