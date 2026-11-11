@@ -308,10 +308,15 @@ public class AdminResource {
   /**
    * Maps the identifiers of a retired COL edition configured in release.legacyIdMaps to the given release.
    * Each release gets its own dated file next to the monthly exports, which is never overwritten.
+   * With latest=true the stable latest symlink, e.g. xr_latest_col19-idmap.tsv.gz, is pointed at it,
+   * also when the file exists already.
    */
   @POST
   @Path("/legacy-idmap/{name}")
-  public Response legacyIdMap(@PathParam("name") String name, @QueryParam("release") Integer releaseKey, @Auth User user) {
+  public Response legacyIdMap(@PathParam("name") String name,
+                              @QueryParam("release") Integer releaseKey,
+                              @QueryParam("latest") boolean latest,
+                              @Auth User user) {
     if (releaseKey == null) {
       throw new IllegalArgumentException("Request parameter release must be provided");
     }
@@ -319,8 +324,8 @@ public class AdminResource {
       .filter(m -> m.name.equals(name))
       .findFirst()
       .orElseThrow(() -> new NotFoundException("No legacy id map " + name + " configured"));
-    var job = new LegacyIdMapJob(map, releaseKey, user.getKey(), cfg.release.colDownloadDir, factory, matcherFactory);
-    if (job.file().exists()) {
+    var job = new LegacyIdMapJob(map, releaseKey, user.getKey(), cfg.release.colDownloadDir, latest, factory, matcherFactory);
+    if (job.file().exists() && !latest) {
       return Response.status(Response.Status.CONFLICT).entity(name + " id mapping exists already at " + job.file().getName()).build();
     }
     return Response.ok(runJob(job)).build();

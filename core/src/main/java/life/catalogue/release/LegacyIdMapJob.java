@@ -2,8 +2,10 @@ package life.catalogue.release;
 
 import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.*;
+import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.JobPriority;
 import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.common.io.PathUtils;
 import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.concurrent.DatasetJob;
 import life.catalogue.config.ReleaseConfig;
@@ -50,7 +52,8 @@ import static life.catalogue.api.jackson.PermissiveEnumSerde.enumValueName;
  * see {@link ReleaseConfig.LegacyIdMap}. Every usage of that dataset is matched by name against the release.
  * Keys whose record is missing in the dataset are matched by the name and authorship given in the keys file.
  *
- * Each file is the record of one release and is never overwritten: if it exists already the job does nothing.
+ * Each file is the record of one release and is never overwritten: if it exists already the job does nothing
+ * but update the latest symlink if requested, e.g. xr_latest_col19-idmap.tsv.gz, which mirrors the latest archive links.
  */
 public class LegacyIdMapJob extends DatasetJob {
   private static final Logger LOG = LoggerFactory.getLogger(LegacyIdMapJob.class);
@@ -59,15 +62,20 @@ public class LegacyIdMapJob extends DatasetJob {
 
   private final ReleaseConfig.LegacyIdMap map;
   private final File colDownloadDir;
+  private final boolean latest;
   private final SqlSessionFactory factory;
   private final UsageMatcherFactory matcherFactory;
   private final NameInterpreter interpreter = new NameInterpreter(new DatasetSettings(), true);
 
-  public LegacyIdMapJob(ReleaseConfig.LegacyIdMap map, int releaseKey, int userKey, File colDownloadDir,
+  /**
+   * @param latest if true symlinks the stable latest file, e.g. xr_latest_col19-idmap.tsv.gz, to the mapping of this release
+   */
+  public LegacyIdMapJob(ReleaseConfig.LegacyIdMap map, int releaseKey, int userKey, File colDownloadDir, boolean latest,
                         SqlSessionFactory factory, UsageMatcherFactory matcherFactory) {
     super(releaseKey, userKey, JobPriority.LOW);
     this.map = map;
     this.colDownloadDir = colDownloadDir;
+    this.latest = latest;
     this.factory = factory;
     this.matcherFactory = matcherFactory;
     this.dataset = loadDataset(factory, releaseKey);
@@ -85,8 +93,19 @@ public class LegacyIdMapJob extends DatasetJob {
     return new File(colDownloadDir, "monthly/" + iso + "_" + ColReleaseExportJob.prefix(release.getOrigin()) + mapName + "-idmap.tsv.gz");
   }
 
+  /**
+   * @return the stable symlink to the mapping of the latest release, next to the latest archives
+   */
+  public static File latestFile(File colDownloadDir, DatasetOrigin origin, String mapName) {
+    return new File(colDownloadDir, ColReleaseExportJob.prefix(origin) + "latest_" + mapName + "-idmap.tsv.gz");
+  }
+
   public File file() {
     return file(colDownloadDir, dataset, map.name);
+  }
+
+  public File latestFile() {
+    return latestFile(colDownloadDir, dataset.getOrigin(), map.name);
   }
 
   @Override
@@ -105,6 +124,7 @@ public class LegacyIdMapJob extends DatasetJob {
     final File target = file();
     if (target.exists()) {
       LOG.info("{} id mapping for release {} exists already at {}", map.name, datasetKey, target);
+      symlinkLatest(target);
       return;
     }
     LOG.info("Load {} keys from {}", map.name, map.keys);
@@ -136,6 +156,15 @@ public class LegacyIdMapJob extends DatasetJob {
     } finally {
       FileUtils.deleteQuietly(tmp);
       matcher.close();
+    }
+    symlinkLatest(target);
+  }
+
+  private void symlinkLatest(File target) throws IOException {
+    if (latest) {
+      File symlink = latestFile();
+      LOG.info("Symlink {} id mapping of release {} at {} to {}", map.name, datasetKey, target, symlink);
+      PathUtils.symlink(symlink, target);
     }
   }
 

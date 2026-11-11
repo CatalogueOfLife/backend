@@ -141,10 +141,11 @@ public class PublishReleaseJob extends BackgroundJob {
       new ColReleaseExportJob(releaseKey, getUserKey(), true, EXPORT_FORMATS, rCfg, eCfg, factory)
     ));
     // map the ids of retired COL editions to the extended release, one dated file per release
+    // and a stable latest symlink, e.g. xr_latest_col19-idmap.tsv.gz
     if (release.getOrigin() == DatasetOrigin.XRELEASE) {
       for (var map : rCfg.legacyIdMaps) {
         step("map " + map.name + " ids", () -> executor.submit(
-          new LegacyIdMapJob(map, releaseKey, getUserKey(), rCfg.colDownloadDir, factory, matcherFactory)
+          new LegacyIdMapJob(map, releaseKey, getUserKey(), rCfg.colDownloadDir, true, factory, matcherFactory)
         ));
       }
     }

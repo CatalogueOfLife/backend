@@ -92,13 +92,17 @@ public class LegacyIdMapJobDbTest {
   @Test
   public void mapping() throws Exception {
     File downloads = folder.newFolder("col");
-    var job = new LegacyIdMapJob(map, XR_KEY, Users.TESTER, downloads, SqlSessionFactoryRule.getSqlSessionFactory(), matcherFactory);
+    var job = new LegacyIdMapJob(map, XR_KEY, Users.TESTER, downloads, true, SqlSessionFactoryRule.getSqlSessionFactory(), matcherFactory);
     File expected = new File(downloads, "monthly/2026-09-25_xr_col19-idmap.tsv.gz");
     assertEquals(expected, job.file());
+    File latest = new File(downloads, "xr_latest_col19-idmap.tsv.gz");
+    assertEquals(latest, job.latestFile());
 
     job.run();
     assertNull(job.getError());
     assertTrue(expected.exists());
+    assertTrue(Files.isSymbolicLink(latest.toPath()));
+    assertEquals(expected.toPath(), Files.readSymbolicLink(latest.toPath()));
     verify(matcherFactory).persistent(XR_KEY);
     verify(matcher).close();
     // no temp file left behind
@@ -117,15 +121,18 @@ public class LegacyIdMapJobDbTest {
     // an existing file is never overwritten
     long modified = expected.lastModified();
     Files.writeString(expected.toPath(), "keep");
-    var again = new LegacyIdMapJob(map, XR_KEY, Users.TESTER, downloads, SqlSessionFactoryRule.getSqlSessionFactory(), matcherFactory);
+    Files.delete(latest.toPath());
+    var again = new LegacyIdMapJob(map, XR_KEY, Users.TESTER, downloads, true, SqlSessionFactoryRule.getSqlSessionFactory(), matcherFactory);
     again.run();
     assertNull(again.getError());
     assertEquals("keep", Files.readString(expected.toPath()));
+    // but the latest symlink gets restored
+    assertEquals(expected.toPath(), Files.readSymbolicLink(latest.toPath()));
     verify(matcherFactory, times(1)).persistent(XR_KEY);
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void noRelease() throws Exception {
-    new LegacyIdMapJob(map, LEGACY_KEY, Users.TESTER, folder.newFolder(), SqlSessionFactoryRule.getSqlSessionFactory(), matcherFactory);
+    new LegacyIdMapJob(map, LEGACY_KEY, Users.TESTER, folder.newFolder(), false, SqlSessionFactoryRule.getSqlSessionFactory(), matcherFactory);
   }
 }
