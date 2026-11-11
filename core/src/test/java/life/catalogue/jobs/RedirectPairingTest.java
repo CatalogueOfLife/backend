@@ -220,6 +220,79 @@ public class RedirectPairingTest {
     assertEquals(NameIdentity.Evidence.PLAUSIBLE, p.verdict().evidence);
   }
 
+  static ArchivedSimpleName otu(String id, String name, int... releaseKeys) {
+    var sn = sn(id, name, null, Rank.UNRANKED, releaseKeys);
+    sn.setCode(null);
+    return sn;
+  }
+
+  static void assertOtu(RedirectPairing.Pair p, String deadId, String liveId) {
+    assertEquals(Outcome.OTU, p.outcome());
+    assertTrue(p.isRedirect());
+    assertEquals(deadId, p.dead().getId());
+    assertEquals(liveId, p.live().getId());
+    assertNull(p.verdict());
+  }
+
+  /**
+   * OTUs had minted LATIN29 ids up to COL26.5 XR and use their code since
+   */
+  @Test
+  public void boldBinRedirectsToItsCode() {
+    assertOtu(single(
+      otu("FN95X", "BOLD:AAM9176", 10),
+      otu("BOLD.AAM9176", "BOLD:AAM9176", BASE, XR)
+    ), "FN95X", "BOLD.AAM9176");
+    // the code is case insensitive, the id upper case
+    assertOtu(single(
+      otu("FN95X", "bold:aam9176", 10),
+      otu("BOLD.AAM9176", "BOLD:AAM9176", XR)
+    ), "FN95X", "BOLD.AAM9176");
+  }
+
+  @Test
+  public void uniteShRedirectsToItsCode() {
+    assertOtu(single(
+      otu("GK2VQ", "SH0210222.10FU", 10),
+      otu("SH0210222.10FU", "SH0210222.10FU", BASE)
+    ), "GK2VQ", "SH0210222.10FU");
+  }
+
+  @Test
+  public void otuRedirectsOnlyToItsOwnCode() {
+    // another version of the species hypothesis is another id
+    var p = single(
+      otu("GK2VQ", "SH0210222.09FU", 10),
+      otu("SH0210222.10FU", "SH0210222.10FU", BASE)
+    );
+    assertEquals(Outcome.NO_TARGET, p.outcome());
+    assertNull(p.live());
+    // and an OTU never redirects to a LATIN29 id by its name
+    p = single(
+      otu("FN95X", "BOLD:AAM9176", 10),
+      otu("CC", "BOLD:AAM9176", BASE)
+    );
+    assertEquals(Outcome.NO_TARGET, p.outcome());
+    // nor is a live OTU id a target of a name based redirect
+    p = single(
+      species("BB", "Mill.", 10),
+      species("BOLD.AAM9176", "Mill.", BASE)
+    );
+    assertEquals(Outcome.NO_TARGET, p.outcome());
+  }
+
+  @Test
+  public void severalDeadIdsOfOneOtu() {
+    var pairs = pairing.pair(List.of(
+      otu("FN95X", "BOLD:AAM9176", 10),
+      otu("FN96X", "BOLD:AAM9176", 11),
+      otu("BOLD.AAM9176", "BOLD:AAM9176", BASE)
+    ));
+    assertEquals(2, pairs.size());
+    assertOtu(pairs.get(0), "FN95X", "BOLD.AAM9176");
+    assertOtu(pairs.get(1), "FN96X", "BOLD.AAM9176");
+  }
+
   @Test
   public void noLiveId() {
     var p = single(species("BB", "Mill.", 10), species("A", "Mill.", BASE));

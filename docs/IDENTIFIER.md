@@ -47,6 +47,9 @@ own:
 | UNITE species hypotheses | used verbatim, e.g. `SH19186714.17FU` |
 | BOLD BINs | the colon becomes a dot, e.g. `BOLD:AAA3374` → `BOLD.AAA3374` |
 
+Up to COL26.5 XR both got minted identifiers like any other name, `FN95X` for `BOLD:AAM9176`. Those old identifiers
+name the code they stood for as their replacement, see below.
+
 ## Why this is hard
 
 It is tempting to assume a name is a stable string that can simply be looked up. In a taxonomic database
@@ -202,7 +205,8 @@ in particular those lost in COL26.7 to COL26.9, whose identifier assignment pref
 over the one in use ([data#1867](https://github.com/CatalogueOfLife/data/issues/1867)), got their replacement added
 afterwards. The rules are the same as above: the dead identifier's last version and the identifier in use must not
 contradict each other, authorship or rank must positively agree, and where two identifiers in use are equally good
-candidates no replacement is recorded.
+candidates no replacement is recorded. A UNITE species hypothesis or BOLD BIN is not compared by name: its old minted identifier is
+replaced by the identifier of exactly its code, `FN95X` by `BOLD.AAM9176`, and by nothing else.
 
 ## What can still change your identifier
 

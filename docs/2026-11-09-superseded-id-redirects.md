@@ -93,3 +93,12 @@ and `applySuperseded` only ids that were current, which `liveKeys()` excludes fr
    and check the 279 data#1867 pairs.
 3. Run it without `dryRun`, holding COL releases and publishing meanwhile.
 4. Reply on data#1867.
+
+## Outcome
+
+The real backfill on prod (job 3323ba1a, `since=2328`) left 1,518,977 dead ids without a target, every one of them an
+OTU: 834,421 BOLD BINs and 684,556 UNITE SHs (all `.10FU`) with the LATIN29 ids they had up to COL26.5 XR, before
+`IdProvider.otuId` made the code the id. Their groups hold the live OTU, but the pairing left out every non LATIN29
+id, and `NameIdentity` has no evidence for two unranked names without authorship anyway. Since 2026-11-11 a dead id
+whose name is an OTU code redirects to the live id of exactly that code, reported as outcome `OTU`, and never by
+name; a live OTU id is no target of a name based redirect.

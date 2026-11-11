@@ -4,10 +4,9 @@ import life.catalogue.common.id.IdConverter;
 import life.catalogue.db.mapper.ArchivedNameUsageMapper.ArchivedSimpleName;
 import life.catalogue.matching.NameIdentity;
 import life.catalogue.matching.TaxGroupAnalyzer;
+import life.catalogue.release.IdProvider;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 import javax.annotation.Nullable;
 
@@ -25,7 +24,12 @@ import it.unimi.dsi.fastutil.ints.IntSet;
  *
  * Unlike the id provider this is not a one to one hand out: many dead ids can redirect to the same live id, typically
  * several duplicates that were removed over time. Ids that are no LATIN29 integers - temporary ids and the verbatim
- * ids of OTUs - are neither redirected nor redirect targets.
+ * ids of OTUs - are never redirected.
+ *
+ * OTUs, UNITE species hypotheses and BOLD BINs, had minted LATIN29 ids up to COL26.5 XR and use their code as the id
+ * since (see IdProvider.otuId). A dead id whose name is such a code redirects to the live id of exactly that code, never
+ * through NameIdentity, which has nothing to compare for two unranked names without authorship, and never to a LATIN29
+ * id. A live OTU id is a redirect target for that rule only.
  */
 public class RedirectPairing {
   private final NameIdentity identity = new NameIdentity();
@@ -36,6 +40,8 @@ public class RedirectPairing {
   public enum Outcome {
     /** the dead id redirects to the live id */
     REDIRECT,
+    /** the dead id of an OTU redirects to the live id of its code */
+    OTU,
     /** two live ids are equally good, no redirect */
     AMBIGUOUS,
     /** nothing contradicts the best live id, but nothing corroborates it either, no redirect */
@@ -57,7 +63,7 @@ public class RedirectPairing {
   public record Pair(ArchivedSimpleName dead, @Nullable ArchivedSimpleName live, @Nullable NameIdentity.Verdict verdict,
                      Outcome outcome) {
     public boolean isRedirect() {
-      return outcome == Outcome.REDIRECT;
+      return outcome == Outcome.REDIRECT || outcome == Outcome.OTU;
     }
   }
 
@@ -93,12 +99,14 @@ public class RedirectPairing {
    */
   public List<Pair> pair(List<ArchivedSimpleName> group) {
     List<Candidate> live = new ArrayList<>();
+    Map<String, ArchivedSimpleName> liveOtus = new HashMap<>();
     List<ArchivedSimpleName> dead = new ArrayList<>();
     for (var sn : group) {
       if (!isLatin29(sn.getId())) {
-        continue;
-      }
-      if (carriedBy(sn, liveKeys)) {
+        if (carriedBy(sn, liveKeys) && sn.getId() != null && sn.getId().equals(IdProvider.otuId(sn, null))) {
+          liveOtus.put(sn.getId(), sn);
+        }
+      } else if (carriedBy(sn, liveKeys)) {
         live.add(new Candidate(sn, facts(sn), carriedBy(sn, liveBaseKeys)));
       } else {
         dead.add(sn);
@@ -106,7 +114,13 @@ public class RedirectPairing {
     }
     List<Pair> pairs = new ArrayList<>(dead.size());
     for (var d : dead) {
-      pairs.add(pair(d, live));
+      String otu = IdProvider.otuId(d, null);
+      if (otu != null) {
+        var target = liveOtus.get(otu);
+        pairs.add(target == null ? new Pair(d, null, null, Outcome.NO_TARGET) : new Pair(d, target, null, Outcome.OTU));
+      } else {
+        pairs.add(pair(d, live));
+      }
     }
     return pairs;
   }

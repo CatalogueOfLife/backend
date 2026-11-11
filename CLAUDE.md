@@ -398,7 +398,9 @@ follows a chain up to 5 hops). Publishing only redirects ids the previous releas
 (`POST /admin/archive/redirects?projectKey=&since=&dryRun=`) backfills the missing ones: dead ids against the ids of
 `ReleaseRanking.liveKeys()` - the newest generation plus the newest base and newest extended release, so a base release
 without its XR yet does not count the last XR's ids as dead - paired by `RedirectPairing` on `NameIdentity`, never
-overwriting. See [`docs/2026-11-09-superseded-id-redirects.md`](docs/2026-11-09-superseded-id-redirects.md).
+overwriting. The LATIN29 ids OTUs (BOLD BINs, UNITE SHs) had up to COL26.5 XR are not compared by name but
+redirect to the id of exactly their code (`IdProvider.otuId`), outcome `OTU`.
+See [`docs/2026-11-09-superseded-id-redirects.md`](docs/2026-11-09-superseded-id-redirects.md).
 `XIdProvider` mints nothing but temp ids during the merge; the one `mapTempIds()` pass at the end of `XRelease`
 assigns the stable ones, so the whole canonical group competes at once instead of usage by usage in sector order.
 `name` records take the stable id of one of their own usages (`idmap_name_<key>`), off by default behind

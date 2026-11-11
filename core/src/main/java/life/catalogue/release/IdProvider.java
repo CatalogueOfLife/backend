@@ -1080,7 +1080,7 @@ public class IdProvider {
    * instead of minting a synthetic integer id.
    * @return the code to use as the usage id, or null if the name is not an in-scope OTU
    */
-  static String otuId(SimpleName u, CountMap<String> counter) {
+  public static String otuId(SimpleName u, @Nullable CountMap<String> counter) {
     if (u.getName() != null) {
       var name = u.getName();
       var m = UNITE_ID.matcher(name);

@@ -210,6 +210,31 @@ public class ArchiveRedirectJobIT {
     assertNull(redirects.get("FF"));
   }
 
+  /**
+   * OTUs had minted LATIN29 ids up to COL26.5 XR and use their code since: the old id redirects to the code
+   */
+  @Test
+  public void otu() throws Exception {
+    archive("FN95X", 5, "BOLD:AAM9176", null, null, 11, 12);
+    archive("BOLD.AAM9176", 5, "BOLD:AAM9176", null, null, 13, 14);
+    archive("GK2VQ", 6, "SH0210222.10FU", null, null, 12);
+    archive("SH0210222.10FU", 6, "SH0210222.10FU", null, null, 14);
+    var job = run(job(null, false));
+    assertEquals(5, job.getUpdated());
+    assertEquals(2, (int) job.getCounts().get(Outcome.OTU));
+    assertEquals(3, (int) job.getCounts().get(Outcome.REDIRECT));
+
+    var outcomes = outcomes(report(job));
+    assertEquals("BOLD.AAM9176 OTU", outcomes.get("FN95X"));
+    assertEquals("SH0210222.10FU OTU", outcomes.get("GK2VQ"));
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      var anum = session.getMapper(ArchivedNameUsageMapper.class);
+      assertEquals("BOLD.AAM9176", anum.get(DSID.of(Datasets.COL, "FN95X")).getSupersededBy());
+      assertEquals("SH0210222.10FU", anum.get(DSID.of(Datasets.COL, "GK2VQ")).getSupersededBy());
+      assertNull(anum.get(DSID.of(Datasets.COL, "BOLD.AAM9176")).getSupersededBy());
+    }
+  }
+
   @Test(expected = IllegalArgumentException.class)
   public void sinceMustBeAReleaseOfTheProject() {
     job(999, false);
