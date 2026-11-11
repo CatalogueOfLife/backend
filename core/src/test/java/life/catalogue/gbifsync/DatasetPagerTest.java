@@ -91,6 +91,48 @@ public class DatasetPagerTest {
     }
   }
 
+  /**
+   * Datasets hosted by ChecklistBank's own GBIF installation are passed on flagged as hosted whatever their endpoints,
+   * so the sync knows them and never deletes them, while any other dataset without a COLDP or DwC-A endpoint is dropped.
+   */
+  @Test
+  public void hostedDatasetsAreKept() {
+    UUID installation = UUID.fromString("3298f964-ee79-44d3-9ac3-4236aa62c5f9");
+    GbifConfig cfg = new GbifConfig();
+    cfg.installationKey = installation;
+
+    final Client client = ClientBuilder.newClient();
+    try {
+      DatasetPager pager = new DatasetPager(client, cfg, null);
+
+      DatasetPager.GDataset hosted = checklist(UUID.randomUUID(), "TEXT_TREE");
+      hosted.installationKey = installation;
+      DatasetPager.GDataset other = checklist(UUID.randomUUID(), "TEXT_TREE");
+      other.installationKey = UUID.randomUUID();
+
+      DatasetPager.GResp resp = new DatasetPager.GResp();
+      resp.results = new ArrayList<>(List.of(hosted, other));
+      resp.endOfRecords = true;
+      List<DatasetPager.GbifDataset> page = pager.processPage(resp);
+      assertEquals(1, page.size());
+      assertEquals(hosted.key, page.get(0).getGbifKey());
+      assertTrue(page.get(0).isHosted());
+    } finally {
+      client.close();
+    }
+  }
+
+  private static DatasetPager.GDataset checklist(UUID key, String endpointType) {
+    DatasetPager.GDataset d = gdataset(key);
+    d.type = "CHECKLIST";
+    d.title = "Checklist " + key;
+    DatasetPager.GEndpoint e = new DatasetPager.GEndpoint();
+    e.type = endpointType;
+    e.url = "https://api.checklistbank.org/dataset/1/archive.zip";
+    d.endpoints = new ArrayList<>(List.of(e));
+    return d;
+  }
+
   private static DatasetPager.GDataset gdataset(UUID key) {
     DatasetPager.GDataset d = new DatasetPager.GDataset();
     d.key = key;

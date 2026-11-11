@@ -24,10 +24,16 @@ public class GbifConfig {
   public String password;
 
   /**
-   * If true the registry sync will also write back dataset keys to the GBIF registry
-   * and add missing datasets.
+   * If true the registry sync will also write back dataset keys to the GBIF registry.
    */
   public boolean bidirectional = false;
+
+  /**
+   * The GBIF installation that represents ChecklistBank itself, the "ChecklistBank" HTTP installation in production.
+   * Datasets ChecklistBank publishes in GBIF are hosted by it: the registry sync never creates, updates or deletes them,
+   * and ChecklistBank registers new datasets in GBIF under it. If null, registering datasets in GBIF is off.
+   */
+  public UUID installationKey;
 
   /**
    * Incremental GBIF registry sync frequency in minutes.
@@ -83,6 +89,7 @@ public class GbifConfig {
       .add("api", api)
       .add("user", username)
       .add("bidirectional", bidirectional)
+      .add("installationKey", installationKey)
       .add("syncFrequency", syncFrequency)
       .toString();
   }

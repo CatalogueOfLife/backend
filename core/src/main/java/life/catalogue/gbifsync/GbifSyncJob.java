@@ -220,10 +220,19 @@ public class GbifSyncJob extends GlobalBlockingJob {
   /**
    * @return the dataset key in CLB even if locked/unchanged, or null if it never was synced
    */
-  private Integer sync(DatasetPager.GbifDataset gbif, DatasetGBIF existing) throws InterruptedException {
+  @VisibleForTesting
+  Integer sync(DatasetPager.GbifDataset gbif, DatasetGBIF existing) throws InterruptedException {
     Exceptions.interruptIfCancelled("GBIF sync interrupted");
     // start out with the existing key if there is one
     Integer key = existing == null ? null : existing.getKey();
+    if (gbif.isHosted()) {
+      // ChecklistBank publishes this dataset in GBIF itself and owns it: never create, update, write back or delete it.
+      // Nothing gets linked automatically either: the COL record is hosted by ChecklistBank and names a release.
+      if (key == null) {
+        LOG.info("GBIF dataset {} {} is hosted by ChecklistBank, but no dataset carries its key", gbif.getGbifKey(), gbif.getTitle());
+      }
+      return key;
+    }
     // skip datasets that have not changed in the GBIF registry since we last synced them.
     // this avoids the slow registry organisation/installation lookups and the DB read+write for unchanged datasets.
     if (!force && existing != null && isUnchanged(gbif, existing)) {

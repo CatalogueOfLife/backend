@@ -54,6 +54,8 @@ public class DatasetPager {
   private final Set<UUID> articlePublishers;
   private final Set<UUID> articleHostInstallations;
   private final Set<UUID> blockedDatasets;
+  @Nullable
+  private final UUID installationKey;
   private final LocalDate since;
 
   /**
@@ -71,6 +73,7 @@ public class DatasetPager {
     articlePublishers = Set.copyOf(gbif.articlePublishers);
     articleHostInstallations = Set.copyOf(gbif.articleHostInstallations);
     blockedDatasets = Set.copyOf(gbif.blockedDatasets);
+    installationKey = gbif.installationKey;
     dataset = client.target(UriBuilder.fromUri(gbif.api).path("/dataset"));
     datasets = client.target(UriBuilder.fromUri(gbif.api).path("/dataset"))
         .queryParam("type", "CHECKLIST");
@@ -205,6 +208,12 @@ public class DatasetPager {
     GDataset src;
     // GBIF registry modified timestamp (UTC), used to skip datasets that have not changed since the last sync
     LocalDateTime modified;
+    // hosted by ChecklistBank's own GBIF installation, i.e. published in GBIF from ChecklistBank
+    boolean hosted;
+
+    public boolean isHosted() {
+      return hosted;
+    }
 
     public Integer getKey() {
       return dataset.getKey();
@@ -258,6 +267,12 @@ public class DatasetPager {
     d.dataset.setGbifPublisherKey(g.publishingOrganizationKey);
     d.dataset.setTitle(g.title);
     d.dataset.setDescription(g.description);
+    if (installationKey != null && installationKey.equals(g.installationKey)) {
+      // published in GBIF from ChecklistBank, whatever its endpoints. The sync leaves it alone, see GbifSyncJob
+      d.hosted = true;
+      LOG.debug("Dataset hosted by ChecklistBank: {} - {}", g.key, g.title);
+      return d;
+    }
     DOI.parse(g.doi).ifPresent(doi -> d.dataset.addIdentifier(new Identifier(doi)));
     Optional<GEndpoint> coldp = g.endpoints.stream().filter(e -> e.type.equalsIgnoreCase("COLDP")).findFirst();
     Optional<GEndpoint> dwca = g.endpoints.stream().filter(e -> e.type.equalsIgnoreCase("DWC_ARCHIVE")).findFirst();

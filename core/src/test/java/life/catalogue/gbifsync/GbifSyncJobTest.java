@@ -3,14 +3,23 @@ package life.catalogue.gbifsync;
 import life.catalogue.api.model.DatasetGBIF;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.Setting;
+import life.catalogue.api.vocab.Users;
+import life.catalogue.config.GbifConfig;
+import life.catalogue.dao.DatasetDao;
 
 import java.net.URI;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.junit.Test;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.client.ClientBuilder;
+
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 public class GbifSyncJobTest {
 
@@ -102,5 +111,33 @@ public class GbifSyncJobTest {
     assertFalse(GbifSyncJob.dataAccessDiffers(gbif(t, URL, DataFormat.DWCA), existing(t, URL, "dwca")));
     assertFalse(GbifSyncJob.dataAccessDiffers(gbif(t, URL, DataFormat.TEXT_TREE), existing(t, URL, "text tree")));
     assertTrue(GbifSyncJob.dataAccessDiffers(gbif(t, URL, DataFormat.COLDP), existing(t, URL, "COLDP")));
+  }
+
+  /**
+   * A dataset hosted by ChecklistBank's own GBIF installation is published from ChecklistBank: the sync must neither
+   * create nor update it, even if its registry record changed, and must not link it automatically.
+   * It still reports the key of an existing dataset, so the full sync counts it as seen.
+   */
+  @Test
+  public void hostedIsNeverTouched() throws Exception {
+    DatasetDao dao = mock(DatasetDao.class);
+    SqlSessionFactory factory = mock(SqlSessionFactory.class);
+    GbifConfig cfg = new GbifConfig();
+    Client client = ClientBuilder.newClient();
+    try {
+      var job = new GbifSyncJob(cfg, client, dao, factory, new GbifRegistryCache(client, cfg), Users.GBIF_SYNC, false);
+      LocalDateTime t = LocalDateTime.of(2026, 11, 11, 10, 0);
+      var hosted = gbif(t.plusDays(1), "https://api.checklistbank.org/dataset/7/archive.zip", DataFormat.TEXT_TREE);
+      hosted.hosted = true;
+      hosted.dataset.setGbifKey(UUID.randomUUID());
+
+      assertNull(job.sync(hosted, null));
+      var existing = existing(t);
+      existing.setKey(7);
+      assertEquals(7, (int) job.sync(hosted, existing));
+      verifyNoInteractions(dao, factory);
+    } finally {
+      client.close();
+    }
   }
 }
