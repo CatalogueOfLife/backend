@@ -10,15 +10,17 @@
 
   <name>CLB BOM</name>
   <description>
-    Versions of the ChecklistBank library modules and the name parser they are built with, for projects outside this
-    repository (like Blixa) to import into their dependencyManagement. It works next to any parent, Spring Boot's included.
+    Versions of all ChecklistBank modules, their test jars and the name parser they are built with, for projects outside
+    this repository (like Blixa) to import into their dependencyManagement. It works next to any parent, Spring Boot's
+    included.
   </description>
 
   <!--
     This pom is the parent of the backend's root pom (motherpom), not a child of it. A BOM is imported with its
     effective dependencyManagement, so a BOM inheriting from the root would hand every consumer all the Dropwizard,
     Jackson and Jetty versions the root manages. The other way round the root inherits the versions below, and they
-    are written down once.
+    are written down once. Every module of this repository is listed here and nowhere else, so a new module goes in
+    here.
 
     Only CoL artifacts and the name parser pair belong here, never third party libraries: a consumer has its own
     platform (Spring Boot, Dropwizard) to manage those, and a version pinned here would fight it. Bump the name parser
@@ -58,7 +60,22 @@
       </dependency>
       <dependency>
         <groupId>org.catalogueoflife</groupId>
+        <artifactId>core</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.catalogueoflife</groupId>
+        <artifactId>dao</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.catalogueoflife</groupId>
         <artifactId>doi</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.catalogueoflife</groupId>
+        <artifactId>importer</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
@@ -105,6 +122,48 @@
         <groupId>org.catalogueoflife</groupId>
         <artifactId>vocab</artifactId>
         <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.catalogueoflife</groupId>
+        <artifactId>webservice</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
+      <!-- the test fixtures every module attaches with maven-jar-plugin test-jar -->
+      <dependency>
+        <groupId>org.catalogueoflife</groupId>
+        <artifactId>api</artifactId>
+        <version>${project.version}</version>
+        <classifier>tests</classifier>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.catalogueoflife</groupId>
+        <artifactId>core</artifactId>
+        <version>${project.version}</version>
+        <classifier>tests</classifier>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.catalogueoflife</groupId>
+        <artifactId>dao</artifactId>
+        <version>${project.version}</version>
+        <classifier>tests</classifier>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.catalogueoflife</groupId>
+        <artifactId>importer</artifactId>
+        <version>${project.version}</version>
+        <classifier>tests</classifier>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.catalogueoflife</groupId>
+        <artifactId>kryo</artifactId>
+        <version>${project.version}</version>
+        <classifier>tests</classifier>
+        <scope>test</scope>
       </dependency>
 
       <dependency>

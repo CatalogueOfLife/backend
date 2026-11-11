@@ -80,10 +80,12 @@ vocab, coldp, reference, kryo, reader, reader-xls, pgcopy, metadata, doi
 
 **Module Responsibilities:**
 
-- **bom** (`clb-bom`): the versions of the library modules and the name-parser pair, published for outside consumers
-  such as Blixa to import. It is the **parent** of the root pom, not a module under it: an imported BOM brings its
-  effective dependencyManagement, so a child of the root would hand consumers all of Dropwizard's versions. The
-  name-parser versions and distributionManagement are therefore set in `bom/pom.xml` and inherited by the root.
+- **bom** (`clb-bom`): the versions of all modules of this repository (their `tests` jars included) and the
+  name-parser pair, published for outside consumers such as Blixa to import. It is the only place the modules are
+  managed, the root pom does not list them again, so a new module goes in there. It is the **parent** of the root
+  pom, not a module under it: an imported BOM brings its effective dependencyManagement, so a child of the root would
+  hand consumers all of Dropwizard's versions. The name-parser versions and distributionManagement are therefore set
+  in `bom/pom.xml` and inherited by the root.
   Third party libraries never go in it. There is deliberately no CoL wide parent pom.
 
 - **api**: Data models (Dataset, NameUsage, Taxon, Synonym, Reference), vocabularies (TaxonomicStatus, Issue, ImportState), validation annotations, Jackson serializers. No external dependencies beyond basic libraries.
