@@ -7,13 +7,13 @@
   <parent>
     <groupId>org.catalogueoflife</groupId>
     <artifactId>clb-bom</artifactId>
-    <version>1.7.0</version>
+    <version>1.7.1-SNAPSHOT</version>
     <relativePath>bom/pom.xml</relativePath>
   </parent>
 
   <groupId>org.catalogueoflife</groupId>
   <artifactId>motherpom</artifactId>
-  <version>1.7.0</version>
+  <version>1.7.1-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>CLB motherpom</name>
@@ -23,7 +23,7 @@
     <connection>scm:git:git@github.com:CatalogueOfLife/backend.git</connection>
     <url>https://github.com/CatalogueOfLife/backend</url>
     <developerConnection>scm:git:git@github.com:CatalogueOfLife/backend.git</developerConnection>
-    <tag>v1.7.0</tag>
+    <tag>HEAD</tag>
   </scm>
 
   <properties>

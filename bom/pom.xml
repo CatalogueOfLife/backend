@@ -5,7 +5,7 @@
 
   <groupId>org.catalogueoflife</groupId>
   <artifactId>clb-bom</artifactId>
-  <version>1.7.0</version>
+  <version>1.7.1-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>CLB BOM</name>
