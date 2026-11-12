@@ -251,7 +251,7 @@ public class DoiHandler implements OutboxHandler, Managed {
       int key = doi.datasetKey();
       var info = DatasetInfoCache.CACHE.info(key, true);
       if (info.origin.isRelease()) {
-        return converter.releaseURI(key, datasetKeyCache.isLatestRelease(key));
+        return converter.releaseURI(key, info.sourceKey, datasetKeyCache.isLatestRelease(key));
       }
       return converter.datasetURI(key);
     }

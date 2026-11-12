@@ -358,8 +358,8 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
         boolean create = assertDoiExists(release);
         var next = iter.peek();
         var nextDOI = next != null ? cfg.doi.datasetDOI(next.getKey()) : null;
-        final boolean portal = Objects.equals(latestReleaseKey, release.getKey());
-        executor.execute(new DataciteSync(release.getDoi(), converter.release(release, portal, prev, nextDOI), release.getKey(), create));
+        final boolean latest = Objects.equals(latestReleaseKey, release.getKey());
+        executor.execute(new DataciteSync(release.getDoi(), converter.release(release, latest, prev, nextDOI), release.getKey(), create));
         prev = release.getDoi();
       }
     }

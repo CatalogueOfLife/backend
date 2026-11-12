@@ -6,6 +6,7 @@ import life.catalogue.api.model.Agent;
 import life.catalogue.api.model.DOI;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.User;
+import life.catalogue.api.vocab.Datasets;
 import life.catalogue.doi.datacite.model.*;
 
 import java.net.URI;
@@ -53,12 +54,12 @@ public class DatasetConverter {
    *  - url
    *
    * @param release
-   * @param portal if true points to the COL portal, not checklist bank
+   * @param latest true if this is the latest release of its kind (regular or extended) of its project
    * @return
    */
-  public DoiAttributes release(Dataset release, boolean portal, @Nullable DOI previousVersion, @Nullable DOI nextVersion) {
+  public DoiAttributes release(Dataset release, boolean latest, @Nullable DOI previousVersion, @Nullable DOI nextVersion) {
     DoiAttributes attr = common(release.getDoi(), release, previousVersion, nextVersion);
-    attr.setUrl(releaseURI(release.getKey(), portal).toString());
+    attr.setUrl(releaseURI(release.getKey(), release.getSourceKey(), latest).toString());
     return attr;
   }
 
@@ -247,8 +248,15 @@ public class DatasetConverter {
     return null;
   }
 
-  public URI releaseURI(int datasetKey, boolean portal) {
-    return portal ? this.portal : datasetURI(datasetKey);
+  /**
+   * The COL portal shows the latest COL release only, so just the latest releases of the COL project point to it.
+   * Every other release, also the latest one of any other project, points to its ChecklistBank page.
+   *
+   * @param projectKey the project the release was made from
+   * @param latest true if the release is the latest of its kind (regular or extended) of its project
+   */
+  public URI releaseURI(int datasetKey, @Nullable Integer projectKey, boolean latest) {
+    return latest && Objects.equals(projectKey, Datasets.COL) ? this.portal : datasetURI(datasetKey);
   }
 
   public URI datasetURI(int datasetKey) {
