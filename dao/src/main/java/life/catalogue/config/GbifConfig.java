@@ -24,7 +24,8 @@ public class GbifConfig {
   public String password;
 
   /**
-   * If true the registry sync will also write back dataset keys to the GBIF registry.
+   * If true ChecklistBank writes to the GBIF records of datasets it did not register in GBIF itself: the registry sync
+   * writes back their dataset keys, and every successful import of such a dataset uploads its EML to GBIF.
    */
   public boolean bidirectional = false;
 

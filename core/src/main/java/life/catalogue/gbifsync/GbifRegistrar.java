@@ -46,7 +46,8 @@ import jakarta.ws.rs.core.UriBuilder;
  * A registered dataset is published by the chosen GBIF organisation and hosted by ChecklistBank's own GBIF installation.
  * Its GBIF record carries the dataset's ChecklistBank DOI, a CLB_DATASET_KEY identifier and two endpoints: the original
  * archive of its last successful import, typed by its format, and the EML metadata of the dataset.
- * The EML is also uploaded once on registration, so GBIF shows the metadata before it first crawls.
+ * Its EML is also uploaded on registration and after every successful import, so the metadata in GBIF and ChecklistBank
+ * stay in step. That upload is done for any other public dataset with a GBIF key as well, if gbif.bidirectional is on.
  * Every change is passed on through the GBIF_REGISTRY outbox command, see {@link #reconcile(int, Set, boolean)}.
  */
 public class GbifRegistrar {
@@ -85,6 +86,14 @@ public class GbifRegistrar {
    */
   public boolean isEnabled() {
     return cfg.installationKey != null && client.hasCredentials() && apiURI != null;
+  }
+
+  /**
+   * @return true if the EML of datasets ChecklistBank did not register in GBIF itself is uploaded to their GBIF records,
+   *   i.e. ChecklistBank writes back to GBIF and has the registry credentials to do so
+   */
+  public boolean canUploadMetadata() {
+    return cfg.bidirectional && client.hasCredentials();
   }
 
   private void checkEnabled() {
@@ -274,9 +283,12 @@ public class GbifRegistrar {
    * Brings the GBIF record of a dataset in line with ChecklistBank and asks GBIF to crawl it,
    * or deletes it in GBIF if the dataset was deleted. Safe to run again, as the outbox may.
    *
+   * A dataset ChecklistBank did not register in GBIF itself, synced from GBIF or registered there by hand, only gets its
+   * EML uploaded, if pushMetadata is true, and nothing else of its GBIF record is touched.
+   *
    * @param deregisterKeys GBIF datasets to delete, as the dataset was deregistered, maybe registered again since
-   * @param pushMetadata if true the EML of the dataset is uploaded to GBIF, which is done once on registration
-   *   so GBIF shows the metadata right away. Afterwards GBIF reads it from the EML endpoint.
+   * @param pushMetadata if true the EML of the dataset is uploaded to GBIF, which is done on registration and after
+   *   every successful import, so the metadata in GBIF and ChecklistBank stay in step
    */
   public void reconcile(int datasetKey, Set<UUID> deregisterKeys, boolean pushMetadata) {
     final GbifRegistration reg;
@@ -293,8 +305,13 @@ public class GbifRegistrar {
       }
     }
     if (reg == null) {
+      if (pushMetadata) {
+        uploadMetadata(datasetKey, d);
+      }
       return;
     }
+    // the commands of registered datasets wait until registering is configured
+    checkEnabled();
     final UUID gbifKey = reg.getGbifKey();
     if (d == null || d.hasDeletedDate()) {
       deleteInGbif(datasetKey, gbifKey);
@@ -309,8 +326,7 @@ public class GbifRegistrar {
       throw new IllegalArgumentException("GBIF dataset " + gbifKey + " of dataset " + datasetKey + " was deleted in GBIF");
     }
     if (pushMetadata) {
-      LOG.info("Upload EML of dataset {} to GBIF dataset {}", datasetKey, gbifKey);
-      client.insertMetadata(gbifKey, eml(d));
+      uploadEml(d, gbifKey);
       // GBIF updated the record from the EML, an update below must not undo that
       g = client.getDataset(gbifKey);
     }
@@ -336,7 +352,37 @@ public class GbifRegistrar {
   }
 
   /**
-   * @return the EML document of the dataset, the very one its EML endpoint serves
+   * Uploads the EML of a dataset ChecklistBank did not register in GBIF itself to its GBIF record.
+   */
+  private void uploadMetadata(int datasetKey, @Nullable Dataset d) {
+    if (d == null || d.hasDeletedDate() || d.isPrivat() || d.getGbifKey() == null) {
+      LOG.info("Dataset {} has no public GBIF record to upload its EML to", datasetKey);
+      return;
+    }
+    if (!canUploadMetadata()) {
+      LOG.info("No EML upload of dataset {} to GBIF dataset {}, ChecklistBank does not write back to GBIF", datasetKey, d.getGbifKey());
+      return;
+    }
+    ObjectNode g = client.getDataset(d.getGbifKey());
+    if (g == null || g.hasNonNull("deleted")) {
+      LOG.warn("GBIF dataset {} of dataset {} does not exist, its EML is not uploaded", d.getGbifKey(), datasetKey);
+      return;
+    }
+    uploadEml(d, d.getGbifKey());
+  }
+
+  /**
+   * Uploads the EML of a dataset to its GBIF record, the very document its EML endpoint serves.
+   * GBIF makes its first DOI, the dataset's ChecklistBank DOI, the DOI of the GBIF dataset, so both systems share one
+   * DOI. A GBIF DOI replaced that way stays registered and becomes an alternate identifier of the GBIF dataset.
+   */
+  private void uploadEml(Dataset d, UUID gbifKey) {
+    LOG.info("Upload EML of dataset {} with DOI {} to GBIF dataset {}", d.getKey(), d.getDoi(), gbifKey);
+    client.insertMetadata(gbifKey, eml(d));
+  }
+
+  /**
+   * @return the EML document of the dataset as its EML endpoint serves it
    */
   private static byte[] eml(Dataset d) {
     try {

@@ -1,6 +1,8 @@
 package life.catalogue.gbifsync;
 
 import life.catalogue.TestUtils;
+import life.catalogue.api.exception.UnavailableException;
+import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetSettings;
 import life.catalogue.api.model.OutboxEntry;
@@ -41,6 +43,8 @@ import org.apache.ibatis.session.SqlSession;
 import org.junit.*;
 import org.junit.rules.TemporaryFolder;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import jakarta.validation.Validation;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
@@ -80,9 +84,19 @@ public class GbifRegistrarTest {
   public void init() throws Exception {
     gbif = new FakeGbifRegistry();
     client = ClientBuilder.newClient();
-    GbifConfig cfg = gbif.config();
     nCfg = new NormalizerConfig();
     nCfg.archiveDir = tmp.newFolder("archives");
+    wire(gbif.config());
+
+    // a public, openly licensed ColDP dataset imported once
+    Dataset d = dao.get(KEY);
+    d.setPrivat(false);
+    d.setLicense(License.CC_BY);
+    dao.update(d, USER);
+    imported(DataFormat.COLDP, new DatasetImportDao(SqlSessionFactoryRule.getSqlSessionFactory(), TreeRepoRule.getRepo()));
+  }
+
+  private void wire(GbifConfig cfg) {
     var factory = SqlSessionFactoryRule.getSqlSessionFactory();
     var validator = Validation.buildDefaultValidatorFactory().getValidator();
     var diDao = new DatasetImportDao(factory, TreeRepoRule.getRepo());
@@ -90,13 +104,15 @@ public class GbifRegistrarTest {
       null, NameUsageIndexService.passThru(), null, TestUtils.mockedBroker(), validator);
     registrar = new GbifRegistrar(cfg, API, nCfg, factory, dao, new GbifRegistryClient(client, cfg));
     handler = new GbifRegistryHandler(registrar);
+  }
 
-    // a public, openly licensed ColDP dataset imported once
-    Dataset d = dao.get(KEY);
-    d.setPrivat(false);
-    d.setLicense(License.CC_BY);
-    dao.update(d, USER);
-    imported(DataFormat.COLDP, diDao);
+  /**
+   * Requests the GBIF updates of a successful import like PgImport does.
+   */
+  private void afterImport() {
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      DatasetDao.gbifMetadataAfterImport(session, KEY, dao.isGbifBidirectional(), USER);
+    }
   }
 
   @After
@@ -164,18 +180,22 @@ public class GbifRegistrarTest {
     assertEquals(1, gbif.documents(gbifKey).size());
     assertEquals(3, gbif.crawls(gbifKey));
 
-    // a new import in another format replaces the data endpoint
+    // a new import in another format replaces the data endpoint, uploads the EML and asks for a crawl
     imported(DataFormat.TEXT_TREE, new DatasetImportDao(SqlSessionFactoryRule.getSqlSessionFactory(), TreeRepoRule.getRepo()));
-    registrar.reconcile(KEY, Set.of(), false);
+    afterImport();
+    runCommand();
     assertEquals("EML=https://api.checklistbank.org/dataset/12.xml,TEXT_TREE=https://api.checklistbank.org/dataset/12/archive.zip",
       endpoints(gbifKey));
+    assertEquals(2, gbif.documents(gbifKey).size());
+    assertTrue(gbif.documents(gbifKey).get(1).contains("Apples of Brandenburg"));
+    assertEquals(4, gbif.crawls(gbifKey));
 
     // another organisation
     UUID org2 = UUID.randomUUID();
     registrar.changePublisher(KEY, org2, USER);
     runCommand();
     assertEquals(org2.toString(), gbif.datasets.get(gbifKey).path("publishingOrganizationKey").asText());
-    assertEquals(1, gbif.documents(gbifKey).size());
+    assertEquals(2, gbif.documents(gbifKey).size());
 
     // registering twice fails
     assertThrows(IllegalArgumentException.class, () -> registrar.register(KEY, org, USER));
@@ -188,6 +208,48 @@ public class GbifRegistrarTest {
     assertTrue(gbif.deleted.contains(gbifKey));
     // a second run finds nothing to delete anymore
     registrar.reconcile(KEY, Set.of(gbifKey), false);
+  }
+
+  /**
+   * A dataset synced from GBIF gets its EML uploaded after an import if ChecklistBank writes back to GBIF. The EML
+   * carries the ChecklistBank DOI first, which GBIF makes the DOI of its dataset, and nothing else of the GBIF record is
+   * touched.
+   */
+  @Test
+  public void syncedDataset() throws Exception {
+    final UUID gbifKey = UUID.randomUUID();
+    ObjectNode g = ApiModule.MAPPER.createObjectNode();
+    g.put("key", gbifKey.toString());
+    g.put("title", "Apples");
+    g.put("doi", "10.15468/apple");
+    gbif.datasets.put(gbifKey, g);
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true);
+         var st = session.getConnection().createStatement()) {
+      st.execute("UPDATE dataset SET doi = '10.80631/ds12', gbif_key = '" + gbifKey + "' WHERE key = " + KEY);
+    }
+
+    // no writing back to GBIF, no command
+    afterImport();
+    assertNull(command());
+
+    GbifConfig cfg = gbif.config();
+    cfg.bidirectional = true;
+    wire(cfg);
+    afterImport();
+    runCommand();
+    assertEquals(1, gbif.documents(gbifKey).size());
+    String eml = gbif.documents(gbifKey).get(0);
+    assertTrue(eml.indexOf("<alternateIdentifier>10.80631/ds12</alternateIdentifier>") == eml.indexOf("<alternateIdentifier>"));
+    assertTrue(gbif.endpoints(gbifKey).isEmpty());
+    assertTrue(gbif.identifiers(gbifKey).isEmpty());
+    assertEquals(0, gbif.crawls(gbifKey));
+    assertEquals(g, gbif.datasets.get(gbifKey));
+
+    // a dataset gone in GBIF gets nothing, and the command does not fail
+    gbif.datasets.remove(gbifKey);
+    afterImport();
+    runCommand();
+    assertEquals(1, gbif.documents(gbifKey).size());
   }
 
   @Test
@@ -260,6 +322,14 @@ public class GbifRegistrarTest {
     var disabled = new GbifRegistryHandler(new GbifRegistrar(off, API, nCfg, SqlSessionFactoryRule.getSqlSessionFactory(), dao,
       new GbifRegistryClient(client, off)));
     assertFalse(disabled.isOnline());
+
+    // without registering configured it still uploads the EML of datasets synced from GBIF
+    off.bidirectional = true;
+    var uploading = new GbifRegistrar(off, API, nCfg, SqlSessionFactoryRule.getSqlSessionFactory(), dao, new GbifRegistryClient(client, off));
+    assertTrue(new GbifRegistryHandler(uploading).isOnline());
+    // while the commands of registered datasets wait
+    registrar.register(KEY, org, USER);
+    assertThrows(UnavailableException.class, () -> uploading.reconcile(KEY, Set.of(), true));
   }
 
   private String endpoints(UUID gbifKey) {

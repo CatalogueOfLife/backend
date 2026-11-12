@@ -106,11 +106,11 @@ public final class Outbox {
   }
 
   /**
-   * Requests the first GBIF registry update of a dataset just registered in GBIF from ChecklistBank. On top of
-   * {@link #gbifRegistry} it uploads the dataset's EML once, so GBIF shows the metadata right away. Afterwards GBIF reads
-   * it from the EML endpoint when it crawls.
+   * Requests the upload of a dataset's EML to its GBIF record, so the metadata in GBIF and ChecklistBank stay in step.
+   * It is requested on registration and after every successful import of a dataset with a GBIF key. For a dataset
+   * registered in GBIF from ChecklistBank the command also does all of {@link #gbifRegistry}.
    */
-  public static void gbifRegister(SqlSession session, int datasetKey, int user) {
+  public static void gbifMetadata(SqlSession session, int datasetKey, int user) {
     ObjectNode params = ApiModule.MAPPER.createObjectNode();
     params.put(GBIF_PUSH_METADATA, true);
     enqueue(session, OutboxType.GBIF_REGISTRY, String.valueOf(datasetKey), params, 0, user);

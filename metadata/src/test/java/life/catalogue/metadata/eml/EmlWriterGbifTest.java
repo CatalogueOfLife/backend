@@ -5,6 +5,7 @@ import life.catalogue.api.model.Citation;
 import life.catalogue.api.model.CitationFormatter;
 import life.catalogue.api.model.DOI;
 import life.catalogue.api.model.Dataset;
+import life.catalogue.api.model.Identifier;
 import life.catalogue.api.vocab.License;
 import life.catalogue.api.vocab.area.Country;
 
@@ -63,6 +64,27 @@ public class EmlWriterGbifTest {
     assertEquals(List.of("ulla@example.org"), creator.getEmail());
     Contact contact = contact(g.getContacts(), "Kontakt");
     assertEquals(org.gbif.api.vocabulary.Country.AUSTRIA, contact.getCountry());
+  }
+
+  /**
+   * A dataset synced from GBIF lists its GBIF DOI as an identifier. GBIF makes the ChecklistBank DOI the DOI of the
+   * dataset and keeps the GBIF DOI as an alternate identifier.
+   */
+  @Test
+  public void chosenDoi() throws Exception {
+    Dataset d = new Dataset();
+    d.setKey(1234);
+    d.setTitle("Checklist of the ants of Brandenburg");
+    d.setLicense(License.CC_BY);
+    d.setDoi(DOI.col("ds1234"));
+    d.addIdentifier(new Identifier(new DOI("10.15468/abcd")));
+
+    var out = new ByteArrayOutputStream();
+    EmlWriter.write(d, out);
+    var g = DatasetEmlParser.build(out.toByteArray());
+
+    assertEquals(new org.gbif.api.model.common.DOI("10.48580/ds1234"), g.getDoi());
+    assertTrue(g.getIdentifiers().stream().anyMatch(i -> i.getIdentifier().contains("10.15468/abcd")));
   }
 
   private static Contact contact(List<Contact> contacts, String lastName) {

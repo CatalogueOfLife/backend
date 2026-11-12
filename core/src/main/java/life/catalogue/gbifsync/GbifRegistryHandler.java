@@ -10,8 +10,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Runs the GBIF_REGISTRY outbox commands: brings the GBIF record of a dataset registered in GBIF from ChecklistBank in
  * line with ChecklistBank and asks GBIF to crawl it, or deletes the GBIF record of a deregistered or deleted dataset.
- * The command of a new registration also uploads the dataset's EML.
- * Commands wait while registering datasets in GBIF is not configured.
+ * Commands of a registration and of a successful import also upload the dataset's EML, for any dataset with a GBIF key.
  */
 public class GbifRegistryHandler implements OutboxHandler {
   private static final Logger LOG = LoggerFactory.getLogger(GbifRegistryHandler.class);
@@ -27,9 +26,13 @@ public class GbifRegistryHandler implements OutboxHandler {
       Outbox.gbifPushMetadata(entry.getParams()));
   }
 
+  /**
+   * Online if datasets can be registered or the EML of other datasets uploaded. The commands of registered datasets
+   * wait for registering to be configured as well.
+   */
   @Override
   public boolean isOnline() {
-    return registrar.isEnabled();
+    return registrar.isEnabled() || registrar.canUploadMetadata();
   }
 
   /**

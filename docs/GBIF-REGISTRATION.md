@@ -66,17 +66,18 @@ configured.
   ChecklistBank generates no exports for GBIF.
 - **An EML endpoint:** `{apiURI}/dataset/{key}.xml`, the metadata as ChecklistBank holds it, edits in ChecklistBank
   included.
-- **The EML document, once:** on registration ChecklistBank also uploads the EML the endpoint serves
-  (`POST /dataset/{gbifKey}/document`), so GBIF shows the metadata before its first crawl, whatever the format.
+- **The EML document:** on registration and after every successful import ChecklistBank also uploads the EML the
+  endpoint serves (`POST /dataset/{gbifKey}/document`), so GBIF shows the current metadata whatever the format, see
+  [The EML of every dataset with a GBIF key](#the-eml-of-every-dataset-with-a-gbif-key).
 - **An identifier:** `CLB_DATASET_KEY`, with the ChecklistBank dataset key.
 
 GBIF's crawler only crawls the endpoint it ranks highest, COLDP before EML before DWC_ARCHIVE, and it cannot crawl
 TEXT_TREE or ACEF. The GBIF registry takes a dataset's metadata from the highest ranked document it holds, and EML ranks
 above the `metadata.yaml` of a ColDP archive. So:
-- For DwC-A, TextTree and ACEF datasets GBIF crawls the EML endpoint, which replaces the uploaded EML and passes on every
-  later edit.
-- For ColDP datasets GBIF crawls the ColDP archive and keeps showing the EML uploaded on registration. Later edits,
-  in ChecklistBank or in the archive's `metadata.yaml`, do not reach GBIF. We asked GBIF on #1438 to read the EML
+- For DwC-A, TextTree and ACEF datasets GBIF crawls the EML endpoint, which also passes on edits made in ChecklistBank
+  between imports.
+- For ColDP datasets GBIF crawls the ColDP archive and keeps showing the EML uploaded last, on registration or by the
+  last import. Edits made in ChecklistBank between imports do not reach GBIF. We asked GBIF on #1438 to read the EML
   endpoint for ColDP datasets too.
 
 ## Keeping GBIF up to date
@@ -91,14 +92,15 @@ written in the transaction of the change, and requests for the same dataset merg
 What requests a command:
 - **Registering the dataset:** a command straight away, which also uploads the EML document first.
 - **Moving it to another organisation:** a command straight away.
-- **A new import:** a command straight away, also when the dataset's metadata is locked.
+- **A new import:** a command straight away, also when the dataset's metadata is locked, which also uploads the EML
+  document first.
 - **A metadata edit:** a command after `gbif.registryUpdateDelay` seconds, 300 by default, so a burst of edits is
   passed on once.
 - **Deleting the dataset or deregistering it:** a command that deletes the GBIF record. The registration keeps the GBIF
   key, which a dataset deletion removes from the dataset.
 
-Commands wait while registering is not configured. A request GBIF refuses with a 4xx other than 429 fails the command
-for good, for example bad credentials or a record deleted in GBIF. Fix the cause, then retry it under
+The commands of registered datasets wait while registering is not configured. A request GBIF refuses with a 4xx other
+than 429 fails the command for good, for example bad credentials or a record deleted in GBIF. Fix the cause, then retry it under
 `/admin/outbox`. Outages, 429 and 502-504 are retried.
 
 While a dataset is registered it cannot be made private or given another licence than CC0, CC BY or CC BY-NC. Its
@@ -109,6 +111,37 @@ registration fails afterwards, the GBIF dataset is deleted again. A timeout in t
 leave a GBIF dataset that ChecklistBank never learnt the key of. Each full GBIF registry sync logs every dataset
 hosted by ChecklistBank's installation that no ChecklistBank dataset carries ("is hosted by ChecklistBank, but no
 dataset carries its key"); delete those orphans in GBIF by hand.
+
+## The EML of every dataset with a GBIF key
+
+The metadata in GBIF and ChecklistBank should not drift apart for days. So after every successful import of a public
+dataset with a GBIF key, ChecklistBank uploads its EML to the GBIF record, also when ChecklistBank did not register the
+dataset itself:
+- **Datasets synced from GBIF:** published by others, mostly through an IPT.
+- **Hand registrations:** datasets registered under ChecklistBank's installation by hand.
+
+The upload goes through the same `GBIF_REGISTRY` command, which for these datasets changes nothing else of the GBIF
+record and requests no crawl. It is only done if `gbif.bidirectional` is on, the switch that also writes their dataset
+keys back to GBIF. A dataset deleted in GBIF is skipped. An import whose archive did not change ends before the data is
+loaded and uploads nothing.
+
+**The DOI:** both systems share the ChecklistBank DOI. GBIF makes the first DOI of an uploaded EML the dataset's DOI,
+and our EML lists the dataset's ChecklistBank DOI first, which an import never changes. So the first upload replaces
+the GBIF DOI of a dataset synced from GBIF:
+- GBIF keeps its own DOI registered at DataCite, marked as the previous version of ours.
+- It lists it as an alternate identifier of the dataset.
+- Later uploads change nothing about the DOI.
+
+Should the publisher's own EML carry a DOI, each crawl of it by GBIF switches the GBIF DOI to that one, and our next
+upload switches it back.
+
+**Effect on the publisher's EML:** GBIF keeps one EML document per dataset. The upload replaces the one GBIF's
+crawler took from the publisher's archive, until the next crawl of that archive replaces it in turn.
+ChecklistBank's EML holds less than an IPT's:
+- coverages are free text only;
+- there is no temporal coverage, methods, project or maintenance;
+- contacts come as ChecklistBank's creators, editors, publisher, contact and contributors, and GBIF replaces all
+  contacts of the record with them.
 
 ## The GBIF registry sync
 
@@ -128,6 +161,7 @@ gbif:
   password: ...
   installationKey: 3298f964-ee79-44d3-9ac3-4236aa62c5f9   # the ChecklistBank installation
   registryUpdateDelay: 300            # seconds
+  bidirectional: true                 # write dataset keys and the EML of imports to datasets synced from GBIF
 ```
 
 The outbox commands run on the app whose `Outbox` component is started.

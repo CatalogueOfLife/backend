@@ -10,6 +10,7 @@ import life.catalogue.api.vocab.Users;
 import life.catalogue.config.GbifConfig;
 import life.catalogue.config.NormalizerConfig;
 import life.catalogue.config.ReleaseConfig;
+import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.GbifRegistrationMapper;
 import life.catalogue.db.mapper.OutboxMapper;
 import life.catalogue.doi.service.DoiConfig;
@@ -143,6 +144,50 @@ public class DatasetDaoGbifTest extends DaoTestBase {
     dao.delete(KEY, USER);
     assertTrue(registered());
     assertNotNull(command());
+  }
+
+  /**
+   * A successful import asks for the EML upload of a registered dataset, and of any other public dataset with a GBIF
+   * key if ChecklistBank writes back to GBIF.
+   */
+  @Test
+  public void metadataAfterImport() throws Exception {
+    // no GBIF key
+    afterImport(true);
+    assertNull(command());
+
+    // synced from GBIF
+    try (var session = factory().openSession(true)) {
+      session.getMapper(DatasetMapper.class).updateGbif(KEY, UUID.randomUUID(), UUID.randomUUID(), USER);
+    }
+    afterImport(false);
+    assertNull(command());
+    afterImport(true);
+    assertTrue(Outbox.gbifPushMetadata(command().getParams()));
+    deleteCommand();
+
+    // private
+    Dataset d = dao.get(KEY);
+    d.setPrivat(true);
+    dao.update(d, USER);
+    afterImport(true);
+    assertNull(command());
+    d = dao.get(KEY);
+    d.setPrivat(false);
+    dao.update(d, USER);
+
+    // registered from ChecklistBank, also without writing back to other datasets
+    final UUID gbifKey = UUID.randomUUID();
+    dao.updateGbif(KEY, new GbifRegistration(KEY, gbifKey, USER), gbifKey, UUID.randomUUID(), USER);
+    deleteCommand();
+    afterImport(false);
+    assertTrue(Outbox.gbifPushMetadata(command().getParams()));
+  }
+
+  private void afterImport(boolean bidirectional) {
+    try (var session = factory().openSession(true)) {
+      DatasetDao.gbifMetadataAfterImport(session, KEY, bidirectional, USER);
+    }
   }
 
   private boolean registered() {

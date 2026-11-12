@@ -94,7 +94,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
   private final TempIdProvider tempIds;
   private final URI gbifDatasetApi;
   private final int gbifRegistryDelay;
-
+  private final boolean gbifBidirectional;
 
   /**
    * @param scratchFileFunc function to generate a scrach dir for logo updates
@@ -123,6 +123,38 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     this.tempIds = new TempIdProvider();
     this.gbifDatasetApi = URI.create(gbifCfg.api).resolve("dataset/");
     this.gbifRegistryDelay = Math.max(0, gbifCfg.registryUpdateDelay);
+    this.gbifBidirectional = gbifCfg.bidirectional;
+  }
+
+  /**
+   * @return true if ChecklistBank writes to the GBIF records of datasets it did not register itself, see
+   *   {@link GbifConfig#bidirectional}
+   */
+  public boolean isGbifBidirectional() {
+    return gbifBidirectional;
+  }
+
+  /**
+   * Requests the upload of a dataset's EML to its GBIF record after a successful import, in the session of the import,
+   * so the metadata in GBIF and ChecklistBank stay in step. A dataset registered in GBIF from ChecklistBank always gets
+   * it, together with a crawl of its new archive. Any other public dataset with a GBIF key, synced from GBIF or
+   * registered there by hand, only if ChecklistBank writes back to GBIF.
+   *
+   * @param bidirectional see {@link GbifConfig#bidirectional}
+   */
+  public static void gbifMetadataAfterImport(SqlSession session, int key, boolean bidirectional, int user) {
+    boolean request;
+    if (session.getMapper(GbifRegistrationMapper.class).exists(key)) {
+      request = true;
+    } else if (bidirectional) {
+      Dataset d = session.getMapper(DatasetMapper.class).get(key);
+      request = d != null && d.getGbifKey() != null && !d.isPrivat() && !d.hasDeletedDate();
+    } else {
+      request = false;
+    }
+    if (request) {
+      Outbox.gbifMetadata(session, key, user);
+    }
   }
 
   /**
@@ -836,7 +868,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
       }
       if (registration != null) {
         rm.create(registration);
-        Outbox.gbifRegister(session, key, user);
+        Outbox.gbifMetadata(session, key, user);
       } else {
         // never touch the GBIF keys of a dataset the GBIF registry sync owns
         var existing = rm.get(key);

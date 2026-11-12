@@ -316,9 +316,11 @@ links one by its `CLB_DATASET_KEY`, as the COL record is hosted there and names 
 The other way, `GbifRegistrar` registers external datasets in GBIF (`/dataset/{key}/gbif`, recorded in
 `gbif_registration`).
 - **Endpoints:** the original archive of the last successful import (`/dataset/{key}/archive.zip`) and the EML
-  (`/dataset/{key}.xml`). The EML document is also uploaded once on registration, after that GBIF reads it from the
-  endpoint.
-- **DOI:** the ChecklistBank DOI.
+  (`/dataset/{key}.xml`).
+- **EML uploads:** on registration and after every successful import the EML is also uploaded to the GBIF record. With
+  `gbif.bidirectional` that is done for every public dataset with a GBIF key, synced from GBIF ones included.
+- **DOI:** the ChecklistBank DOI, also for datasets synced from GBIF once their EML was uploaded: GBIF adopts the first
+  DOI of an uploaded EML.
 - **Updates:** every change reaches GBIF as a `GBIF_REGISTRY` outbox command written by `DatasetDao` and `PgImport`.
 - **Organisation roles:** a user's are `orgPublisher` (may register datasets under the organisation, no access) and
   `orgEditor` (edits the organisation's external datasets, never projects or releases), both granted by admins.

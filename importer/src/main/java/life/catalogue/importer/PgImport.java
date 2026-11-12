@@ -12,7 +12,6 @@ import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.TaxonMetricsBuilder;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.*;
-import life.catalogue.outbox.Outbox;
 import life.catalogue.es.indexing.NameUsageIndexService;
 import life.catalogue.es.indexing.NameUsageIndexServiceEs;
 import life.catalogue.importer.store.ImportStore;
@@ -205,10 +204,8 @@ public class PgImport implements Callable<Boolean> {
       }
 
       dm.updateLastImport(dataset.getKey(), attempt, versionDOI);
-      // a dataset registered in GBIF from ChecklistBank serves its new archive now: GBIF has to crawl it again
-      if (session.getMapper(GbifRegistrationMapper.class).exists(dataset.getKey())) {
-        Outbox.gbifRegistry(session, dataset.getKey(), 0, userKey);
-      }
+      // GBIF gets the new metadata, and a dataset registered in GBIF from ChecklistBank also a crawl of its new archive
+      DatasetDao.gbifMetadataAfterImport(session, dataset.getKey(), datasetDao.isGbifBidirectional(), userKey);
       dataset.getDataset().setAttempt(attempt);
       dataset.getDataset().setVersionDoi(versionDOI);
       LOG.info("Updated last successful import attempt {} and version doi {} for dataset {}: {}", attempt, versionDOI, dataset.getKey(), dataset.getTitle());

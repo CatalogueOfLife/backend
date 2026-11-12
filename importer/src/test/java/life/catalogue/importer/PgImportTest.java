@@ -18,6 +18,7 @@ import life.catalogue.db.mapper.OutboxMapper;
 import life.catalogue.junit.PgSetupRule;
 import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.junit.TestDataRule;
+import life.catalogue.outbox.Outbox;
 
 import java.util.UUID;
 
@@ -30,6 +31,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  *
@@ -83,7 +85,33 @@ public class PgImportTest {
     imp.updateMetadata();
 
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession()) {
-      assertNotNull(session.getMapper(OutboxMapper.class).getByKey(OutboxType.GBIF_REGISTRY, d.getKey().toString()));
+      var cmd = session.getMapper(OutboxMapper.class).getByKey(OutboxType.GBIF_REGISTRY, d.getKey().toString());
+      assertNotNull(cmd);
+      assertTrue(Outbox.gbifPushMetadata(cmd.getParams()));
+    }
+  }
+
+  /**
+   * A dataset synced from GBIF gets its EML uploaded to GBIF after an import, if ChecklistBank writes back to GBIF.
+   */
+  @Test
+  public void gbifSynced() throws Exception {
+    Dataset d = TestEntityGenerator.setUser(TestEntityGenerator.newDataset("synced"));
+    d.setPrivat(false);
+    d.setGbifKey(UUID.randomUUID());
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      session.getMapper(DatasetMapper.class).create(d);
+    }
+    Mockito.when(ddao.isGbifBidirectional()).thenReturn(true);
+
+    PgImport imp = new PgImport(1, DOI.test(RandomUtils.randomLatinString(20)), new DatasetWithSettings(d, new DatasetSettings()),
+      Users.TESTER, null, SqlSessionFactoryRule.getSqlSessionFactory(), new ImporterConfig(), ddao, null, null, null);
+    imp.updateMetadata();
+
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession()) {
+      var cmd = session.getMapper(OutboxMapper.class).getByKey(OutboxType.GBIF_REGISTRY, d.getKey().toString());
+      assertNotNull(cmd);
+      assertTrue(Outbox.gbifPushMetadata(cmd.getParams()));
     }
   }
 
