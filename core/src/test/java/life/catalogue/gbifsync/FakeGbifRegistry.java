@@ -29,6 +29,8 @@ public class FakeGbifRegistry implements AutoCloseable {
   public final Map<UUID, List<ObjectNode>> endpoints = new ConcurrentHashMap<>();
   public final Map<UUID, List<ObjectNode>> identifiers = new ConcurrentHashMap<>();
   public final Map<UUID, Integer> crawls = new ConcurrentHashMap<>();
+  // the metadata documents uploaded per dataset, in order
+  public final Map<UUID, List<String>> documents = new ConcurrentHashMap<>();
   public final Set<UUID> deleted = ConcurrentHashMap.newKeySet();
   private final AtomicInteger subKeys = new AtomicInteger(100);
   // the status to answer the next request with instead of processing it
@@ -53,6 +55,10 @@ public class FakeGbifRegistry implements AutoCloseable {
 
   public int crawls(UUID key) {
     return crawls.getOrDefault(key, 0);
+  }
+
+  public List<String> documents(UUID key) {
+    return documents.getOrDefault(key, List.of());
   }
 
   public List<ObjectNode> endpoints(UUID key) {
@@ -117,6 +123,14 @@ public class FakeGbifRegistry implements AutoCloseable {
       } else if (parts[1].equals("crawl")) {
         crawls.merge(key, 1, Integer::sum);
         send(ex, 204, null);
+      } else if (parts[1].equals("document") && method.equals("POST")) {
+        String type = ex.getRequestHeaders().getFirst("Content-Type");
+        if (type == null || !type.startsWith("application/xml")) {
+          send(ex, 415, "");
+          return;
+        }
+        documents.computeIfAbsent(key, k -> Collections.synchronizedList(new ArrayList<>())).add(body(ex));
+        send(ex, 200, "{\"datasetKey\":\"" + key + "\",\"type\":\"EML\"}");
       } else {
         var store = parts[1].equals("endpoint") ? endpoints : identifiers;
         var list = store.computeIfAbsent(key, k -> Collections.synchronizedList(new ArrayList<>()));

@@ -96,6 +96,15 @@ public class GbifRegistryClient {
     return send("delete dataset " + key, () -> request(path(key)).delete(), true) != null;
   }
 
+  /**
+   * Uploads a metadata document, e.g. EML, which GBIF stores and updates the dataset from.
+   * GBIF keeps one document per type, and an EML document takes precedence over all others.
+   */
+  public void insertMetadata(UUID key, byte[] document) {
+    send("insert metadata document into " + key,
+      () -> request(path(key, "document")).post(Entity.entity(document, MediaType.APPLICATION_XML_TYPE)), false);
+  }
+
   public List<Endpoint> listEndpoints(UUID key) {
     return parse(send("list endpoints of " + key, () -> request(path(key, "endpoint")).get(), false), ENDPOINTS);
   }

@@ -39,8 +39,10 @@ Taken with Markus between 2026-11-04 and 2026-11-10, and discussed with GBIF on 
 - **Revoking a right** changes nothing automatically, follow-ups are manual.
 - **Data endpoint:** always the latest original file ChecklistBank holds, the archive of the last successful import.
   No exports.
-- **Metadata:** through an EML endpoint serving ChecklistBank's EML, not uploaded registry documents. Markus preferred
-  that for simplicity on the ChecklistBank side.
+- **Metadata:** through an EML endpoint serving ChecklistBank's EML. Markus preferred that to uploading registry
+  documents for simplicity on the ChecklistBank side. On 2026-11-12 he added one exception: the EML document is
+  uploaded once on registration, so GBIF never shows a dataset without metadata, whatever it crawls. Updates reach GBIF
+  only through the endpoint.
 - **DOI:** the GBIF dataset carries the ChecklistBank DOI, so GBIF mints none.
 
 ## GBIF facts the design rests on
@@ -56,8 +58,13 @@ Read from the source of `gbif/registry` and `gbif/crawler` on 2026-11-04 and 202
     spreadsheet uploads, show no metadata in GBIF, and edits made in ChecklistBank do not reach GBIF for ColDP
     datasets.
   - We asked GBIF to read the EML endpoint for ColDP datasets too.
-- The registry keeps one metadata document per type and prefers EML over COL_DP. That would have made uploading the
-  EML document work for ColDP, which is the fallback should GBIF not change the crawler.
+- `POST /dataset/{key}/document` stores one metadata document per type and updates the dataset from the preferred one,
+  ranked EML, DC, COL_DP, DWC_DP. A document equal to the stored one changes nothing.
+- **Consequence of the upload on registration:**
+  - For DwC-A, TextTree and ACEF datasets the uploaded EML is replaced by the first crawl of the EML endpoint, it only
+    shows the metadata sooner.
+  - For ColDP datasets the uploaded EML outranks the `metadata.yaml` GBIF reads from the archive. GBIF therefore shows
+    ChecklistBank's metadata as of the registration until it reads the EML endpoint for ColDP datasets as well.
 
 ## Design
 
@@ -68,7 +75,8 @@ Read from the source of `gbif/registry` and `gbif/crawler` on 2026-11-04 and 202
   written in the transaction of the change: registration, change of organisation, metadata update with a delay, new
   import, deletion and deregistration.
 - **The handler is idempotent:** it makes the GBIF record match the dataset (organisation, DOI, exactly the two
-  endpoints, the identifier) and requests a crawl, or deletes the record.
+  endpoints, the identifier) and requests a crawl, or deletes the record. The command of a registration carries a
+  `pushMetadata` flag, which survives merging, and uploads the EML before the rest.
 - **Registering:** the GBIF dataset is created synchronously. If recording the registration fails afterwards, the GBIF
   dataset is deleted again.
 - **Archive endpoint:** `/dataset/{key}/archive.zip` without an attempt now serves the archive of `dataset.attempt`.
@@ -88,8 +96,9 @@ Read from the source of `gbif/registry` and `gbif/crawler` on 2026-11-04 and 202
 - **One right covering both publishing and editing, or a COL-only exception.** The danger is not specific to COL.
 - **Exports as the endpoint, the way the hand registrations use them.** They 404 until an export exists for the
   current attempt, and GBIF should get what the author submitted.
-- **Uploading the EML document to the registry (`POST /dataset/{key}/document`).** It works for every format today,
-  but means pushing on every metadata change. It remains the fallback for ColDP.
+- **Uploading the EML document to the registry on every change (`POST /dataset/{key}/document`).** It works for every
+  format today, but means pushing on every metadata change. Only the first upload on registration was kept. Uploading on
+  every change remains the fallback for ColDP should GBIF not change the crawler.
 - **Pushing GBIF metadata fields with a PUT, locked for auto update.** That would mean mapping all metadata ourselves.
 - **A cron job or a separate component with an event listener.** The outbox already gives transactional, durable,
   deduplicated commands with retries.
@@ -105,4 +114,5 @@ Read from the source of `gbif/registry` and `gbif/crawler` on 2026-11-04 and 202
 - **Deploy:** the DDL in `dbschema.md` must run before the deploy. The old `user.publisher` column is dropped once the
   old apps are gone.
 - **Open with GBIF:** the EML endpoint for ColDP datasets, and confirmation that GBIF crawling only the EML endpoint of
-  DwC-A, TextTree and ACEF datasets is fine.
+  DwC-A, TextTree and ACEF datasets is fine. Until the first is done, the metadata of a registered ColDP dataset in
+  GBIF stays as it was on registration.

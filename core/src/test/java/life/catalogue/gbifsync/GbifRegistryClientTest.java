@@ -6,6 +6,8 @@ import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.config.GbifConfig;
 
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.UUID;
 
 import org.junit.After;
@@ -61,6 +63,9 @@ public class GbifRegistryClientTest {
     assertEquals("1", ids.get(0).identifier());
     registry.deleteIdentifier(key, ids.get(0).key());
     assertTrue(registry.listIdentifiers(key).isEmpty());
+
+    registry.insertMetadata(key, "<eml:eml/>".getBytes(StandardCharsets.UTF_8));
+    assertEquals(List.of("<eml:eml/>"), gbif.documents(key));
 
     registry.crawl(key);
     assertEquals(1, gbif.crawls(key));

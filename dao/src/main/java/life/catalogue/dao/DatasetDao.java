@@ -836,7 +836,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
       }
       if (registration != null) {
         rm.create(registration);
-        Outbox.gbifRegistry(session, key, 0, user);
+        Outbox.gbifRegister(session, key, user);
       } else {
         // never touch the GBIF keys of a dataset the GBIF registry sync owns
         var existing = rm.get(key);

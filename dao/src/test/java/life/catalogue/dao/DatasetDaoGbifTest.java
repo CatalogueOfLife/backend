@@ -64,6 +64,8 @@ public class DatasetDaoGbifTest extends DaoTestBase {
     assertEquals(org, d.getGbifPublisherKey());
     assertNotNull(command());
     assertTrue(Outbox.gbifDeregisterKeys(command().getParams()).isEmpty());
+    // the first command uploads the EML
+    assertTrue(Outbox.gbifPushMetadata(command().getParams()));
     deleteCommand();
 
     // a metadata edit is passed on to GBIF and never touches the GBIF keys
@@ -76,6 +78,8 @@ public class DatasetDaoGbifTest extends DaoTestBase {
     assertEquals(gbifKey, d.getGbifKey());
     assertEquals(org, d.getGbifPublisherKey());
     assertNotNull(command());
+    // GBIF reads the edit from the EML endpoint
+    assertFalse(Outbox.gbifPushMetadata(command().getParams()));
     deleteCommand();
 
     // it has to stay public and openly licensed

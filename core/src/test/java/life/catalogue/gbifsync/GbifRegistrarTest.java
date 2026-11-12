@@ -136,8 +136,14 @@ public class GbifRegistrarTest {
     assertEquals(gbifKey, dao.get(KEY).getGbifKey());
     assertEquals(org, dao.get(KEY).getGbifPublisherKey());
 
-    // the outbox command adds endpoints and identifier and asks for a crawl
+    // the outbox command uploads the EML, adds endpoints and identifier and asks for a crawl
+    assertTrue(gbif.documents(gbifKey).isEmpty());
     runCommand();
+    assertEquals(1, gbif.documents(gbifKey).size());
+    String eml = gbif.documents(gbifKey).get(0);
+    assertTrue(eml.contains("<eml:eml"));
+    assertTrue(eml.contains("<alternateIdentifier>10.80631/ds12</alternateIdentifier>"));
+    assertTrue(eml.contains(dao.get(KEY).getTitle()));
     assertEquals("COLDP=https://api.checklistbank.org/dataset/12/archive.zip,EML=https://api.checklistbank.org/dataset/12.xml",
       endpoints(gbifKey));
     assertEquals(1, gbif.identifiers(gbifKey).size());
@@ -145,14 +151,22 @@ public class GbifRegistrarTest {
     assertEquals(1, gbif.crawls(gbifKey));
 
     // running it again changes nothing but crawls again
-    registrar.reconcile(KEY, Set.of());
+    registrar.reconcile(KEY, Set.of(), false);
     assertEquals(2, gbif.endpoints(gbifKey).size());
     assertEquals(1, gbif.identifiers(gbifKey).size());
     assertEquals(2, gbif.crawls(gbifKey));
 
+    // a metadata edit leaves the upload to the crawler reading the EML endpoint
+    Dataset d = dao.get(KEY);
+    d.setTitle("Apples of Brandenburg");
+    dao.update(d, USER);
+    runCommand();
+    assertEquals(1, gbif.documents(gbifKey).size());
+    assertEquals(3, gbif.crawls(gbifKey));
+
     // a new import in another format replaces the data endpoint
     imported(DataFormat.TEXT_TREE, new DatasetImportDao(SqlSessionFactoryRule.getSqlSessionFactory(), TreeRepoRule.getRepo()));
-    registrar.reconcile(KEY, Set.of());
+    registrar.reconcile(KEY, Set.of(), false);
     assertEquals("EML=https://api.checklistbank.org/dataset/12.xml,TEXT_TREE=https://api.checklistbank.org/dataset/12/archive.zip",
       endpoints(gbifKey));
 
@@ -161,6 +175,7 @@ public class GbifRegistrarTest {
     registrar.changePublisher(KEY, org2, USER);
     runCommand();
     assertEquals(org2.toString(), gbif.datasets.get(gbifKey).path("publishingOrganizationKey").asText());
+    assertEquals(1, gbif.documents(gbifKey).size());
 
     // registering twice fails
     assertThrows(IllegalArgumentException.class, () -> registrar.register(KEY, org, USER));
@@ -172,7 +187,7 @@ public class GbifRegistrarTest {
     runCommand();
     assertTrue(gbif.deleted.contains(gbifKey));
     // a second run finds nothing to delete anymore
-    registrar.reconcile(KEY, Set.of(gbifKey));
+    registrar.reconcile(KEY, Set.of(gbifKey), false);
   }
 
   @Test

@@ -32,6 +32,7 @@ public final class Outbox {
   private static final Logger LOG = LoggerFactory.getLogger(Outbox.class);
   private static final String RELEASE_KEY = "releaseKey";
   private static final String GBIF_DEREGISTER = "deregister:";
+  private static final String GBIF_PUSH_METADATA = "pushMetadata";
 
   private Outbox() {
   }
@@ -102,6 +103,24 @@ public final class Outbox {
    */
   public static void gbifRegistry(SqlSession session, int datasetKey, int delaySeconds, int user) {
     enqueue(session, OutboxType.GBIF_REGISTRY, String.valueOf(datasetKey), ApiModule.MAPPER.createObjectNode(), delaySeconds, user);
+  }
+
+  /**
+   * Requests the first GBIF registry update of a dataset just registered in GBIF from ChecklistBank. On top of
+   * {@link #gbifRegistry} it uploads the dataset's EML once, so GBIF shows the metadata right away. Afterwards GBIF reads
+   * it from the EML endpoint when it crawls.
+   */
+  public static void gbifRegister(SqlSession session, int datasetKey, int user) {
+    ObjectNode params = ApiModule.MAPPER.createObjectNode();
+    params.put(GBIF_PUSH_METADATA, true);
+    enqueue(session, OutboxType.GBIF_REGISTRY, String.valueOf(datasetKey), params, 0, user);
+  }
+
+  /**
+   * @return true if a GBIF_REGISTRY command has to upload the dataset's EML document to GBIF
+   */
+  public static boolean gbifPushMetadata(JsonNode params) {
+    return params != null && params.path(GBIF_PUSH_METADATA).asBoolean(false);
   }
 
   /**

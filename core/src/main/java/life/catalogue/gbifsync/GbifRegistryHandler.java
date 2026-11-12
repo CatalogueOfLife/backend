@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Runs the GBIF_REGISTRY outbox commands: brings the GBIF record of a dataset registered in GBIF from ChecklistBank in
  * line with ChecklistBank and asks GBIF to crawl it, or deletes the GBIF record of a deregistered or deleted dataset.
+ * The command of a new registration also uploads the dataset's EML.
  * Commands wait while registering datasets in GBIF is not configured.
  */
 public class GbifRegistryHandler implements OutboxHandler {
@@ -22,7 +23,8 @@ public class GbifRegistryHandler implements OutboxHandler {
 
   @Override
   public void handle(OutboxEntry entry) throws Exception {
-    registrar.reconcile(Integer.parseInt(entry.getKey()), Outbox.gbifDeregisterKeys(entry.getParams()));
+    registrar.reconcile(Integer.parseInt(entry.getKey()), Outbox.gbifDeregisterKeys(entry.getParams()),
+      Outbox.gbifPushMetadata(entry.getParams()));
   }
 
   @Override

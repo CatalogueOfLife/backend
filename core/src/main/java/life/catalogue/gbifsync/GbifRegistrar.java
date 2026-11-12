@@ -17,8 +17,10 @@ import life.catalogue.db.mapper.DatasetImportMapper;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.GbifRegistrationMapper;
 import life.catalogue.db.mapper.OutboxMapper;
+import life.catalogue.metadata.eml.EmlWriter;
 import life.catalogue.outbox.Outbox;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -44,7 +46,8 @@ import jakarta.ws.rs.core.UriBuilder;
  * A registered dataset is published by the chosen GBIF organisation and hosted by ChecklistBank's own GBIF installation.
  * Its GBIF record carries the dataset's ChecklistBank DOI, a CLB_DATASET_KEY identifier and two endpoints: the original
  * archive of its last successful import, typed by its format, and the EML metadata of the dataset.
- * Every change is passed on through the GBIF_REGISTRY outbox command, see {@link #reconcile(int, Set)}.
+ * The EML is also uploaded once on registration, so GBIF shows the metadata before it first crawls.
+ * Every change is passed on through the GBIF_REGISTRY outbox command, see {@link #reconcile(int, Set, boolean)}.
  */
 public class GbifRegistrar {
   private static final Logger LOG = LoggerFactory.getLogger(GbifRegistrar.class);
@@ -272,8 +275,10 @@ public class GbifRegistrar {
    * or deletes it in GBIF if the dataset was deleted. Safe to run again, as the outbox may.
    *
    * @param deregisterKeys GBIF datasets to delete, as the dataset was deregistered, maybe registered again since
+   * @param pushMetadata if true the EML of the dataset is uploaded to GBIF, which is done once on registration
+   *   so GBIF shows the metadata right away. Afterwards GBIF reads it from the EML endpoint.
    */
-  public void reconcile(int datasetKey, Set<UUID> deregisterKeys) {
+  public void reconcile(int datasetKey, Set<UUID> deregisterKeys, boolean pushMetadata) {
     final GbifRegistration reg;
     final Dataset d;
     final DatasetImport imp;
@@ -303,6 +308,12 @@ public class GbifRegistrar {
     if (g == null || g.hasNonNull("deleted")) {
       throw new IllegalArgumentException("GBIF dataset " + gbifKey + " of dataset " + datasetKey + " was deleted in GBIF");
     }
+    if (pushMetadata) {
+      LOG.info("Upload EML of dataset {} to GBIF dataset {}", datasetKey, gbifKey);
+      client.insertMetadata(gbifKey, eml(d));
+      // GBIF updated the record from the EML, an update below must not undo that
+      g = client.getDataset(gbifKey);
+    }
     // organisation and DOI, all other metadata is read by GBIF from the EML endpoint
     boolean changed = false;
     if (d.getGbifPublisherKey() != null && !d.getGbifPublisherKey().toString().equals(g.path("publishingOrganizationKey").asText())) {
@@ -322,6 +333,19 @@ public class GbifRegistrar {
     syncIdentifier(datasetKey, gbifKey);
     LOG.info("Request GBIF to crawl {} for dataset {}", gbifKey, datasetKey);
     client.crawl(gbifKey);
+  }
+
+  /**
+   * @return the EML document of the dataset, the very one its EML endpoint serves
+   */
+  private static byte[] eml(Dataset d) {
+    try {
+      var out = new ByteArrayOutputStream();
+      EmlWriter.write(d, out);
+      return out.toByteArray();
+    } catch (IOException e) {
+      throw new IllegalStateException("Failed to write the EML of dataset " + d.getKey(), e);
+    }
   }
 
   private void syncEndpoints(int datasetKey, UUID gbifKey, @Nullable DatasetImport imp) {

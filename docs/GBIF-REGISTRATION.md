@@ -66,12 +66,18 @@ configured.
   ChecklistBank generates no exports for GBIF.
 - **An EML endpoint:** `{apiURI}/dataset/{key}.xml`, the metadata as ChecklistBank holds it, edits in ChecklistBank
   included.
+- **The EML document, once:** on registration ChecklistBank also uploads the EML the endpoint serves
+  (`POST /dataset/{gbifKey}/document`), so GBIF shows the metadata before its first crawl, whatever the format.
 - **An identifier:** `CLB_DATASET_KEY`, with the ChecklistBank dataset key.
 
 GBIF's crawler only crawls the endpoint it ranks highest, COLDP before EML before DWC_ARCHIVE, and it cannot crawl
-TEXT_TREE or ACEF. For DwC-A, TextTree and ACEF datasets it therefore reads the EML endpoint, while for ColDP datasets
-it reads the ColDP archive with its own `metadata.yaml`, if there is one. We asked GBIF on #1438 to read the EML
-endpoint for ColDP datasets too.
+TEXT_TREE or ACEF. The GBIF registry takes a dataset's metadata from the highest ranked document it holds, and EML ranks
+above the `metadata.yaml` of a ColDP archive. So:
+- For DwC-A, TextTree and ACEF datasets GBIF crawls the EML endpoint, which replaces the uploaded EML and passes on every
+  later edit.
+- For ColDP datasets GBIF crawls the ColDP archive and keeps showing the EML uploaded on registration. Later edits,
+  in ChecklistBank or in the archive's `metadata.yaml`, do not reach GBIF. We asked GBIF on #1438 to read the EML
+  endpoint for ColDP datasets too.
 
 ## Keeping GBIF up to date
 
@@ -83,7 +89,8 @@ written in the transaction of the change, and requests for the same dataset merg
 - asks GBIF to crawl.
 
 What requests a command:
-- **Registering the dataset, or moving it to another organisation:** a command straight away.
+- **Registering the dataset:** a command straight away, which also uploads the EML document first.
+- **Moving it to another organisation:** a command straight away.
 - **A new import:** a command straight away, also when the dataset's metadata is locked.
 - **A metadata edit:** a command after `gbif.registryUpdateDelay` seconds, 300 by default, so a burst of edits is
   passed on once.
