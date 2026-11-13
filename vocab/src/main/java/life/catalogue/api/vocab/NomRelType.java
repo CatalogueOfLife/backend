@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 /**
  * Vocabulary classifying the kind of name relation.
  */
-public enum NomRelType {
+public enum NomRelType implements Described {
   SPELLING_CORRECTION(true, null, null,
       "Spelling correction of",
     "The name is a spelling correction, called emendation in zoology, of the related name having the same type. " +
@@ -157,6 +157,7 @@ public enum NomRelType {
     return to;
   }
 
+  @Override
   public String getDescription() {
     return description;
   }

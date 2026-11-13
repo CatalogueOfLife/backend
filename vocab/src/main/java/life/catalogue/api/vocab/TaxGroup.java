@@ -25,7 +25,7 @@ import org.apache.commons.lang3.StringUtils;
  * and must agree with the phylopic uuid kept here.
  * Composite icons made of several silhouettes (Eukaryotes, Animals, Chordates) have no single phylopic uuid.
  */
-public enum TaxGroup {
+public enum TaxGroup implements Described {
 
   Viruses("6dba8988-8a64-4c10-8934-77d5880dc21c", "Viruses", NomCode.VIRUS),
   Prokaryotes("0698c39f-9ab0-44e0-ba70-2faefaf22216", "Prokaryota", NomCode.BACTERIAL),
@@ -255,6 +255,7 @@ public enum TaxGroup {
     return phylopic;
   }
 
+  @Override
   public String getDescription() {
     return description;
   }

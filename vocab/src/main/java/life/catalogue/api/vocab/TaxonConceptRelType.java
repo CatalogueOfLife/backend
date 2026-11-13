@@ -19,7 +19,7 @@ package life.catalogue.api.vocab;
  * Vocabulary classifying the kind of taxon concept relation.
  * The enumeration contains classic RCC5 concept relations and are (mostly) directed.
  */
-public enum TaxonConceptRelType {
+public enum TaxonConceptRelType implements Described {
 
   EQUALS("equal (EQ)", "The circumscription of this taxon is (essentially) identical to the related taxon."),
 
@@ -43,6 +43,7 @@ public enum TaxonConceptRelType {
     return rcc5;
   }
 
+  @Override
   public String getDescription() {
     return description;
   }

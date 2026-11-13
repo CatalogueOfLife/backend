@@ -1,46 +1,35 @@
 package life.catalogue.api.vocab;
 
 /**
- *
+ * The kind of checklist a dataset is.
  */
-public enum DatasetType {
-  
-  /**
-   * A list of names focussing on nomenclature and not dealing with taxonomy.
-   */
-  NOMENCLATURAL,
-  
-  /**
-   * A checklist with some taxonomic assertion. Can be global or regional and does not have to be complete.
-   */
-  TAXONOMIC,
+public enum DatasetType implements Described {
 
-  /**
-   * A taxonomic checklist with the primary focus on producing a phylogenetic tree.
-   */
-  PHYLOGENETIC,
+  NOMENCLATURAL("A list of names focussing on nomenclature and not dealing with taxonomy."),
 
-  /**
-   * A dataset representing taxonomic treatments of a single scientific article.
-   * Mostly published through Plazi or Pensoft at this stage.
-   * Subtype of TAXONOMIC.
-   */
-  ARTICLE,
-  
-  /**
-   * A checklist which is part of some legal document.
-   */
-  LEGAL,
+  TAXONOMIC("A checklist with some taxonomic assertion. Can be global or regional and does not have to be complete."),
 
-  /**
-   * A dataset focussed on a specific theme like red lists, invasiveness, traits, species interactions, etc.
-   */
-  THEMATIC,
+  PHYLOGENETIC("A taxonomic checklist with the primary focus on producing a phylogenetic tree."),
 
-  /**
-   * A dataset with the focus on being a species identification resource, e.g. keys.
-   */
-  IDENTIFICATION,
+  ARTICLE("A dataset representing taxonomic treatments of a single scientific article. " +
+    "Mostly published through Plazi or Pensoft at this stage. Subtype of TAXONOMIC."),
 
-  OTHER;
+  LEGAL("A checklist which is part of some legal document."),
+
+  THEMATIC("A dataset focussed on a specific theme like red lists, invasiveness, traits, species interactions, etc."),
+
+  IDENTIFICATION("A dataset with the focus on being a species identification resource, e.g. keys."),
+
+  OTHER("A dataset that fits none of the other types.");
+
+  private final String description;
+
+  DatasetType(String description) {
+    this.description = description;
+  }
+
+  @Override
+  public String getDescription() {
+    return description;
+  }
 }

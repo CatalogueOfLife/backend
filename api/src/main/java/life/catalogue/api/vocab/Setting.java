@@ -14,7 +14,7 @@ import static life.catalogue.api.vocab.DatasetOrigin.*;
 /**
  * Dataset settings
  */
-public enum Setting {
+public enum Setting implements Described {
 
   CSV_DELIMITER(Character.class,
     "When importing data from text files this overrides the field delimiter character used.",
@@ -161,6 +161,7 @@ public enum Setting {
   /**
    * @return what the setting does, shown as help in the ChecklistBank UI
    */
+  @Override
   public String getDescription() {
     return description;
   }

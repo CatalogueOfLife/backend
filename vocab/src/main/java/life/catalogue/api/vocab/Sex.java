@@ -1,6 +1,6 @@
 package life.catalogue.api.vocab;
 
-public enum Sex {
+public enum Sex implements Described {
 
   FEMALE('♀', "Female (♀) is the sex of an organism, or a part of an organism, " +
     "which produces mobile ova (egg cells)."),
@@ -24,6 +24,7 @@ public enum Sex {
     return symbol;
   }
 
+  @Override
   public String getDescription() {
     return description;
   }

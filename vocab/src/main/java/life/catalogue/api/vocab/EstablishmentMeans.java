@@ -6,7 +6,7 @@ package life.catalogue.api.vocab;
  * Provides the controlled vocabulary for information about whether an organism or organisms have been introduced
  * to a given place and time through the direct or indirect activity of modern humans.
  */
-public enum EstablishmentMeans {
+public enum EstablishmentMeans implements Described {
   NATIVE("A taxon occurring within its natural range"),
   NATIVE_ENDEMIC(NATIVE, "A taxon with a natural distribution restricted to a single geographical area."),
   NATIVE_REINTRODUCED(NATIVE, "A taxon re-established by direct introduction by humans into an area which was once part of its natural range, but from where it had become extinct"),
@@ -30,6 +30,7 @@ public enum EstablishmentMeans {
     return parent;
   }
 
+  @Override
   public String getDescription() {
     return description;
   }

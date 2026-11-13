@@ -28,7 +28,7 @@ import java.util.Map;
  * See also https://github.com/globalbioticinteractions/globalbioticinteractions/tree/main/eol-globi-ontology
  * and https://github.com/globalbioticinteractions/globalbioticinteractions/blob/main/eol-globi-lib/src/main/java/org/eol/globi/domain/InteractType.java
  */
-public enum SpeciesInteractionType {
+public enum SpeciesInteractionType implements Described {
 
   /**
    * Alternatives for parser
@@ -91,7 +91,7 @@ public enum SpeciesInteractionType {
     INTERACTS_WITH),
 
   KILLS("http://purl.obolibrary.org/obo/RO_0002626",
-    null,
+    "An interaction relationship in which the subject kills the related organism.",
     INTERACTS_WITH),
   KILLED_BY("http://purl.obolibrary.org/obo/RO_0002627",
     "Inverse of kills",
@@ -116,14 +116,14 @@ public enum SpeciesInteractionType {
     SYMBIONT_OF),
 
   PARASITE_OF("http://purl.obolibrary.org/obo/RO_0002444",
-    null,
+    "The subject lives in or on the related host and benefits at its expense, harming but usually not killing it.",
     EATS, HAS_HOST),
   HAS_PARASITE("http://purl.obolibrary.org/obo/RO_0002445",
     "Inverse of parasite of",
     EATEN_BY, HOST_OF),
 
   PATHOGEN_OF("http://purl.obolibrary.org/obo/RO_0002556",
-    null,
+    "A parasite of the related taxon that causes disease in it.",
     PARASITE_OF),
   HAS_PATHOGEN("http://purl.obolibrary.org/obo/RO_0002557",
     "Inverse of pathogen of",
@@ -179,14 +179,14 @@ public enum SpeciesInteractionType {
     HAS_PARASITOID),
 
   VISITS("http://purl.obolibrary.org/obo/RO_0002618",
-    null,
+    "The subject visits the related taxon, e.g. an animal visiting a plant.",
     HAS_HOST),
   VISITED_BY("http://purl.obolibrary.org/obo/RO_0002619",
     "Inverse of visits",
     HOST_OF),
 
   VISITS_FLOWERS_OF("http://purl.obolibrary.org/obo/RO_0002622",
-    null,
+    "The subject visits the flowers of the related plant, e.g. to feed on nectar or pollen.",
     VISITS),
   FLOWERS_VISITED_BY("http://purl.obolibrary.org/obo/RO_0002623",
     "Inverse of visits flowers of",
@@ -293,6 +293,7 @@ public enum SpeciesInteractionType {
     return obo;
   }
 
+  @Override
   public String getDescription() {
     return description;
   }

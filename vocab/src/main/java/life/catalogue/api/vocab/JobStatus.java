@@ -1,36 +1,29 @@
 package life.catalogue.api.vocab;
 
-public enum JobStatus {
+public enum JobStatus implements Described {
 
-  /**
-   * Job is queued.
-   */
-  WAITING,
+  WAITING("Job is queued."),
 
-  /**
-   * Job is blocked by another job.
-   */
-  BLOCKED,
+  BLOCKED("Job is blocked by another job."),
 
-  /**
-   * Job is currently being executed.
-   */
-  RUNNING,
+  RUNNING("Job is currently being executed."),
 
-  /**
-   * Successfully completed the job.
-   */
-  FINISHED,
+  FINISHED("Successfully completed the job."),
 
-  /**
-   * Manually aborted or canceled by the system, e.g. if the system was shut down.
-   */
-  CANCELED,
+  CANCELED("Manually aborted or canceled by the system, e.g. if the system was shut down."),
 
-  /**
-   * Job failed due to unexpected errors.
-   */
-  FAILED;
+  FAILED("Job failed due to unexpected errors.");
+
+  private final String description;
+
+  JobStatus(String description) {
+    this.description = description;
+  }
+
+  @Override
+  public String getDescription() {
+    return description;
+  }
 
   /**
    * @return true if the job has ended

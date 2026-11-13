@@ -1,47 +1,36 @@
 package life.catalogue.api.vocab;
 
-public enum MatchType {
+public enum MatchType implements Described {
 
-  /**
-   * The canonical name, rank and authorship (if given) matches exactly,
-   * allowing only for whitespace and punctuation differences.
-   */
-  EXACT,
-  
-  /**
-   * The name matches an orthographic variant of the name, authorship and/or rank
-   * which is considered to be the same name still.
-   */
-  VARIANT,
+  EXACT("The canonical name, rank and authorship (if given) matches exactly, " +
+    "allowing only for whitespace and punctuation differences."),
 
-  /**
-   * Name matched to canonical name only even though it either had an authorship, different rank or is a binomial with a subgenus given, but could not be inserted.
-   * Can only happen if insertion is not allowed, e.g. via external API requests.
-   */
-  CANONICAL,
+  VARIANT("The name matches an orthographic variant of the name, authorship and/or rank " +
+    "which is considered to be the same name still."),
 
-  /**
-   * The name matched several names and could not be clearly disambiguated.
-   * Usually only happens for canonical monomials without authorship.
-   */
-  AMBIGUOUS,
+  CANONICAL("Name matched to canonical name only even though it either had an authorship, different rank " +
+    "or is a binomial with a subgenus given, but could not be inserted. " +
+    "Can only happen if insertion is not allowed, e.g. via external API requests."),
 
-  /**
-   * No matching name.
-   */
-  NONE,
+  AMBIGUOUS("The name matched several names and could not be clearly disambiguated. " +
+    "Usually only happens for canonical monomials without authorship."),
 
-  /**
-   * A name which is not supported in the names index and can never be matched or added.
-   * For example placeholder names.
-   */
-  UNSUPPORTED,
+  NONE("No matching name."),
 
-  /**
-   * The matching algorithm was unable to match a scientific name with sufficient confidence,
-   * and matched a higher rank instead.
-   */
-  HIGHERRANK
-  ;
+  UNSUPPORTED("A name which is not supported in the names index and can never be matched or added. " +
+    "For example placeholder names."),
 
+  HIGHERRANK("The matching algorithm was unable to match a scientific name with sufficient confidence, " +
+    "and matched a higher rank instead.");
+
+  private final String description;
+
+  MatchType(String description) {
+    this.description = description;
+  }
+
+  @Override
+  public String getDescription() {
+    return description;
+  }
 }

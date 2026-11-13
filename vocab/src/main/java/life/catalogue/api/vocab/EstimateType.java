@@ -1,6 +1,6 @@
 package life.catalogue.api.vocab;
 
-public enum EstimateType {
+public enum EstimateType implements Described {
 
   SPECIES_LIVING("Number of living species which are recognised by science at present time on a global scale and have been described by a Linnean name. Estimates do not include fossil species."),
   
@@ -15,6 +15,7 @@ public enum EstimateType {
     this.description = description;
   }
 
+  @Override
   public String getDescription() {
     return description;
   }

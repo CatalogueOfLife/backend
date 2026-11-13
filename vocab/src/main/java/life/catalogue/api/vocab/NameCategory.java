@@ -2,7 +2,7 @@ package life.catalogue.api.vocab;
 
 import org.gbif.nameparser.api.Rank;
 
-public enum NameCategory {
+public enum NameCategory implements Described {
   
   UNINOMIAL(null, Rank.INFRAGENERIC_NAME,
     "Name made from a single epithet only. All ranks above species aggregates."),
@@ -40,6 +40,7 @@ public enum NameCategory {
     return lowest;
   }
 
+  @Override
   public String getDescription() {
     return description;
   }

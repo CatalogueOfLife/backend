@@ -7,7 +7,7 @@ import static life.catalogue.api.vocab.EntityType.*;
 /**
  * Enumeration of issues for all processed names encountered during processing.
  */
-public enum Issue {
+public enum Issue implements Described {
   
   //
   // GENERAL DATA ISSUES
@@ -608,11 +608,16 @@ public enum Issue {
   
   public final EntityType group;
   
-  public final String description;
+  private final String description;
   
   Issue(EntityType group, Level level, String description) {
     this.level = Objects.requireNonNull(level);
     this.group = Objects.requireNonNull(group);
     this.description = description;
+  }
+
+  @Override
+  public String getDescription() {
+    return description;
   }
 }

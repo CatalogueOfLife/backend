@@ -18,7 +18,7 @@ package life.catalogue.api.vocab;
 /**
  * The taxonomic status of a name usage.
  */
-public enum TaxonomicStatus {
+public enum TaxonomicStatus implements Described {
   
   ACCEPTED("A taxonomically accepted, current name"),
   
@@ -69,6 +69,7 @@ public enum TaxonomicStatus {
     return this == BARE_NAME;
   }
 
+  @Override
   public String getDescription() {
     return description;
   }

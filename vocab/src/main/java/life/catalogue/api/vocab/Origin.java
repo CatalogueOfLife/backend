@@ -18,7 +18,7 @@ package life.catalogue.api.vocab;
 /**
  * Enumeration to classify name usages by how they originated.
  */
-public enum Origin {
+public enum Origin implements Described {
   
   SOURCE("Record came straight from source record."),
   
@@ -52,6 +52,7 @@ public enum Origin {
     this.description = description;
   }
 
+  @Override
   public String getDescription() {
     return description;
   }

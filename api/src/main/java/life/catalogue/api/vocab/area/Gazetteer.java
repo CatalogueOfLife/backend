@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import org.apache.commons.lang3.StringUtils;
 
+import life.catalogue.api.vocab.Described;
+
 import java.net.URI;
 import java.util.function.Function;
 import java.util.regex.Pattern;
@@ -11,7 +13,7 @@ import java.util.regex.Pattern;
 /**
  *
  */
-public enum Gazetteer {
+public enum Gazetteer implements Described {
 
   TDWG("World Geographical Scheme for Recording Plant Distributions",
     "http://www.tdwg.org/standards/109",
@@ -200,6 +202,7 @@ public enum Gazetteer {
     return null;
   }
 
+  @Override
   public String getDescription() {
     return description;
   }
