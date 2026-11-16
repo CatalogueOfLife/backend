@@ -227,6 +227,16 @@ public class ImportJobIT {
   }
 
   /**
+   * A data format configured in the dataset settings skips the format detection, but the import still has to record it:
+   * GBIF registration and the format filter of the import search read it from the dataset_import row.
+   */
+  @Test
+  public void configuredFormatIsRecorded() {
+    setupAndRun(DataFormat.DWCA, nginxRule.getArchive(DataFormat.DWCA));
+    assertEquals(DataFormat.DWCA, diDao.getLast(d.getKey()).getFormat());
+  }
+
+  /**
    * The job carries the attempt it produced, so the jobs API can point a running or failed import at
    * its metrics without joining anything - the live queue is rendered from memory. An unchanged import
    * deletes the dataset_import row it just created, so it must report no attempt at all.

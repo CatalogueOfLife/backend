@@ -478,6 +478,16 @@ public class AdminResource {
     return runJob(new ReimportJob(user, factory, importManager, cfg.normalizer));
   }
 
+  /**
+   * Records the data format of past imports that have none, detected from their stored source archives.
+   * See ImportFormatBackfillJob.
+   */
+  @POST
+  @Path("/import/format")
+  public JobInfo importFormat(@QueryParam("dryRun") boolean dryRun, @Auth User user) {
+    return runJob(new ImportFormatBackfillJob(user.getKey(), factory, cfg.normalizer, dryRun));
+  }
+
   @POST
   @Path("/importArticles")
   public JobInfo scheduleArticleImports(@Auth User user) {

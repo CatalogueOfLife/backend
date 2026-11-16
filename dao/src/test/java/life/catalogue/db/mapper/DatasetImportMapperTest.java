@@ -247,6 +247,51 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
     assertEquals(0, jm.count(req, User.ADMIN_MAGIC_KEY));
   }
 
+  private DatasetImport createWithoutFormat(String md5) throws Exception {
+    var di = create(JobStatus.FINISHED);
+    di.setFormat(null);
+    di.setMd5(md5);
+    createJob(session(), di);
+    mapper().create(di);
+    return di;
+  }
+
+  /**
+   * Imports of datasets with a configured data format used to record none, the backfill finds and fills them.
+   */
+  @Test
+  public void missingFormat() throws Exception {
+    var dm = mapper(DatasetMapper.class);
+    var settings = Optional.ofNullable(dm.getSettings(DATASET11.getKey())).orElseGet(life.catalogue.api.model.DatasetSettings::new);
+    settings.put(Setting.DATA_FORMAT, DataFormat.TEXT_TREE);
+    dm.updateSettings(DATASET11.getKey(), settings, Users.TESTER);
+
+    var coldp = createBoth(JobStatus.FINISHED); // COLDP
+    var a = createWithoutFormat("aaa");
+    var b = createWithoutFormat("bbb");
+    var b2 = createWithoutFormat("bbb");
+    var c = createWithoutFormat(null);
+    commit();
+
+    var missing = mapper().listMissingFormat();
+    assertEquals(List.of(a.getAttempt(), b.getAttempt(), b2.getAttempt(), c.getAttempt()),
+      missing.stream().map(DatasetImportMapper.MissingFormat::getAttempt).toList());
+    assertEquals(DATASET11.getKey(), (Integer) missing.get(0).getDatasetKey());
+    assertEquals("text tree", missing.get(0).getSetting());
+
+    assertEquals(1, mapper().updateFormat(DATASET11.getKey(), b.getAttempt(), DataFormat.DWCA));
+    // never overwrites a recorded format
+    assertEquals(0, mapper().updateFormat(DATASET11.getKey(), coldp.getAttempt(), DataFormat.DWCA));
+    assertEquals(DataFormat.COLDP, mapper().get(DATASET11.getKey(), coldp.getAttempt()).getFormat());
+
+    // b2 has the same source files as b
+    assertEquals(1, mapper().updateFormatFromSameSource());
+    commit();
+    assertEquals(DataFormat.DWCA, mapper().get(DATASET11.getKey(), b2.getAttempt()).getFormat());
+    assertEquals(List.of(a.getAttempt(), c.getAttempt()),
+      mapper().listMissingFormat().stream().map(DatasetImportMapper.MissingFormat::getAttempt).toList());
+  }
+
   /**
    * An import that found its source unchanged deletes its own dataset_import row again, so an IMPORT
    * lane job that finished without leaving one is exactly that. The step is deliberately not what

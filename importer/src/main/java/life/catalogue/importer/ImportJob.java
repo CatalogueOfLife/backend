@@ -411,6 +411,9 @@ public class ImportJob extends DatasetBlockingJob {
       if (dws.getDataFormat() == null) {
         setFormat(DataFormatDetector.detectFormat(sourceDir));
         LOG.info("Detected data format {} for dataset {}", dws.getDataFormat(), dws.getKey());
+      } else if (di.getFormat() == null) {
+        // configured in the dataset settings, so nothing was detected - record it on the import all the same
+        di.setFormat(dws.getDataFormat());
       }
       // update latest symlink
       updateLatestSymlink(archivePath);

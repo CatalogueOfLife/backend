@@ -3,6 +3,7 @@ package life.catalogue.db.mapper;
 import life.catalogue.api.model.DatasetImport;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.search.JobSearchRequest;
+import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.db.DatasetProcessable;
@@ -84,6 +85,58 @@ public interface DatasetImportMapper extends DatasetProcessable<DatasetImport> {
   void updateIssuesCount(@Param("key") int datasetKey, @Param("attempt") int attempt, @Param("issuesCount") Map<Issue, Integer> issuesCount);
 
   void delete(@Param("key") int datasetKey, @Param("attempt") int attempt);
+
+  /**
+   * Lists the imports that recorded no data format, with the data format configured in their dataset's settings
+   * if there is one.
+   */
+  List<MissingFormat> listMissingFormat();
+
+  /**
+   * Sets the data format of an import that has none, never overwriting a recorded one.
+   * @return number of updated imports, 0 or 1
+   */
+  int updateFormat(@Param("key") int datasetKey, @Param("attempt") int attempt, @Param("format") DataFormat format);
+
+  /**
+   * Sets the missing data format of imports from the format recorded by another import of the same dataset
+   * with the same source MD5, i.e. from the very same source files.
+   * @return number of updated imports
+   */
+  int updateFormatFromSameSource();
+
+  class MissingFormat {
+    private int datasetKey;
+    private int attempt;
+    private String setting;
+
+    public int getDatasetKey() {
+      return datasetKey;
+    }
+
+    public void setDatasetKey(int datasetKey) {
+      this.datasetKey = datasetKey;
+    }
+
+    public int getAttempt() {
+      return attempt;
+    }
+
+    public void setAttempt(int attempt) {
+      this.attempt = attempt;
+    }
+
+    /**
+     * @return the data format configured in the dataset settings as the API renders it, e.g. "text tree"
+     */
+    public String getSetting() {
+      return setting;
+    }
+
+    public void setSetting(String setting) {
+      this.setting = setting;
+    }
+  }
 
   Integer countBareName(@Param("key") int datasetKey);
   Integer countDistribution(@Param("key") int datasetKey);

@@ -485,6 +485,32 @@
     WHERE dataset_key=#{imp.datasetKey} AND attempt=#{imp.attempt}
   </update>
 
+  <select id="listMissingFormat" resultType="life.catalogue.db.mapper.DatasetImportMapper$MissingFormat">
+    SELECT di.dataset_key, di.attempt, d.settings ->> 'data format' AS setting
+    FROM dataset_import di
+      JOIN dataset d ON d.key = di.dataset_key
+    WHERE di.format IS NULL
+    ORDER BY di.dataset_key, di.attempt
+  </select>
+
+  <update id="updateFormat" parameterType="map">
+    UPDATE dataset_import
+    SET format = #{format}::DATAFORMAT
+    WHERE dataset_key=#{key} AND attempt=#{attempt} AND format IS NULL
+  </update>
+
+  <update id="updateFormatFromSameSource">
+    UPDATE dataset_import di
+    SET format = src.format
+    FROM (
+      SELECT DISTINCT ON (dataset_key, md5) dataset_key, md5, format
+      FROM dataset_import
+      WHERE format IS NOT NULL AND md5 IS NOT NULL
+      ORDER BY dataset_key, md5, attempt DESC
+    ) src
+    WHERE di.format IS NULL AND di.dataset_key = src.dataset_key AND di.md5 = src.md5
+  </update>
+
   <update id="updateIssuesCount" parameterType="map">
     UPDATE dataset_import
     SET issues_by_issue_count = #{issuesCount, typeHandler=life.catalogue.db.type2.HstoreIssueCountTypeHandler}::hstore
