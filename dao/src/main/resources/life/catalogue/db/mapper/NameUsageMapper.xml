@@ -975,6 +975,9 @@
       </otherwise>
     </choose>
     AND NOT is_synonym(u.status)
+    <if test="param.sectorless">
+      AND u.sector_key IS NULL
+    </if>
     <if test="param.exclusion != null and !param.exclusion.isEmpty()">
       AND u.id NOT IN
       <foreach item="id" collection="param.exclusion" open="(" separator="," close=")">#{id}</foreach>
@@ -987,6 +990,10 @@
   <sql id="WHERE_UNION">
     <if test="!param.synonyms">
       AND NOT is_synonym(u.status)
+    </if>
+    <!-- the recursion only descends from rows it kept, so this prunes the entire subtree of a usage with a sector -->
+    <if test="param.sectorless">
+      AND u.sector_key IS NULL
     </if>
     <if test="param.exclusion != null and !param.exclusion.isEmpty()">
       AND u.id NOT IN

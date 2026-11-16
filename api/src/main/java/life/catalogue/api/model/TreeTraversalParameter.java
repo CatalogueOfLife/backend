@@ -8,6 +8,12 @@ import java.util.Set;
 import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.QueryParam;
 
+/**
+ * The query parameter annotations are live: {@code MatchingRequest} extends this class and is bound as a
+ * {@code @BeanParam} by the match job endpoints, which inherit taxonID, exclusion, lowestRank and synonyms from here.
+ * The ChecklistBank UI sends taxonID to restrict a match job to a source subtree.
+ * {@link #sectorless} is deliberately not bound, it has no meaning for matching.
+ */
 public class TreeTraversalParameter {
   /**
    * The dataset to traverse
@@ -37,9 +43,15 @@ public class TreeTraversalParameter {
   /**
    * if true includes synonyms (default), otherwise only taxa
    */
-  @QueryParam("sectorKey")
+  @QueryParam("synonyms")
   @DefaultValue("true")
   private boolean synonyms = true;
+
+  /**
+   * if true only usages without a sector are traversed. A usage with a sector is excluded together with all its
+   * descendants, so only the sectorless tree connected to the start taxon or the roots remains.
+   */
+  private boolean sectorless = false;
 
   public TreeTraversalParameter() {
   }
@@ -51,6 +63,7 @@ public class TreeTraversalParameter {
     this.lowestRank = other.lowestRank;
     this.synonyms = other.synonyms;
     this.ignoreAmbiguousRanks = other.ignoreAmbiguousRanks;
+    this.sectorless = other.sectorless;
   }
 
   public static TreeTraversalParameter all(int datasetKey, String taxonID, Set<String> exclusion, Rank lowestRank, boolean synonyms) {
@@ -142,11 +155,19 @@ public class TreeTraversalParameter {
     this.synonyms = synonyms;
   }
 
+  public boolean isSectorless() {
+    return sectorless;
+  }
+
+  public void setSectorless(boolean sectorless) {
+    this.sectorless = sectorless;
+  }
+
   /**
    * @return true if any filter has been used apart from the mandatory datasetKey
    */
   public boolean hasFilter() {
-    return !synonyms || taxonID != null || lowestRank != null || (exclusion != null && !exclusion.isEmpty());
+    return !synonyms || sectorless || taxonID != null || lowestRank != null || (exclusion != null && !exclusion.isEmpty());
   }
 
   @Override
@@ -157,6 +178,7 @@ public class TreeTraversalParameter {
            ", exclusions=" + exclusion +
            ", lowestRank=" + lowestRank +
            ", synonyms=" + synonyms +
+           ", sectorless=" + sectorless +
            '}';
   }
 
@@ -168,6 +190,7 @@ public class TreeTraversalParameter {
     return datasetKey == that.datasetKey &&
       ignoreAmbiguousRanks == that.ignoreAmbiguousRanks &&
       synonyms == that.synonyms &&
+      sectorless == that.sectorless &&
       Objects.equals(taxonID, that.taxonID) &&
       Objects.equals(exclusion, that.exclusion) &&
       lowestRank == that.lowestRank;
@@ -175,6 +198,6 @@ public class TreeTraversalParameter {
 
   @Override
   public int hashCode() {
-    return Objects.hash(datasetKey, taxonID, exclusion, lowestRank, ignoreAmbiguousRanks, synonyms);
+    return Objects.hash(datasetKey, taxonID, exclusion, lowestRank, ignoreAmbiguousRanks, synonyms, sectorless);
   }
 }

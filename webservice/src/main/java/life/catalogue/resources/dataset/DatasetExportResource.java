@@ -164,6 +164,8 @@ public class DatasetExportResource {
     @QueryParam("extinct") Boolean extinct;
     @QueryParam("countBy") Rank countBy;
     @QueryParam("issues") boolean issues;
+    // only the usages without a sector, from the roots down: a usage with a sector cuts off its entire subtree
+    @QueryParam("sectorless") boolean sectorless;
 
     void init() throws IllegalArgumentException {
       if (minRank != null || maxRank != null) {
@@ -179,6 +181,7 @@ public class DatasetExportResource {
       var ttp = TreeTraversalParameter.dataset(datasetKey);
       ttp.setTaxonID(taxonID);
       ttp.setSynonyms(synonyms);
+      ttp.setSectorless(sectorless);
       if (ranks != null && !ranks.isEmpty()) {
         ttp.setLowestRank(RankUtils.lowestRank(ranks));
       } else if (minRank != null) {
