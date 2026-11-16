@@ -167,7 +167,8 @@ backend.
 
 ### The data artifact — a Jenkins job, one argument
 
-[`bundle/Jenkinsfile`](../bundle/Jenkinsfile) takes a single meaningful parameter, `RELEASE_KEY`, and
+[`bundle/Jenkinsfile`](../bundle/Jenkinsfile) takes a single meaningful parameter, `RELEASE_KEY` - a dataset
+key or a magic key like `3LXR`, which the public API resolves once at the start of the build - and
 drives `deploy/bundle.sh` over ssh. The build itself runs on the apps VM rather than on the agent,
 because that is where the live config, the database, `pg_dump`, the scratch space and the download
 directory already are — nothing multi-GB is ever copied between hosts and no database credentials

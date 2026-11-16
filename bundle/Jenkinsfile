@@ -4,6 +4,8 @@
 //
 //   builds.gbif.org/view/COL/job/col-bundle/buildWithParameters?token=<job token>&RELEASE_KEY=3287
 //
+// or a magic key like 3LXR for the latest public COL XR, resolved once at the start of the build.
+//
 // The heavy lifting happens on the prod apps VM, not on the agent: bundleBuild needs the live config,
 // network access to the production postgres, rights to create a temporary database there, pg_dump
 // and tens of GB of scratch, and it writes straight into the download directory. All of that already
@@ -27,7 +29,8 @@ pipeline {
     timeout(time: 12, unit: 'HOURS')
   }
   parameters {
-    string(name: 'RELEASE_KEY', defaultValue: '', description: 'Key of the release to bundle. The only argument you need.')
+    string(name: 'RELEASE_KEY', defaultValue: '',
+           description: 'Key of the release to bundle, or a magic key like 3LXR (latest public COL XR) or 3LR. The only argument you need.')
     string(name: 'IMAGE', defaultValue: 'ghcr.io/catalogueoflife/clb-bundle:latest',
            description: 'App image the generated docker-compose.yml pulls')
     booleanParam(name: 'KEEP_WORKDIR', defaultValue: false, description: 'Keep the uncompressed build directory on the VM')
@@ -42,13 +45,34 @@ pipeline {
     stage('Validate') {
       steps {
         script {
-          if (!params.RELEASE_KEY?.isInteger()) {
-            error("RELEASE_KEY must be an integer dataset key, got '${params.RELEASE_KEY}'")
+          if (!(params.RELEASE_KEY?.trim() ==~ /[0-9]+(L[A-Z]*)?/)) {
+            error("RELEASE_KEY must be a dataset key or a magic key like 3LXR, got '${params.RELEASE_KEY}'")
           }
           if (!(params.IMAGE ==~ /[A-Za-z0-9._\/:@-]+/)) {
             error("IMAGE is not a docker image reference: '${params.IMAGE}'")
           }
-          currentBuild.displayName = "#${BUILD_NUMBER} release ${params.RELEASE_KEY}"
+        }
+      }
+    }
+
+    stage('Resolve release') {
+      steps {
+        script {
+          // A magic key is resolved once, here, by the public API - so the build and the verify stage use the
+          // same release even if a newer one is published meanwhile. Done on the VM, which has yq.
+          env.KEY = params.RELEASE_KEY.trim()
+          if (!env.KEY.isInteger()) {
+            env.KEY = sh(returnStdout: true, script: """
+              ssh -o StrictHostKeyChecking=accept-new ${DEPLOY_USER}@${DEPLOY_HOST} \\
+                "curl -fsS https://api.checklistbank.org/dataset/${env.KEY} | yq -p json '.key'"
+            """).trim()
+            if (!env.KEY.isInteger()) {
+              error("${params.RELEASE_KEY} did not resolve to a dataset key, got '${env.KEY}'")
+            }
+            echo "${params.RELEASE_KEY} is release ${env.KEY}"
+          }
+          currentBuild.displayName = "#${BUILD_NUMBER} release ${env.KEY}" +
+            (env.KEY == params.RELEASE_KEY.trim() ? '' : " (${params.RELEASE_KEY.trim()})")
         }
       }
     }
@@ -69,7 +93,7 @@ pipeline {
         // long COPY and pg_dump phases, which print nothing.
         sh """
           ssh -o StrictHostKeyChecking=accept-new -o ServerAliveInterval=60 ${DEPLOY_USER}@${DEPLOY_HOST} \\
-            "sudo -iu col zsh -c 'cd ${DEPLOY_DIR} && ./bundle.sh --key ${params.RELEASE_KEY} --image ${params.IMAGE} ${params.KEEP_WORKDIR ? '--keep' : ''}'"
+            "sudo -iu col zsh -c 'cd ${DEPLOY_DIR} && ./bundle.sh --key ${env.KEY} --image ${params.IMAGE} ${params.KEEP_WORKDIR ? '--keep' : ''}'"
         """
       }
     }
@@ -80,14 +104,14 @@ pipeline {
         // to move the files into place cannot pass as success
         sh """
           ssh -o StrictHostKeyChecking=accept-new ${DEPLOY_USER}@${DEPLOY_HOST} \\
-            "sudo -iu col zsh -c 'cd ${DEPLOY_DIR} && ./bundle.sh --key ${params.RELEASE_KEY} --verify-only'"
+            "sudo -iu col zsh -c 'cd ${DEPLOY_DIR} && ./bundle.sh --key ${env.KEY} --verify-only'"
         """
       }
     }
   }
 
   post {
-    success { echo "Bundle for release ${params.RELEASE_KEY} published." }
+    success { echo "Bundle for release ${env.KEY} published." }
     failure { echo "Bundle build for release ${params.RELEASE_KEY} FAILED." }
   }
 }
