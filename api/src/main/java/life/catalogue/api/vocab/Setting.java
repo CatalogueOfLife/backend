@@ -31,29 +31,29 @@ public enum Setting implements Described {
 
   DISTRIBUTION_GAZETTEER(Gazetteer.class,
     "Overrides the gazetteer standard to use in all distribution interpretations for the dataset.",
-    EXTERNAL, PROJECT),
+    EXTERNAL),
 
   NOMENCLATURAL_CODE(NomCode.class,
     "The nomenclatural code followed in the dataset. It will be used mostly as a hint to format names accordingly. " +
       "If the dataset contains mixed data from multiple codes keep this field empty.",
-    EXTERNAL, PROJECT),
+    EXTERNAL),
 
   EXTINCT(Rank.class,
     "Sets the extinct flag for names in the dataset during imports. If given, it defines the highest rank of the names that will be flagged. " +
       "E.g. if extinct=genus, then all genera, species, subspecies and other lower taxa are flagged as extinct.",
-    EXTERNAL, PROJECT),
+    EXTERNAL),
 
   ENVIRONMENT(Environment.class,
     "Default value for the environment field in case it is not given explicitly.",
-    EXTERNAL, PROJECT),
+    EXTERNAL),
 
   REMATCH_DECISIONS(Boolean.class,
     "Informs the importer to rematch all decisions, i.e. decisions sensu stricto but also sectors and estimates. Defaults to false.",
-    EXTERNAL, PROJECT),
+    EXTERNAL),
 
   LOCK_METADATA(Boolean.class,
     "Informs the importer not to update any metadata from archives. Metadata will be locked and can only be edited manually.",
-    EXTERNAL, PROJECT),
+    EXTERNAL),
 
   MERGE_METADATA(Boolean.class,
     "Informs the importer to merge metadata found in archives with the existing metadata. " +
@@ -86,7 +86,7 @@ public enum Setting implements Described {
 
   DATA_FORMAT(DataFormat.class,
     "Format of the archive. If not given it is detected from the files of the archive.",
-    EXTERNAL, PROJECT),
+    EXTERNAL),
 
   SYNC_SCHEDULER(Boolean.class, false,
     "Turns on/off the sync scheduling for a project. " +
@@ -103,7 +103,7 @@ public enum Setting implements Described {
 
   DOI_RESOLUTION(DoiResolution.class, false,
     "Defines whether the importer makes use of Crossref to look up DOI metadata.",
-    EXTERNAL, PROJECT),
+    EXTERNAL),
 
   EPITHET_ADD_HYPHEN(Boolean.class, false,
     "If true replaces spaces in epithets with hyphens during interpretation, thus replacing multiple words with a single one.",
@@ -135,7 +135,7 @@ public enum Setting implements Described {
     "If set, every imported usage is matched against the specified dataset and the matched usageID is stored as an identifier on the imported usage. " +
       "Format: {integer}(LXR|LR)?, e.g. 1000 matches against dataset 1000 directly, " +
       "2207LR against the latest release of project 2207 and 2207LXR against the latest extended release of project 2207.",
-    EXTERNAL, PROJECT);
+    EXTERNAL);
 
   private final Class type;
   private final DatasetOrigin[] origin;
