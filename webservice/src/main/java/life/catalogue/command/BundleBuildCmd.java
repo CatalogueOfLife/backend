@@ -94,15 +94,21 @@ public class BundleBuildCmd extends AbstractMybatisCmd {
 
   /**
    * Every dataset row the release slice needs a foreign key to satisfy: the release itself, the project it
-   * came from, the subject datasets of its sectors, its sources, and whatever those in turn were released
-   * from. depth counts up the source_key chain so ancestors can be inserted first - dataset.source_key is a
+   * came from, the subject datasets of its sectors and decisions, its sources, the secondary sources that
+   * only contributed to its records, the datasets its and its project's patches apply to, and whatever those
+   * in turn were released from. Every copied global table referring to a dataset must be covered here.
+   * depth counts up the source_key chain so ancestors can be inserted first - dataset.source_key is a
    * self reference and copy checks it row by row.
    */
   private static final String KEY_CLOSURE =
     "WITH RECURSIVE closure(k, depth) AS (" +
     "  SELECT key, 0 FROM dataset WHERE key = %1$d" +
     "  UNION ALL SELECT subject_dataset_key, 0 FROM sector WHERE dataset_key = %1$d" +
+    "  UNION ALL SELECT subject_dataset_key, 0 FROM decision WHERE dataset_key = %1$d" +
     "  UNION ALL SELECT key, 0 FROM dataset_source WHERE dataset_key = %1$d" +
+    "  UNION ALL SELECT source_dataset_key, 0 FROM dataset_source_contribution WHERE dataset_key = %1$d" +
+    "  UNION ALL SELECT p.key, 0 FROM dataset_patch p JOIN dataset r ON p.dataset_key IN (r.key, r.source_key)" +
+    "    WHERE r.key = %1$d" +
     "  UNION ALL SELECT d.source_key, c.depth+1 FROM dataset d JOIN closure c ON d.key = c.k WHERE d.source_key IS NOT NULL" +
     ")";
 

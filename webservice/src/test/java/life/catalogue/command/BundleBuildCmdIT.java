@@ -123,6 +123,9 @@ public class BundleBuildCmdIT extends CmdTestBase {
   /**
    * The bundle database is created with data.sql, which seeds the COL project. A dataset descending from it,
    * as every COL release does, copies the real project over again, which must not collide with the seed.
+   * It also refers to datasets that are neither its sources nor its sector subjects - a secondary source that
+   * only contributed to its records, the subject of a decision and a dataset its project patches - which the
+   * bundle must copy too, or their foreign keys fail.
    */
   @Test
   public void testBuildFromCOL() throws Exception {
@@ -134,6 +137,14 @@ public class BundleBuildCmdIT extends CmdTestBase {
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true);
          var st = session.getConnection().createStatement()) {
       st.execute("UPDATE dataset SET source_key = " + Datasets.COL + " WHERE key = " + key);
+      st.execute("INSERT INTO dataset (key, origin, title, created_by, modified_by) VALUES"
+        + " (2001, 'EXTERNAL', 'contributor', 0, 0), (2002, 'EXTERNAL', 'decided', 0, 0), (2003, 'EXTERNAL', 'patched', 0, 0)");
+      st.execute("INSERT INTO dataset_source_contribution (dataset_key, source_dataset_key, enriched, by_info)"
+        + " VALUES (" + key + ", 2001, 1, '')");
+      st.execute("INSERT INTO decision (id, dataset_key, subject_dataset_key, mode, created_by, modified_by)"
+        + " VALUES (1, " + key + ", 2002, 'BLOCK', 0, 0)");
+      st.execute("INSERT INTO dataset_patch (key, dataset_key, created_by, modified_by)"
+        + " VALUES (2003, " + Datasets.COL + ", 0, 0)");
     }
     try {
       createImportWithMetrics(key);
