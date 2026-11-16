@@ -171,8 +171,12 @@ backend.
 drives `deploy/bundle.sh` over ssh. The build itself runs on the apps VM rather than on the agent,
 because that is where the live config, the database, `pg_dump`, the scratch space and the download
 directory already are — nothing multi-GB is ever copied between hosts and no database credentials
-have to live in Jenkins. The host, user, deploy path and ssh credential id are job parameters with no
-defaults in this repo; set them in the job configuration.
+have to live in Jenkins. It reaches the prod apps VM like the col-portal and col-blixa jobs: the Jenkins
+user's own ssh key logs in as `jenkins-deploy`, which runs `bundle.sh` as `col` from the deploy repo
+checkout in `/home/col/bin`, pulled first. Host, user and path are fixed in the Jenkinsfile rather than
+job parameters, because a declarative `parameters` block redefines the job's parameters on every run and
+would wipe any default set in the job configuration. A job that has never run has no parameters yet, so
+its very first build fails validation and registers them.
 
 `deploy/bundle.sh` runs `bundleBuild` into scratch space, tars and checksums it, and moves the result
 into the download tree with an atomic rename so a half written artifact is never downloadable. Its
