@@ -64,8 +64,13 @@ public class GbifRegistrar {
 
   /**
    * The state of a dataset's GBIF registration, with the outbox command still to be run, if any.
+   *
+   * @param enabled true if this server can register datasets in GBIF, see {@link #isEnabled()}. Clients offer to
+   *   register a dataset only then. The commands of registered datasets wait while it is false.
+   * @param registration null if the dataset is not registered in GBIF from ChecklistBank
    */
-  public record Status(GbifRegistration registration, UUID publisherKey, @Nullable OutboxEntry command) {}
+  public record Status(boolean enabled, @Nullable GbifRegistration registration, @Nullable UUID publisherKey,
+                       @Nullable OutboxEntry command) {}
 
   /**
    * @param apiURI the public base URI of the ChecklistBank API GBIF reads the endpoints from
@@ -126,18 +131,17 @@ public class GbifRegistrar {
   }
 
   /**
-   * @return the registration status or null if the dataset is not registered in GBIF from ChecklistBank
+   * @return the registration status, without a registration if the dataset is not registered in GBIF from ChecklistBank
    */
-  @Nullable
   public Status status(int datasetKey) {
     try (SqlSession session = factory.openSession()) {
       var reg = session.getMapper(GbifRegistrationMapper.class).get(datasetKey);
       if (reg == null) {
-        return null;
+        return new Status(isEnabled(), null, null, null);
       }
       var publisher = session.getMapper(DatasetMapper.class).getPublisherKey(datasetKey);
       var cmd = session.getMapper(OutboxMapper.class).getByKey(OutboxType.GBIF_REGISTRY, String.valueOf(datasetKey));
-      return new Status(reg, publisher, cmd);
+      return new Status(isEnabled(), reg, publisher, cmd);
     }
   }
 

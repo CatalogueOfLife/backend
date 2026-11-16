@@ -1,6 +1,5 @@
 package life.catalogue.resources.dataset;
 
-import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.GbifRegistration;
 import life.catalogue.api.model.User;
 import life.catalogue.dw.auth.Roles;
@@ -36,17 +35,14 @@ public class DatasetGbifResource {
   }
 
   /**
-   * @return the GBIF registration of the dataset with any outbox command still to update the GBIF registry.
+   * @return the GBIF registration of the dataset with any outbox command still to update the GBIF registry, and whether
+   *   this server can register datasets in GBIF at all. The registration is null if the dataset is not registered.
    *   The command carries GBIF's raw error responses, so this is for editors of the dataset only.
    */
   @GET
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public GbifRegistrar.Status status(@PathParam("key") int key) {
-    var status = registrar.status(key);
-    if (status == null) {
-      throw new NotFoundException(key, "Dataset " + key + " is not registered in GBIF from ChecklistBank");
-    }
-    return status;
+    return registrar.status(key);
   }
 
   @POST

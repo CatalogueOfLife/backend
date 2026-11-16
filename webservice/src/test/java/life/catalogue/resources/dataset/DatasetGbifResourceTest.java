@@ -1,6 +1,5 @@
 package life.catalogue.resources.dataset;
 
-import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.GbifRegistration;
 import life.catalogue.api.model.User;
 import life.catalogue.gbifsync.GbifRegistrar;
@@ -13,6 +12,8 @@ import org.junit.Test;
 import jakarta.ws.rs.ForbiddenException;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -84,6 +85,9 @@ public class DatasetGbifResourceTest {
 
   @Test
   public void notRegistered() {
-    assertThrows(NotFoundException.class, () -> resource.status(KEY));
+    when(registrar.status(KEY)).thenReturn(new GbifRegistrar.Status(false, null, null, null));
+    var status = resource.status(KEY);
+    assertFalse(status.enabled());
+    assertNull(status.registration());
   }
 }

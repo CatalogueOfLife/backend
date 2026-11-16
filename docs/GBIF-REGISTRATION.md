@@ -40,13 +40,14 @@ The dataset must be:
 | Request | Who | Does |
 |---|---|---|
 | `POST /dataset/{key}/gbif` | editors of the dataset | Registers it. The body is `{"publisherKey": "<organisation>", "acceptTerms": true}`; `acceptTerms` confirms the [GBIF data publisher agreement](https://www.gbif.org/terms/data-publisher). |
-| `GET /dataset/{key}/gbif` | editors of the dataset | The registration: the GBIF key, the organisation, who registered it and when, and any GBIF_REGISTRY command still waiting or failed. 404 if the dataset is not registered from ChecklistBank. |
+| `GET /dataset/{key}/gbif` | editors of the dataset | The registration: the GBIF key, the organisation, who registered it and when, and any GBIF_REGISTRY command still waiting or failed. `registration` is null if the dataset is not registered from ChecklistBank. `enabled` says whether this server can register datasets at all. |
 | `PUT /dataset/{key}/gbif/publisher/{publisherKey}` | admins | Moves the dataset to another organisation. |
 | `DELETE /dataset/{key}/gbif` | admins | Deregisters it, which deletes it in GBIF. |
 | `POST /dataset/{key}/gbif/sync` | admins | Updates the GBIF record and asks GBIF to crawl again. |
 
 Registering answers 503 unless `gbif.installationKey`, `gbif.username`/`gbif.password` and `apiURI` are all
-configured.
+configured. The `enabled` flag of the status reports exactly that, and the ChecklistBank UI offers no registration
+while it is false.
 
 ## What GBIF gets
 

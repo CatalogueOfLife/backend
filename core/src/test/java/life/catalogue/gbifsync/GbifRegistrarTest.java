@@ -141,8 +141,15 @@ public class GbifRegistrarTest {
          var st = session.getConnection().createStatement()) {
       st.execute("UPDATE dataset SET doi = '10.80631/ds12' WHERE key = " + KEY);
     }
+    var status = registrar.status(KEY);
+    assertTrue(status.enabled());
+    assertNull(status.registration());
     var reg = registrar.register(KEY, org, USER);
     UUID gbifKey = reg.getGbifKey();
+    status = registrar.status(KEY);
+    assertTrue(status.enabled());
+    assertEquals(gbifKey, status.registration().getGbifKey());
+    assertEquals(org, status.publisherKey());
     var g = gbif.datasets.get(gbifKey);
     assertEquals("CHECKLIST", g.path("type").asText());
     assertEquals(org.toString(), g.path("publishingOrganizationKey").asText());
@@ -203,7 +210,7 @@ public class GbifRegistrarTest {
     // deregister
     registrar.deregister(KEY, USER);
     assertNull(dao.get(KEY).getGbifKey());
-    assertNull(registrar.status(KEY));
+    assertNull(registrar.status(KEY).registration());
     runCommand();
     assertTrue(gbif.deleted.contains(gbifKey));
     // a second run finds nothing to delete anymore
@@ -306,7 +313,7 @@ public class GbifRegistrarTest {
     assertThrows(RuntimeException.class, () -> registrar.register(KEY, org, USER));
     assertTrue(gbif.deleted.contains(gbifKey));
     assertTrue(gbif.datasets.isEmpty());
-    assertNull(registrar.status(KEY));
+    assertNull(registrar.status(KEY).registration());
     assertNull(dao.get(KEY).getGbifKey());
   }
 
@@ -319,9 +326,13 @@ public class GbifRegistrarTest {
 
     GbifConfig off = gbif.config();
     off.installationKey = null;
-    var disabled = new GbifRegistryHandler(new GbifRegistrar(off, API, nCfg, SqlSessionFactoryRule.getSqlSessionFactory(), dao,
-      new GbifRegistryClient(client, off)));
+    var unconfigured = new GbifRegistrar(off, API, nCfg, SqlSessionFactoryRule.getSqlSessionFactory(), dao,
+      new GbifRegistryClient(client, off));
+    var disabled = new GbifRegistryHandler(unconfigured);
     assertFalse(disabled.isOnline());
+    // clients learn they cannot register datasets here
+    assertFalse(unconfigured.status(KEY).enabled());
+    assertNull(unconfigured.status(KEY).registration());
 
     // without registering configured it still uploads the EML of datasets synced from GBIF
     off.bidirectional = true;
@@ -330,6 +341,9 @@ public class GbifRegistrarTest {
     // while the commands of registered datasets wait
     registrar.register(KEY, org, USER);
     assertThrows(UnavailableException.class, () -> uploading.reconcile(KEY, Set.of(), true));
+    // and are shown with their registration
+    assertFalse(uploading.status(KEY).enabled());
+    assertNotNull(uploading.status(KEY).registration());
   }
 
   private String endpoints(UUID gbifKey) {
