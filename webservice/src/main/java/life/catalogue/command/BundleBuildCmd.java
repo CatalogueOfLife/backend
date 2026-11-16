@@ -224,8 +224,21 @@ public class BundleBuildCmd extends AbstractMybatisCmd {
   }
 
   private PgDbConfig tmpDbConfig() {
+    return dbUserConfig(tmpDbName);
+  }
+
+  /**
+   * The postgres maintenance db, logged in as the db user, to create and drop the temporary database. It is
+   * not the adminDb of the config: that is the superuser connection init needs, which production deliberately
+   * leaves unconfigured, whereas the db user only needs createdb and owns the temporary database anyway.
+   */
+  private PgDbConfig maintenanceDbConfig() {
+    return dbUserConfig("postgres");
+  }
+
+  private PgDbConfig dbUserConfig(String database) {
     PgDbConfig c = new PgDbConfig();
-    c.database = tmpDbName;
+    c.database = database;
     c.user = cfg.db.user;
     c.password = cfg.db.password;
     return c;
@@ -233,7 +246,7 @@ public class BundleBuildCmd extends AbstractMybatisCmd {
 
   private void createTmpDb() throws Exception {
     LOG.info("Create temporary bundle database {}", tmpDbName);
-    try (Connection con = cfg.db.connect(cfg.adminDb)) {
+    try (Connection con = cfg.db.connect(maintenanceDbConfig())) {
       // createDatabase drops an existing one of the same name first
       PgUtils.createDatabase(con, tmpDbName, cfg.db.user);
     }
@@ -241,6 +254,13 @@ public class BundleBuildCmd extends AbstractMybatisCmd {
       ScriptRunner runner = PgConfig.scriptRunner(con);
       runner.runScript(Resources.getResourceAsReader(InitDbUtils.SCHEMA_FILE));
       runner.runScript(Resources.getResourceAsReader(InitDbUtils.DATA_FILE));
+      // data.sql seeds the COL project, which a release of it copies over again with its real metadata.
+      // The copy brings every dataset the release refers to, so none of the seeded ones are needed.
+      try (Statement st = con.createStatement()) {
+        st.execute("DELETE FROM dataset");
+      }
+      // the script runner leaves the connection without autocommit
+      con.commit();
     }
     try (var pool = tmpPgConfig().pool()) {
       // a bundle serves one dataset, so a single partition per table is all it ever needs
@@ -250,7 +270,7 @@ public class BundleBuildCmd extends AbstractMybatisCmd {
 
   private void dropTmpDb() {
     if (tmpDbName == null) return;
-    try (Connection con = cfg.db.connect(cfg.adminDb); Statement st = con.createStatement()) {
+    try (Connection con = cfg.db.connect(maintenanceDbConfig()); Statement st = con.createStatement()) {
       LOG.info("Drop temporary bundle database {}", tmpDbName);
       st.execute("DROP DATABASE IF EXISTS \"" + tmpDbName + "\"");
     } catch (Exception e) {

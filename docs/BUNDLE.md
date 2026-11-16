@@ -80,7 +80,9 @@ deliberately not bundled.
 ## Building the data artifact
 
 `bundleBuild` runs against a **full ChecklistBank database** — it is the source the release is cut
-out of. It needs `pg_dump` on the `PATH` and the rights to create a database on that server.
+out of. It needs `pg_dump` on the `PATH`, and its `db` user needs `createdb`: it creates and drops the
+temporary database through the `postgres` maintenance database as that user, not through `adminDb`, which
+production leaves unconfigured.
 
 ```bash
 java -cp webservice/target/webservice-*.jar life.catalogue.WsServer \

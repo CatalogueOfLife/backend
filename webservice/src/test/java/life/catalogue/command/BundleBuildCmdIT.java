@@ -2,6 +2,7 @@ package life.catalogue.command;
 
 import life.catalogue.api.model.DatasetImport;
 import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.api.vocab.Datasets;
 import life.catalogue.dao.FileMetricsDatasetDao;
 import life.catalogue.db.mapper.DatasetImportMapper;
 import life.catalogue.junit.SqlSessionFactoryRule;
@@ -114,6 +115,30 @@ public class BundleBuildCmdIT extends CmdTestBase {
       assertTrue("the portal service must precede the volumes block",
         composeYaml.indexOf("  web:") < composeYaml.indexOf("\nvolumes:"));
 
+    } finally {
+      org.apache.commons.io.FileUtils.deleteQuietly(dir);
+    }
+  }
+
+  /**
+   * The bundle database is created with data.sql, which seeds the COL project. A dataset descending from it,
+   * as every COL release does, copies the real project over again, which must not collide with the seed.
+   */
+  @Test
+  public void testBuildFromCOL() throws Exception {
+    Assume.assumeTrue("pg_dump is required to build a bundle", pgDumpAvailable());
+
+    File dir = Files.createTempDirectory("col-bundle-col").toFile();
+    dir.delete();
+    final int key = TestDataRule.APPLE.key;
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true);
+         var st = session.getConnection().createStatement()) {
+      st.execute("UPDATE dataset SET source_key = " + Datasets.COL + " WHERE key = " + key);
+    }
+    try {
+      createImportWithMetrics(key);
+      assertTrue(run("bundleBuild", "--delete", "--key", Integer.toString(key), "--dir", dir.getAbsolutePath()).isEmpty());
+      assertFileWithContent(new File(dir, "release.dump"));
     } finally {
       org.apache.commons.io.FileUtils.deleteQuietly(dir);
     }
