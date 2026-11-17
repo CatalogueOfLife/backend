@@ -16,8 +16,10 @@ import life.catalogue.concurrent.NamedThreadFactory;
 import life.catalogue.dao.DaoUtils;
 import life.catalogue.dao.IssueAdder;
 import life.catalogue.db.PgUtils;
+import life.catalogue.db.TaxonProcessable;
 import life.catalogue.db.mapper.NameRelationMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
+import life.catalogue.db.mapper.SynonymMapper;
 import life.catalogue.db.mapper.TaxonMapper;
 import life.catalogue.matching.authorship.AuthorComparator;
 import life.catalogue.matching.similarity.ModifiedDamerauLevenshtein;
@@ -776,10 +778,20 @@ public class HomotypicConsolidator {
       }
     }
 
+    /**
+     * Deletes a usage that was just turned into a synonym, together with the extensions it had as a taxon:
+     * vernaculars, distributions, media etc. would otherwise be left pointing to no usage.
+     * Its children were moved to the accepted already.
+     */
     private void delete(LinneanNameUsage u, SqlSession session) {
       issues.remove(u.getId());
-      NameUsageMapper num = session.getMapper(NameUsageMapper.class);
-      num.delete(dsid.id(u.getId()));
+      final var key = dsid.id(u.getId());
+      for (Class<? extends TaxonProcessable<?>> m : TaxonProcessable.MAPPERS) {
+        if (m != SynonymMapper.class) {
+          session.getMapper(m).deleteByTaxon(key);
+        }
+      }
+      session.getMapper(NameUsageMapper.class).delete(key);
     }
 
     /**

@@ -1,0 +1,9 @@
+Combretaceae [family] {CODE=botanical}
+  Terminalia L. [genus] {PRIO=1}
+    Terminalia kleinii (Exell) Gere & Boatwr. [species] {PRIO=1}
+      =Buchenavia kleinii Exell [species] {PRIO=1}
+      =Terminalia igaratensis (N.F.Mattos) Gere & Boatwr. [species] {PRIO=1}
+    Terminalia igaratensis (N.F.Mattos) Gere & Boatwr. [species] {PRIO=2}
+      =Buchenavia igaratensis N.F.Mattos [species] {PRIO=2}
+    Terminalia catappa L. [species] {PRIO=1}
+    Terminalia catappa L. [species] {PRIO=2}
