@@ -31,7 +31,7 @@
   -->
   <properties>
     <name-parser.version>6.0.0</name-parser.version>
-    <name-parser-rust.version>0.5.0</name-parser-rust.version>
+    <name-parser-rust.version>0.5.1-SNAPSHOT</name-parser-rust.version>
   </properties>
 
   <!-- inherited by the root pom and so by every module -->
