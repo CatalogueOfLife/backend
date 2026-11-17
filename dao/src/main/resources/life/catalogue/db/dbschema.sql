@@ -1013,7 +1013,10 @@ ALTER TABLE dataset_archive
   DROP COLUMN acl_editor,
   DROP COLUMN acl_reviewer,
   DROP COLUMN private,
-  DROP COLUMN settings;
+  DROP COLUMN settings,
+  -- maintained by the system for the live dataset only, never part of its archived metadata
+  DROP COLUMN taxonomic_group_scope,
+  DROP COLUMN last_import_attempt;
 ALTER TABLE dataset_archive ADD FOREIGN KEY (key) REFERENCES dataset;
 
 CREATE TABLE dataset_archive_citation (LIKE dataset_citation INCLUDING INDEXES);
