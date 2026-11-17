@@ -305,9 +305,11 @@ docker compose up --wait
 For a COL release that also brings up the mini portal on <http://localhost/>; the API is on 8080
 either way.
 
-The app and portal images are published for `linux/amd64` only: the native name parser has no linux arm64
-build yet. The compose file therefore pins their platform, and Apple silicon runs them emulated (Rosetta in
-Docker Desktop or OrbStack). `CLB_BUNDLE_PLATFORM` and `CLB_PORTAL_PLATFORM` override the pin for your own images.
+The app and portal images published so far are `linux/amd64` only. The compose file therefore pins their platform,
+and Apple silicon runs them emulated (Rosetta in Docker Desktop or OrbStack). `CLB_BUNDLE_PLATFORM` and
+`CLB_PORTAL_PLATFORM` override the pin. The image workflow builds both images for `linux/amd64` and `linux/arm64`,
+and the webservice jar carries the native name parser for both linux architectures whatever machine built it, so once
+a release has published such images the pin can go.
 
 `postgres` restores `release.dump` through `/docker-entrypoint-initdb.d` on first boot, `elastic`
 comes up empty, and the app fills it. First boot on a full COL release therefore takes a while;

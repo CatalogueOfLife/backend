@@ -115,6 +115,18 @@
       <groupId>org.catalogueoflife</groupId>
       <artifactId>parser</artifactId>
     </dependency>
+    <!-- the parser only pulls the native library of the build machine. The shaded jar runs on the linux VMs and in
+         the release bundle image on both amd64 and arm64 wherever it was built, so it carries both linux libraries -->
+    <dependency>
+      <groupId>org.gbif.nameparser</groupId>
+      <artifactId>name-parser-rust</artifactId>
+      <classifier>linux-x86_64</classifier>
+    </dependency>
+    <dependency>
+      <groupId>org.gbif.nameparser</groupId>
+      <artifactId>name-parser-rust</artifactId>
+      <classifier>linux-aarch_64</classifier>
+    </dependency>
     <dependency>
       <groupId>org.catalogueoflife</groupId>
       <artifactId>reader</artifactId>

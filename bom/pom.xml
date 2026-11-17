@@ -186,6 +186,12 @@
         <groupId>org.gbif.nameparser</groupId>
         <artifactId>name-parser-rust</artifactId>
         <version>${name-parser-rust.version}</version>
+        <classifier>linux-aarch_64</classifier>
+      </dependency>
+      <dependency>
+        <groupId>org.gbif.nameparser</groupId>
+        <artifactId>name-parser-rust</artifactId>
+        <version>${name-parser-rust.version}</version>
         <classifier>osx-aarch_64</classifier>
       </dependency>
     </dependencies>
