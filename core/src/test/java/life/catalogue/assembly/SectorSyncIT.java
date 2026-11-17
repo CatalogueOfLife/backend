@@ -458,6 +458,13 @@ public class SectorSyncIT extends SectorSyncTestBase {
     Taxon glycine = getDraftTaxonBySourceID(srcKey, "13287"); // Glycine max
     assertTrue(listVernaculars(glycine).isEmpty());
 
+    // give the source vernaculars verbatim records, as an import does
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true);
+         var st = session.getConnection().createStatement()) {
+      st.execute("INSERT INTO verbatim (id, dataset_key, type) VALUES (999001, " + srcKey + ", 'VernacularName')");
+      st.execute("UPDATE vernacular_name SET verbatim_key = 999001 WHERE dataset_key = " + srcKey);
+    }
+
     // a vernacular only merge sector on the very same source, covering the very same subtree
     createSector(Sector.Mode.MERGE, srcKey, null, null, s -> {
       s.setEntities(Set.of(EntityType.VERNACULAR));
@@ -470,6 +477,15 @@ public class SectorSyncIT extends SectorSyncTestBase {
     assertTrue(names.contains("Sojabohne"));
     assertTrue(names.contains("Glicine"));
     assertTrue(names.contains("Bhat"));
+    // the verbatim record of a source vernacular belongs to the source, a project has none
+    var srcGlycine = listVernaculars(DSID.of(srcKey, "13287"));
+    assertFalse(srcGlycine.isEmpty());
+    assertTrue("the source vernaculars must have verbatim records for this to test anything",
+      srcGlycine.stream().allMatch(vn -> vn.getVerbatimKey() != null));
+    for (VernacularName vn : listVernaculars(glycine)) {
+      assertNull(vn.getName() + " carries the verbatim key of its source", vn.getVerbatimKey());
+      assertNotNull(vn.getName() + " lacks its verbatim source", vn.getVerbatimSourceKey());
+    }
   }
 
   /**

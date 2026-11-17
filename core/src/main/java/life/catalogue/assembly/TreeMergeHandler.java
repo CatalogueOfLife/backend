@@ -877,8 +877,9 @@ public class TreeMergeHandler extends TreeBaseHandler {
                 continue vnloop;
               }
             }
-            // a new vernacular
+            // a new vernacular - its verbatim record belongs to the source
             vn.setId(null);
+            vn.setVerbatimKey(null);
             vn.setVerbatimSourceKey(verbatimSourceKey(vs));
             vn.setSectorKey(sector.getId());
             vn.setDatasetKey(targetDatasetKey);
