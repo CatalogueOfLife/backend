@@ -11,7 +11,7 @@
 #             from a release of the COL project, see BundleBuildCmd
 #
 # `--wait` blocks until the app is healthy, which includes the first boot elastic indexing.
-# Override the image with CLB_BUNDLE_IMAGE if you build your own.
+# Override the image with CLB_BUNDLE_IMAGE if you build your own, its platform with CLB_BUNDLE_PLATFORM.
 name: clb-bundle
 
 services:
@@ -59,6 +59,9 @@ services:
 
   app:
     image: ${CLB_BUNDLE_IMAGE:-{{IMAGE}}}
+    # the image is published for amd64 only, as the native name parser has no linux arm64 build yet.
+    # Apple silicon runs it emulated, e.g. Rosetta in Docker Desktop or OrbStack.
+    platform: ${CLB_BUNDLE_PLATFORM:-linux/amd64}
     depends_on:
       postgres:
         condition: service_healthy

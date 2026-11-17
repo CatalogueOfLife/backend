@@ -76,6 +76,9 @@ public class BundleBuildCmdIT extends CmdTestBase {
         Files.readString(config.toPath()).contains("releaseKey: " + key));
       assertTrue("image not baked into the compose file",
         Files.readString(compose.toPath()).contains(BundleBuildCmd.DEFAULT_IMAGE));
+      // the images are amd64 only, so apple silicon has to be told to emulate rather than look for an arm64 one
+      assertTrue("app platform not pinned",
+        Files.readString(compose.toPath()).contains("platform: ${CLB_BUNDLE_PLATFORM:-linux/amd64}"));
 
       // apple is not a COL release, so it must get an API only bundle - the mini portal is a COL
       // website and would misrepresent any other project
@@ -111,6 +114,7 @@ public class BundleBuildCmdIT extends CmdTestBase {
       assertFalse("the spliced in portal service must leave no placeholder", composeYaml.contains("{{"));
       assertTrue("the mini portal service is missing", composeYaml.contains("  web:"));
       assertTrue("the portal image is not baked in", composeYaml.contains(BundleBuildCmd.DEFAULT_PORTAL_IMAGE));
+      assertTrue("portal platform not pinned", composeYaml.contains("platform: ${CLB_PORTAL_PLATFORM:-linux/amd64}"));
       // the portal block sits among the services, never after the volumes block
       assertTrue("the portal service must precede the volumes block",
         composeYaml.indexOf("  web:") < composeYaml.indexOf("\nvolumes:"));

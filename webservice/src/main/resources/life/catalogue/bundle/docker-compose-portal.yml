@@ -6,6 +6,7 @@
   # gets an API only bundle, because the portal's styling and its kingdom tiles are COL specific.
   web:
     image: ${CLB_PORTAL_IMAGE:-{{PORTAL_IMAGE}}}
+    platform: ${CLB_PORTAL_PLATFORM:-linux/amd64}
     depends_on:
       app:
         condition: service_healthy
