@@ -48,8 +48,72 @@
     SELECT key,<include refid="COLS"/>
     FROM publisher
     WHERE doc @@ plainto_tsquery('dataset', f_unaccent(#{q}))
-    ORDER BY ts_rank_cd('{0.1, 1.0}'::float4[], doc, plainto_tsquery('dataset', f_unaccent(#{q}))) DESC, title
+    ORDER BY ts_rank_cd('{0.01, 0.1, 0.1, 1.0}'::float4[], doc, plainto_tsquery('dataset', f_unaccent(#{q}))) DESC, title
     <include refid="life.catalogue.db.Common.limit"/>
+  </select>
+
+  <resultMap id="publisherInfoResultMap" type="PublisherInfo" autoMapping="true">
+    <id property="key" column="key"/>
+  </resultMap>
+
+  <sql id="LIST_WHERE">
+    <if test="q != null">
+      WHERE p.doc @@ plainto_tsquery('dataset', f_unaccent(#{q}))
+    </if>
+  </sql>
+
+  <!-- datasets visible to the user, counted like the dataset search does -->
+  <sql id="VISIBLE_DATASETS">
+    FROM dataset d
+      LEFT JOIN usage_count uc ON uc.dataset_key=d.key
+    <if test="userKey != null">
+      <!-- the project of a release decides who can read it -->
+      LEFT JOIN dataset proj ON d.source_key=proj.key AND <include refid="life.catalogue.db.mapper.DatasetMapper.IS_RELEASE"/>
+    </if>
+    WHERE d.deleted IS NULL AND <include refid="life.catalogue.db.mapper.DatasetMapper.NOT_TEMP"/>
+    <include refid="life.catalogue.db.mapper.DatasetMapper.PRIVATE">
+      <property name="alias" value="d"/>
+      <property name="projAlias" value="proj"/>
+    </include>
+  </sql>
+
+  <select id="list" resultMap="publisherInfoResultMap">
+    SELECT p.key, p.title, p.description, p.homepage, p.city, p.province, p.country, p.latitude, p.longitude,
+      coalesce(c.datasets, 0) AS datasets
+    FROM publisher p
+    LEFT JOIN (
+      SELECT d.gbif_publisher_key AS pkey, count(*) AS datasets
+      <include refid="VISIBLE_DATASETS"/>
+        AND d.gbif_publisher_key IS NOT NULL
+      GROUP BY d.gbif_publisher_key
+    ) c ON c.pkey = p.key
+    <include refid="LIST_WHERE"/>
+    ORDER BY
+    <choose>
+      <when test="sortBy == @life.catalogue.api.model.PublisherInfo$SortBy@TITLE">
+        p.title, p.key
+      </when>
+      <when test="q != null and sortBy == @life.catalogue.api.model.PublisherInfo$SortBy@RELEVANCE">
+        ts_rank_cd('{0.01, 0.1, 0.1, 1.0}'::float4[], p.doc, plainto_tsquery('dataset', f_unaccent(#{q}))) DESC, p.title, p.key
+      </when>
+      <otherwise>
+        datasets DESC, p.title, p.key
+      </otherwise>
+    </choose>
+    <include refid="life.catalogue.db.Common.limit"/>
+  </select>
+
+  <select id="count" resultType="integer">
+    SELECT count(*)
+    FROM publisher p
+    <include refid="LIST_WHERE"/>
+  </select>
+
+  <select id="datasetGroups" resultType="life.catalogue.db.mapper.PublisherMapper$DatasetGroup">
+    SELECT d.origin, d.type, d.license, d.private AS privat, count(*) AS count, coalesce(sum(uc.counter), 0) AS usages
+    <include refid="VISIBLE_DATASETS"/>
+      AND d.gbif_publisher_key = #{key}
+    GROUP BY d.origin, d.type, d.license, d.private
   </select>
 
   <update id="update" parameterType="Publisher">
