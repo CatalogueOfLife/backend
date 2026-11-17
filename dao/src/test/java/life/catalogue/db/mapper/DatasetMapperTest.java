@@ -152,6 +152,81 @@ public class DatasetMapperTest extends CRUDEntityTestBase<Integer, Dataset, Data
   }
 
   @Test
+  public void listUnused() throws Exception {
+    Dataset unused = createPrivate(DatasetOrigin.EXTERNAL);
+    Dataset modified = createPrivate(DatasetOrigin.EXTERNAL);
+    Dataset imported = createPrivate(DatasetOrigin.EXTERNAL);
+    Dataset synced = createPrivate(DatasetOrigin.PROJECT);
+    Dataset idleProject = createPrivate(DatasetOrigin.PROJECT);
+    Dataset release = createPrivate(DatasetOrigin.RELEASE);
+    Dataset pub = create();
+    mapper().create(pub);
+    Dataset temp = create();
+    temp.setPrivat(true);
+    temp.setKey(100_000_000 + new Random().nextInt(1000));
+    mapper().createWithID(temp);
+    Dataset deleted = createPrivate(DatasetOrigin.EXTERNAL);
+    commit();
+
+    try (var st = connection().createStatement()) {
+      st.execute("UPDATE dataset SET created = now() - interval '3 years', modified = now() - interval '2 years'");
+      st.execute("UPDATE dataset SET modified = now() - interval '1 month' WHERE key = " + modified.getKey());
+      st.execute("UPDATE dataset SET deleted = now() - interval '2 years' WHERE key = " + deleted.getKey());
+      st.execute("INSERT INTO dataset_import (dataset_key, attempt, origin, created_by, started) VALUES "
+        + "(" + unused.getKey() + ", 1, 'EXTERNAL', 0, now() - interval '18 months'), "
+        + "(" + imported.getKey() + ", 1, 'EXTERNAL', 0, now() - interval '2 months')");
+      st.execute("INSERT INTO sector_import (dataset_key, sector_key, attempt, created_by, started) VALUES "
+        + "(" + idleProject.getKey() + ", 1, 1, 0, now() - interval '20 months'), "
+        + "(" + synced.getKey() + ", 1, 1, 0, now() - interval '2 months')");
+    }
+    commit();
+
+    var cutoff = LocalDateTime.now().minusMonths(12);
+    var keys = mapper().listUnused(cutoff, null, new Page()).stream().map(UnusedDataset::getKey).collect(Collectors.toSet());
+    assertTrue(keys.contains(unused.getKey()));
+    assertTrue(keys.contains(idleProject.getKey()));
+    assertFalse(keys.contains(modified.getKey()));
+    assertFalse(keys.contains(imported.getKey()));
+    assertFalse(keys.contains(synced.getKey()));
+    assertFalse(keys.contains(release.getKey()));
+    assertFalse(keys.contains(pub.getKey()));
+    assertFalse(keys.contains(temp.getKey()));
+    assertFalse(keys.contains(deleted.getKey()));
+    assertEquals(keys.size(), mapper().countUnused(cutoff, null));
+
+    // the last import or sync is the latest use, longest unused first
+    var list = mapper().listUnused(cutoff, null, null);
+    var u = list.stream().filter(x -> x.getKey().equals(unused.getKey())).findFirst().orElseThrow();
+    assertTrue(u.getLastUsed().isAfter(LocalDateTime.now().minusMonths(19)));
+    assertTrue(u.getLastUsed().isBefore(LocalDateTime.now().minusMonths(17)));
+    assertEquals(DatasetOrigin.EXTERNAL, u.getOrigin());
+    assertEquals(unused.getTitle(), u.getTitle());
+    assertTrue(list.indexOf(u) > list.stream().map(UnusedDataset::getKey).toList().indexOf(idleProject.getKey()));
+
+    // a 1 month window no longer sees the import and sync of 2 months ago
+    var keys1 = mapper().listUnused(LocalDateTime.now().minusMonths(1), null, null).stream().map(UnusedDataset::getKey).toList();
+    assertTrue(keys1.contains(imported.getKey()));
+    assertTrue(keys1.contains(synced.getKey()));
+
+    // origin filter
+    var releases = mapper().listUnused(cutoff, List.of(DatasetOrigin.RELEASE), null).stream().map(UnusedDataset::getKey).toList();
+    assertTrue(releases.contains(release.getKey()));
+    assertFalse(releases.contains(unused.getKey()));
+    assertEquals(releases.size(), mapper().countUnused(cutoff, List.of(DatasetOrigin.RELEASE)));
+    var projects = mapper().listUnused(cutoff, List.of(DatasetOrigin.PROJECT), null).stream().map(UnusedDataset::getKey).toList();
+    assertTrue(projects.contains(idleProject.getKey()));
+    assertFalse(projects.contains(unused.getKey()));
+  }
+
+  private Dataset createPrivate(DatasetOrigin origin) {
+    Dataset d = create();
+    d.setPrivat(true);
+    d.setOrigin(origin);
+    mapper().create(d);
+    return d;
+  }
+
+  @Test
   public void gbif() throws Exception {
     assertEquals(0, mapper().listGBIF().size());
     assertEquals(0, mapper().listKeysSyncedFromGBIF().size());

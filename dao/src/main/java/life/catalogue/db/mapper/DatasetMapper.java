@@ -10,6 +10,7 @@ import life.catalogue.db.GlobalPageable;
 import life.catalogue.db.type2.StringCount;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
@@ -288,6 +289,21 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
   int countPlacementConflicts(@Param("minRatio") double minRatio,
                               @Param("minConflicts") int minConflicts,
                               @Nullable @Param("type") DatasetType type);
+
+  /**
+   * Lists private, not deleted, non temporary projects and external datasets that have not been used since the cutoff,
+   * longest unused first. Used means the dataset was created, changed its metadata, was imported or, for a project,
+   * synced a sector.
+   * Only small tables are read, never the data records.
+   *
+   * @param cutoff datasets used at or after it are excluded
+   * @param origin optional origins to list, by default PROJECT and EXTERNAL
+   */
+  List<UnusedDataset> listUnused(@Param("cutoff") LocalDateTime cutoff,
+                                 @Nullable @Param("origin") Collection<DatasetOrigin> origin,
+                                 @Nullable @Param("page") Page page);
+
+  int countUnused(@Param("cutoff") LocalDateTime cutoff, @Nullable @Param("origin") Collection<DatasetOrigin> origin);
 
   /**
    * @param inclDeleted optional include also deleted datasets, default false

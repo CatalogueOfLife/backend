@@ -30,6 +30,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -428,6 +429,23 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
       var dm = session.getMapper(DatasetMapper.class);
       var result = dm.listPlacementConflicts(minRatio, minConflicts, type, page);
       return new ResultPage<>(page, result, () -> dm.countPlacementConflicts(minRatio, minConflicts, type));
+    }
+  }
+
+  /**
+   * Private, non temporary projects and external datasets that have not been used in the last given number of months,
+   * longest unused first. See {@link DatasetMapper#listUnused}.
+   *
+   * @param months number of months without use, at least 1
+   * @param origin optional origins to list, by default PROJECT and EXTERNAL
+   */
+  public ResultPage<UnusedDataset> listUnused(int months, @Nullable Collection<DatasetOrigin> origin, Page page) {
+    Preconditions.checkArgument(months >= 1, "months must be at least 1");
+    final LocalDateTime cutoff = LocalDateTime.now().minusMonths(months);
+    try (SqlSession session = factory.openSession()){
+      var dm = session.getMapper(DatasetMapper.class);
+      var result = dm.listUnused(cutoff, origin, page);
+      return new ResultPage<>(page, result, () -> dm.countUnused(cutoff, origin));
     }
   }
 

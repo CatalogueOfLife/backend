@@ -536,6 +536,55 @@
     <include refid="placementConflictsFrom"/>
   </select>
 
+  <!--
+  The last use of a dataset, read only from small tables indexed by dataset_key, never from the data records:
+  its creation, its last metadata change, its last import and the last sector sync of a project.
+  An import of an unchanged source deletes its own dataset_import row, so routine reimports do not count.
+  greatest() ignores nulls.
+  -->
+  <sql id="unusedLastUsed">
+    greatest(d.created, d.modified,
+      (SELECT max(x.started) FROM dataset_import x WHERE x.dataset_key = d.key),
+      (SELECT max(x.started) FROM sector_import x WHERE x.dataset_key = d.key)
+    )
+  </sql>
+
+  <!-- private, not deleted and not temporary datasets of the given origins,
+       by default projects and external datasets only, as releases belong to their project -->
+  <sql id="unusedFrom">
+    FROM dataset d
+      CROSS JOIN LATERAL (SELECT <include refid="unusedLastUsed"/> AS last_used) lu
+  </sql>
+
+  <sql id="unusedWhere">
+    WHERE d.private AND d.deleted IS NULL AND <include refid="NOT_TEMP"/>
+      <choose>
+        <when test="origin != null and !origin.isEmpty()">
+          AND d.origin IN <foreach item="o" collection="origin" open="(" separator="," close=")">#{o}::DATASETORIGIN</foreach>
+        </when>
+        <otherwise>
+          AND d.origin IN ('PROJECT'::DATASETORIGIN, 'EXTERNAL'::DATASETORIGIN)
+        </otherwise>
+      </choose>
+      AND lu.last_used &lt; #{cutoff}
+  </sql>
+
+  <select id="listUnused" resultType="UnusedDataset">
+    SELECT d.key, d.alias, d.title, d.type, d.origin, d.created_by AS createdBy, u.username AS createdByName, d.created,
+      lu.last_used AS lastUsed
+    <include refid="unusedFrom"/>
+      LEFT JOIN "user" u ON u.key = d.created_by
+    <include refid="unusedWhere"/>
+    ORDER BY lu.last_used, d.key
+    <include refid="life.catalogue.db.Common.limit"/>
+  </select>
+
+  <select id="countUnused" resultType="integer">
+    SELECT count(*)
+    <include refid="unusedFrom"/>
+    <include refid="unusedWhere"/>
+  </select>
+
   <sql id="importable">
     d.deleted IS NULL
     AND <include refid="NOT_TEMP"/>

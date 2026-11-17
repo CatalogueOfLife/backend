@@ -140,6 +140,21 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
     return dao.streamPlacementConflicts(minRatio, minConflicts, type);
   }
 
+  /**
+   * Lists private datasets of the given origins, by default projects and external datasets, temporary ones excluded,
+   * that have not been used for the given number of months, longest unused first. Used means the dataset was created, changed its metadata, was imported
+   * or, for a project, synced a sector.
+   * Edits of the data records themselves are not seen.
+   */
+  @GET
+  @Path("unused")
+  @RolesAllowed({Roles.ADMIN})
+  public ResultPage<UnusedDataset> listUnused(@QueryParam("months") @DefaultValue("12") int months,
+                                              @QueryParam("origin") List<DatasetOrigin> origin,
+                                              @Valid @BeanParam Page page) {
+    return dao.listUnused(months, origin, page);
+  }
+
   @GET
   @Path("publishers")
   public List<StringCount> suggestPublishers(@QueryParam("q") String q,
