@@ -12,6 +12,7 @@
  */
 package life.catalogue.api.vocab.area;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.HashMap;
@@ -21,6 +22,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Test;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -155,8 +157,15 @@ public class CountryTest {
 
     URI url = URI.create("https://salsa.debian.org/iso-codes-team/iso-codes/-/raw/main/data/iso_3166-1.json");
     JsonNode root;
-    try (InputStream in = url.toURL().openStream()) {
+    // the comparison needs the live list to notice ISO changes, but an unreachable list is no reason to fail a build
+    var con = url.toURL().openConnection();
+    con.setConnectTimeout(10_000);
+    con.setReadTimeout(30_000);
+    try (InputStream in = con.getInputStream()) {
       root = new ObjectMapper().readTree(in);
+    } catch (IOException e) {
+      Assume.assumeNoException("ISO 3166-1 list unavailable at " + url, e);
+      return;
     }
     JsonNode arr = root.get("3166-1");
     assertNotNull("missing '3166-1' field in " + url, arr);
