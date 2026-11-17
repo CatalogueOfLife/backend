@@ -77,6 +77,16 @@ jobs:
       - name: Build the shaded jar
         run: mvn -B -DskipTests -DskipITs -pl webservice -am install
 
+      # The image is built for amd64 and arm64, so the jar has to carry the native name parser of both, which only
+      # releases after 1.7.0 do. Never publish an image that cannot parse names.
+      - name: Native name parser for both architectures
+        run: |
+          JAR=$(ls webservice/target/webservice-*.jar | grep -Ev -- '-(sources|tests|javadoc)\.jar$' | head -1)
+          # one at a time, unzip succeeds as soon as any of several names matches
+          for c in linux-x86_64 linux-aarch_64; do
+            unzip -l "$JAR" "native/$c/libnameparser_ffi.so" || { echo "::error::$JAR lacks the $c name parser"; exit 1; }
+          done
+
       - name: Image tags
         id: t
         run: |
