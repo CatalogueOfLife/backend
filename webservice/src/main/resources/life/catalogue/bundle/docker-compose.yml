@@ -12,7 +12,8 @@
 #
 # `--wait` blocks until the app is healthy, which includes the first boot elastic indexing.
 # Override the image with CLB_BUNDLE_IMAGE if you build your own.
-name: clb-bundle
+# per release: the volumes are named after the project, so bundles of two releases must not share it
+name: clb-bundle-{{RELEASE_KEY}}
 
 services:
   postgres:

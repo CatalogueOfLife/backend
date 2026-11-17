@@ -76,6 +76,8 @@ public class BundleBuildCmdIT extends CmdTestBase {
         Files.readString(config.toPath()).contains("releaseKey: " + key));
       assertTrue("image not baked into the compose file",
         Files.readString(compose.toPath()).contains(BundleBuildCmd.DEFAULT_IMAGE));
+      assertTrue("the compose project must be named after the release, as its volumes are",
+        Files.readString(compose.toPath()).contains("name: clb-bundle-" + key + "\n"));
       // the app must not start against a database that is still being restored
       assertTrue("postgres healthcheck must use tcp",
         Files.readString(compose.toPath()).contains("pg_isready -h 127.0.0.1"));
@@ -100,7 +102,9 @@ public class BundleBuildCmdIT extends CmdTestBase {
   public void testBuildWithPortal() throws Exception {
     Assume.assumeTrue("pg_dump is required to build a bundle", pgDumpAvailable());
 
-    File dir = Files.createTempDirectory("col-bundle-portal").toFile();
+    // -Dbundle.dir=<dir> keeps the bundle, e.g. to try it with docker compose up
+    final String keep = System.getProperty("bundle.dir");
+    File dir = keep != null ? new File(keep) : Files.createTempDirectory("col-bundle-portal").toFile();
     dir.delete();
     try {
       final int key = TestDataRule.APPLE.key;
@@ -119,7 +123,9 @@ public class BundleBuildCmdIT extends CmdTestBase {
         composeYaml.indexOf("  web:") < composeYaml.indexOf("\nvolumes:"));
 
     } finally {
-      org.apache.commons.io.FileUtils.deleteQuietly(dir);
+      if (keep == null) {
+        org.apache.commons.io.FileUtils.deleteQuietly(dir);
+      }
     }
   }
 

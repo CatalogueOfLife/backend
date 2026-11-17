@@ -12,7 +12,8 @@
     ports:
       - "${CLB_PORTAL_PORT:-80}:80"
     healthcheck:
-      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost/ || exit 1"]
+      # 127.0.0.1, not localhost: alpine resolves that to ::1 first, where nginx does not listen
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/ || exit 1"]
       interval: 15s
       timeout: 5s
       retries: 10
