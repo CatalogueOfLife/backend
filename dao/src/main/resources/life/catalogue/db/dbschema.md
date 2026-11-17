@@ -11,6 +11,16 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2026-11-17 leftovers of earlier migrations removed
+Building the release bundle of COL26.10 XR copies prod data into a database made from dbschema.sql, which found
+columns earlier migrations left behind on prod: the old release keys of the archive, whose 2025-08-15 migration copied
+them into `release_keys` but never dropped them, and `distribution.status` (see the enum entry below).
+A column diff against a database built from dbschema.sql showed no other difference. Done already.
+```sql
+SELECT count(*) FROM name_usage_archive WHERE release_keys IS NULL; -- 0
+ALTER TABLE name_usage_archive DROP COLUMN first_release_key, DROP COLUMN last_release_key;
+```
+
 #### 2026-11-17 enum types named as generated
 The enum types of dbschema.sql are the output of `PrintPgEnumSql.pgEnumSql()`, and `PgSetupRuleTest.pgEnums` checks
 them against the java enums. Two hand written types did not follow the generated names and were therefore not
