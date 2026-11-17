@@ -35,7 +35,9 @@ services:
       - -c
       - work_mem=64MB
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U col -d clb"]
+      # over tcp: while restore.sh runs on first boot the image serves a temporary server on the unix socket only,
+      # which pg_isready on the socket would report as ready long before the release is restored
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U col -d clb"]
       interval: 10s
       timeout: 5s
       retries: 60

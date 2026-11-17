@@ -76,6 +76,9 @@ public class BundleBuildCmdIT extends CmdTestBase {
         Files.readString(config.toPath()).contains("releaseKey: " + key));
       assertTrue("image not baked into the compose file",
         Files.readString(compose.toPath()).contains(BundleBuildCmd.DEFAULT_IMAGE));
+      // the app must not start against a database that is still being restored
+      assertTrue("postgres healthcheck must use tcp",
+        Files.readString(compose.toPath()).contains("pg_isready -h 127.0.0.1"));
 
       // apple is not a COL release, so it must get an API only bundle - the mini portal is a COL
       // website and would misrepresent any other project
