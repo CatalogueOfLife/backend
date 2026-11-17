@@ -227,48 +227,45 @@ public class DwcInterpreter extends InterpreterBase {
     final Term tDegree = rec.hasTerm(DwcTerm.degreeOfEstablishment) ? DwcTerm.degreeOfEstablishment : WORMS_INVASIVENESS;
     // try to figure out an area
     if (rec.hasTerm(DwcTerm.locationID)) {
-      return createDistribution(null, rec.getRaw(DwcTerm.locationID), rec.get(DwcTerm.locality), rec,
-          DwcTerm.occurrenceStatus,
-          DwcTerm.establishmentMeans,
-          tDegree,
-          DwcTerm.pathway,
-          IucnTerm.threatStatus,
-          DwcTerm.eventDate,
-          null,
-          DwcTerm.lifeStage,
-          DwcTerm.occurrenceRemarks,
-          this::setReference);
+      final String locationID = rec.getRaw(DwcTerm.locationID);
+      final String locality = rec.get(DwcTerm.locality);
+      // A locationID that is no gazetteer id, e.g. ALBANIA in GRIIS, only yields a free text area.
+      // Use the countryCode instead when there is one, flagging the locationID as invalid.
+      // See https://github.com/CatalogueOfLife/rcol/issues/9
+      if (rec.hasTerm(DwcTerm.countryCode)) {
+        var area = interpretArea(null, locationID, locality, IssueContainer.VOID);
+        if (area.isPresent() && area.get().getGazetteer() == Gazetteer.TEXT) {
+          rec.add(Issue.DISTRIBUTION_AREA_INVALID);
+          return createDwcDistribution(Gazetteer.ISO, rec.get(DwcTerm.countryCode), rec.get(DwcTerm.country), rec, tDegree);
+        }
+      }
+      return createDwcDistribution(null, locationID, locality, rec, tDegree);
 
     } else if (rec.hasTerm(DwcTerm.countryCode) && !rec.hasTerm(DwcTerm.locality)) {
-      return createDistribution(Gazetteer.ISO, rec.get(DwcTerm.countryCode), rec.get(DwcTerm.country), rec,
-          DwcTerm.occurrenceStatus,
-          DwcTerm.establishmentMeans,
-          tDegree,
-          DwcTerm.pathway,
-          IucnTerm.threatStatus,
-          DwcTerm.eventDate,
-          null,
-          DwcTerm.lifeStage,
-          DwcTerm.occurrenceRemarks,
-          this::setReference);
+      return createDwcDistribution(Gazetteer.ISO, rec.get(DwcTerm.countryCode), rec.get(DwcTerm.country), rec, tDegree);
 
     } else if (rec.hasTerm(DwcTerm.locality) || rec.hasTerm(DwcTerm.country)) {
-      return createDistribution(Gazetteer.TEXT, null, rec.getFirst(DwcTerm.locality, DwcTerm.country), rec,
-          DwcTerm.occurrenceStatus,
-          DwcTerm.establishmentMeans,
-          tDegree,
-          DwcTerm.pathway,
-          IucnTerm.threatStatus,
-          DwcTerm.eventDate,
-          null,
-          DwcTerm.lifeStage,
-          DwcTerm.occurrenceRemarks,
-          this::setReference);
+      return createDwcDistribution(Gazetteer.TEXT, null, rec.getFirst(DwcTerm.locality, DwcTerm.country), rec, tDegree);
 
     } else {
       rec.add(Issue.DISTRIBUTION_INVALID);
       return Collections.emptyList();
     }
+  }
+
+  private List<Distribution> createDwcDistribution(@Nullable Gazetteer gazetteer, String locationID, String location,
+                                                   VerbatimRecord rec, Term tDegree) {
+    return createDistribution(gazetteer, locationID, location, rec,
+        DwcTerm.occurrenceStatus,
+        DwcTerm.establishmentMeans,
+        tDegree,
+        DwcTerm.pathway,
+        IucnTerm.threatStatus,
+        DwcTerm.eventDate,
+        null,
+        DwcTerm.lifeStage,
+        DwcTerm.occurrenceRemarks,
+        this::setReference);
   }
   
   List<VernacularName> interpretVernacularName(VerbatimRecord rec) {
