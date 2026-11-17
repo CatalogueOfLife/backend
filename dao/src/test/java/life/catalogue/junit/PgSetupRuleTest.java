@@ -6,6 +6,7 @@ import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.*;
 import life.catalogue.api.vocab.area.Country;
+import life.catalogue.api.vocab.area.Gazetteer;
 import life.catalogue.api.vocab.terms.TxtTreeTerm;
 import life.catalogue.db.type.BaseEnumSetTypeHandler;
 
@@ -90,14 +91,18 @@ public class PgSetupRuleTest {
     List<Class<? extends Enum<?>>> enums = new ArrayList<>();
     addPackageEnums(cp, enums, DatasetType.class.getPackage());
     addPackageEnums(cp, enums, Rank.class.getPackage());
+    // the package scan sees no subpackages
+    addPackageEnums(cp, enums, Gazetteer.class.getPackage());
     if (!coldpOnly) {
       enums.add(Sector.Mode.class);
+      enums.add(Sector.AuthorshipUpdate.class);
       enums.add(EditorialDecision.Mode.class);
       enums.add(User.Role.class);
       enums.add(ApiLog.HttpMethod.class);
     }
     // not needed for persistency
     enums.remove(Country.class);
+    enums.remove(DistributionStatus.class);
     enums.remove(TxtTreeTerm.class);
     enums.remove(Frequency.class);
     enums.remove(GeoTimeType.class);
@@ -108,7 +113,6 @@ public class PgSetupRuleTest {
     enums.remove(NameCategory.class);
     enums.remove(NameField.class);
     enums.remove(DoiResolution.class);
-    enums.remove(TabularFormat.class);
     enums.remove(RankGroup.class);
     // ImportState is only used in java code now, feeding the free text job step. The db tracks JobStatus instead.
     enums.remove(ImportState.class);

@@ -137,7 +137,7 @@
     #{target.code}::NOMCODE,
     #{mode}::SECTOR_MODE,
     #{useXRelease},
-    #{authorshipUpdate}::SECTOR_AUTHORSHIP_UPDATE,
+    #{authorshipUpdate}::SECTOR_AUTHORSHIPUPDATE,
     #{priority},
     #{code}::NOMCODE,
     #{placeholderRank}::RANK,

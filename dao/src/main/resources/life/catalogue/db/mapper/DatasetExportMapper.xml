@@ -59,7 +59,7 @@
     #{key},
     #{request.datasetKey},
     #{request.format}::DATAFORMAT,
-    #{request.tabFormat}::TABFORMAT,
+    #{request.tabFormat}::TABULARFORMAT,
     #{request.extended},
     coalesce(#{request.classification}, false),
     #{request.extinct},
@@ -143,7 +143,7 @@
         AND j.status IN <foreach item="st" collection="req.status" open="(" separator="," close=")">#{st}::JOBSTATUS</foreach>
       </if>
       <if test="req.format != null">AND de.format = #{req.format}::DATAFORMAT</if>
-      <if test="req.tabFormat != null">AND de.tab_format = #{req.tabFormat}::TABFORMAT</if>
+      <if test="req.tabFormat != null">AND de.tab_format = #{req.tabFormat}::TABULARFORMAT</if>
       AND <if test="req.taxonID == null">de.root IS NULL</if><if test="req.taxonID != null">(de.root).id = #{req.taxonID}</if>
       AND de.min_rank <if test="req.minRank == null">IS NULL</if><if test="req.minRank != null">= #{req.minRank}::RANK</if>
       <if test="req.synonyms != null">AND de.synonyms = #{req.synonyms}</if>

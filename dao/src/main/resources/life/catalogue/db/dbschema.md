@@ -11,6 +11,22 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2026-11-17 enum types named as generated
+The enum types of dbschema.sql are the output of `PrintPgEnumSql.pgEnumSql()`, and `PgSetupRuleTest.pgEnums` checks
+them against the java enums. Two hand written types did not follow the generated names and were therefore not
+covered: `TABFORMAT` for `TabularFormat` and `SECTOR_AUTHORSHIP_UPDATE` for `Sector.AuthorshipUpdate`. `GAZETTEER`
+fell out of the generator when `Gazetteer` moved into the `vocab.area` subpackage. All three are generated again.
+The renames only change the type names, the columns keep their data. The mappers cast to the new names, so run this
+when the new app takes over - in between, creating exports and saving sectors fail on the old app's casts.
+`DISTRIBUTIONSTATUS` was meant to be dropped with `distribution.status` in 2025 and was still on prod until today.
+```sql
+ALTER TYPE TABFORMAT RENAME TO TABULARFORMAT;
+ALTER TYPE SECTOR_AUTHORSHIP_UPDATE RENAME TO SECTOR_AUTHORSHIPUPDATE;
+-- done 2026-11-17 already
+ALTER TABLE distribution DROP COLUMN status;
+DROP TYPE DISTRIBUTIONSTATUS;
+```
+
 #### 2026-11-11 GBIF registration of ChecklistBank datasets
 ChecklistBank registers external datasets in the GBIF registry itself (#1438). The single per user organisation
 right `publisher` is split into `org_editor` (edit all external datasets of the organisation, what `publisher` meant)
