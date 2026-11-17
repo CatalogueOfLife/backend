@@ -186,6 +186,10 @@ into the download tree with an atomic rename so a half written artifact is never
 `--verify-only` mode re-checks the published files and is what the pipeline's second stage calls, so
 a silent failure to publish cannot pass as success.
 
+The CLI config logs to files only, so `bundle.sh` points the file appender at a log of the build's own,
+`<workdir>/col-<key>-bundle.log` next to the build directory, and follows it on stdout: the Jenkins console
+shows the `bundleBuild` progress, and the log stays on the VM after the build, also a failed one.
+
 ### What publishing already does by itself
 
 Worth knowing before adding triggers, because most of it needs none. Flipping a release from private
