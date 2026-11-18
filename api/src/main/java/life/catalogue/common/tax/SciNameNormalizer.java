@@ -33,6 +33,10 @@ public class SciNameNormalizer {
   private static final Pattern removeRepeatedLetter = Pattern.compile("(\\p{L})\\1+");
   public static final Pattern removeHybridSignGenus = Pattern.compile("^\\s*[×xX]\\s*([A-Z])");
   public static final Pattern removeHybridSignEpithet = Pattern.compile("(?:^|\\s)(?:×\\s*|[xX]\\s+)([^A-Z])");
+  // the cross between the parents of a hybrid formula: "Corvus corone x cornix", "Acer nigrum × Acer saccharum".
+  // A leading × is the marker of a nothogenus, not a cross
+  private static final Pattern FORMULA_CROSS = Pattern.compile("\\s+[xX]\\s+|(?<=\\S)\\s*×\\s*");
+  private static final String EPITHET_CARRIER = "Genus ";
   private static final Pattern SPACES = Pattern.compile(" +");
   // ††️‡
   public final static Pattern dagger = Pattern.compile("[\\u2020\\u2021\\u271D]");
@@ -135,7 +139,37 @@ public class SciNameNormalizer {
   public static String normalize(String s) {
     return normalize(s, false, true);
   }
-  
+
+  /**
+   * Normalizes a hybrid formula like {@link #normalize(String)} does with each of its parents, but keeps the cross
+   * between them as a lower case x. Removing it, as {@link #normalize(String)} does with the hybrid marker of a
+   * nothotaxon, turns the formula "Corvus corone x cornix" into the trinomial "Corvus corone cornix",
+   * see https://github.com/CatalogueOfLife/checklistbank/issues/1755
+   * A parent given as a bare epithet, "cornix" above, is normalized as the epithet it is, i.e. stemmed.
+   */
+  public static String normalizeFormula(String s) {
+    if (!hasContent(s)) return "";
+    StringBuilder sb = new StringBuilder();
+    for (String parent : FORMULA_CROSS.split(s.trim())) {
+      if (parent.isEmpty()) continue;
+      String norm;
+      if (Character.isLowerCase(parent.codePointAt(0))) {
+        // normalize() leaves the first word of a name alone, so give the epithet a genus to stand behind
+        norm = normalize(EPITHET_CARRIER + parent);
+        norm = norm.startsWith(EPITHET_CARRIER) ? norm.substring(EPITHET_CARRIER.length()) : norm;
+      } else {
+        norm = normalize(parent);
+      }
+      if (!norm.isEmpty()) {
+        if (!sb.isEmpty()) {
+          sb.append(" x ");
+        }
+        sb.append(norm);
+      }
+    }
+    return sb.toString();
+  }
+
   /**
    * Normalizes an entire name string including monomials and genus parts of a name.
    */

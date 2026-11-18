@@ -116,6 +116,38 @@ public class SciNameNormalizerTest {
 
   }
 
+  /**
+   * https://github.com/CatalogueOfLife/checklistbank/issues/1755
+   */
+  @Test
+  public void formula() throws Exception {
+    assertEquals("", SciNameNormalizer.normalizeFormula(null));
+    assertEquals("", SciNameNormalizer.normalizeFormula(" "));
+    // the cross stays, otherwise the formula is the trinomial Corvus corone cornix
+    assertEquals("Corvus coron cornix", SciNameNormalizer.normalize("Corvus corone x cornix"));
+    assertEquals("Corvus coron x cornix", SciNameNormalizer.normalizeFormula("Corvus corone x cornix"));
+    assertEquals("Corvus coron x cornix", SciNameNormalizer.normalizeFormula("Corvus corone × cornix"));
+    assertEquals("Corvus coron x cornix", SciNameNormalizer.normalizeFormula("Corvus corone X  cornix"));
+    assertEquals("Corvus coron x cornix", SciNameNormalizer.normalizeFormula("Corvus corone ×cornix"));
+    assertEquals("Corvus coron coron x cornix", SciNameNormalizer.normalizeFormula("Corvus corone corone x cornix"));
+    // an epithet parent is stemmed like the epithet of a binomial
+    assertEquals(SciNameNormalizer.normalize("Acer lobelii").substring(5),
+        SciNameNormalizer.normalizeFormula("Acer campestre x lobelii").substring("Acer campestr x ".length()));
+    assertEquals("Acer campestr x lobel", SciNameNormalizer.normalizeFormula("Acer campestre x lobelii"));
+    assertEquals("Acer campestr x monspesulan subsp monspesulan",
+        SciNameNormalizer.normalizeFormula("Acer campestre x monspessulanum subsp. monspessulanum"));
+    // binomial parents
+    assertEquals("Acer niger x Acer sach", SciNameNormalizer.normalizeFormula("Acer nigrum × Acer saccharum"));
+    assertEquals("Agropyron cristat x Agropyron fragil", SciNameNormalizer.normalizeFormula("Agropyron cristatum × Agropyron fragile"));
+    assertEquals("Salix alb x Salix fragil x Salix purpure",
+        SciNameNormalizer.normalizeFormula("Salix alba x Salix fragilis x Salix purpurea"));
+    // a leading cross marks a nothogenus
+    assertEquals("Agropogon litoral x Agrostis stolonifer",
+        SciNameNormalizer.normalizeFormula("×Agropogon littoralis × Agrostis stolonifera"));
+    // the x of a single word is no cross
+    assertEquals("Xanthium spinos x Xanthium strumari", SciNameNormalizer.normalizeFormula("Xanthium spinosum x Xanthium strumarium"));
+  }
+
   @Test
   public void testNonAscii() throws Exception {
     assertEquals("Cem Andrexi", SciNameNormalizer.normalize("Çem Ándrexï"));

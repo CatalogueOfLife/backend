@@ -569,6 +569,41 @@ public class NameIndexImplTest {
     assertEquals(size, ni.size());
   }
 
+  /**
+   * A hybrid formula keeps its cross. Without it "Corvus corone x cornix" was the trinomial Corvus corone cornix and
+   * matched every occurrence of the subspecies: https://github.com/CatalogueOfLife/checklistbank/issues/1755
+   */
+  @Test
+  public void formula() throws Exception {
+    var tri = name("Corvus corone cornix", Rank.SUBSPECIES);
+    var formula = name("Corvus corone x cornix", Rank.SPECIES);
+    assertEquals(NameType.SCIENTIFIC, tri.getType());
+    assertEquals(NameType.FORMULA, formula.getType());
+    assertEquals("corvus coron cornix", NameIndexImpl.key(tri));
+    assertEquals("corvus coron x cornix", NameIndexImpl.key(formula));
+
+    int triKey = ni.match(tri, true, false).getNidx();
+    int formulaKey = ni.match(formula, true, false).getNidx();
+    assertNotEquals(triKey, formulaKey);
+    assertEquals(2, ni.size());
+
+    // spellings of the same formula share their entry
+    // "Corvus corone ×cornix" is no formula but a nothosubspecies, which keeps the key of the trinomial
+    for (String sn : List.of("Corvus corone × cornix", "Corvus corone X cornix")) {
+      var n = name(sn, Rank.SPECIES);
+      assertEquals(sn, NameType.FORMULA, n.getType());
+      assertEquals(sn, formulaKey, (int) ni.match(n, false, false).getNidx());
+    }
+    // the trinomial in any spelling stays with the trinomial
+    assertEquals(triKey, (int) ni.match(name("Corvus corone subsp. cornix", Rank.SUBSPECIES), false, false).getNidx());
+    assertEquals(2, ni.size());
+
+    // two binomials
+    var full = name("Acer nigrum × Acer saccharum", Rank.SPECIES);
+    assertEquals(NameType.FORMULA, full.getType());
+    assertEquals("acer niger x acer sach", NameIndexImpl.key(full));
+  }
+
   private static Name create(String genus, String species) {
     return create(genus, species, null);
   }

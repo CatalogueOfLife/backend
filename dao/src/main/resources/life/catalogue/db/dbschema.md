@@ -11,6 +11,20 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2026-11-17 hybrid formulas rematched
+No DDL. The names index key of a hybrid formula keeps its cross now, "Corvus corone x cornix" used to share the entry of
+the trinomial Corvus corone cornix (checklistbank#1755). Existing formulas keep their old entry until rematched, so after
+the deploy drop their matches and let the missing-only rematch give them their own entries. It also publishes
+DatasetDataChanged for every dataset it touched, which rebuilds their matchers. The archive has to be rematched before
+the next release, or its formulas cannot hand their ids on.
+```sql
+DELETE FROM name_match nm USING name n
+  WHERE nm.dataset_key = n.dataset_key AND nm.name_id = n.id AND n.type = 'FORMULA';
+DELETE FROM name_usage_archive_match m USING name_usage_archive a
+  WHERE m.dataset_key = a.dataset_key AND m.usage_id = a.id AND a.n_type = 'FORMULA';
+```
+then `POST /admin/rematch/missing` on the rw server.
+
 #### 2026-11-17 leftovers of earlier migrations removed
 Building the release bundle of COL26.10 XR copies prod data into a database made from dbschema.sql, which found
 columns earlier migrations left behind on prod: the old release keys of the archive, whose 2025-08-15 migration copied

@@ -26,6 +26,7 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.CharMatcher;
 import com.google.common.collect.ImmutableSet;
 
@@ -235,10 +236,13 @@ public class NameIndexImpl implements NameIndex {
   /**
    * @return A lower case ASCII key based on the newly formatted canonical name or scientific name as the fallback.
    *   Characters that cannot be folded to ASCII are replaced by *
+   *   A hybrid formula keeps its cross, without it "Corvus corone x cornix" would be the trinomial Corvus corone cornix.
    */
-  private static String key(FormattableName n) {
-    String origName = NameFormatter.canonicalName(n);
-    return UnicodeUtils.replaceNonAscii(SciNameNormalizer.normalize(UnicodeUtils.decompose(origName)).toLowerCase(), '*');
+  @VisibleForTesting
+  public static String key(Name n) {
+    String origName = UnicodeUtils.decompose(NameFormatter.canonicalName(n));
+    String norm = n.getType() == NameType.FORMULA ? SciNameNormalizer.normalizeFormula(origName) : SciNameNormalizer.normalize(origName);
+    return UnicodeUtils.replaceNonAscii(norm.toLowerCase(), '*');
   }
 
   @Override
