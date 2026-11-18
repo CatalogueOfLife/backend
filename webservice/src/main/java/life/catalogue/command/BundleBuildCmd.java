@@ -310,7 +310,13 @@ public class BundleBuildCmd extends AbstractMybatisCmd {
     tables.add(new String[]{"dataset_import", "SELECT %s FROM dataset_import WHERE dataset_key = " + key
       + (releaseAttempt() == null ? "" : " OR (dataset_key = " + project.getKey() + " AND attempt = " + releaseAttempt() + ")")});
     tables.add(new String[]{"sector", "SELECT %s FROM sector WHERE dataset_key = " + key});
-    tables.add(new String[]{"sector_import", "SELECT %s FROM sector_import WHERE dataset_key = " + key});
+    // A release's sectors are copies of its project's and point at the sync metrics the project keeps under its own
+    // key, which DatasetSourceDao adds up for the source and publisher metrics. Without them every source of the
+    // release reported nothing but its sector count.
+    tables.add(new String[]{"sector_import", "SELECT %s FROM sector_import WHERE dataset_key = " + key
+      + " OR (dataset_key, sector_key, attempt) IN (SELECT d.source_key, s.id, s.sync_attempt"
+      + " FROM sector s JOIN dataset d ON d.key = s.dataset_key WHERE s.dataset_key = " + key
+      + " AND d.source_key IS NOT NULL AND s.sync_attempt IS NOT NULL)"});
     tables.add(new String[]{"sector_publisher", "SELECT %s FROM sector_publisher WHERE dataset_key = " + key});
     tables.add(new String[]{"sector_profile", "SELECT %s FROM sector_profile WHERE dataset_key = " + key});
     tables.add(new String[]{"decision", "SELECT %s FROM decision WHERE dataset_key = " + key});

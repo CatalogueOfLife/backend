@@ -159,11 +159,24 @@ public class BundleBuildCmdIT extends CmdTestBase {
         + " VALUES (1, " + key + ", 2002, 'BLOCK', 0, 0)");
       st.execute("INSERT INTO dataset_patch (key, dataset_key, created_by, modified_by)"
         + " VALUES (2003, " + Datasets.COL + ", 0, 0)");
+      // a release sector points at the sync metrics its project keeps under the project key: only the synced attempt
+      st.execute("INSERT INTO sector (id, dataset_key, subject_dataset_key, mode, sync_attempt, created_by, modified_by)"
+        + " VALUES (7, " + key + ", 2001, 'ATTACH', 2, 0, 0)");
+      st.execute("INSERT INTO sector_import (dataset_key, sector_key, attempt, created_by, taxon_count) VALUES"
+        + " (" + Datasets.COL + ", 7, 1, 0, 10), (" + Datasets.COL + ", 7, 2, 0, 20)");
     }
     try {
       createImportWithMetrics(key);
       assertTrue(run("bundleBuild", "--delete", "--key", Integer.toString(key), "--dir", dir.getAbsolutePath()).isEmpty());
-      assertFileWithContent(new File(dir, "release.dump"));
+      File dump = new File(dir, "release.dump");
+      assertFileWithContent(dump);
+
+      // the source and publisher metrics of a release add up those project rows
+      String metrics = restoreData(dump, "sector_import");
+      assertTrue("the project's sync metrics of the release sector are missing",
+        metrics.contains("\n" + Datasets.COL + "\t7\t2\t"));
+      assertFalse("only the attempt the release sector was synced with belongs in the bundle",
+        metrics.contains("\n" + Datasets.COL + "\t7\t1\t"));
     } finally {
       org.apache.commons.io.FileUtils.deleteQuietly(dir);
     }
@@ -209,6 +222,19 @@ public class BundleBuildCmdIT extends CmdTestBase {
   private static void assertFileWithContent(File f) {
     assertTrue(f + " does not exist", f.exists());
     assertTrue(f + " is empty", f.length() > 0);
+  }
+
+  /**
+   * The data section of one table of a pg_dump archive, as the COPY text pg_restore writes: one tab separated
+   * row per line.
+   */
+  private static String restoreData(File dump, String table) throws Exception {
+    Process p = new ProcessBuilder("pg_restore", "--data-only", "-t", table, "-f", "-", dump.getAbsolutePath())
+      .redirectErrorStream(true)
+      .start();
+    String out = new String(p.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+    assertTrue("pg_restore failed: " + out, p.waitFor() == 0);
+    return out;
   }
 
   private static boolean pgDumpAvailable() {

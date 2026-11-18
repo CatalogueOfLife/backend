@@ -124,7 +124,8 @@ to detach and the release has to be filtered out row by row:
    schema creation with **one** partition per table;
 2. binary `COPY` the release out of the source database and into it — first the global rows whose
    foreign keys everything else hangs off (the `dataset` closure, its citations, archives, sources,
-   patches, the mother project's import row, the release's sectors, and the `names_index` rows its
+   patches, the mother project's import row, the release's sectors with the project's `sector_import`
+   rows their `sync_attempt` points at (the source and publisher metrics add those up), and the `names_index` rows its
    `name_match` points at), then every partitioned table in `DatasetPartitionMapper.PARTITIONED_TABLES`
    order;
 3. rebuild `taxon_metrics` there if the release carried none;
