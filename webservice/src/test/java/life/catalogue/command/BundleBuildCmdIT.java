@@ -81,6 +81,11 @@ public class BundleBuildCmdIT extends CmdTestBase {
       // the app must not start against a database that is still being restored
       assertTrue("postgres healthcheck must use tcp",
         Files.readString(compose.toPath()).contains("pg_isready -h 127.0.0.1"));
+      // nor against one whose restore was interrupted: the healthcheck requires the marker restore.sh writes last
+      assertTrue("postgres healthcheck must require the restore marker",
+        Files.readString(compose.toPath()).contains("SELECT 1 FROM bundle_restore"));
+      assertTrue("restore.sh must write the marker its healthcheck requires",
+        Files.readString(restore.toPath()).contains("CREATE TABLE bundle_restore"));
 
       // apple is not a COL release, so it must get an API only bundle - the mini portal is a COL
       // website and would misrepresent any other project

@@ -314,6 +314,15 @@ pointing at one of them needs `platform: linux/amd64` on its `app` and `web` ser
 comes up empty, and the app fills it. First boot on a full COL release therefore takes a while;
 subsequent starts are immediate because both volumes persist.
 
+`restore.sh` runs `ANALYZE` after `pg_restore`, which leaves the planner without statistics, and then
+creates the `bundle_restore` table as its very last step. The postgres healthcheck requires that table
+on top of `pg_isready` over tcp. The image runs its init hooks only once: when a restore is
+interrupted, the next boot finds a data directory, skips initialisation and serves whatever was
+restored so far - the tables loaded, but none of the indexes and constraints, which `pg_restore`
+builds last. Without the marker that database looked healthy, the app indexed it, and every page
+then scanned the multi gigabyte tables in full. Now it stays unhealthy and the app never starts on
+it; `docker compose down -v` throws the volumes away for a fresh restore.
+
 The bundle data volume is mounted **read-write**: the names index grows as new names are matched and
 the matcher store keeps its taxonomic group cache in `groups.bin`.
 

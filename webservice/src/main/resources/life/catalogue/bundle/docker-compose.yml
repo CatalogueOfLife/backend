@@ -37,8 +37,10 @@ services:
       - work_mem=64MB
     healthcheck:
       # over tcp: while restore.sh runs on first boot the image serves a temporary server on the unix socket only,
-      # which pg_isready on the socket would report as ready long before the release is restored
-      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U col -d clb"]
+      # which pg_isready on the socket would report as ready long before the release is restored.
+      # restore.sh creates bundle_restore last, so a restore that was interrupted never turns healthy: the image
+      # does not restore again on the next boot, see the README
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U col -d clb && psql -U col -d clb -tAc 'SELECT 1 FROM bundle_restore' | grep -q 1"]
       interval: 10s
       timeout: 5s
       retries: 60

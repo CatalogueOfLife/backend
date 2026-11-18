@@ -11,6 +11,14 @@ docker compose up --wait
 The first start restores the Postgres dump and indexes the release into Elasticsearch, which takes a
 while. `--wait` blocks until that is done; later starts are immediate.
 
+Let that first start finish. Postgres restores only once, so if it is stopped halfway the next start
+finds a half restored database, which `postgres` reports as unhealthy for good. Throw it away and
+start over with:
+
+```bash
+docker compose down -v && docker compose up --wait
+```
+
 ```bash
 curl localhost:8080/dataset                      # the shipped release
 curl localhost:8080/taxon/{id}/info              # no dataset key needed
