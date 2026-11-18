@@ -38,6 +38,25 @@
       });
   }
 
+  /* The citation is CSL formatted html: a csl-entry div, entities for accented names and a
+     styled span for the italic title. Escaping it showed the tags, trusting it would put
+     whatever markup the field holds into the page. Parse it inertly instead - a DOMParser
+     document runs no scripts and loads nothing - and rebuild it from its text, keeping
+     only the emphasis. */
+  function citation(html) {
+    function walk(node) {
+      if (node.nodeType === 3) return b.escape(node.nodeValue);
+      if (node.nodeType !== 1) return '';
+      var inner = Array.prototype.map.call(node.childNodes, walk).join('');
+      var tag = node.tagName.toLowerCase();
+      var style = node.getAttribute('style') || '';
+      if (tag === 'i' || tag === 'em' || /font-style:\s*italic/i.test(style)) return '<i>' + inner + '</i>';
+      if (tag === 'b' || tag === 'strong' || /font-weight:\s*bold/i.test(style)) return '<b>' + inner + '</b>';
+      return inner;
+    }
+    return walk(new DOMParser().parseFromString(html, 'text/html').body);
+  }
+
   b.release.then(function (d) {
     var html = '<table class="about-table"><tbody>' +
       row('Title', b.escape(d.title)) +
@@ -57,7 +76,7 @@
                                 'dataset ' + d.key + ' on checklistbank.org')) +
       '</tbody></table>' +
       (d.description ? '<h3>Description</h3><p>' + mdLinks(b.escape(d.description)) + '</p>' : '') +
-      '<h3>Citation</h3><p>' + b.escape(d.citation || '') + '</p>' +
+      '<h3>Citation</h3><p>' + (d.citation ? citation(d.citation) : '') + '</p>' +
       '<p>' + link(b.api + 'dataset/' + d.key + '.bib', 'Download the BibTeX citation') + '</p>';
 
     document.getElementById('about').innerHTML = html;
