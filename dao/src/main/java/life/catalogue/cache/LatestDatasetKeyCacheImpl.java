@@ -105,11 +105,13 @@ public class LatestDatasetKeyCacheImpl implements LatestDatasetKeyCache {
 
   /**
    * Returns true of the given dataset key is the last release of its kind (regular or extended) of the project.
+   * A deleted release never is, which is what the DOI of a just deleted release needs to know to point back to
+   * ChecklistBank.
    */
   @Override
   public boolean isLatestRelease(int datasetKey) {
-    var info = DatasetInfoCache.CACHE.info(datasetKey);
-    if (info.origin.isRelease() && info.sourceKey != null) {
+    var info = DatasetInfoCache.CACHE.info(datasetKey, true);
+    if (!info.deleted && info.origin.isRelease() && info.sourceKey != null) {
       boolean extended = info.origin == DatasetOrigin.XRELEASE;
       return Objects.equals(getLatestRelease(info.sourceKey, extended), datasetKey);
     }
