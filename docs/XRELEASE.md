@@ -227,6 +227,16 @@ Second invocation copies from `tmpProjectKey` → `newDatasetKey` (final release
 - Drops temp project DB sequences
 - Parent class: removes orphan sectors/decisions, archives source metadata, aggregates authors, flushes caches
 
+A release keeps only the sectors that contributed some data (`SectorMapper.hasData`), so the merge sectors that added
+nothing are not in it. `GET /dataset/{releaseKey}/sector/noncontributing` reconstructs them: the merge sectors of the
+project created before the release finished (the end of its `dataset_import` attempt) plus the sectors of the base release
+(taken from the job's `params.baseReleaseKey`), minus the sectors of the release. For a base release it is the
+project's non-merge sectors instead. The sectors come back as they are now, so sectors deleted from the project since are
+missing, and a sector created by hand while the release ran is listed by mistake.
+`GET /dataset/{releaseKey}/sector/noncontributing/source` lists only the source datasets among them that contributed
+nothing at all: no other sector of the release, no source of the release, no secondary source credit.
+A sector in the release may still have zero names and contribute only vernaculars, type material or references.
+
 ### 5. `metrics()` — Statistics
 - **`buildSectorMetrics()`** — updates each merge sector's import metrics with final counts (post-consolidation)
 - Parent class: rebuilds overall dataset statistics

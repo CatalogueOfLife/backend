@@ -1,6 +1,7 @@
 package life.catalogue.db.mapper;
 
 import life.catalogue.api.model.DSID;
+import life.catalogue.api.model.NonContributingSource;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.SectorDuplicate;
@@ -122,6 +123,27 @@ public interface SectorMapper extends BaseDecisionMapper<Sector, SectorSearchReq
    * @return number of deleted sectors
    */
   int deleteOrphans(@Param("datasetKey") Integer datasetKey);
+
+  /**
+   * Lists the sectors a release was built from which contributed nothing to it, i.e. which were dropped by copyDataset or
+   * deleteOrphans. A release does not keep them, so they are reconstructed:
+   * for a base release the non merge sectors of its project, for an extended release the merge sectors of its project
+   * plus the sectors of its base release. Project sectors created after the release finished are ignored.
+   *
+   * The sectors are returned as they are now, from the project or the base release, with their key.
+   * Sectors deleted from the project since the release cannot be listed.
+   *
+   * @param releaseKey a release or extended release, any other dataset yields an empty list
+   */
+  List<Sector> listNotInRelease(@Param("releaseKey") int releaseKey);
+
+  /**
+   * Lists the subject datasets of {@link #listNotInRelease(int)} which contributed nothing at all to the release:
+   * no other sector, no source dataset and no secondary source of it.
+   *
+   * @param releaseKey a release or extended release, any other dataset yields an empty list
+   */
+  List<NonContributingSource> listNonContributingSources(@Param("releaseKey") int releaseKey);
 
   /**
    * Lists all sectors of a project that have never been synced or have been synced from an older dataset import attempt.
