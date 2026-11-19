@@ -879,10 +879,6 @@ public class SectorMapperTest extends BaseDecisionMapperTest<Sector, SectorSearc
     assertTrue(mapper().listNonContributingSources(Datasets.COL).isEmpty());
   }
 
-  private static List<Integer> keys(List<Sector> sectors) {
-    return sectors.stream().map(Sector::getId).toList();
-  }
-
   private static List<Integer> sorted(List<Sector> sectors) {
     return keys(sectors).stream().sorted().toList();
   }
