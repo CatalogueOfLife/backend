@@ -599,6 +599,73 @@
     WHERE dataset_key = #{datasetKey} AND NOT <include refid="hasData"><property name="targetKey" value="#{datasetKey}"/></include>
   </delete>
 
+  <!--
+    The release #{releaseKey} with what is needed to tell which sectors of its project it was built from.
+    A release does not keep the sectors without data (copyDataset and deleteOrphans), so they are reconstructed from the
+    project as it is now. The cutoff is when the release finished, not when it started: an extended release creates the
+    merge sectors of the sector publishers in the project while it runs. The metrics of a release are written against
+    its project, and the job of an extended release records its base release in its params, see ReleaseRanking.
+    Yields no row for any other dataset.
+  -->
+  <sql id="NOT_IN_RELEASE_SCOPE">
+    WITH r AS (
+      SELECT d.key, d.source_key,
+        d.origin = 'XRELEASE'::DATASETORIGIN AS xr,
+        coalesce(di.finished, d.created) AS cutoff,
+        CASE WHEN d.origin = 'XRELEASE'::DATASETORIGIN THEN (j.params->>'baseReleaseKey')::int END AS base_key
+      FROM dataset d
+        LEFT JOIN dataset_import di ON di.dataset_key=d.source_key AND di.attempt=d.attempt
+        LEFT JOIN job j ON j.key=di.job_key
+      WHERE d.key = #{releaseKey} AND d.origin IN ('RELEASE'::DATASETORIGIN, 'XRELEASE'::DATASETORIGIN)
+    )
+  </sql>
+
+  <!--
+    Sectors s the release r was built from, but which are not in it.
+    A base release never merges, so only the other sectors of the project count for it. An extended release merges the
+    merge sectors of the project and copies everything else from its base release, which is immutable and needs no cutoff.
+    Sectors keep their id in a release.
+  -->
+  <sql id="NOT_IN_RELEASE_WHERE">
+    (
+      (s.dataset_key = r.source_key AND (s.created IS NULL OR s.created &lt;= r.cutoff) AND (s.mode = 'MERGE'::SECTOR_MODE) = r.xr)
+      OR (s.dataset_key = r.base_key AND s.mode != 'MERGE'::SECTOR_MODE)
+    )
+    AND NOT EXISTS (SELECT true FROM sector x WHERE x.dataset_key = r.key AND x.id = s.id)
+  </sql>
+
+  <select id="listNotInRelease" resultMap="sectorResultMap">
+    <include refid="NOT_IN_RELEASE_SCOPE"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+      JOIN r ON true
+    WHERE <include refid="NOT_IN_RELEASE_WHERE"/>
+    ORDER BY s.subject_dataset_key, s.dataset_key, s.id
+  </select>
+
+  <resultMap id="nonContributingSourceResultMap" type="NonContributingSource" autoMapping="true">
+    <id property="key" column="key"/>
+    <result property="sectorKeys" column="sector_keys" typeHandler="life.catalogue.db.type2.IntegerSetTypeHandler"/>
+  </resultMap>
+
+  <!--
+    The subject datasets of listNotInRelease that contributed nothing at all to the release: no other sector of the release
+    has them as subject, they are no source of the release and did not enrich any of its records as a secondary source.
+  -->
+  <select id="listNonContributingSources" resultMap="nonContributingSourceResultMap">
+    <include refid="NOT_IN_RELEASE_SCOPE"/>
+    SELECT d.key, d.alias, d.title, d.gbif_publisher_key, array_agg(s.id ORDER BY s.id) AS sector_keys
+    FROM sector s
+      JOIN r ON true
+      JOIN dataset d ON d.key = s.subject_dataset_key
+    WHERE <include refid="NOT_IN_RELEASE_WHERE"/>
+      AND NOT EXISTS (SELECT true FROM sector x WHERE x.dataset_key = r.key AND x.subject_dataset_key = s.subject_dataset_key)
+      AND NOT EXISTS (SELECT true FROM dataset_source x WHERE x.dataset_key = r.key AND x.key = s.subject_dataset_key)
+      AND NOT EXISTS (SELECT true FROM dataset_source_contribution x WHERE x.dataset_key = r.key AND x.source_dataset_key = s.subject_dataset_key)
+    GROUP BY d.key, d.alias, d.title, d.gbif_publisher_key
+    ORDER BY d.key
+  </select>
+
   <select id="listOutdatedSectors" resultMap="sectorResultMap">
     SELECT <include refid="SELECT_NO_BROKEN"/>
     FROM sector s

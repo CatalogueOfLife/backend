@@ -90,6 +90,29 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
     return dao.duplicates(req, page);
   }
 
+  /**
+   * The sectors a release was built from which contributed nothing to it and were therefore dropped from the release.
+   * They are reconstructed from the project as it is now, ignoring sectors created after the release finished:
+   * the merge sectors for an extended release, all other sectors for a base release.
+   * Sectors deleted from the project since cannot be listed, and the sectors returned are their current version.
+   * See https://github.com/CatalogueOfLife/backend/issues/1708
+   */
+  @GET
+  @Path("noncontributing")
+  public List<Sector> nonContributing(@PathParam("key") int releaseKey) {
+    return dao.listNotInRelease(releaseKey);
+  }
+
+  /**
+   * The source datasets of the non contributing sectors of a release which contributed nothing at all to it:
+   * no other sector of the release, no source of the release and no secondary source of any of its records.
+   */
+  @GET
+  @Path("noncontributing/source")
+  public List<NonContributingSource> nonContributingSources(@PathParam("key") int releaseKey) {
+    return dao.listNonContributingSources(releaseKey);
+  }
+
   private static void scope(int datasetKey, SectorSearchRequest req) {
     if (req.isSubject()) {
       req.setSubjectDatasetKey(datasetKey);

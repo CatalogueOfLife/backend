@@ -2,7 +2,10 @@ package life.catalogue.db.mapper;
 
 import life.catalogue.api.RandomUtils;
 import life.catalogue.api.TestEntityGenerator;
+import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.DSID;
+import life.catalogue.api.model.DatasetImport;
+import life.catalogue.api.model.JobInfo;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.Page;
@@ -24,12 +27,15 @@ import org.gbif.nameparser.api.Rank;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
 import javax.annotation.Nullable;
+
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import org.junit.Test;
 
@@ -818,6 +824,139 @@ public class SectorMapperTest extends BaseDecisionMapperTest<Sector, SectorSearc
     assertEquals(2, mapper().listBySubject(targetDatasetKey, d1.getSubjectAsDSID()).size());
   }
   
+  /**
+   * A release keeps no sector that contributed nothing, so they are reconstructed from the project, ignoring sectors
+   * created after the release finished, and for an extended release also from its base release.
+   * https://github.com/CatalogueOfLife/backend/issues/1708
+   */
+  @Test
+  public void listNotInRelease() throws Exception {
+    final LocalDateTime cutoff = LocalDateTime.now().plusHours(1).truncatedTo(ChronoUnit.SECONDS);
+    Dataset base = createRelease(DatasetOrigin.RELEASE, cutoff, null);
+    Dataset xr = createRelease(DatasetOrigin.XRELEASE, cutoff, base.getKey());
+
+    // the base release
+    Sector a1 = projectSector(Sector.Mode.ATTACH, null, base, xr);  // contributed to both releases
+    Sector a2 = projectSector(Sector.Mode.ATTACH, null);            // contributed to none
+    Sector a3 = projectSector(Sector.Mode.ATTACH, null);            // created after the releases
+    Sector a4 = projectSector(Sector.Mode.UNION, null, base);       // only in the base release, gone in the XR
+    // a4 was deleted from the project since, the base release still knows it
+    mapper().delete(DSID.of(Datasets.COL, a4.getId()));
+    // the extended release
+    Sector m1 = projectSector(Sector.Mode.MERGE, null, xr);         // contributed
+    Sector m2 = projectSector(Sector.Mode.MERGE, null);             // contributed nothing
+    Sector m3 = projectSector(Sector.Mode.MERGE, null);             // created after the release
+    Sector m4 = projectSector(Sector.Mode.MERGE, m1.getSubjectDatasetKey()); // its source contributed through m1
+    Sector m6 = projectSector(Sector.Mode.MERGE, null);             // its source enriched records of the release
+    try (var st = connection().createStatement()) {
+      st.execute("UPDATE sector SET created = '" + cutoff.plusHours(1) + "' WHERE dataset_key = " + Datasets.COL
+        + " AND id IN (" + a3.getId() + "," + m3.getId() + ")");
+      st.execute("INSERT INTO dataset_source_contribution (dataset_key, source_dataset_key, enriched, by_info) VALUES ("
+        + xr.getKey() + "," + m6.getSubjectDatasetKey() + ", 3, ''::hstore)");
+    }
+    commit();
+
+    assertEquals(List.of(a2.getId()), keys(mapper().listNotInRelease(base.getKey())));
+    assertEquals(sorted(m2, m4, m6, a4), sorted(mapper().listNotInRelease(xr.getKey())));
+    // the base release sector is returned as it is in the base release
+    var a4x = mapper().listNotInRelease(xr.getKey()).stream().filter(s -> s.getId().equals(a4.getId())).findFirst().orElseThrow();
+    assertEquals(base.getKey(), a4x.getDatasetKey());
+
+    var sources = mapper().listNonContributingSources(base.getKey());
+    assertEquals(1, sources.size());
+    assertEquals(a2.getSubjectDatasetKey(), sources.get(0).getKey());
+    assertEquals(Set.of(a2.getId()), sources.get(0).getSectorKeys());
+
+    sources = mapper().listNonContributingSources(xr.getKey());
+    assertEquals(2, sources.size());
+    var bySrc = new java.util.HashMap<Integer, Set<Integer>>();
+    sources.forEach(src -> bySrc.put(src.getKey(), src.getSectorKeys()));
+    assertEquals(Set.of(m2.getId()), bySrc.get(m2.getSubjectDatasetKey()));
+    assertEquals(Set.of(a4.getId()), bySrc.get(a4.getSubjectDatasetKey()));
+
+    // no release, no sectors
+    assertTrue(mapper().listNotInRelease(Datasets.COL).isEmpty());
+    assertTrue(mapper().listNonContributingSources(Datasets.COL).isEmpty());
+  }
+
+  private static List<Integer> keys(List<Sector> sectors) {
+    return sectors.stream().map(Sector::getId).toList();
+  }
+
+  private static List<Integer> sorted(List<Sector> sectors) {
+    return keys(sectors).stream().sorted().toList();
+  }
+
+  private static List<Integer> sorted(Sector... sectors) {
+    return java.util.Arrays.stream(sectors).map(Sector::getId).sorted().toList();
+  }
+
+  /**
+   * A release of the COL project whose metrics record says it finished at the given time.
+   * @param baseReleaseKey the base release the job of an extended release records
+   */
+  private Dataset createRelease(DatasetOrigin origin, LocalDateTime finished, @Nullable Integer baseReleaseKey) {
+    var dm = mapper(DatasetMapper.class);
+    Dataset d = DatasetMapperTest.create();
+    d.setOrigin(origin);
+    d.setSourceKey(Datasets.COL);
+    dm.create(d);
+
+    JobInfo j = new JobInfo();
+    j.setKey(UUID.randomUUID());
+    j.setJob(origin == DatasetOrigin.XRELEASE ? "XRelease" : "ProjectRelease");
+    j.setLane(JobLane.DEFAULT);
+    j.setStatus(JobStatus.FINISHED);
+    j.setPriority(JobPriority.MEDIUM);
+    j.setDatasetKey(Datasets.COL);
+    j.setCreatedBy(Users.TESTER);
+    j.setCreated(finished.minusMinutes(10));
+    j.setFinished(finished);
+    ObjectNode params = ApiModule.MAPPER.createObjectNode();
+    params.put("projectKey", Datasets.COL);
+    if (baseReleaseKey != null) {
+      params.put("baseReleaseKey", baseReleaseKey);
+    }
+    params.put("newDatasetKey", d.getKey());
+    j.setParams(params);
+    mapper(JobMapper.class).create(j);
+
+    DatasetImport di = new DatasetImport();
+    di.setDatasetKey(Datasets.COL);
+    di.setJobKey(j.getKey());
+    di.setOrigin(origin);
+    di.setCreatedBy(Users.TESTER);
+    di.setStarted(finished.minusMinutes(10));
+    di.setFinished(finished);
+    mapper(DatasetImportMapper.class).create(di);
+    dm.updateLastImport(d.getKey(), di.getAttempt(), null);
+    return d;
+  }
+
+  /**
+   * Creates a sector in the COL project and copies it into the given releases.
+   * @param subjectDatasetKey the subject dataset, a new one if null
+   */
+  private Sector projectSector(Sector.Mode mode, @Nullable Integer subjectDatasetKey, Dataset... releases) {
+    if (subjectDatasetKey == null) {
+      Dataset src = DatasetMapperTest.create();
+      mapper(DatasetMapper.class).create(src);
+      subjectDatasetKey = src.getKey();
+    }
+    Sector s = create(DSID.colID(UUID.randomUUID().toString()), DSID.of(subjectDatasetKey, UUID.randomUUID().toString()));
+    s.setMode(mode);
+    s.setTarget(null);
+    mapper().create(s);
+    final int key = s.getId();
+    for (Dataset r : releases) {
+      s.setDatasetKey(r.getKey());
+      mapper().createWithID(s);
+    }
+    s.setDatasetKey(Datasets.COL);
+    s.setId(key);
+    return s;
+  }
+
   @Test
   public void process(){
     // processing

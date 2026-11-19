@@ -161,6 +161,31 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
   }
 
   /**
+   * The sectors a release was built from which contributed nothing to it, see SectorMapper.listNotInRelease.
+   * @param releaseKey a release or extended release
+   * @throws IllegalArgumentException if the dataset is no release
+   */
+  public List<Sector> listNotInRelease(int releaseKey) {
+    DatasetInfoCache.CACHE.info(releaseKey, DatasetOrigin.RELEASE, DatasetOrigin.XRELEASE);
+    try (SqlSession session = factory.openSession()) {
+      return session.getMapper(SectorMapper.class).listNotInRelease(releaseKey);
+    }
+  }
+
+  /**
+   * The source datasets with sectors a release was built from which contributed nothing at all to it,
+   * see SectorMapper.listNonContributingSources.
+   * @param releaseKey a release or extended release
+   * @throws IllegalArgumentException if the dataset is no release
+   */
+  public List<NonContributingSource> listNonContributingSources(int releaseKey) {
+    DatasetInfoCache.CACHE.info(releaseKey, DatasetOrigin.RELEASE, DatasetOrigin.XRELEASE);
+    try (SqlSession session = factory.openSession()) {
+      return session.getMapper(SectorMapper.class).listNonContributingSources(releaseKey);
+    }
+  }
+
+  /**
    * Groups of sectors sharing the same subject, i.e. potential duplicates.
    * All request filters apply to the sectors before they are grouped, the page applies to the groups.
    */
