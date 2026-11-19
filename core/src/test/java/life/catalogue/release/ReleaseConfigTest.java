@@ -20,6 +20,7 @@ import static org.junit.Assert.*;
 /**
  * WARNING !!!
  * These test make use of some production configurations and need to be adjusted if these change considerably!
+ * Failing tests will be reported to slack and there is a dedicated jenkins job for this test: https://builds.gbif.org/job/col-release-configs/
  */
 public class ReleaseConfigTest {
 
@@ -33,7 +34,11 @@ public class ReleaseConfigTest {
     var cfg = ProjectRelease.loadConfig(ProjectReleaseConfig.class, URI.create("https://catalogueoflife.github.io/data/release-config.yaml"), true);
 
     assertNotNull(cfg);
-    assertEquals("COL{date,yy.M}", cfg.metadata.alias);
+    assertNotNull(cfg.metadata.alias);
+    // we also allow the annual alias without the month
+    if (!cfg.metadata.alias.equals("COL{date,yy}")) {
+      assertEquals("COL{date,yy.M}", cfg.metadata.alias);
+    }
     assertNotNull(cfg.metadata.title);
     assertNotNull(cfg.metadata.description);
     assertNotNull(cfg.metadata.publisher);
@@ -48,16 +53,16 @@ public class ReleaseConfigTest {
   public void testCfgXR() throws Exception {
     var cfg = ProjectRelease.loadConfig(XReleaseConfig.class, URI.create("https://catalogueoflife.github.io/data/xrelease/xrelease-config.yaml"), true);
 
-    //File cfgFile = new File("/Users/markus/code/data/data/xrelease/xrelease-config.yaml");
-    //cfg = YamlUtils.read(XReleaseConfig.class, cfgFile);
-
     assertNotNull(cfg);
     assertNotNull(cfg.basionymExclusions);
     assertNotNull(cfg.enforceUnique);
     assertTrue(cfg.enforceUnique.containsKey(Rank.GENUS));
     assertTrue(cfg.homotypicConsolidation);
     assertTrue(cfg.sourceDatasetExclusion.contains(6675));
-    assertEquals("COL{date,yy.M} XR", cfg.metadata.alias);
+    // we also allow the annual alias without the month
+    if (!cfg.metadata.alias.equals("COL{date,yy} XR")) {
+      assertEquals("COL{date,yy.M} XR", cfg.metadata.alias);
+    }
     assertNotNull(cfg.metadata.title);
     assertNotNull(cfg.metadata.description);
     assertNotNull(cfg.metadata.publisher);
