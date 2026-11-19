@@ -11,6 +11,7 @@ import life.catalogue.concurrent.NamedThreadFactory;
 import life.catalogue.db.mapper.OutboxMapper;
 
 import java.lang.management.ManagementFactory;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.*;
@@ -225,7 +226,7 @@ public class OutboxRunner implements Managed {
       }
 
     } else {
-      long delay = handler.retryDelay(attempt).toSeconds();
+      long delay = Math.min(handler.retryDelay(attempt).toSeconds(), Duration.ofHours(cfg.maxRetryHours).toSeconds());
       LOG.warn("Outbox command {} failed, attempt {} of {}, retry in {}s", entry, attempt, cfg.maxAttempts, delay, e);
       retry(entry, 1, (int) Math.min(delay, Integer.MAX_VALUE), e);
     }
@@ -284,7 +285,7 @@ public class OutboxRunner implements Managed {
 
   /**
    * @return the outbox counts, where the commands of a handler that is offline on purpose, e.g. a stopped DoiUpdater,
-   *         are pending but never overdue or stuck
+   *         are pending but never overdue or stuck. Stuck are only commands put off without ever failing
    */
   public Health health() {
     var offline = handlers.entrySet().stream()

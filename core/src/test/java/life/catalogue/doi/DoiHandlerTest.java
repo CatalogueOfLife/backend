@@ -134,6 +134,9 @@ class DoiHandlerTest {
     assertFalse(h.isPermanent(new DoiHttpException(500, VDOI)));
     assertFalse(h.isPermanent(new DoiException(VDOI, "timeout")));
     assertEquals(4, h.retryDelay(2).toHours());
+    assertEquals(9, h.retryDelay(3).toHours());
+    assertEquals(12, h.retryDelay(4).toHours());
+    assertEquals(12, h.retryDelay(9).toHours());
   }
 
   @Test

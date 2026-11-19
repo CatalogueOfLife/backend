@@ -17,7 +17,14 @@ public class OutboxConfig {
    * Attempts after which a failing command is given up and marked as failed.
    */
   @Min(1)
-  public int maxAttempts = 12;
+  public int maxAttempts = 10;
+
+  /**
+   * Upper bound in hours on the delay before a failed command is retried, whatever its handler asks for.
+   * Together with maxAttempts it bounds how long a failing command keeps waiting before it is marked as failed.
+   */
+  @Min(1)
+  public int maxRetryHours = 12;
 
   /**
    * Seconds to wait before retrying a command this server could not run, e.g. because the job executor was stopped.
@@ -47,6 +54,8 @@ public class OutboxConfig {
    * Hours a command may wait since it was requested before the health check reports it as stuck. A command that is
    * put off again and again, e.g. the deletion of a sector that is always busy, is never overdue.
    * An extended release can hold up the syncs and deletions of its project for 36 hours, so it must not count.
+   * Only commands that never failed count: a failing one, e.g. while DataCite is down, is bounded by maxAttempts and
+   * maxRetryHours and ends as failed, which mails the error but does not make the server unhealthy.
    */
   @Min(1)
   public int stuckHours = 48;

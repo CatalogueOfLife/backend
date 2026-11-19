@@ -98,11 +98,12 @@ public class DoiHandler implements OutboxHandler, Managed {
   }
 
   /**
-   * Waits attempts squared hours, giving DataCite time to recover.
+   * Waits attempts squared hours, at most 12, giving DataCite time to recover. With the default 10 attempts a command
+   * failing all along is given up after 86 hours.
    */
   @Override
   public Duration retryDelay(int attempts) {
-    return Duration.ofHours((long) attempts * attempts);
+    return Duration.ofHours(Math.min((long) attempts * attempts, 12));
   }
 
   /**

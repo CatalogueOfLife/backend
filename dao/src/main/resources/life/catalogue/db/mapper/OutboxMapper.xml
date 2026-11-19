@@ -94,7 +94,7 @@
   <select id="countStuck" resultType="integer">
     SELECT count(*)
     FROM outbox o
-    WHERE o.status = 'PENDING' AND o.created &lt; now() - #{hours} * interval '1 hour'
+    WHERE o.status = 'PENDING' AND o.attempts = 0 AND o.created &lt; now() - #{hours} * interval '1 hour'
     <include refid="EXCLUDE_TYPES"/>
   </select>
 

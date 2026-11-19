@@ -6,7 +6,9 @@ import com.codahale.metrics.health.HealthCheck;
 
 /**
  * Reports commands that have waited in the outbox for too long while its runner is started, a sign that their
- * handler is stuck: overdue ones, and those requested long ago that keep being put off.
+ * handler is stuck: overdue ones, and those requested long ago that keep being put off without ever failing.
+ * A failing command, e.g. while DataCite is down, is not reported: it is retried a bounded number of times and ends
+ * as failed, which mails the error.
  * A stopped runner, the old app of a deploy, is healthy: its commands wait on purpose, and so do
  * those of a handler that is offline, like the DOI commands while the DoiUpdater is stopped to pause DataCite.
  */
@@ -24,7 +26,7 @@ public class OutboxHealthCheck extends HealthCheck {
     }
     var h = runner.health();
     var cfg = runner.getCfg();
-    String msg = String.format("%s pending, %s overdue by more than %s minutes, %s requested more than %s hours ago, %s failed",
+    String msg = String.format("%s pending, %s overdue by more than %s minutes, %s put off for more than %s hours, %s failed",
       h.pending(), h.overdue(), cfg.overdueMinutes, h.stuck(), cfg.stuckHours, h.failed());
     return h.overdue() > 0 || h.stuck() > 0 ? Result.unhealthy(msg) : Result.healthy(msg);
   }

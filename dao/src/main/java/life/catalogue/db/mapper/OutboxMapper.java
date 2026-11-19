@@ -50,7 +50,8 @@ public interface OutboxMapper {
   int countOverdue(@Param("minutes") int minutes, @Param("exclude") @Nullable Collection<OutboxType> exclude);
 
   /**
-   * Counts pending commands requested longer than the given hours ago, which catches those put off again and again.
+   * Counts pending commands requested longer than the given hours ago that never failed, which catches those put off
+   * again and again. A failing command is retried a bounded number of times and ends as failed instead.
    * @param exclude types not to count, e.g. those whose handler is offline on purpose
    */
   int countStuck(@Param("hours") int hours, @Param("exclude") @Nullable Collection<OutboxType> exclude);

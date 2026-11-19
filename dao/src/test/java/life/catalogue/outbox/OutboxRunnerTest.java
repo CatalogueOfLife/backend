@@ -319,6 +319,54 @@ public class OutboxRunnerTest extends MapperTestBase<OutboxMapper> {
     assertEquals(0, runner.health().stuck());
   }
 
+  /**
+   * A command that failed before is retried a bounded number of times and ends as failed, so however long ago it was
+   * requested it is not reported as stuck: a DataCite outage must not make the server unhealthy.
+   */
+  @Test
+  public void failingCommandsAreNotStuck() throws Exception {
+    var runner = new OutboxRunner(cfg(), SqlSessionFactoryRule.getSqlSessionFactory());
+    runner.register(OutboxType.SECTOR_DELETE, new Handler());
+    enqueue("3:18");
+    enqueue("3:19");
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      var st = session.getConnection().createStatement();
+      st.execute("UPDATE outbox SET created = now() - interval '3 days', due = now() + interval '1 hour'");
+      st.execute("UPDATE outbox SET attempts = 2 WHERE key = '3:19'");
+    }
+    var health = runner.health();
+    assertEquals(2, health.pending());
+    assertEquals(1, health.stuck());
+  }
+
+  /**
+   * Whatever delay a handler asks for, a failed command is retried within outbox.maxRetryHours.
+   */
+  @Test
+  public void retryDelayIsCapped() throws Exception {
+    var cfg = cfg();
+    cfg.maxRetryHours = 12;
+    var runner = new OutboxRunner(cfg, SqlSessionFactoryRule.getSqlSessionFactory());
+    var h = new Handler() {
+      @Override
+      public Duration retryDelay(int attempts) {
+        return Duration.ofHours(100);
+      }
+    };
+    h.error = new IllegalStateException("datacite down");
+    enqueue("3:20");
+    claimAndRun(runner, h);
+    var x = get("3:20");
+    assertEquals(OutboxStatus.PENDING, x.getStatus());
+    assertEquals(1, x.getAttempts());
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      var rs = session.getConnection().createStatement().executeQuery(
+        "SELECT due > now() + interval '11 hours' AND due <= now() + interval '12 hours' FROM outbox WHERE key = '3:20'");
+      assertTrue(rs.next());
+      assertTrue(rs.getBoolean(1));
+    }
+  }
+
   @Test
   public void startTakesOverAndStopHandsBack() throws Exception {
     var factory = SqlSessionFactoryRule.getSqlSessionFactory();

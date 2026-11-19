@@ -82,7 +82,10 @@ DOI commands wait in the outbox, and the outbox health check does not report the
 without touching DataCite.
 
 **Retry**:
-- A failed command is retried after `attempts²` hours, at most `outbox.maxAttempts` times (12 by default).
+- A failed command is retried after `attempts²` hours, never more than `outbox.maxRetryHours` (12), at most
+  `outbox.maxAttempts` times (10 by default), so a command failing all along is given up after 86 hours. A failing
+  command does not make the outbox health check unhealthy - a DataCite outage raises no alarm, the final failure is
+  mailed.
 - Invalid metadata (pre-flight validation, or HTTP 422 from DataCite) fails the command at once and mails the
   error. A later change of the dataset revives a failed command.
 - Failed commands are kept for `outbox.failedRetentionDays`, listed by `GET /admin/outbox?type=DOI&status=FAILED`
