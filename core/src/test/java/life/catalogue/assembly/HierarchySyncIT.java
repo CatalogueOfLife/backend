@@ -105,17 +105,22 @@ public class HierarchySyncIT {
 
   static final SqlSessionFactoryRule pg = new PgSetupRule();
   static final TreeRepoRule treeRepoRule = new TreeRepoRule();
-  static final NameMatchingRule matchingRule = new NameMatchingRule();
 
   @ClassRule
   public static final TestRule classRules = RuleChain
     .outerRule(pg)
-    .around(treeRepoRule)
-    .around(matchingRule);
+    .around(treeRepoRule);
 
   // per-test: re-empties the schema so each @Test starts from scratch
-  @org.junit.Rule
   public final TestDataRule dataRule = TestDataRule.empty();
+  // per-test as well, after the data rule: the sync writes name matches, and an index kept for the whole class
+  // hands out ids of names_index rows the data rule has wiped since
+  final NameMatchingRule matchingRule = new NameMatchingRule();
+
+  @org.junit.Rule
+  public final TestRule testRules = RuleChain
+    .outerRule(dataRule)
+    .around(matchingRule);
 
   Sector hierarchySector;
   IdentifierScopeResolver scopeResolver;
@@ -201,6 +206,41 @@ public class HierarchySyncIT {
     List<NameUsageBase> lynxes = listByName(PROJECT_KEY, Rank.GENUS, "Lynx");
     assertEquals("expected exactly one Lynx in the project", 1, lynxes.size());
     assertEquals(P_Lynx, lynxes.get(0).getId());
+  }
+
+  /**
+   * Every name the sync imports - ancestors and copied synonyms - is matched to the names index. A release gives only
+   * usages with a match a stable id, so all imports of a hierarchy sector kept their random project id in the EEA
+   * releases: 25,580 of 27,693 usages of EEACOL 26.10. https://github.com/CatalogueOfLife/data/issues/1885
+   */
+  @Test
+  public void importsAreMatchedToNamesIndex() throws Exception {
+    runHierarchySync();
+    assertSectorNamesMatched();
+
+    // a re-sync deletes its imports with their matches, then imports and matches them again
+    runHierarchySync();
+    assertSectorNamesMatched();
+  }
+
+  private void assertSectorNamesMatched() {
+    var key = DSID.of(PROJECT_KEY, hierarchySector.getId());
+    try (SqlSession s = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      var nmm = s.getMapper(NameMatchMapper.class);
+      int names = 0;
+      for (Name n : s.getMapper(NameMapper.class).processSector(key)) {
+        names++;
+        var m = nmm.get(DSID.of(PROJECT_KEY, n.getId()));
+        assertNotNull("imported name " + n.getLabel() + " has no names index match", m);
+        assertNotNull("imported name " + n.getLabel() + " has no nidx", m.getNidx());
+      }
+      assertTrue("the sync imported no names", names > 0);
+      int matches = 0;
+      for (Object ignore : nmm.processSector(key)) {
+        matches++;
+      }
+      assertEquals("one match per imported name, tagged with the sector", names, matches);
+    }
   }
 
   /**
@@ -1532,6 +1572,7 @@ public class HierarchySyncIT {
     return new HierarchySync(
       hierarchySector,
       SqlSessionFactoryRule.getSqlSessionFactory(),
+      NameMatchingRule.getIndex(),
       session -> matcherFactory.postgres(PROJECT_KEY, session),
       sourceMatcherProvider != null ? sourceMatcherProvider : (dk, session) -> matcherFactory.postgres(dk, session),
       LatestDatasetKeyCache.passThru(),

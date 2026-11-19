@@ -33,6 +33,7 @@ import life.catalogue.dao.SectorImportDao;
 import life.catalogue.dao.TreeRepair;
 import life.catalogue.db.SectorProcessable;
 import life.catalogue.db.mapper.NameMapper;
+import life.catalogue.db.mapper.NameMatchMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.db.mapper.SynonymMapper;
@@ -45,6 +46,7 @@ import life.catalogue.matching.IdentifierScopeResolver;
 import life.catalogue.matching.UsageMatch;
 import life.catalogue.matching.UsageMatcher;
 import life.catalogue.matching.authorship.AuthorComparator;
+import life.catalogue.matching.nidx.NameIndex;
 
 import org.gbif.nameparser.api.Rank;
 
@@ -170,6 +172,8 @@ public class HierarchySync extends SectorRunnable {
   private final BiFunction<Integer, SqlSession, UsageMatcher> sourceMatcherProvider;
   private final LatestDatasetKeyCache latestKeyCache;
   private final @Nullable IdentifierScopeResolver scopeResolver;
+  /** Matches the names the sync imports. Without a match a release keeps their temporary project id, see data#1885. */
+  private final NameIndex nameIndex;
 
   /** Source dataset to read the higher classification from. Resolved during {@link #init()}. */
   private int sourceDatasetKey;
@@ -218,6 +222,7 @@ public class HierarchySync extends SectorRunnable {
 
   HierarchySync(DSID<Integer> sectorKey,
                 SqlSessionFactory factory,
+                NameIndex nameIndex,
                 Function<SqlSession, UsageMatcher> projectMatcherSupplier,
                 BiFunction<Integer, SqlSession, UsageMatcher> sourceMatcherProvider,
                 LatestDatasetKeyCache latestKeyCache,
@@ -233,6 +238,7 @@ public class HierarchySync extends SectorRunnable {
       throw new IllegalArgumentException("HierarchySync requires a sector with mode HIERARCHY, got " + sector.getMode());
     }
     this.sid = sid;
+    this.nameIndex = nameIndex;
     this.projectMatcherSupplier = projectMatcherSupplier;
     this.sourceMatcherProvider = sourceMatcherProvider;
     this.latestKeyCache = latestKeyCache;
@@ -242,6 +248,7 @@ public class HierarchySync extends SectorRunnable {
   @Override
   void init() throws Exception {
     super.init(false);
+    nameIndex.assertOnline();
     sourceDatasetKey = resolveSourceDatasetKey();
     LOG.info("HierarchySync sector {}: resolved source dataset {} (configured subject dataset {}, useXRelease={})",
       sectorKey, sourceDatasetKey, subjectDatasetKey, sector.isUseXRelease());
@@ -933,6 +940,7 @@ public class HierarchySync extends SectorRunnable {
           // the id the previous run gave the import of this source taxon, so nothing pointing at it dangles
           CopyUtil.copyUsage(batch, t, DSID.of(projectKey, projectParentId), user, Set.of(),
             CopyUtil.ID_GENERATOR, new TypeMaterialIds(CopyUtil.ID_GENERATOR), sn -> reuseId(origSourceId), ref -> null, refId -> null);
+          matchName(batch, t.getName());
 
           // CopyUtil mutated t to its new project id - record mapping
           sourceToProject.put(origSourceId, t.getId());
@@ -1551,6 +1559,7 @@ public class HierarchySync extends SectorRunnable {
           // The synonym keeps the id the previous run gave it.
           CopyUtil.copyUsage(batch, syn, DSID.of(projectKey, projectAcceptedId), user, Set.of(),
             CopyUtil.ID_GENERATOR, new TypeMaterialIds(CopyUtil.ID_GENERATOR), sn -> reuseId(origSourceId), ref -> null, refId -> null);
+          matchName(batch, syn.getName());
 
           if (sourceScope != null) {
             writeNum.addIdentifier(DSID.of(projectKey, syn.getId()), List.of(new Identifier(sourceScope, origSourceId)));
@@ -1744,6 +1753,20 @@ public class HierarchySync extends SectorRunnable {
     if (dropped > 0) {
       LOG.warn("Hierarchy sector {}: dropped {} entities of other sectors whose taxon is no longer imported", sectorKey, dropped);
       state.addWarning(String.format("%d entities of other sectors were dropped, as their taxon is no longer imported", dropped));
+    }
+  }
+
+  /**
+   * Matches a name the sync just copied into the project to the names index and stores the match, tagged with the
+   * sector so the next run's deleteOld() removes it with the name. A release only gives usages with a names index
+   * match a stable id: every import of a hierarchy sector kept its random project id in the EEA releases (data#1885).
+   * Empty matches are never stored, so a name without one is picked up by a later rematch.
+   */
+  private void matchName(SqlSession batch, Name n) {
+    var m = nameIndex.match(n, true, false);
+    n.setNamesIndexId(m.getNidx());
+    if (m.getNidx() != null) {
+      batch.getMapper(NameMatchMapper.class).create(n, sector.getId(), m.getNidx());
     }
   }
 

@@ -163,6 +163,11 @@ For each insertion:
 - Reference linkage is dropped (`ref → null`) and no extension entities are copied.
 - A target-dataset identifier (`new Identifier(targetScope, originalTargetId)`) is appended to the
   new project usage via `NameUsageMapper.addIdentifier(...)` so future runs can match by id.
+- The copied name is matched to the names index and its `name_match` row is written, tagged with the
+  sector like the name, so `deleteOld` removes it with the name. A release only gives usages with a names
+  index match a stable id: without it every import kept its random project id in each release, 25,580 of
+  27,693 usages of EEACOL 26.10 ([data#1885](https://github.com/CatalogueOfLife/data/issues/1885)). The
+  match also makes the import visible to the project's postgres usage matcher.
 
 The map `targetToProject: targetAncestorId → newProjectId` is built as a side effect and shared
 with phases 2 and 3.
@@ -249,7 +254,7 @@ demoted in phase 2 is matched to one source synonym and can share its name with 
 opercularis*, for example, is matched to *Chlamys (Aequipecten) opercularis*, while the source also lists *Chlamys
 opercularis* ([backend#1594](https://github.com/CatalogueOfLife/backend/issues/1594)). Each remaining synonym is copied via
 `CopyUtil.copyUsage(...)` with `parent = (projectKey, projectAcceptedId)`, tagged with the sector,
-and identified back to the source.
+identified back to the source and matched to the names index like an imported ancestor.
 
 Pre-existing project synonyms are intentionally not touched — they don't carry this sector's key,
 so `deleteBySector` won't wipe them on the next run, and any local edits stick.
