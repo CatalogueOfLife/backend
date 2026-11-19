@@ -2,8 +2,10 @@ package life.catalogue.doi;
 
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.*;
+import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.OutboxType;
 import life.catalogue.cache.LatestDatasetKeyCache;
+import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.db.mapper.DatasetArchiveMapper;
 import life.catalogue.db.mapper.DatasetImportMapper;
 import life.catalogue.db.mapper.DatasetMapper;
@@ -101,6 +103,35 @@ class DoiHandlerTest {
     verifyNoMoreInteractions(doiService);
   }
 
+  /**
+   * Deleting a published release hides its DOI and points it to ChecklistBank. A release of any project but COL never
+   * points to the portal, so the latest release is not even looked up - for the deleted release 264436 that lookup
+   * threw and kept the command failing for days.
+   */
+  @Test
+  void deletedReleaseOfOtherProjectPointsToClb() throws Exception {
+    var info = new DatasetSimple();
+    info.setKey(DATASET_KEY);
+    info.setOrigin(DatasetOrigin.RELEASE);
+    info.setSourceKey(9822);
+    info.setDeleted(true);
+    var cache = mock(LatestDatasetKeyCache.class);
+    var doiService = mock(DoiService.class);
+    var doi = CFG.datasetDOI(DATASET_KEY);
+    when(doiService.delete(doi)).thenReturn(false);
+    var factory = factory(info);
+    DatasetInfoCache.CACHE.clear();
+    DatasetInfoCache.CACHE.setFactory(factory);
+    try {
+      handler(factory, doiService, cache, false).handle(entry(doi, DoiAction.DELETE));
+      verify(doiService).update(doi, URI.create("https://www.checklistbank.org/dataset/" + DATASET_KEY));
+      verifyNoInteractions(cache);
+    } finally {
+      DatasetInfoCache.CACHE.clear();
+      DatasetInfoCache.CACHE.setFactory(null);
+    }
+  }
+
   @Test
   void otherPrefixIgnored() throws Exception {
     var doiService = mock(DoiService.class);
@@ -155,6 +186,17 @@ class DoiHandlerTest {
   }
 
   private static DoiHandler handler(DoiService doiService, boolean alwaysOnline) {
+    return handler(factory(new DatasetSimple()), doiService, mock(LatestDatasetKeyCache.class), alwaysOnline);
+  }
+
+  private static DoiHandler handler(SqlSessionFactory factory, DoiService doiService, LatestDatasetKeyCache cache,
+                                    boolean alwaysOnline) {
+    var converter = new DatasetConverter(URI.create("https://www.catalogueoflife.org"),
+      URI.create("https://www.checklistbank.org"), k -> null);
+    return new DoiHandler(factory, doiService, cache, converter, CFG, alwaysOnline);
+  }
+
+  private static SqlSessionFactory factory(DatasetSimple simple) {
     var d = new Dataset();
     d.setKey(DATASET_KEY);
     d.setAttempt(ATTEMPT);
@@ -162,7 +204,7 @@ class DoiHandlerTest {
     d.setCreator(List.of(Agent.person("Jane", "Doe")));
 
     var dm = mock(DatasetMapper.class);
-    when(dm.getSimple(anyInt())).thenReturn(new DatasetSimple());
+    when(dm.getSimple(anyInt())).thenReturn(simple);
     when(dm.get(anyInt())).thenReturn(d);
     when(dm.isPrivate(anyInt())).thenReturn(false);
 
@@ -174,9 +216,6 @@ class DoiHandlerTest {
     var factory = mock(SqlSessionFactory.class);
     when(factory.openSession()).thenReturn(session);
     when(factory.openSession(anyBoolean())).thenReturn(session);
-
-    var converter = new DatasetConverter(URI.create("https://www.catalogueoflife.org"),
-      URI.create("https://www.checklistbank.org"), k -> null);
-    return new DoiHandler(factory, doiService, mock(LatestDatasetKeyCache.class), converter, CFG, alwaysOnline);
+    return factory;
   }
 }

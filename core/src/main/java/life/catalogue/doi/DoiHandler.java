@@ -3,6 +3,7 @@ package life.catalogue.doi;
 import life.catalogue.api.model.DOI;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.OutboxEntry;
+import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.cache.LatestDatasetKeyCache;
 import life.catalogue.common.Managed;
@@ -252,7 +253,9 @@ public class DoiHandler implements OutboxHandler, Managed {
       int key = doi.datasetKey();
       var info = DatasetInfoCache.CACHE.info(key, true);
       if (info.origin.isRelease()) {
-        return converter.releaseURI(key, info.sourceKey, datasetKeyCache.isLatestRelease(key));
+        // only the latest COL releases point to the portal, every other release to ChecklistBank
+        boolean latestCol = Objects.equals(info.sourceKey, Datasets.COL) && datasetKeyCache.isLatestRelease(key);
+        return converter.releaseURI(key, info.sourceKey, latestCol);
       }
       return converter.datasetURI(key);
     }
