@@ -12,6 +12,7 @@ import life.catalogue.es.EsUtil;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.Reader;
 import java.sql.Connection;
 
@@ -87,12 +88,14 @@ public class InitCmd extends AbstractPromptCmd {
       Partitioner.createPartitions(factory, partitions);
     }
 
-    // cleanup names index
+    // cleanup names index, the chronicle index is a directory
     if (cfg.namesIndex.file != null && cfg.namesIndex.file.exists()) {
       LOG.info("Clear names index at {}", cfg.namesIndex.file.getAbsolutePath());
-      if (!cfg.namesIndex.file.delete()) {
-        LOG.error("Unable to delete names index at {}", cfg.namesIndex.file.getAbsolutePath());
-        throw new IllegalStateException("Unable to delete names index at " + cfg.namesIndex.file.getAbsolutePath());
+      try {
+        FileUtils.forceDelete(cfg.namesIndex.file);
+      } catch (IOException e) {
+        LOG.error("Unable to delete names index at {}", cfg.namesIndex.file.getAbsolutePath(), e);
+        throw new IllegalStateException("Unable to delete names index at " + cfg.namesIndex.file.getAbsolutePath(), e);
       }
     }
 
