@@ -19,6 +19,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -129,6 +130,33 @@ public class EsUtil {
       }
       throw new EsException(e.getMessage());
     }
+  }
+
+  /**
+   * Deletes the index with the provided name or, if the name is an alias, all indices it points to.
+   * Elasticsearch refuses to delete an index through its alias.
+   * Will silently do nothing if neither exists.
+   */
+  public static void deleteIndexOrAliasedIndices(ElasticsearchClient client, String indexOrAlias) throws IOException {
+    var indices = aliasedIndices(client, indexOrAlias);
+    if (indices.isEmpty()) {
+      deleteIndex(client, indexOrAlias);
+    } else {
+      LOG.info("{} is an alias of the indices {}", indexOrAlias, indices);
+      for (String idx : indices) {
+        deleteIndex(client, idx);
+      }
+    }
+  }
+
+  /**
+   * @return the concrete indices the alias points to, empty if there is no such alias
+   */
+  public static Set<String> aliasedIndices(ElasticsearchClient client, String alias) throws IOException {
+    if (!client.indices().existsAlias(a -> a.name(alias)).value()) {
+      return Set.of();
+    }
+    return Set.copyOf(client.indices().getAlias(a -> a.name(alias)).aliases().keySet());
   }
 
   /**

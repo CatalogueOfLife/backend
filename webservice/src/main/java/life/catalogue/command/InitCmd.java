@@ -126,9 +126,8 @@ public class InitCmd extends AbstractPromptCmd {
       LOG.info("Create new elasticsearch index {} with alias {}", indexToday, indexAlias);
       ElasticsearchClient client = new EsClientFactory(cfg.es).createClient();
       try {
-        if (EsUtil.indexExists(client, indexAlias)) {
-          EsUtil.deleteIndex(client, indexAlias); // alias
-        }
+        // the indices behind the alias, as elasticsearch refuses to delete an index through its alias
+        EsUtil.deleteIndexOrAliasedIndices(client, indexAlias);
         if (EsUtil.indexExists(client, indexToday)) {
           EsUtil.deleteIndex(client, indexToday); // today - just in case we use the command several times a day
         }
