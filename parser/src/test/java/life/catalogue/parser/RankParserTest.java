@@ -29,6 +29,12 @@ public class RankParserTest extends ParserTestBase<Rank> {
     assertParse(Rank.SUBSPECIES, "subsp.");
     assertParse(Rank.SUBSPECIES, "subsp ");
     assertParse(Rank.SUBSPECIES, "ssp ");
+    // breeds are no cultivars, but until there is a breed rank it is the closest, see #1712
+    assertParse(Rank.CULTIVAR, "breed");
+    assertParse(Rank.CULTIVAR, "Breed");
+    assertParse(Rank.CULTIVAR, "breeds");
+    assertEquals(Optional.of(Rank.CULTIVAR), RankParser.PARSER.parse((NomCode) null, "breed"));
+    assertEquals(Optional.of(Rank.CULTIVAR), RankParser.PARSER.parse(NomCode.ZOOLOGICAL, "breed"));
     // plural
     assertParse(Rank.GENUS, "genera");
     assertParse(Rank.PROLES, "prole");
