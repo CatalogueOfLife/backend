@@ -65,6 +65,45 @@ public class NameFormatterTest {
     n.setRank(Rank.CULTIVAR_GROUP);
     n.setCultivarEpithet("Capitata");
     assertEquals("Brassica oleracea Capitata Group", NameFormatter.scientificName(n));
+
+    // a convariety has a regular infraspecific epithet and keeps its marker
+    n = new Name();
+    n.setGenus("Brassica");
+    n.setSpecificEpithet("oleracea");
+    n.setInfraspecificEpithet("capitata");
+    n.setRank(Rank.CONVARIETY);
+    assertEquals("Brassica oleracea convar. capitata", NameFormatter.scientificName(n));
+  }
+
+  /**
+   * The cv. marker of a cultivar rank does not belong in front of the infraspecific epithet
+   * https://github.com/CatalogueOfLife/backend/issues/1710
+   */
+  @Test
+  public void cultivarsOfTrinomials() throws Exception {
+    Name n = new Name();
+    n.setGenus("Gallus");
+    n.setSpecificEpithet("gallus");
+    n.setInfraspecificEpithet("domesticus");
+    n.setCultivarEpithet("Jersey");
+    n.setRank(Rank.CULTIVAR);
+    assertEquals("Gallus gallus domesticus 'Jersey'", NameFormatter.scientificName(n));
+
+    n.setCode(NomCode.ZOOLOGICAL);
+    assertEquals("Gallus gallus domesticus 'Jersey'", NameFormatter.scientificName(n));
+
+    n.setCode(NomCode.BOTANICAL);
+    assertEquals("Gallus gallus domesticus 'Jersey'", NameFormatter.scientificName(n));
+
+    n.setNotho(NamePart.INFRASPECIFIC);
+    assertEquals("Gallus gallus × domesticus 'Jersey'", NameFormatter.scientificName(n));
+
+    // a bare cultivar rank without a cultivar epithet still shows its marker
+    n = new Name();
+    n.setGenus("Brassica");
+    n.setSpecificEpithet("oleracea");
+    n.setRank(Rank.CULTIVAR);
+    assertEquals("Brassica oleracea cv.", NameFormatter.scientificName(n));
   }
 
   @Test

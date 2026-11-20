@@ -370,10 +370,14 @@ public class NameFormatter {
   }
 
   private static StringBuilder appendInfraspecific(StringBuilder sb, FormattableName n, boolean forceRankMarker) {
+    // the rank of a cultivar name with a cultivar epithet belongs to that epithet, which the quotes already mark:
+    // the rank of the infraspecific epithet of Gallus gallus domesticus 'Jersey' is unknown, see #1710
+    final boolean rankMarker = n.getRank() != null && isInfraspecificMarker(n.getRank())
+      && !(n.getRank().isCultivarRank() && n.getCultivarEpithet() != null);
     // infraspecific part
     sb.append(' ');
     if (n.getNotho().contains(NamePart.INFRASPECIFIC)) {
-      if (n.getRank() != null && isInfraspecificMarker(n.getRank())) {
+      if (rankMarker) {
         sb.append("notho");
       } else {
         sb.append(HYBRID_MARKER);
@@ -381,8 +385,8 @@ public class NameFormatter {
       }
     }
     // hide subsp. from zoological names
-    if (forceRankMarker || isNotZoo(n.getCode()) || Rank.SUBSPECIES != n.getRank() || !n.getNotho().isEmpty()) {
-      if (appendRankMarker(sb, n.getRank(), NameFormatter::isInfraspecificMarker, false) && n.getInfraspecificEpithet() != null) {
+    if (rankMarker && (forceRankMarker || isNotZoo(n.getCode()) || Rank.SUBSPECIES != n.getRank() || !n.getNotho().isEmpty())) {
+      if (appendRankMarker(sb, n.getRank(), false) && n.getInfraspecificEpithet() != null) {
         sb.append(' ');
       }
     }
