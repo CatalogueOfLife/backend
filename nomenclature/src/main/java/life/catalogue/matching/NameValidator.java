@@ -295,6 +295,8 @@ public class NameValidator {
     
     // verify ranks
     if (rank != null && rank.notOtherOrUnranked()) {
+      // a cultivar epithet can sit on a species or a genus directly: Bos taurus 'Jersey', Rosa 'Kiese', see #1711
+      final boolean cultivar = rank.isCultivarRank() && n.getCultivarEpithet() != null;
       if (rank.isGenusOrSuprageneric()) {
         if (n.getGenus() != null || n.getUninomial() == null) {
           LOG.info("Missing genus or uninomial for {}", n.getLabel());
@@ -312,7 +314,7 @@ public class NameValidator {
         }
         
       } else if (rank.isSpeciesOrBelow()) {
-        if (n.getSpecificEpithet() == null) {
+        if (n.getSpecificEpithet() == null && !cultivar) {
           LOG.info("Missing specific epithet for {}", n.getLabel());
           issues.add(Issue.INCONSISTENT_NAME);
         }
@@ -323,16 +325,16 @@ public class NameValidator {
         }
       }
       
-      if (rank.isInfraspecific()) {
+      if (rank.isInfraspecific() && !cultivar) {
         if (n.getInfraspecificEpithet() == null) {
           LOG.info("Missing infraspecific epithet for {}", n.getLabel());
           issues.add(Issue.INCONSISTENT_NAME);
         }
       }
 
-      // notho
+      // notho. getEpithet(GENERIC) also takes the uninomial of a nothogenus written alone: ×Triticosecale, see #1713
       for (NamePart notho : n.getNotho()) {
-        if (n.getNamePart(notho) == null) {
+        if (n.getEpithet(notho) == null) {
           issues.add(Issue.NOTHO_NOT_APPLICABLE);
           break;
         }

@@ -4,6 +4,8 @@ import life.catalogue.api.model.Name;
 import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.vocab.Issue;
 
+import org.gbif.nameparser.api.Authorship;
+import org.gbif.nameparser.api.NamePart;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
@@ -20,7 +22,8 @@ public class NameValidatorTest {
   private void verify(Name n, Issue ... expected) {
     VerbatimRecord v = new VerbatimRecord();
     if (expected.length == 0) {
-      assertNull( NameValidator.flagIssues(n, n.getType(), v) );
+      var flagged = NameValidator.flagIssues(n, n.getType(), v);
+      assertNull("unexpected issues " + v.getIssues(), flagged);
 
     } else {
       assertNotNull( NameValidator.flagIssues(n, n.getType(), v) );
@@ -213,6 +216,88 @@ public class NameValidatorTest {
     n.setRank(Rank.SUBSPECIES);
     
     verify(n, Issue.MISSING_AUTHORSHIP);
+  }
+
+  private static Name authored(Name n, String author) {
+    n.setType(NameType.SCIENTIFIC);
+    n.setCombinationAuthorship(Authorship.authors(author));
+    n.setAuthorship(author);
+    return n;
+  }
+
+  /**
+   * A cultivar epithet can sit on a species or a genus directly
+   * https://github.com/CatalogueOfLife/backend/issues/1711
+   */
+  @Test
+  public void cultivars() throws Exception {
+    Name n = authored(new Name(), "L.");
+    n.setGenus("Bos");
+    n.setSpecificEpithet("taurus");
+    n.setCultivarEpithet("Jersey");
+    n.setRank(Rank.CULTIVAR);
+    verify(n);
+
+    n.setCode(NomCode.CULTIVARS);
+    verify(n);
+
+    // trinomial
+    n.setGenus("Gallus");
+    n.setSpecificEpithet("gallus");
+    n.setInfraspecificEpithet("domesticus");
+    verify(n);
+
+    // genus
+    n = authored(new Name(), "L.");
+    n.setGenus("Rosa");
+    n.setCultivarEpithet("Kiese");
+    n.setRank(Rank.CULTIVAR);
+    verify(n);
+
+    n.setRank(Rank.CULTIVAR_GROUP);
+    verify(n);
+
+    // a cultivar rank without a cultivar epithet is incomplete
+    n = authored(new Name(), "L.");
+    n.setGenus("Bos");
+    n.setSpecificEpithet("taurus");
+    n.setRank(Rank.CULTIVAR);
+    verify(n, Issue.INCONSISTENT_NAME);
+
+    // a convariety needs its infraspecific epithet
+    n.setRank(Rank.CONVARIETY);
+    verify(n, Issue.INCONSISTENT_NAME);
+    n.setInfraspecificEpithet("capitata");
+    verify(n);
+  }
+
+  /**
+   * A nothogenus written alone has its genus in the uninomial
+   * https://github.com/CatalogueOfLife/backend/issues/1713
+   */
+  @Test
+  public void notho() throws Exception {
+    Name n = authored(new Name(), "Wittm.");
+    n.setUninomial("Triticosecale");
+    n.setRank(Rank.GENUS);
+    n.setNotho(NamePart.GENERIC);
+    verify(n);
+
+    n = authored(new Name(), "L.");
+    n.setGenus("Triticosecale");
+    n.setSpecificEpithet("rimpaui");
+    n.setRank(Rank.SPECIES);
+    n.setNotho(NamePart.GENERIC);
+    verify(n);
+
+    n.setNotho(NamePart.SPECIFIC);
+    verify(n);
+
+    n.setNotho(NamePart.INFRASPECIFIC);
+    verify(n, Issue.NOTHO_NOT_APPLICABLE);
+
+    n.setNotho(NamePart.INFRAGENERIC);
+    verify(n, Issue.NOTHO_NOT_APPLICABLE);
   }
 
   @Test
