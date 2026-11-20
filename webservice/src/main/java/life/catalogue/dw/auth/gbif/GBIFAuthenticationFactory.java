@@ -38,6 +38,12 @@ public class GBIFAuthenticationFactory implements AuthenticationProviderFactory 
   public String secret;
   
   /**
+   * Signs requests with the old HMAC-SHA1 scheme of gbif-common-ws before 2.1.4, for a GBIF API that has not been
+   * upgraded yet. GBIF APIs from 2.1.4 on only accept the new scheme, the default.
+   */
+  public boolean legacySigning = false;
+
+  /**
    * Test username to use to verify the GBIF authentication is working fine
    */
   @Nullable
