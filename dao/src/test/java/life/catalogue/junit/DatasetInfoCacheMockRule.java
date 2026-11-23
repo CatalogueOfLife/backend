@@ -14,6 +14,7 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.junit.rules.ExternalResource;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
@@ -92,6 +93,11 @@ public class DatasetInfoCacheMockRule extends ExternalResource {
     // lenient, as only searches across datasets ask for the private ones and strict stubbing tests fail on unused stubs
     lenient().when(mapper.privateKeys()).thenAnswer(inv -> datasets.values().stream()
       .filter(d -> d.isPrivat() && !d.isDeleted())
+      .map(DatasetSimple::getKey)
+      .collect(Collectors.toSet()));
+    // lenient, as only searches filtering by publisher ask for the datasets of one
+    lenient().when(mapper.keysByPublisher(any(UUID.class))).thenAnswer(inv -> datasets.values().stream()
+      .filter(d -> inv.getArgument(0).equals(d.getGbifPublisherKey()) && !d.isDeleted())
       .map(DatasetSimple::getKey)
       .collect(Collectors.toSet()));
     // clear so previous test's entries don't leak, then inject the mocked factory

@@ -24,6 +24,13 @@ public enum NameUsageSearchParameter {
   DATASET_KEY(Integer.class),
 
   /**
+   * The GBIF publisher key of the dataset of a name usage, e.g. cdef28b1-db4e-4c58-aa71-3c5238c2d0b5 for all GRIIS
+   * checklists. The publisher is not indexed but resolved to the keys of its datasets at query time, as it can change
+   * for a dataset. It therefore cannot be used as a facet, use DATASET_KEY instead.
+   */
+  PUBLISHER_KEY(UUID.class),
+
+  /**
    * This takes the datasetKey of the managed project to filter decisions by, not usages. It will prune the list of decisions to just the
    * ones matching the datasetKey. I.e. the list only contains a single decision at max if one project is given so the UI can quickly
    * determine if a decision exists at all for a given usage and does not have to ignore decisions from other project.

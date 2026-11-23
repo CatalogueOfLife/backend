@@ -6,6 +6,8 @@ import life.catalogue.api.vocab.*;
 import life.catalogue.config.IndexConfig;
 import life.catalogue.es.EsTestBase;
 import life.catalogue.es.EsUtil;
+import life.catalogue.es.query.InvalidQueryException;
+import life.catalogue.junit.DatasetInfoCacheMockRule;
 
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
@@ -158,6 +160,15 @@ public class NameUsageSearchServiceEsIT extends EsTestBase {
   @Override @Before  public void setUp() {}
   @Override @After   public void tearDown() {}
 
+  static final UUID PUBLISHER1 = UUID.fromString("cdef28b1-db4e-4c58-aa71-3c5238c2d0b5");
+  static final UUID PUBLISHER2 = UUID.randomUUID();
+
+  /** The publishers of the indexed datasets, which the search resolves through the dataset cache. */
+  @Rule
+  public final DatasetInfoCacheMockRule datasetInfo = new DatasetInfoCacheMockRule()
+    .put(DS1, DatasetOrigin.EXTERNAL, null, PUBLISHER1)
+    .put(DS2, DatasetOrigin.EXTERNAL, null, PUBLISHER2);
+
   // -----------------------------------------------------------------------
   // Search helpers
   // -----------------------------------------------------------------------
@@ -305,6 +316,7 @@ public class NameUsageSearchServiceEsIT extends EsTestBase {
     // make sure to try all filter params
     for (NameUsageSearchParameter p : NameUsageSearchParameter.values()) {
       if (p == DECISION_MODE) continue; // skip this as it requires also the catalogue key to be present
+      if (p == PUBLISHER_KEY) continue; // takes publisher keys only, see testPublisherKey
       assertNotNull(doSearch(p, "_NOT_NULL"));
     }
   }
@@ -355,7 +367,9 @@ public class NameUsageSearchServiceEsIT extends EsTestBase {
     // now test ALL FACETS are working
     req = new NameUsageSearchRequest();
     for (NameUsageSearchParameter p : NameUsageSearchParameter.values()) {
-      req.addFacet(p);
+      if (p != PUBLISHER_KEY) { // not indexed, see testPublisherKey
+        req.addFacet(p);
+      }
     }
     req.setFacetLimit(20);
 
@@ -454,6 +468,69 @@ public class NameUsageSearchServiceEsIT extends EsTestBase {
     int inDS1 = search(qDS1, 0).getTotal();
     assertTrue("the query must hit the excluded dataset to prove anything", inDS1 > 0);
     assertEquals(all - inDS1, search(qExcl, 0).getTotal());
+  }
+
+  /**
+   * The publisher is not indexed but resolved to the keys of its datasets, e.g. to search all GRIIS checklists at once.
+   */
+  @Test
+  public void testPublisherKey() {
+    assertFilterCount(14, PUBLISHER_KEY, PUBLISHER1);
+    assertFilterCount(11, PUBLISHER_KEY, PUBLISHER2);
+    // a publisher without datasets matches nothing, it does not drop the filter
+    assertFilterCount(0, PUBLISHER_KEY, UUID.randomUUID());
+
+    // several publishers are a union
+    NameUsageSearchRequest req = new NameUsageSearchRequest();
+    req.addFilter(PUBLISHER_KEY, PUBLISHER1.toString());
+    req.addFilter(PUBLISHER_KEY, PUBLISHER2.toString());
+    assertEquals(TOTAL, count(req));
+
+    // other filters, a dataset key included, narrow it down
+    req = new NameUsageSearchRequest();
+    req.addFilter(PUBLISHER_KEY, PUBLISHER1.toString());
+    req.addFilter(DATASET_KEY, String.valueOf(DS2));
+    assertEquals(0, count(req));
+
+    NameUsageSearchRequest q = new NameUsageSearchRequest();
+    q.setQ("Felis");
+    int all = count(q);
+    assertTrue(all > 0);
+    q.addFilter(PUBLISHER_KEY, PUBLISHER1.toString());
+    assertEquals("all Felis are in DS1", all, count(q));
+    q.setFilter(PUBLISHER_KEY, PUBLISHER2.toString());
+    assertEquals(0, count(q));
+
+    // the dataset facet in the global context, ignoring its own filter, keeps to the publisher
+    req = new NameUsageSearchRequest();
+    req.addFilter(PUBLISHER_KEY, PUBLISHER2.toString());
+    req.addFilter(DATASET_KEY, String.valueOf(DS2));
+    req.addFacet(DATASET_KEY);
+    req.addFacet(RANK);
+    req.setFacetLimit(20);
+    NameUsageSearchResponse resp = search(req, 0);
+    assertEquals(11, resp.getTotal());
+    Set<FacetValue<?>> dsFacet = resp.getFacets().get(DATASET_KEY);
+    assertEquals(1, dsFacet.size());
+    assertEquals(DS2, dsFacet.iterator().next().getValue());
+
+    // and private datasets stay excluded
+    req = new NameUsageSearchRequest();
+    req.addFilter(PUBLISHER_KEY, PUBLISHER1.toString());
+    req.setExcludedDatasetKeys(Set.of(DS1));
+    assertEquals(0, count(req));
+  }
+
+  @Test(expected = InvalidQueryException.class)
+  public void testPublisherKeyNoFacet() {
+    NameUsageSearchRequest req = new NameUsageSearchRequest();
+    req.addFacet(PUBLISHER_KEY);
+    search(req, 0);
+  }
+
+  @Test(expected = InvalidQueryException.class)
+  public void testPublisherKeyNotNull() {
+    doSearch(PUBLISHER_KEY, "_NOT_NULL");
   }
 
   // -----------------------------------------------------------------------

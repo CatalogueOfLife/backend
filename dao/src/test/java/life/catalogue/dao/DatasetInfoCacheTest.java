@@ -12,6 +12,7 @@ import life.catalogue.junit.PgSetupRule;
 import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.junit.TestDataRule;
 
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BooleanSupplier;
@@ -41,6 +42,33 @@ public class DatasetInfoCacheTest {
   @Test(expected = NotFoundException.class)
   public void notFound() {
     DatasetInfoCache.CACHE.info(999);
+  }
+
+  /**
+   * The datasets of a publisher are cached and every dataset change drops them, as a dataset can change its publisher.
+   */
+  @Test
+  public void keysByPublisher() {
+    final UUID publisher = UUID.randomUUID();
+    try {
+      assertTrue(DatasetInfoCache.CACHE.keysByPublisher(publisher).isEmpty());
+
+      Dataset d;
+      Dataset d2;
+      try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+        var dm = session.getMapper(DatasetMapper.class);
+        d = dm.get(12);
+        d2 = new Dataset(d);
+        d2.setGbifPublisherKey(publisher);
+        dm.update(d2);
+      }
+      // cached until a change event arrives
+      assertTrue(DatasetInfoCache.CACHE.keysByPublisher(publisher).isEmpty());
+      DatasetInfoCache.CACHE.datasetChanged(DatasetChanged.changed(d2, d, 1));
+      assertEquals(Set.of(12), DatasetInfoCache.CACHE.keysByPublisher(publisher));
+    } finally {
+      DatasetInfoCache.CACHE.clear();
+    }
   }
 
   static void await(BooleanSupplier condition) throws InterruptedException {

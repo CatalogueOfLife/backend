@@ -26,6 +26,10 @@ public class SuggestRequestValidator {
         throw invalidRequest("When specifying a decision mode, a single catalogue key must also be specified");
       }
     }
+    if (request.hasFilter(PUBLISHER_KEY)) {
+      // suggestions are scoped to a single dataset anyway
+      throw invalidRequest("No %s filter for suggestions", PUBLISHER_KEY);
+    }
     if (request.getLimit() == null) {
       request.setLimit(10);
     } else if (request.getLimit() < 0 || request.getLimit() > 100) {

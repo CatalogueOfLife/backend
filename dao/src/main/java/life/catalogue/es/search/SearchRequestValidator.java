@@ -6,8 +6,9 @@ import life.catalogue.es.query.InvalidQueryException;
 
 import java.util.Set;
 
-import static life.catalogue.api.search.NameUsageSearchParameter.PROJECT_KEY;
-import static life.catalogue.api.search.NameUsageSearchParameter.DECISION_MODE;
+import static life.catalogue.api.search.NameUsageRequest.IS_NOT_NULL;
+import static life.catalogue.api.search.NameUsageRequest.IS_NULL;
+import static life.catalogue.api.search.NameUsageSearchParameter.*;
 
 public class SearchRequestValidator {
   private static final int MAX_SIZE_AGGS = 100000;
@@ -28,6 +29,17 @@ public class SearchRequestValidator {
       // require a project key
       if (!request.hasFilter(PROJECT_KEY) || request.getFilterValues(PROJECT_KEY).size() > 1) {
         throw invalidSearchRequest("When specifying a decision mode, a single catalogue key must also be specified");
+      }
+    }
+    // the publisher is not indexed but resolved to its datasets, so it can neither be counted nor be absent
+    if (request.getFacets().contains(PUBLISHER_KEY)) {
+      throw invalidSearchRequest("No facet on %s, use %s instead", PUBLISHER_KEY, DATASET_KEY);
+    }
+    if (request.hasFilter(PUBLISHER_KEY)) {
+      for (Object v : request.getFilterValues(PUBLISHER_KEY)) {
+        if (v.equals(IS_NULL) || v.equals(IS_NOT_NULL)) {
+          throw invalidSearchRequest("The %s filter takes GBIF publisher keys only", PUBLISHER_KEY);
+        }
       }
     }
     // we set a maximum limit for performance reasons

@@ -43,6 +43,8 @@ public class FieldLookup extends EnumMap<NameUsageSearchParameter, String[]> {
     putSingle(NOM_STATUS, "usage.name.nomStatus");
     putSingle(ORIGIN, "usage.origin");
     putSingle(PUBLISHED_IN_ID, "usage.name.publishedInId");
+    // the publisher is not indexed, FiltersTranslator filters the dataset keys it is resolved to
+    putSingle(PUBLISHER_KEY, "usage.name.datasetKey");
     putSingle(RANK, "usage.name.rank");
     putSingle(SECONDARY_SOURCE, "secondarySourceKeys");
     putSingle(SECONDARY_SOURCE_GROUP, "secondarySourceGroups");

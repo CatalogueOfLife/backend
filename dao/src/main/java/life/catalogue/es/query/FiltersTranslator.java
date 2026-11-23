@@ -31,9 +31,12 @@ public class FiltersTranslator {
       subqueries.addAll(processDecisionFilters());
       FilterTranslator ft = new FilterTranslator(request);
       request.getFilters().keySet().stream()
-          .filter(p -> p != DECISION_MODE && p != PROJECT_KEY)
+          .filter(p -> p != DECISION_MODE && p != PROJECT_KEY && p != PUBLISHER_KEY)
           .map(ft::translate)
           .forEach(subqueries::add);
+      if (request.hasFilter(PUBLISHER_KEY)) {
+        subqueries.add(publisherDatasets(request));
+      }
     }
     subqueries.addAll(processMinMaxRank(request));
     if (request.hasExcludedDatasets()) {
@@ -104,6 +107,27 @@ public class FiltersTranslator {
       request.getMinRank() != null ||
       request.getMaxRank() != null ||
       request.hasExcludedDatasets();
+  }
+
+  /**
+   * The index has no publisher, so the publisher filter is a filter on the keys of its datasets, resolved by the search
+   * service before. Datasets of a publisher change, the usage documents should not have to.
+   * A publisher without datasets matches nothing, it must never drop the filter.
+   */
+  private static Query publisherDatasets(NameUsageRequest request) {
+    Set<Integer> keys = request.getPublisherDatasetKeys();
+    if (keys == null) {
+      throw new IllegalStateException("The datasets of the " + PUBLISHER_KEY + " filter have not been resolved");
+    }
+    if (keys.isEmpty()) {
+      return Query.of(q -> q.matchNone(mn -> mn));
+    }
+    String field = FieldLookup.INSTANCE.lookupSingle(DATASET_KEY);
+    List<FieldValue> values = keys.stream()
+      .sorted()
+      .map(k -> FieldValue.of(String.valueOf(k)))
+      .toList();
+    return Query.of(q -> q.terms(t -> t.field(field).terms(tv -> tv.value(values))));
   }
 
   /**

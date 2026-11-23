@@ -45,6 +45,12 @@ public class DatasetInfoCache implements DatasetListener {
   private final LoadingCache<Boolean, Set<Integer>> privateKeys = Caffeine.newBuilder()
                                                                           .expireAfterWrite(5, TimeUnit.MINUTES)
                                                                           .build(k -> loadPrivateKeys());
+  // the keys of the datasets of a GBIF publisher. Dropped entirely by every dataset change event, as the event names
+  // the new publisher of a dataset but not the old one. The expiry only bounds a missed event.
+  private final LoadingCache<UUID, Set<Integer>> publisherKeys = Caffeine.newBuilder()
+                                                                         .maximumSize(1000)
+                                                                         .expireAfterWrite(5, TimeUnit.MINUTES)
+                                                                         .build(this::loadPublisherKeys);
 
   public static DatasetInfoCache CACHE = new DatasetInfoCache();
 
@@ -74,6 +80,20 @@ public class DatasetInfoCache implements DatasetListener {
     try (SqlSession session = factory.openSession()) {
       return Set.copyOf(session.getMapper(DatasetMapper.class).privateKeys());
     }
+  }
+
+  private Set<Integer> loadPublisherKeys(UUID publisher) {
+    Preconditions.checkNotNull(factory, "No session factory set to load the datasets of a publisher");
+    try (SqlSession session = factory.openSession()) {
+      return Set.copyOf(session.getMapper(DatasetMapper.class).keysByPublisher(publisher));
+    }
+  }
+
+  /**
+   * @return the keys of all datasets that are not deleted and have the given GBIF publisher, possibly none
+   */
+  public Set<Integer> keysByPublisher(UUID publisher) {
+    return publisherKeys.get(publisher);
   }
 
   /**
@@ -248,6 +268,7 @@ public class DatasetInfoCache implements DatasetListener {
     infos.clear();
     labels.invalidateAll();
     privateKeys.invalidateAll();
+    publisherKeys.invalidateAll();
     LOG.info("Dataset info & label cache cleared");
   }
 
@@ -257,8 +278,9 @@ public class DatasetInfoCache implements DatasetListener {
 
   @Override
   public void datasetChanged(DatasetChanged event){
-    // any change can make a dataset private or public, a new dataset included
+    // any change can make a dataset private or public or move it to another publisher, a new dataset included
     privateKeys.invalidateAll();
+    publisherKeys.invalidateAll();
     if (event.isDeletion()) {
       LOG.info("Deletion event registered for dataset {}", event.key);
       update(event, true);

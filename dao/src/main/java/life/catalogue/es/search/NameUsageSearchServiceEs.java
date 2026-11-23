@@ -3,14 +3,20 @@ package life.catalogue.es.search;
 import co.elastic.clients.elasticsearch._types.ElasticsearchException;
 
 import life.catalogue.api.model.Page;
+import life.catalogue.api.search.NameUsageRequest;
+import life.catalogue.api.search.NameUsageSearchParameter;
 import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.api.search.NameUsageSearchResponse;
 import life.catalogue.api.search.NameUsageWrapper;
+import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.es.EsException;
 import life.catalogue.es.EsQueryService;
 import life.catalogue.es.query.SortByTranslator;
 
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 import java.util.function.Consumer;
 
 import org.slf4j.Logger;
@@ -33,9 +39,25 @@ public class NameUsageSearchServiceEs extends EsQueryService implements NameUsag
     super(indexName, client);
   }
 
+  /**
+   * The index has no publisher: a dataset can change its publisher and its usages should not have to be reindexed
+   * for that. The publisher filter is therefore resolved to the keys of the publishers' datasets here, from the dataset
+   * cache that every dataset change event refreshes.
+   */
+  static void resolvePublishers(NameUsageRequest request) {
+    if (request.hasFilter(NameUsageSearchParameter.PUBLISHER_KEY)) {
+      Set<Integer> keys = new HashSet<>();
+      for (Object publisher : request.getFilterValues(NameUsageSearchParameter.PUBLISHER_KEY)) {
+        keys.addAll(DatasetInfoCache.CACHE.keysByPublisher((UUID) publisher));
+      }
+      request.setPublisherDatasetKeys(keys);
+    }
+  }
+
   public NameUsageSearchResponse search(NameUsageSearchRequest request, Page page) {
     try {
       new SearchRequestValidator(request).validateRequest();
+      resolvePublishers(request);
       SearchRequestTranslator translator = new SearchRequestTranslator(request, page);
       SearchRequest esSearchRequest = translator.translateRequest(index);
       SearchResponse<NameUsageWrapper> esResponse = client.search(esSearchRequest, NameUsageWrapper.class);
@@ -53,6 +75,7 @@ public class NameUsageSearchServiceEs extends EsQueryService implements NameUsag
   @Override
   public void scroll(NameUsageSearchRequest request, int batchSize, Consumer<NameUsageWrapper> handler) {
     new SearchRequestValidator(request).validateRequest();
+    resolvePublishers(request);
     final var query = SearchRequestTranslator.generateQuery(request);
     final var sort = new SortByTranslator(request).translate();
     try {

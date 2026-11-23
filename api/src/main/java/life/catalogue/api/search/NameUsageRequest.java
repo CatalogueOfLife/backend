@@ -110,6 +110,11 @@ public abstract class NameUsageRequest {
   @JsonIgnore
   private Set<Integer> excludedDatasetKeys = Set.of();
 
+  // The keys of the datasets of the PUBLISHER_KEY filter, resolved by the search service as the index has no publisher.
+  // Set by the server only, null while unresolved. Derived from the filters, so not part of equals.
+  @JsonIgnore
+  private Set<Integer> publisherDatasetKeys;
+
   public NameUsageRequest() {
   }
 
@@ -129,6 +134,7 @@ public abstract class NameUsageRequest {
     this.reverse = other.reverse;
     setFilters(other.filters);
     this.excludedDatasetKeys = other.excludedDatasetKeys;
+    this.publisherDatasetKeys = other.publisherDatasetKeys;
   }
 
   public void clearFilter(NameUsageSearchParameter param) {
@@ -372,6 +378,20 @@ public abstract class NameUsageRequest {
   @JsonIgnore
   public boolean hasExcludedDatasets() {
     return !excludedDatasetKeys.isEmpty();
+  }
+
+  /**
+   * @return the keys of the datasets of the publishers given by the PUBLISHER_KEY filter, possibly empty,
+   * or null if they have not been resolved yet
+   */
+  @JsonIgnore
+  public Set<Integer> getPublisherDatasetKeys() {
+    return publisherDatasetKeys;
+  }
+
+  @JsonIgnore
+  public void setPublisherDatasetKeys(Set<Integer> publisherDatasetKeys) {
+    this.publisherDatasetKeys = publisherDatasetKeys == null ? null : Set.copyOf(publisherDatasetKeys);
   }
 
   @Override
