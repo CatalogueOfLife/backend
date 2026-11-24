@@ -33,6 +33,8 @@ import static org.junit.Assert.*;
  *   <li>A replacement name with a redundant homotypic relation, a later homonym also said to be homotypic
  *   and a later homonym relation given in both directions.</li>
  *   <li>A recombination the data relates as later homonym, which the grouper must not relate as basionym.</li>
+ *   <li>A name related to itself, twice as its own basionym and once homotypic by the grouper, as a merge left
+ *   the genus Trionyx in the extended release 317037.</li>
  * </ul>
  */
 public class NameRelationCleanerIT {
@@ -55,7 +57,8 @@ public class NameRelationCleanerIT {
   public void clean() throws Exception {
     HomotypicConsolidatorIT.loadRelations(datasetKey, DIR + "relations.tsv");
     var factory = SqlSessionFactoryRule.getSqlSessionFactory();
-    assertEquals(12, new NameRelationCleaner(factory, datasetKey).clean());
+    assertEquals(15, new NameRelationCleaner(factory, datasetKey).clean());
+    assertNoSelfRelation();
 
     assertEquals(Set.of(
       "Tilapia sparrmanii Smith, 1840 SPELLING_CORRECTION Tilapia sparmani Smith, 1840",
@@ -112,6 +115,8 @@ public class NameRelationCleanerIT {
     assertEquals(before, after);
     assertIssues("tsp1", Issue.NAME_RELATION_CONFLICT);
     assertIssues("neq");
+    // the self relations of Coriphaena are outside the subtree too
+    assertTrue(after.contains("Coriphaena hippurus Linnaeus, 1758 BASIONYM Coriphaena hippurus Linnaeus, 1758"));
   }
 
   @Test
@@ -137,6 +142,14 @@ public class NameRelationCleanerIT {
         .filter(i -> i == Issue.NAME_RELATION_CONFLICT || i == Issue.NAME_RELATION_REDUNDANT || i == Issue.SPELLING_CORRECTION_IMPLAUSIBLE)
         .collect(Collectors.toSet());
       assertEquals(usageID, Set.of(expected), relIssues);
+    }
+  }
+
+  private void assertNoSelfRelation() {
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession()) {
+      for (NameRelation nr : session.getMapper(NameRelationMapper.class).processDataset(datasetKey)) {
+        assertNotEquals(nr.toString(), nr.getNameId(), nr.getRelatedNameId());
+      }
     }
   }
 

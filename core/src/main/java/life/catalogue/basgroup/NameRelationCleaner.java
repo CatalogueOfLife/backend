@@ -32,7 +32,10 @@ import com.google.common.collect.Iterables;
  * the usages of both names, so it stays visible why a relation is gone.
  * The rules are those of {@link NameRelationRules}, applied by a {@link NameRelationJudge}, exact duplicates are collapsed
  * without an issue.
- * Relations created by the homotypic grouper are left alone.
+ * Relations of a name to itself are removed without an issue too, whoever created them: a merge maps every source name
+ * matching an existing usage onto that usage's name, so a source relation between two such names can end up as one,
+ * e.g. the genus Trionyx as its own basionym four times in the extended release 317037.
+ * Other relations created by the homotypic grouper are left alone.
  * With a root taxon only pairs of names are judged of which at least one name has a usage in its subtree.
  */
 public class NameRelationCleaner {
@@ -64,6 +67,7 @@ public class NameRelationCleaner {
    * @return the number of deleted relations
    */
   public int clean() {
+    int self = 0;
     int duplicates = 0;
     int judged = 0;
     final CountMap<Issue> removed = new CountMap<>();
@@ -74,13 +78,25 @@ public class NameRelationCleaner {
       var nrm = session.getMapper(NameRelationMapper.class);
       List<NameRelation> rels = new ArrayList<>();
       for (var nr : nrm.listConflictCandidates(datasetKey)) {
-        if (!Objects.equals(nr.getCreatedBy(), Users.HOMOTYPIC_GROUPER)) {
+        if (!Objects.equals(nr.getCreatedBy(), Users.HOMOTYPIC_GROUPER) || Objects.equals(nr.getNameId(), nr.getRelatedNameId())) {
           rels.add(nr);
         }
       }
       if (taxonID != null) {
         limitToSubtree(session, rels);
       }
+      // a name related to itself, e.g. by a merge mapping two source names onto one, whoever created it
+      var iter = rels.iterator();
+      while (iter.hasNext()) {
+        var nr = iter.next();
+        if (Objects.equals(nr.getNameId(), nr.getRelatedNameId())) {
+          LOG.debug("Remove {} relation of name {} to itself", nr.getType(), nr.getNameId());
+          nrm.delete(DSID.of(datasetKey, nr.getId()));
+          self++;
+          iter.remove();
+        }
+      }
+      session.commit();
       LOG.info("Check {} name relations sharing their names with another relation or of a spelling correction in dataset {}",
         rels.size(), datasetKey);
       var names = loadNames(session, rels);
@@ -110,10 +126,11 @@ public class NameRelationCleaner {
       session.commit();
     }
     addIssues(issues);
+    LOG.info("Removed {} name relations of a name to itself in dataset {}", self, datasetKey);
     LOG.info("Removed {} duplicate name relations in dataset {}", duplicates, datasetKey);
     removed.forEach((issue, cnt) -> LOG.info("Removed {} name relations with {} in dataset {}", cnt, issue, datasetKey));
     flagged.forEach((issue, cnt) -> LOG.info("Kept {} name relations flagged with {} in dataset {}", cnt, issue, datasetKey));
-    return duplicates + removed.values().stream().mapToInt(Integer::intValue).sum();
+    return self + duplicates + removed.values().stream().mapToInt(Integer::intValue).sum();
   }
 
   /**

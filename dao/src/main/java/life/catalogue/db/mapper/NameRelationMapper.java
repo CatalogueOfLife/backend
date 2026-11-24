@@ -67,7 +67,7 @@ public interface NameRelationMapper extends Create<NameRelation>,
 
   /**
    * Lists all relations of a dataset that share their two names with another relation, in either direction,
-   * and all spelling corrections.
+   * all spelling corrections and all relations of a name to itself.
    */
   List<NameRelation> listConflictCandidates(@Param("datasetKey") int datasetKey);
 

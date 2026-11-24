@@ -643,7 +643,7 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
 
   /**
    * A merge copies name relations and species interactions of both created and matched usages,
-   * skipping those existing already in the project.
+   * skipping those existing already in the project or copied already, and those relating a target name to itself.
    */
   @Test
   public void mergeRelations() throws Throwable {
@@ -677,6 +677,10 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
       // new ones between a matched and a created usage
       nrm.create(inDataset(nameRel(sDroso, sMusca, NomRelType.SPELLING_CORRECTION), srcKey, user));
       sim.create(inDataset(interaction(SpeciesInteractionType.EATS, sMusca, sDroso), srcKey, user));
+      // the same relation again must be copied only once, as the earlier one is not committed yet
+      nrm.create(inDataset(nameRel(sDroso, sMusca, NomRelType.SPELLING_CORRECTION), srcKey, user));
+      // two source names merged onto one target name relate it to itself, e.g. the genus Trionyx in XR 317037
+      nrm.create(inDataset(nameRel(sMusca, sMusca, NomRelType.BASIONYM), srcKey, user));
     }
 
     // a resync replaces what the sector added before and must not duplicate anything

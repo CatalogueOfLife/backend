@@ -817,6 +817,10 @@ public abstract class TreeBaseHandler implements TreeHandler {
 
   /**
    * Copies name relations between synced names.
+   * A merge maps every source name whose usage matched an existing one onto that usage's name, so two different
+   * source names can end up as the same target name, e.g. a genus and a variant of it given as its basionym.
+   * Such a relation would relate a name to itself and is skipped, and so is a relation already copied by this sync,
+   * as several source relations can map onto the same one.
    * @param skipExisting if true relations existing already in the target are not copied again
    */
   protected void copyNameRelations(boolean skipExisting) {
@@ -830,7 +834,10 @@ public abstract class TreeBaseHandler implements TreeHandler {
     batchSession.commit();
     NameRelationMapper nrmWrite = batchSession.getMapper(NameRelationMapper.class);
     int counter = 0;
+    int self = 0;
     Set<Integer> relIds = new HashSet<>();
+    // the relations written by this sync, which exists() cannot see before the batch session is committed
+    Map<NomRelType, Set<NameIdPair>> created = new HashMap<>();
     var key = DSID.of(sector.getSubjectDatasetKey(), "");
     // copy as targetNameId() might add to the synced names
     for (String srcNameId : new ArrayList<>(syncedSourceNameIds())) {
@@ -840,6 +847,11 @@ public abstract class TreeBaseHandler implements TreeHandler {
           String relatedNameId = targetNameId(nr.getRelatedNameId());
           if (nameId == null || relatedNameId == null) {
             LOG.info("Name relation {} outside of synced sector {}", nr.getKey(), sector.getKey());
+          } else if (nameId.equals(relatedNameId)) {
+            LOG.debug("Name relation {} of sector {} relates target name {} to itself", nr.getKey(), sector.getKey(), nameId);
+            self++;
+          } else if (!created.computeIfAbsent(nr.getType(), k -> new HashSet<>()).add(new NameIdPair(nameId, relatedNameId))) {
+            LOG.debug("Name relation {} copied already in sector {}", nr.getKey(), sector.getKey());
           } else if (skipExisting && nrm.exists(targetDatasetKey, nameId, relatedNameId, nr.getType())) {
             LOG.debug("Name relation {} exists already in sector {}", nr.getKey(), sector.getKey());
           } else {
@@ -857,7 +869,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
       }
     }
     batchSession.commit();
-    LOG.info("Synced {} name relations from sector {}", counter, sector.getKey());
+    LOG.info("Synced {} name relations from sector {}, skipped {} relating a name to itself", counter, sector.getKey(), self);
   }
 
   /**
@@ -936,6 +948,10 @@ public abstract class TreeBaseHandler implements TreeHandler {
     for (var type : nameRelsToBeCreated.entrySet()) {
       int counter = 0;
       for (var rel : type.getValue()) {
+        // a merged synonym can share the name of its accepted usage
+        if (Objects.equals(rel.nameId(), rel.relatedNameId())) {
+          continue;
+        }
         // the source often relates a name to its original spelling already
         if (nrm.exists(targetDatasetKey, rel.nameId(), rel.relatedNameId(), type.getKey())) {
           continue;

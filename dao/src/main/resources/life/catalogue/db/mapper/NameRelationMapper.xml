@@ -216,6 +216,7 @@
     FROM <include refid="FROM"/>
     WHERE nr.dataset_key = #{datasetKey}
       AND (nr.type = 'SPELLING_CORRECTION'
+        OR nr.name_id = nr.related_name_id
         OR EXISTS (
           SELECT NULL FROM name_rel o
           WHERE o.dataset_key = nr.dataset_key AND o.id != nr.id
