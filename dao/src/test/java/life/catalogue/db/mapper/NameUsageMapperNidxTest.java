@@ -105,6 +105,32 @@ public class NameUsageMapperNidxTest extends MapperTestBase<NameUsageMapper> {
     assertEquals(List.of("Silver fir"), vernaculars.stream().map(v -> v.getObj().getName()).toList());
   }
 
+  /**
+   * Extension ids are only unique within a dataset. Records of different datasets sharing an id must
+   * all be listed, not merged into one by MyBatis.
+   */
+  @Test
+  public void extensionsWithSameIdInDifferentDatasets() throws Exception {
+    try (var st = connection().createStatement()) {
+      st.execute("INSERT INTO vernacular_name (id, dataset_key, taxon_id, name, created_by, modified_by) VALUES " +
+        "(1, 101, 'u1', 'Weißtanne', 1, 1), (1, 102, 'u1x', 'Silver fir', 1, 1)");
+      st.execute("INSERT INTO distribution (id, dataset_key, taxon_id, gazetteer, area_id, created_by, modified_by) VALUES " +
+        "(1, 101, 'u1', 'ISO', 'DE', 1, 1), (1, 102, 'u1x', 'ISO', 'FR', 1, 1)");
+      st.execute("INSERT INTO media (id, dataset_key, taxon_id, url, created_by, modified_by) VALUES " +
+        "(1, 101, 'u1', 'https://example.org/1.jpg', 1, 1), (1, 102, 'u1x', 'https://example.org/2.jpg', 1, 1)");
+      st.execute("INSERT INTO taxon_property (id, dataset_key, taxon_id, property, value, created_by, modified_by) VALUES " +
+        "(1, 101, 'u1', 'habitat', 'forest', 1, 1), (1, 102, 'u1x', 'habitat', 'mountains', 1, 1)");
+    }
+    commit();
+
+    for (var mc : List.of(VernacularNameMapper.class, DistributionMapper.class, MediaMapper.class, TaxonPropertyMapper.class)) {
+      var res = mapper(mc).listByNamesIndexIDGlobal(2, new Page());
+      assertEquals(mc.getSimpleName(), Set.of(101, 102),
+        res.stream().map(e -> e.getObj().getDatasetKey()).collect(Collectors.toSet()));
+      assertEquals(mc.getSimpleName(), 2, res.size());
+    }
+  }
+
   @Test
   public void listByCanonNIDX() throws Exception {
     // canonical "Abies alba" (index id 2) per dataset

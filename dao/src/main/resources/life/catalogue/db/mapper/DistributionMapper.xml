@@ -90,6 +90,8 @@
   </resultMap>
 
   <resultMap id="distributionExtResultMap" type="TaxonExtension" autoMapping="true">
+    <!-- ids are unique only within a dataset: records of several datasets must not be merged -->
+    <id column="dataset_key"/>
     <id column="id"/>
     <result property="taxonID" column="taxon_id"/>
     <association property="obj" autoMapping="true" javaType="Distribution" resultMap="distributionResultMap" />
