@@ -161,14 +161,23 @@
       FROM name_usage u
       WHERE u.dataset_key = #{datasetKey} AND u.status != 'MISAPPLIED'
       GROUP BY u.name_id
-    ), bad AS (
-      SELECT nr.name_id AS n1, nr.related_name_id AS n2
+    ), cand AS (
+      SELECT nr.name_id AS n1, nr.related_name_id AS n2, a1.ids AS ids1, a2.ids AS ids2
       FROM name_rel nr
         JOIN acc a1 ON a1.name_id = nr.name_id
         JOIN acc a2 ON a2.name_id = nr.related_name_id
       WHERE nr.dataset_key = #{datasetKey} AND nr.name_id != nr.related_name_id
         AND nr.type IN <foreach item="t" collection="types" open="(" separator="," close=")">'${t.name()}'::NOMRELTYPE</foreach>
         AND NOT a1.ids &amp;&amp; a2.ids
+    ), bad AS (
+      <!-- names sharing a type at different ranks with one taxon inside the other are fine:
+           autonyms, nominotypical subgenera and coordinate family-group names -->
+      SELECT c.n1, c.n2
+      FROM cand c
+      WHERE NOT EXISTS (
+        SELECT 1 FROM unnest(c.ids1) x, unnest(c.ids2) y
+        WHERE y = ANY(classification_id(#{datasetKey}, x)) OR x = ANY(classification_id(#{datasetKey}, y))
+      )
     )
     SELECT u.id
     FROM name_usage u

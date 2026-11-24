@@ -176,6 +176,13 @@ public class TreeCleanerAndValidatorIT {
     // homotypic synonym of its own taxon
     assertFlagged(rulesKey, "fabav", Issue.HOMOTYPIC_NAME_OUTSIDE_SYNONYMY, false);
     assertFlagged(rulesKey, "sativa", Issue.HOMOTYPIC_NAME_OUTSIDE_SYNONYMY, false);
+    // names of nested taxa sharing their type: a coordinate family-group name, a nominotypical subgenus, an autonym
+    for (var id : List.of("aby", "abyl", "abyla", "abylaa", "acon", "econ", "aconc")) {
+      assertFlagged(rulesKey, id, Issue.HOMOTYPIC_NAME_OUTSIDE_SYNONYMY, false);
+    }
+    // a subgenus homotypic with a genus outside of it is still flagged
+    assertFlagged(rulesKey, "abylab", Issue.HOMOTYPIC_NAME_OUTSIDE_SYNONYMY, true);
+    assertFlagged(rulesKey, "abylo", Issue.HOMOTYPIC_NAME_OUTSIDE_SYNONYMY, true);
 
     assertFlagged(rulesKey, "cracca", Issue.REDLIST_STATUS_AMBIGUOUS, true);
     assertFlagged(rulesKey, "sativa", Issue.REDLIST_STATUS_AMBIGUOUS, false);

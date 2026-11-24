@@ -41,7 +41,9 @@ public interface NameRelationMapper extends Create<NameRelation>,
 
   /**
    * Lists the ids of all usages whose name is related by one of the given types to a name
-   * whose usages share no accepted taxon with them. Misapplied names are ignored.
+   * whose usages share no accepted taxon with them. Misapplied names are ignored, and so are names whose accepted taxa
+   * are nested, one an ancestor of the other: autonyms, nominotypical subgenera and coordinate family-group names share
+   * their type with a name of another rank.
    */
   List<String> listUsageIDsOutsideHomotypicSynonymy(@Param("datasetKey") int datasetKey, @Param("types") Set<NomRelType> types);
 

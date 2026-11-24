@@ -562,7 +562,9 @@ public enum Issue implements Described {
   HOMOTYPIC_NAME_OUTSIDE_SYNONYMY(NAME_USAGE, Level.WARNING,
       "The name is related to another name by a homotypic relation, e.g. a basionym, "
       + "but the usages of both names do not share an accepted taxon. "
-      + "Homotypic names should be synonyms of the same taxon."),
+      + "Homotypic names should be synonyms of the same taxon. "
+      + "Names of taxa nested in one another are not flagged, as autonyms, nominotypical subgenera "
+      + "and coordinate family-group names share their type with a name of another rank."),
 
   EXTINCT_INCONSISTENT(NAME_USAGE, Level.WARNING,
       "The taxon is flagged as not extinct, but it is classified below an extinct taxon."),

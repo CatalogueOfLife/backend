@@ -11,6 +11,8 @@ import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.matching.nidx.NameIndexFactory;
 import life.catalogue.matching.nidx.NamesIndexConfig;
 
+import java.util.List;
+
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -96,6 +98,13 @@ public class NormalizerFullIT extends NormalizerITBase {
     // homotypic synonym of its own taxon
     assertFlagged("v3", Issue.HOMOTYPIC_NAME_OUTSIDE_SYNONYMY, false);
     assertFlagged("v5", Issue.HOMOTYPIC_NAME_OUTSIDE_SYNONYMY, false);
+    // names of nested taxa sharing their type: a coordinate family-group name, a nominotypical subgenus, an autonym
+    for (var id : List.of("z2", "z3", "z4", "z5", "z9", "z10", "z11")) {
+      assertFlagged(id, Issue.HOMOTYPIC_NAME_OUTSIDE_SYNONYMY, false);
+    }
+    // a subgenus homotypic with a genus outside of it is still flagged
+    assertFlagged("z6", Issue.HOMOTYPIC_NAME_OUTSIDE_SYNONYMY, true);
+    assertFlagged("z7", Issue.HOMOTYPIC_NAME_OUTSIDE_SYNONYMY, true);
   }
 
   private void assertFlagged(String usageID, Issue issue, boolean flagged) {

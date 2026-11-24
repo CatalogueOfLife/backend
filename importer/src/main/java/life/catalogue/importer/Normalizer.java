@@ -462,8 +462,36 @@ public class Normalizer implements Callable<Boolean> {
   }
 
   /**
+   * @return true if one of the accepted taxa is an ancestor of one of the others
+   */
+  private boolean nested(Set<String> acc, Set<String> relatedAcc) {
+    return isAncestor(acc, relatedAcc) || isAncestor(relatedAcc, acc);
+  }
+
+  /**
+   * @return true if one of the given taxa has an ancestor among the candidates
+   */
+  private boolean isAncestor(Set<String> candidates, Set<String> taxa) {
+    for (var id : taxa) {
+      var u = store.usages().objByID(id);
+      if (u == null) continue;
+      try {
+        if (store.usages().parents(u).stream().anyMatch(p -> p != null && candidates.contains(p.getId()))) {
+          return true;
+        }
+      } catch (IllegalStateException e) {
+        // a cyclic classification nests nothing
+        LOG.debug("Cannot tell whether {} is nested: {}", id, e.getMessage());
+      }
+    }
+    return false;
+  }
+
+  /**
    * Flags the usages of names in a homotypic relation whose usages share no accepted taxon,
    * e.g. a basionym accepted as another taxon or a synonym of it. See #1158
+   * Names whose accepted taxa are nested, one an ancestor of the other, are fine: autonyms, nominotypical subgenera
+   * and coordinate family-group names share their type with a name of another rank.
    */
   private void flagHomotypicNamesOutsideSynonymy() {
     LOG.info("Flag homotypic names outside the synonymy");
@@ -477,7 +505,7 @@ public class Normalizer implements Callable<Boolean> {
           var relatedUsages = synonymyUsages(related);
           var acc = acceptedIDs(usages);
           var relatedAcc = acceptedIDs(relatedUsages);
-          if (!acc.isEmpty() && !relatedAcc.isEmpty() && Collections.disjoint(acc, relatedAcc)) {
+          if (!acc.isEmpty() && !relatedAcc.isEmpty() && Collections.disjoint(acc, relatedAcc) && !nested(acc, relatedAcc)) {
             usages.forEach(u -> store.addIssues(u, Issue.HOMOTYPIC_NAME_OUTSIDE_SYNONYMY));
             relatedUsages.forEach(u -> store.addIssues(u, Issue.HOMOTYPIC_NAME_OUTSIDE_SYNONYMY));
             flagged.incrementAndGet();

@@ -18,3 +18,14 @@ Animalia [kingdom] {ID=an CODE=zoological}
   Chordata Haeckel, 1874 [phylum] {ID=cho}
     Homo Linnaeus, 1758 [genus] {ID=homo}
       Homo sapiens Linnaeus, 1758 [species] {ID=sap}
+  Siphonophorae Eschscholtz, 1829 [order] {ID=sipho}
+    Abylidae L. Agassiz, 1862 [family] {ID=aby}
+      Abylinae L. Agassiz, 1862 [subfamily] {ID=abyl}
+        Abyla Quoy & Gaimard, 1827 [genus] {ID=abyla}
+          Abyla (Abyla) Quoy & Gaimard, 1827 [subgenus] {ID=abylaa}
+          Abyla (Abylopsis) Chun, 1888 [subgenus] {ID=abylab}
+        Abylopsis Chun, 1888 [genus] {ID=abylo}
+  Aaadonta Solem, 1976 [genus] {ID=aaa}
+    Aaadonta constricta (C. Semper, 1874) [species] {ID=acon}
+      =Endodonta constricta C. Semper, 1874 [species] {ID=econ}
+      Aaadonta constricta constricta (C. Semper, 1874) [subspecies] {ID=aconc}
