@@ -37,7 +37,7 @@ public class VocabResourceTest {
     Files.writeString(feature, SAMPLE);
 
     var r = new VocabResource(dir, null);
-    try (Response resp = r.areaGeojson("mrgid", "8371")) {
+    try (Response resp = r.areaGeojson("mrgid", "8371", null)) {
       assertEquals(200, resp.getStatus());
       assertEquals("application/geo+json", resp.getMediaType().toString());
       var bytes = writeEntity(resp);
@@ -49,29 +49,29 @@ public class VocabResourceTest {
   public void areaGeojsonMissingFileIs404() throws Exception {
     File dir = tmp.newFolder();
     var r = new VocabResource(dir, null);
-    assertThrows(NotFoundException.class, () -> r.areaGeojson("mrgid", "does-not-exist"));
+    assertThrows(NotFoundException.class, () -> r.areaGeojson("mrgid", "does-not-exist", null));
   }
 
   @Test
   public void areaGeojsonUnconfiguredDirIs404() {
     var r = new VocabResource((File) null, null);
-    assertThrows(NotFoundException.class, () -> r.areaGeojson("fao", "37.4.1"));
+    assertThrows(NotFoundException.class, () -> r.areaGeojson("fao", "37.4.1", null));
   }
 
   @Test
   public void areaGeojsonRejectsPathTraversal() throws Exception {
     File dir = tmp.newFolder();
     var r = new VocabResource(dir, null);
-    assertThrows(NotFoundException.class, () -> r.areaGeojson("fao", "../../etc/passwd"));
+    assertThrows(NotFoundException.class, () -> r.areaGeojson("fao", "../../etc/passwd", null));
   }
 
   @Test
   public void areaGeojsonRejectsUnprefixedId() throws Exception {
     File dir = tmp.newFolder();
     var r = new VocabResource(dir, null);
-    assertThrows(NotFoundException.class, () -> r.areaGeojson(null, "8371"));
-    assertThrows(NotFoundException.class, () -> r.areaGeojson("mrgid", ""));
-    assertThrows(NotFoundException.class, () -> r.areaGeojson("", "8371"));
+    assertThrows(NotFoundException.class, () -> r.areaGeojson(null, "8371", null));
+    assertThrows(NotFoundException.class, () -> r.areaGeojson("mrgid", "", null));
+    assertThrows(NotFoundException.class, () -> r.areaGeojson("", "8371", null));
   }
 
   @Test
@@ -84,7 +84,7 @@ public class VocabResourceTest {
 
     var r = new VocabResource(dir, null);
     // uppercase prefix and `/` in the id portion must normalize to the on-disk filename
-    try (Response resp = r.areaGeojson("FAO", "37/4/1")) {
+    try (Response resp = r.areaGeojson("FAO", "37/4/1", null)) {
       assertEquals(200, resp.getStatus());
     }
   }
@@ -97,8 +97,8 @@ public class VocabResourceTest {
     Files.writeString(outside, SAMPLE);
 
     var r = new VocabResource(dir, null);
-    assertThrows(NotFoundException.class, () -> r.areaGeojson("../other", "1"));
-    assertThrows(NotFoundException.class, () -> r.areaGeojson("other", "1"));
+    assertThrows(NotFoundException.class, () -> r.areaGeojson("../other", "1", null));
+    assertThrows(NotFoundException.class, () -> r.areaGeojson("other", "1", null));
   }
 
   @Test
@@ -112,7 +112,7 @@ public class VocabResourceTest {
     Files.writeString(iso.resolve("map.svg"), "<svg/>");
 
     var r = new VocabResource(dir, null);
-    try (Response resp = r.gazetteerOverview("iso")) {
+    try (Response resp = r.gazetteerOverview("iso", null)) {
       assertEquals("application/geo+json", resp.getMediaType().toString());
       assertEquals(SAMPLE, new String(writeEntity(resp)));
     }
@@ -124,7 +124,7 @@ public class VocabResourceTest {
       assertEquals("text/tsv", resp.getMediaType().toString());
       assertEquals("DE\tGermany\n", new String(writeEntity(resp)));
     }
-    try (Response resp = r.gazetteerMap("iso")) {
+    try (Response resp = r.gazetteerMap("iso", null)) {
       assertEquals("image/svg+xml", resp.getMediaType().toString());
       assertEquals("<svg/>", new String(writeEntity(resp)));
     }
@@ -138,12 +138,115 @@ public class VocabResourceTest {
 
     var r = new VocabResource(dir, null);
     assertEquals(200, r.gazetteerBuild("wdpa").getStatus());
-    assertThrows(NotFoundException.class, () -> r.gazetteerOverview("wdpa"));
-    assertThrows(NotFoundException.class, () -> r.gazetteerMap("wdpa"));
+    assertThrows(NotFoundException.class, () -> r.gazetteerOverview("wdpa", null));
+    assertThrows(NotFoundException.class, () -> r.gazetteerMap("wdpa", null));
     assertThrows(NotFoundException.class, () -> r.gazetteerBuild("text"));
     assertThrows(NotFoundException.class, () -> r.gazetteerLabels("nope"));
     assertThrows(NotFoundException.class, () -> r.gazetteerLabels("../wdpa"));
     assertThrows(NotFoundException.class, () -> new VocabResource((File) null, null).gazetteerBuild("wdpa"));
+  }
+
+  private static final String EEZ = "{\"type\":\"Feature\",\"properties\":{\"name\":\"Norway with EEZ\"},\"geometry\":null}";
+
+  /**
+   * An iso gazetteer with land shapes and the eez variant, which lacks subdivisions and links FR-GF to GF.
+   */
+  private File isoWithEez() throws Exception {
+    File dir = tmp.newFolder();
+    Path iso = dir.toPath().resolve("iso");
+    Path land = iso.resolve("features");
+    Path eez = iso.resolve("eez/features");
+    Files.createDirectories(land);
+    Files.createDirectories(eez);
+    Files.writeString(land.resolve("NO.geojson"), SAMPLE);
+    Files.writeString(land.resolve("NO-03.geojson"), SAMPLE);
+    Files.writeString(eez.resolve("NO.geojson"), EEZ);
+    Files.writeString(eez.resolve("GF.geojson"), EEZ);
+    Files.createSymbolicLink(eez.resolve("FR-GF.geojson"), Path.of("GF.geojson"));
+    Files.writeString(iso.resolve("overview.geojson"), SAMPLE);
+    Files.writeString(iso.resolve("map.svg"), "<svg/>");
+    Files.writeString(iso.resolve("map-thumb.png"), "land");
+    Files.writeString(iso.resolve("eez/overview.geojson"), EEZ);
+    Files.writeString(iso.resolve("eez/map.svg"), "<svg id=\"eez\"/>");
+    Files.writeString(iso.resolve("eez/map-thumb.png"), "eez");
+    Path mrgid = dir.toPath().resolve("mrgid/features/8371.geojson");
+    Files.createDirectories(mrgid.getParent());
+    Files.writeString(mrgid, SAMPLE);
+    return dir;
+  }
+
+  @Test
+  public void areaGeojsonVariant() throws Exception {
+    var r = new VocabResource(isoWithEez(), null);
+    try (Response resp = r.areaGeojson("iso", "NO", null)) {
+      assertEquals(SAMPLE, new String(writeEntity(resp)));
+    }
+    try (Response resp = r.areaGeojson("iso", "NO", "")) {
+      assertEquals(SAMPLE, new String(writeEntity(resp)));
+    }
+    try (Response resp = r.areaGeojson("iso", "NO", "eez")) {
+      assertEquals("application/geo+json", resp.getMediaType().toString());
+      assertEquals(EEZ, new String(writeEntity(resp)));
+    }
+    try (Response resp = r.areaGeojson("ISO", "NO", "EEZ")) {
+      assertEquals(EEZ, new String(writeEntity(resp)));
+    }
+    // a symlink in the variant
+    try (Response resp = r.areaGeojson("iso", "FR-GF", "eez")) {
+      assertEquals(EEZ, new String(writeEntity(resp)));
+    }
+  }
+
+  @Test
+  public void areaGeojsonVariantFallsBackToDefault() throws Exception {
+    var r = new VocabResource(isoWithEez(), null);
+    // subdivisions have no eez shape
+    try (Response resp = r.areaGeojson("iso", "NO-03", "eez")) {
+      assertEquals(SAMPLE, new String(writeEntity(resp)));
+    }
+    // gazetteers without variants
+    try (Response resp = r.areaGeojson("mrgid", "8371", "eez")) {
+      assertEquals(SAMPLE, new String(writeEntity(resp)));
+    }
+    assertThrows(NotFoundException.class, () -> r.areaGeojson("iso", "XX", "eez"));
+    assertThrows(NotFoundException.class, () -> r.areaGeojson("iso", "../../features/NO", "eez"));
+    assertThrows(NotFoundException.class, () -> r.areaGeojson("iso", "../../../mrgid/features/8371", "eez"));
+  }
+
+  @Test
+  public void unknownVariantIsRejected() throws Exception {
+    var r = new VocabResource(isoWithEez(), null);
+    assertThrows(IllegalArgumentException.class, () -> r.areaGeojson("iso", "NO", "foo"));
+    assertThrows(IllegalArgumentException.class, () -> r.areaGeojson("iso", "NO", "../eez"));
+    assertThrows(IllegalArgumentException.class, () -> r.gazetteerOverview("iso", "features"));
+    assertThrows(IllegalArgumentException.class, () -> r.gazetteerMap("iso", "foo"));
+    assertThrows(IllegalArgumentException.class, () -> r.gazetteerMapThumb("iso", "foo"));
+  }
+
+  @Test
+  public void gazetteerVariantFiles() throws Exception {
+    File dir = isoWithEez();
+    var r = new VocabResource(dir, null);
+    try (Response resp = r.gazetteerOverview("iso", "eez")) {
+      assertEquals("application/geo+json", resp.getMediaType().toString());
+      assertEquals(EEZ, new String(writeEntity(resp)));
+    }
+    try (Response resp = r.gazetteerMap("iso", "eez")) {
+      assertEquals("<svg id=\"eez\"/>", new String(writeEntity(resp)));
+    }
+    try (Response resp = r.gazetteerMapThumb("iso", "eez")) {
+      assertEquals("image/png", resp.getMediaType().toString());
+      assertEquals("eez", new String(writeEntity(resp)));
+    }
+    try (Response resp = r.gazetteerMapThumb("iso", null)) {
+      assertEquals("land", new String(writeEntity(resp)));
+    }
+    // a missing variant of a map is a different map, no fallback
+    Files.createDirectories(dir.toPath().resolve("realm"));
+    Files.writeString(dir.toPath().resolve("realm/overview.geojson"), SAMPLE);
+    assertThrows(NotFoundException.class, () -> r.gazetteerOverview("realm", "eez"));
+    assertThrows(NotFoundException.class, () -> r.gazetteerMap("realm", "eez"));
+    assertThrows(NotFoundException.class, () -> r.gazetteerMapThumb("realm", "eez"));
   }
 
   private VocabResource resourceWithLabels() throws Exception {

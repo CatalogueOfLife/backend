@@ -202,7 +202,11 @@ public class WsServerConfig extends Configuration implements ExporterConfig, Cor
    *   gazetteerDir/&lt;prefix&gt;/map.svg                  # drawn world map with clickable areas, only some have one
    *   gazetteerDir/&lt;prefix&gt;/map-thumb.png            # small preview image of its map, if it has one
    *   gazetteerDir/&lt;prefix&gt;/features/&lt;id&gt;.geojson
+   *   gazetteerDir/&lt;prefix&gt;/&lt;variant&gt;/features/&lt;id&gt;.geojson   # other shapes of some areas
+   *   gazetteerDir/&lt;prefix&gt;/&lt;variant&gt;/overview.geojson, map.svg, map-thumb.png
    * </pre>
+   * Variants are optional and served with {@code ?variant=}. So far there is only {@code iso/eez}, countries together
+   * with their exclusive economic zone.
    * Produced and maintained out-of-band (see the {@code col-gazetteers} repo). May be null in which case
    * labels fall back to the raw id and the endpoints serving these files return 404.
    */

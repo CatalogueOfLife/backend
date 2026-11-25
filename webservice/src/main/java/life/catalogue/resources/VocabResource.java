@@ -60,6 +60,8 @@ public class VocabResource {
     Rank.class, Set.of("speciesOrBelow", "genusOrSuprageneric", "infrageneric", "infragenericStrictly", "infrasubspecific", "cultivarRank")
   );
   private static final String NAME_PROP = "name";
+  // other shapes of the areas of a gazetteer, each in a subdirectory of the gazetteer named like it
+  private static final Set<String> GAZETTEER_VARIANTS = Set.of("eez");
   private final Map<String, Class<Enum>> vocabs;
   private final List<String> vocabNames;
   private final File gazetteerDir;
@@ -288,33 +290,54 @@ public class VocabResource {
    * unconfigured or no file exists for that id.
    * @param scheme the gazetteer scheme
    * @param id the area id, case sensitive!
+   * @param variant an optional other shape of the same area, so far only {@code eez} for iso countries with their
+   *                exclusive economic zone. An area without that variant, like every iso subdivision or any area of
+   *                a gazetteer without variants, gets its default shape, so clients can always ask for it.
    */
   @GET
   @VaryAccept
   @Path("area/{scheme}:{id}")
   @Produces({MoreMediaTypes.APP_GEOJSON})
-  public Response areaGeojson(@PathParam("scheme") String scheme, @PathParam("id") String id) {
+  public Response areaGeojson(@PathParam("scheme") String scheme, @PathParam("id") String id,
+                              @QueryParam("variant") String variant) {
     if (StringUtils.isBlank(id)) {
       throw new NotFoundException();
     }
-    java.nio.file.Path base = gazetteerPath(scheme).resolve("features");
+    String vdir = variantDir(variant);
+    java.nio.file.Path gazetteer = gazetteerPath(scheme);
+    if (vdir != null) {
+      java.nio.file.Path feature = featurePath(gazetteer.resolve(vdir), id);
+      if (Files.isRegularFile(feature)) {
+        return fileResponse(feature, MoreMediaTypes.APP_GEOJSON);
+      }
+    }
+    return fileResponse(featurePath(gazetteer, id), MoreMediaTypes.APP_GEOJSON);
+  }
+
+  /**
+   * The feature file of an id in the features folder of the given gazetteer or variant directory.
+   * Ids that would resolve outside of it are a 404.
+   */
+  private static java.nio.file.Path featurePath(java.nio.file.Path dir, String id) {
+    java.nio.file.Path base = dir.resolve("features");
     java.nio.file.Path feature = base.resolve(normalizeFilename(id) + ".geojson").toAbsolutePath().normalize();
     if (!feature.startsWith(base)) {
       throw new NotFoundException();
     }
-    return fileResponse(feature, MoreMediaTypes.APP_GEOJSON);
+    return feature;
   }
 
   /**
    * A simplified map of a whole gazetteer, 404 for gazetteers without shapes.
    * @param name the gazetteer, case insensitive
+   * @param variant an optional variant of the map, so far only {@code eez} for iso. 404 if the gazetteer has none.
    */
   @GET
   // the suffixes of this and the next two are stripped by SuffixAcceptRequestFilter before matching
   @Path("gazetteer/{name}/overview")
   @Produces(MoreMediaTypes.APP_GEOJSON)
-  public Response gazetteerOverview(@PathParam("name") String name) {
-    return fileResponse(gazetteerPath(name).resolve("overview.geojson"), MoreMediaTypes.APP_GEOJSON);
+  public Response gazetteerOverview(@PathParam("name") String name, @QueryParam("variant") String variant) {
+    return fileResponse(variantPath(name, variant).resolve("overview.geojson"), MoreMediaTypes.APP_GEOJSON);
   }
 
   /**
@@ -341,24 +364,51 @@ public class VocabResource {
   /**
    * A drawn world map of a gazetteer with an id on each of its areas, 404 for the many gazetteers without one.
    * @param name the gazetteer, case insensitive
+   * @param variant an optional variant of the map, so far only {@code eez} for iso. 404 if the gazetteer has none.
    */
   @GET
   @Path("gazetteer/{name}/map.svg")
   @Produces(MoreMediaTypes.IMG_SVG)
-  public Response gazetteerMap(@PathParam("name") String name) {
-    return fileResponse(gazetteerPath(name).resolve("map.svg"), MoreMediaTypes.IMG_SVG);
+  public Response gazetteerMap(@PathParam("name") String name, @QueryParam("variant") String variant) {
+    return fileResponse(variantPath(name, variant).resolve("map.svg"), MoreMediaTypes.IMG_SVG);
   }
 
   /**
    * A small preview image of the map of a gazetteer, 404 for gazetteers without a map.
    * @param name the gazetteer, case insensitive
+   * @param variant an optional variant of the map, so far only {@code eez} for iso. 404 if the gazetteer has none.
    */
   @GET
   // the .png suffix is stripped by SuffixAcceptRequestFilter before matching, unlike the .svg of map.svg
   @Path("gazetteer/{name}/map-thumb")
   @Produces(MoreMediaTypes.IMG_PNG)
-  public Response gazetteerMapThumb(@PathParam("name") String name) {
-    return fileResponse(gazetteerPath(name).resolve("map-thumb.png"), MoreMediaTypes.IMG_PNG);
+  public Response gazetteerMapThumb(@PathParam("name") String name, @QueryParam("variant") String variant) {
+    return fileResponse(variantPath(name, variant).resolve("map-thumb.png"), MoreMediaTypes.IMG_PNG);
+  }
+
+  /**
+   * The directory of a gazetteer, or of one of its variants if one is given.
+   */
+  private java.nio.file.Path variantPath(String name, @Nullable String variant) {
+    String vdir = variantDir(variant);
+    java.nio.file.Path dir = gazetteerPath(name);
+    return vdir == null ? dir : dir.resolve(vdir);
+  }
+
+  /**
+   * The subdirectory of a gazetteer holding the files of a variant, null for no variant.
+   * @throws IllegalArgumentException for an unknown variant, a 400
+   */
+  @Nullable
+  private static String variantDir(@Nullable String variant) {
+    if (StringUtils.isBlank(variant)) {
+      return null;
+    }
+    String v = variant.strip().toLowerCase();
+    if (!GAZETTEER_VARIANTS.contains(v)) {
+      throw new IllegalArgumentException("Unknown gazetteer variant " + variant + ", only " + GAZETTEER_VARIANTS + " exist");
+    }
+    return v;
   }
 
   /**

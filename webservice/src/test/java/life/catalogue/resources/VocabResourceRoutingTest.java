@@ -1,6 +1,7 @@
 package life.catalogue.resources;
 
 import life.catalogue.common.ws.MoreMediaTypes;
+import life.catalogue.dw.jersey.exception.IllegalArgumentExceptionMapper;
 import life.catalogue.dw.jersey.filter.SuffixAcceptRequestFilter;
 
 import java.io.File;
@@ -34,6 +35,7 @@ public class VocabResourceRoutingTest {
   static final ResourceExtension EXT = ResourceExtension.builder()
     .addResource(new VocabResource(DIR.toFile(), null))
     .addProvider(SuffixAcceptRequestFilter.class)
+    .addProvider(IllegalArgumentExceptionMapper.class)
     .build();
 
   private static Path gazetteers() {
@@ -41,6 +43,11 @@ public class VocabResourceRoutingTest {
       Path dir = Files.createTempDirectory("gazetteers");
       Files.createDirectories(dir.resolve("realm"));
       Files.write(dir.resolve("realm/map-thumb.png"), PNG);
+      Files.createDirectories(dir.resolve("iso/features"));
+      Files.createDirectories(dir.resolve("iso/eez/features"));
+      Files.writeString(dir.resolve("iso/features/NO.geojson"), "land");
+      Files.writeString(dir.resolve("iso/eez/features/NO.geojson"), "eez");
+      Files.write(dir.resolve("iso/eez/map-thumb.png"), PNG);
       // has build info, but no shapes and therefore no map
       Files.createDirectories(dir.resolve("wdpa"));
       Files.writeString(dir.resolve("wdpa/build.json"), "{}");
@@ -79,6 +86,36 @@ public class VocabResourceRoutingTest {
     }
     try (Response resp = get("nope")) {
       assertEquals(404, resp.getStatus());
+    }
+  }
+
+  @Test
+  public void variantSurvivesTheSuffix() {
+    try (Response resp = EXT.target("/vocab/area/iso:NO.geojson").queryParam("variant", "eez").request().get()) {
+      assertEquals(200, resp.getStatus());
+      assertEquals(MoreMediaTypes.APP_GEOJSON, resp.getMediaType().toString());
+      assertEquals("eez", resp.readEntity(String.class));
+    }
+    try (Response resp = EXT.target("/vocab/area/iso:NO.geojson").request().get()) {
+      assertEquals("land", resp.readEntity(String.class));
+    }
+    try (Response resp = EXT.target("/vocab/gazetteer/iso/map-thumb.png").queryParam("variant", "eez").request().get()) {
+      assertEquals(200, resp.getStatus());
+      assertArrayEquals(PNG, resp.readEntity(byte[].class));
+    }
+    // iso has no land thumb in this directory
+    try (Response resp = EXT.target("/vocab/gazetteer/iso/map-thumb.png").request().get()) {
+      assertEquals(404, resp.getStatus());
+    }
+  }
+
+  @Test
+  public void unknownVariantIs400() {
+    try (Response resp = EXT.target("/vocab/area/iso:NO.geojson").queryParam("variant", "foo").request().get()) {
+      assertEquals(400, resp.getStatus());
+    }
+    try (Response resp = EXT.target("/vocab/gazetteer/iso/map-thumb.png").queryParam("variant", "foo").request().get()) {
+      assertEquals(400, resp.getStatus());
     }
   }
 }
