@@ -825,6 +825,10 @@ public class HierarchySync extends SectorRunnable {
    *      its accepted equivalent is reused.
    *   2. by name — a single, non-ambiguous, accepted project usage of the same rank matched via the
    *      project matcher. Multiple same-name candidates yield {@link MatchType#AMBIGUOUS} and are not reused.
+   *      The query carries the ancestor's source classification, so the matcher's taxonomic group veto keeps a
+   *      homonym of another kingdom out, and a project usage already identified as another source taxon is never
+   *      reused: the plant genus Morus L. stood in for the bird genus Morus Vieillot and the gannet ended up among
+   *      the mulberries (checklistbank#1762).
    * Returns {@code null} when nothing safe to reuse exists (caller imports a fresh copy).
    */
   private @Nullable String findExistingProjectAncestor(SimpleNameCached sourceAncestor, UsageMatcher projectMatcher) {
@@ -839,17 +843,13 @@ public class HierarchySync extends SectorRunnable {
         return accepted;
       }
     }
-    // 2. by name. Binomials below genus have homonyms across codes, so an imported accepted is matched with its
-    // source classification - the matcher only applies its taxonomic group filter to a query that has one
+    // 2. by name. Genera and binomials have homonyms across codes, so the ancestor is matched with its source
+    // classification - the matcher only applies its taxonomic group filter to a query that has one
     UsageMatch m;
     try {
-      if (acceptedChains.containsKey(sourceAncestor.getId())) {
-        List<SimpleNameCached> cl = sourceCache.getClassification(sourceAncestor.getId(), sourceLoader);
-        var snc = new SimpleNameClassified<>(new SimpleNameCached(new SimpleName(sourceAncestor)), cl.subList(1, cl.size()));
-        m = projectMatcher.parseAndMatch(snc, false);
-      } else {
-        m = projectMatcher.parseAndMatch(new SimpleName(sourceAncestor), false);
-      }
+      List<SimpleNameCached> cl = sourceCache.getClassification(sourceAncestor.getId(), sourceLoader);
+      var snc = new SimpleNameClassified<>(new SimpleNameCached(new SimpleName(sourceAncestor)), cl.subList(1, cl.size()));
+      m = projectMatcher.parseAndMatch(snc, false);
     } catch (NotFoundException e) {
       return null;
     }
@@ -857,6 +857,14 @@ public class HierarchySync extends SectorRunnable {
         && (m.type == MatchType.EXACT || m.type == MatchType.VARIANT || m.type == MatchType.CANONICAL)
         && m.usage.getRank() == sourceAncestor.getRank()
         && m.usage.getStatus() != null && m.usage.getStatus().isTaxon()) {
+      // a project usage identified as another source taxon is that taxon, whatever its name.
+      // Without a classification on either side it is all that tells two homonyms apart.
+      String identifiedAs = projectMatches.get(m.usage.getId());
+      if (identifiedAs != null && !identifiedAs.equals(sourceAncestor.getId())) {
+        LOG.debug("Hierarchy sector {}: project usage {} is identified as source usage {}, not reused for its namesake {}",
+          sectorKey, m.usage.getId(), identifiedAs, sourceAncestor.getId());
+        return null;
+      }
       return m.usage.getId();
     }
     return null;

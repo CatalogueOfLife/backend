@@ -178,6 +178,13 @@ closest ancestor on that chain the project holds. Before importing anything the 
 equivalent accepted project usage (by identifier, then by name and rank) and reuses it; a project usage
 that phase 2 is about to demote is never reused as its own accepted.
 
+The name lookup has to tell homonyms apart, genera included. It queries the project matcher with the
+source classification of the ancestor, so the matcher's taxonomic group veto applies, and it never reuses
+a project usage that is identified as another source taxon already. Matching the bare name let the
+Archis project's plant genus *Morus* stand in for COL's bird genus *Morus* Vieillot, so the promoted
+gannet *Morus bassanus* went among the mulberries, and the linnet *Linaria cannabina* into the toadflax
+genus *Linaria* ([checklistbank#1762](https://github.com/CatalogueOfLife/checklistbank/issues/1762)).
+
 #### 2d. `rewireProjectParents`
 
 Calls `NameUsageMapper.updateParentId(...)` for every matched project usage that is accepted in the

@@ -1269,6 +1269,154 @@ public class HierarchySyncIT {
     matchingRule.rematch(PROJECT_KEY);
   }
 
+  // ---------- a genus homonym in another kingdom, checklistbank#1762 ----------
+
+  static final String T_Plantae = "T_Plantae";
+  static final String T_Moraceae = "T_Moraceae";
+  static final String T_Morus_L = "T_Morus_L";
+  static final String T_Morus_nigra = "T_Morus_nigra";
+  static final String T_Aves = "T_Aves";
+  static final String T_Sulidae = "T_Sulidae";
+  static final String T_Sula = "T_Sula";
+  static final String T_Morus_V = "T_Morus_V";
+  static final String T_Morus_bassanus = "T_Morus_bassanus";
+  static final String T_Sula_bassana = "T_Sula_bassana";
+  static final String P_Plantae = "p_Plantae";
+  static final String P_Moraceae = "p_Moraceae";
+  static final String P_Morus = "p_Morus";
+  static final String P_Morus_nigra = "p_Morus_nigra";
+  static final String P_Animalia = "p_Animalia";
+  static final String P_Aves = "p_Aves";
+  static final String P_Sulidae = "p_Sulidae";
+  static final String P_Sula = "p_Sula";
+  static final String P_Sula_bassana = "p_Sula_bassana";
+  static final String P_Morus_bassanus = "p_Morus_bassanus";
+
+  /**
+   * The gannet Morus bassanus is a synonym of Sula bassana in the project but accepted in the source, in the bird genus
+   * Morus Vieillot. The project already holds the plant genus Morus, which must not stand in for the bird genus: the
+   * Archis release placed the gannet among the mulberries. https://github.com/CatalogueOfLife/checklistbank/issues/1762
+   */
+  @Test
+  public void genusHomonymOfAnotherKingdomIsNotReused() throws Exception {
+    populateMorus(true);
+    populateProjectMorus(P_Moraceae, T_Morus_L);
+    rematchNames();
+
+    runHierarchySync();
+
+    assertGannetInBirdGenus();
+  }
+
+  /** The bird genus is imported again on a re-run, and the plant genus stays untouched. */
+  @Test
+  public void genusHomonymOfAnotherKingdomSurvivesRerun() throws Exception {
+    populateMorus(true);
+    populateProjectMorus(P_Moraceae, T_Morus_L);
+    rematchNames();
+
+    runHierarchySync();
+    int taxa = countDataset(PROJECT_KEY, false);
+    runHierarchySync();
+
+    assertEquals("a second sync must not duplicate accepted taxa", taxa, countDataset(PROJECT_KEY, false));
+    assertGannetInBirdGenus();
+  }
+
+  /**
+   * Without any identifier on the plant genus only its classification tells it apart from the bird genus. The source
+   * has no plant Morus, so the project's is not matched to anything either.
+   */
+  @Test
+  public void genusHomonymIsToldApartByClassification() throws Exception {
+    populateMorus(false);
+    populateProjectMorus(P_Moraceae, null);
+    rematchNames();
+
+    runHierarchySync();
+
+    assertGannetInBirdGenus();
+  }
+
+  /**
+   * A project genus without any classification gives no taxonomic group to compare, but it is identified as the
+   * source's plant Morus already and therefore cannot be the bird genus.
+   */
+  @Test
+  public void genusIdentifiedAsAnotherSourceTaxonIsNotReused() throws Exception {
+    populateMorus(true);
+    populateProjectMorus(null, T_Morus_L);
+    rematchNames();
+
+    runHierarchySync();
+
+    assertGannetInBirdGenus();
+  }
+
+  /**
+   * Source: Animalia > Aves > Sulidae > Morus Vieillot, 1816 > Morus bassanus, with Sula bassana as its synonym, and the
+   * genus Sula. With plants also Plantae > Moraceae > Morus L. > Morus nigra.
+   */
+  private static void populateMorus(boolean withPlants) {
+    if (withPlants) {
+      insertTaxon(targetKey, T_Plantae, null, Rank.KINGDOM, "Plantae");
+      insertTaxon(targetKey, T_Moraceae, T_Plantae, Rank.FAMILY, "Moraceae");
+      insertTaxonWithAuthorship(targetKey, T_Morus_L, T_Moraceae, Rank.GENUS, "Morus", auth("L.", null), null);
+      insertTaxon(targetKey, T_Morus_nigra, T_Morus_L, Rank.SPECIES, "Morus nigra");
+    }
+    insertTaxon(targetKey, T_Aves, T_Animalia, Rank.CLASS, "Aves");
+    insertTaxon(targetKey, T_Sulidae, T_Aves, Rank.FAMILY, "Sulidae");
+    insertTaxon(targetKey, T_Sula, T_Sulidae, Rank.GENUS, "Sula");
+    insertTaxonWithAuthorship(targetKey, T_Morus_V, T_Sulidae, Rank.GENUS, "Morus", auth("Vieillot", "1816"), null);
+    insertTaxon(targetKey, T_Morus_bassanus, T_Morus_V, Rank.SPECIES, "Morus bassanus");
+    insertSynonym(targetKey, T_Sula_bassana, T_Morus_bassanus, Rank.SPECIES, "Sula bassana");
+  }
+
+  /**
+   * The project as the Archis attach sectors build it: the gannet accepted as Sula bassana with the synonym Morus
+   * bassanus, and the plant genus Morus without authorship.
+   *
+   * @param plantParent the parent of the plant genus, null for a root
+   * @param plantGenusId the source id the plant genus is identified with, null for none
+   */
+  private static void populateProjectMorus(String plantParent, String plantGenusId) {
+    insertTaxon(PROJECT_KEY, P_Plantae, null, Rank.KINGDOM, "Plantae");
+    insertTaxon(PROJECT_KEY, P_Moraceae, P_Plantae, Rank.FAMILY, "Moraceae");
+    if (plantGenusId == null) {
+      insertTaxon(PROJECT_KEY, P_Morus, plantParent, Rank.GENUS, "Morus");
+    } else {
+      insertTaxonWithIdentifier(PROJECT_KEY, P_Morus, plantParent, Rank.GENUS, "Morus", plantGenusId);
+    }
+    insertTaxon(PROJECT_KEY, P_Morus_nigra, P_Morus, Rank.SPECIES, "Morus nigra");
+    insertTaxon(PROJECT_KEY, P_Animalia, null, Rank.KINGDOM, "Animalia");
+    insertTaxon(PROJECT_KEY, P_Aves, P_Animalia, Rank.CLASS, "Aves");
+    insertTaxon(PROJECT_KEY, P_Sulidae, P_Aves, Rank.FAMILY, "Sulidae");
+    insertTaxon(PROJECT_KEY, P_Sula, P_Sulidae, Rank.GENUS, "Sula");
+    insertTaxonWithIdentifier(PROJECT_KEY, P_Sula_bassana, P_Sula, Rank.SPECIES, "Sula bassana", T_Sula_bassana);
+    insertSynonymWithIdentifier(PROJECT_KEY, P_Morus_bassanus, P_Sula_bassana, Rank.SPECIES, "Morus bassanus", T_Morus_bassanus);
+  }
+
+  private void assertGannetInBirdGenus() {
+    NameUsageBase gannet = getByID(PROJECT_KEY, P_Morus_bassanus);
+    assertTrue("Morus bassanus should have been promoted", gannet.getStatus().isTaxon());
+    assertNotEquals("Morus bassanus must not be placed in the plant genus Morus", P_Morus, gannet.getParentId());
+    NameUsageBase genus = getByID(PROJECT_KEY, gannet.getParentId());
+    assertEquals(Rank.GENUS, genus.getRank());
+    assertEquals("Morus", genus.getName().getScientificName());
+    assertEquals("the bird genus should have been imported", hierarchySector.getId(), genus.getSectorKey());
+    assertHasIdentifier(genus, SCOPE, T_Morus_V);
+    assertEquals("the bird genus belongs into Sulidae", P_Sulidae, genus.getParentId());
+
+    NameUsageBase sula = getByID(PROJECT_KEY, P_Sula_bassana);
+    assertTrue("Sula bassana should have been demoted", sula.getStatus().isSynonym());
+    assertEquals(P_Morus_bassanus, sula.getParentId());
+
+    NameUsageBase plant = getByID(PROJECT_KEY, P_Morus);
+    assertTrue(plant.getStatus().isTaxon());
+    assertNull("the plant genus is project data", plant.getSectorKey());
+    assertEquals(P_Morus, getByID(PROJECT_KEY, P_Morus_nigra).getParentId());
+  }
+
   // ---------- references to imported usages across re-syncs ----------
 
   /**
