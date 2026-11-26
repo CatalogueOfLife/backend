@@ -39,6 +39,7 @@ public class CountryParser extends EnumParser<Country> {
     // also make sure we have all official iso countries mapped
     for (Country c : Country.values()) {
       add(c.getName(), c);
+      add(c.getShortName(), c);
       add(c.getIso2LetterCode(), c);
       add(c.getIso3LetterCode(), c);
       add(c.getIsoNumericalCode(), c);

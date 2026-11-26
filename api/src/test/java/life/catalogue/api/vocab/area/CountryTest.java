@@ -32,6 +32,21 @@ import com.google.common.collect.Sets;
 import static org.junit.Assert.*;
 
 public class CountryTest {
+
+  @Test
+  public void shortNames() throws Exception {
+    assertEquals("Netherlands (Kingdom of the)", Country.NETHERLANDS.getName());
+    assertEquals("Netherlands", Country.NETHERLANDS.getShortName());
+    assertEquals("Germany", Country.GERMANY.getShortName());
+    Map<String, Country> names = new HashMap<>();
+    for (Country c : Country.values()) {
+      assertNotNull(c.getShortName());
+      Country prev = names.put(c.getShortName(), c);
+      assertNull("Short name " + c.getShortName() + " of " + c + " also used by " + prev, prev);
+      // a trailing formal qualifier like (Republic of) has no place in a short name
+      assertFalse(c + " " + c.getShortName(), c.getShortName().matches(".* of( the)?\\)$"));
+    }
+  }
   
   @Test
   public void testFromIsoCode() throws Exception {

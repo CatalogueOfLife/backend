@@ -391,9 +391,12 @@ public class Agent implements Comparable<Agent> {
     return country == null ? null : country.getIso2LetterCode();
   }
 
+  /**
+   * @return the short country name used in addresses and citations, e.g. Netherlands, not the formal ISO name
+   */
   @JsonIgnore
   public String getCountryTitle() {
-    return country == null ? null : country.getName();
+    return country == null ? null : country.getShortName();
   }
 
   public void setCountry(Country country) {

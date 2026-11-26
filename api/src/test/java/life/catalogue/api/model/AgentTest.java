@@ -1,5 +1,7 @@
 package life.catalogue.api.model;
 
+import life.catalogue.api.vocab.area.Country;
+
 import org.junit.Test;
 
 import jakarta.validation.Validation;
@@ -10,6 +12,11 @@ import static org.junit.Assert.*;
 
 public class AgentTest {
 
+  @Test
+  public void addressUsesShortCountryName() {
+    Agent a = Agent.organisation("Catalogue of Life Foundation", null, "Amsterdam", null, Country.NETHERLANDS);
+    assertEquals("Amsterdam, Netherlands", a.getAddress());
+  }
 
   @Test
   public void validateAndNullify() {

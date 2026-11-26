@@ -186,7 +186,7 @@ public enum Country implements Area {
   /**
    * Bolivia, Plurinational State of.
    */
-  BOLIVIA("BO", "BOL", 68, "Bolivia (Plurinational State of)", Continent.SOUTH_AMERICA),
+  BOLIVIA("BO", "BOL", 68, "Bolivia (Plurinational State of)", "Bolivia", Continent.SOUTH_AMERICA),
   
   /**
    * Bonaire, Sint Eustatius and Saba.
@@ -306,7 +306,7 @@ public enum Country implements Area {
   /**
    * Congo (Democratic Republic of the).
    */
-  CONGO_DEMOCRATIC_REPUBLIC("CD", "COD", 180, "Congo (Democratic Republic of the)", Continent.AFRICA),
+  CONGO_DEMOCRATIC_REPUBLIC("CD", "COD", 180, "Congo (Democratic Republic of the)", "Democratic Republic of the Congo", Continent.AFRICA),
   
   /**
    * Congo.
@@ -576,7 +576,7 @@ public enum Country implements Area {
   /**
    * Iran, Islamic Republic of.
    */
-  IRAN("IR", "IRN", 364, "Iran (Islamic Republic of)", Continent.ASIA),
+  IRAN("IR", "IRN", 364, "Iran (Islamic Republic of)", "Iran", Continent.ASIA),
   
   /**
    * Iraq.
@@ -641,12 +641,12 @@ public enum Country implements Area {
   /**
    * Korea (Democratic People's Republic of).
    */
-  KOREA_NORTH("KP", "PRK", 408, "Korea (Democratic People's Republic of)", Continent.ASIA),
+  KOREA_NORTH("KP", "PRK", 408, "Korea (Democratic People's Republic of)", "North Korea", Continent.ASIA),
   
   /**
    * Korea, Republic of.
    */
-  KOREA_SOUTH("KR", "KOR", 410, "Korea (Republic of)", Continent.ASIA),
+  KOREA_SOUTH("KR", "KOR", 410, "Korea (Republic of)", "South Korea", Continent.ASIA),
   
   /**
    * Kosovo.
@@ -784,12 +784,12 @@ public enum Country implements Area {
   /**
    * Micronesia, Federated States of.
    */
-  MICRONESIA("FM", "FSM", 583, "Micronesia (Federated States of)", Continent.OCEANIA),
+  MICRONESIA("FM", "FSM", 583, "Micronesia (Federated States of)", "Micronesia", Continent.OCEANIA),
   
   /**
    * Moldova (Republic of).
    */
-  MOLDOVA("MD", "MDA", 498, "Moldova (Republic of)", Continent.EUROPE),
+  MOLDOVA("MD", "MDA", 498, "Moldova (Republic of)", "Moldova", Continent.EUROPE),
   
   /**
    * Monaco.
@@ -844,7 +844,7 @@ public enum Country implements Area {
   /**
    * Netherlands (Kingdom of the).
    */
-  NETHERLANDS("NL", "NLD", 528, "Netherlands (Kingdom of the)", Continent.EUROPE),
+  NETHERLANDS("NL", "NLD", 528, "Netherlands (Kingdom of the)", "Netherlands", Continent.EUROPE),
   
   /**
    * New Caledonia.
@@ -909,7 +909,7 @@ public enum Country implements Area {
   /**
    * Palestine, State of.
    */
-  PALESTINIAN_TERRITORY("PS", "PSE", 275, "Palestine (State of)", Continent.ASIA),
+  PALESTINIAN_TERRITORY("PS", "PSE", 275, "Palestine (State of)", "Palestine", Continent.ASIA),
   
   /**
    * Panama.
@@ -1149,7 +1149,7 @@ public enum Country implements Area {
   /**
    * Taiwan.
    */
-  TAIWAN("TW", "TWN", 158, "Chinese Taipei", Continent.ASIA),
+  TAIWAN("TW", "TWN", 158, "Chinese Taipei", "Taiwan", Continent.ASIA),
   
   /**
    * Tajikistan.
@@ -1159,7 +1159,7 @@ public enum Country implements Area {
   /**
    * Tanzania (United Republic of).
    */
-  TANZANIA("TZ", "TZA", 834, "Tanzania (United Republic of)", Continent.AFRICA),
+  TANZANIA("TZ", "TZA", 834, "Tanzania (United Republic of)", "Tanzania", Continent.AFRICA),
   
   /**
    * Thailand.
@@ -1264,7 +1264,7 @@ public enum Country implements Area {
   /**
    * Venezuela, Bolivarian Republic of.
    */
-  VENEZUELA("VE", "VEN", 862, "Venezuela (Bolivarian Republic of)", Continent.SOUTH_AMERICA),
+  VENEZUELA("VE", "VEN", 862, "Venezuela (Bolivarian Republic of)", "Venezuela", Continent.SOUTH_AMERICA),
   
   /**
    * Viet Nam.
@@ -1324,6 +1324,7 @@ public enum Country implements Area {
   private final String alpha3;
   private final int numericalCode;
   private final String name;
+  private final String shortName;
   private final Continent continent;
   
   static {
@@ -1416,10 +1417,18 @@ public enum Country implements Area {
    * @param continent
    */
   Country(String alpha2, String alpha3, int numericalCode, String name, Continent continent) {
+    this(alpha2, alpha3, numericalCode, name, name, continent);
+  }
+
+  /**
+   * @param shortName the common short name for addresses and citations, where the ISO name carries a qualifier
+   */
+  Country(String alpha2, String alpha3, int numericalCode, String name, String shortName, Continent continent) {
     this.alpha2 = alpha2;
     this.alpha3 = alpha3;
     this.numericalCode = numericalCode;
     this.name = name;
+    this.shortName = shortName;
     this.continent = continent;
   }
 
@@ -1440,6 +1449,15 @@ public enum Country implements Area {
   @Override
   public String getName() {
     return name;
+  }
+
+  /**
+   * @return the common English short name used in addresses and citations, e.g. Netherlands for
+   * Netherlands (Kingdom of the). It is the ISO name unless that carries a formal qualifier.
+   */
+  @JsonIgnore
+  public String getShortName() {
+    return shortName;
   }
 
   /**
