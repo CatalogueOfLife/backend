@@ -11,6 +11,13 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2026-11-26 genus of infrageneric names from the classification
+The importer gives an infrageneric name without a genus the genus of its classification and flags it, see
+checklistbank#1763. Run before the deploy. Existing names only change on re-import.
+```sql
+ALTER TYPE ISSUE ADD VALUE 'GENUS_FROM_CLASSIFICATION';
+```
+
 #### 2026-11-17 hybrid formulas rematched
 No DDL. The names index key of a hybrid formula keeps its cross now, "Corvus corone x cornix" used to share the entry of
 the trinomial Corvus corone cornix (checklistbank#1755). Existing formulas keep their old entry until rematched, so after

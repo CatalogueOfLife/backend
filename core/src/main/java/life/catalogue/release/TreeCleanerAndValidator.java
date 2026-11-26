@@ -255,6 +255,14 @@ public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage> {
             issues.add(Issue.PUBLISHED_BEFORE_GENUS);
           }
         }
+      } else if (sn.isParsed() && sn.getRank().isInfragenericStrictly() && sn.getGenus() != null && sn.getSpecificEpithet() == null) {
+        // an infrageneric name placed in another genus than the one of its name, see checklistbank#1763
+        var genus = parents.getByRank(Rank.GENUS);
+        if (genus != null && genus.isParsed()
+          && !Objects.equals(sn.getGenus(), ObjectUtils.coalesce(genus.getUninomial(), genus.getGenus()))
+        ) {
+          issues.add(Issue.PARENT_NAME_MISMATCH);
+        }
       }
       // flag code problems for accepted
       flagCodeProblems(sn, parents.getParents(), issues);

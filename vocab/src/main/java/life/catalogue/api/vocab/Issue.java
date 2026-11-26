@@ -249,8 +249,8 @@ public enum Issue implements Described {
           "For example if the id based classification has no ranks."),
   
   PARENT_NAME_MISMATCH(NAME_USAGE, Level.WARNING,
-      "The (accepted) bi/trinomial name does not match the parent genus/species. " +
-          "For example the species Picea alba with a parent genus Abies is a mismatch."),
+      "The accepted infrageneric, bi- or trinomial name does not match its parent genus or species. " +
+          "For example the species Picea alba or the subgenus Picea (Casicta) with a parent genus Abies are a mismatch."),
 
   DERIVED_TAXONOMIC_STATUS(NAME_USAGE, Level.WARNING,
       "The taxonomic status was programmatically derived. " +
@@ -594,7 +594,11 @@ public enum Issue implements Described {
 
   DISTRIBUTION_ABSENT(DISTRIBUTION, Level.INFO,
       "A distribution record states that the taxon is absent from the area, e.g. by an occurrenceStatus of absent or excluded. "
-      + "It was not interpreted, as distributions always declare presence.")
+      + "It was not interpreted, as distributions always declare presence."),
+
+  GENUS_FROM_CLASSIFICATION(NAME, Level.INFO,
+    "The genus of an infrageneric name was missing and has been taken from its classification, "
+      + "e.g. the subgenus Ctenobelba below the genus Ctenobelba became Ctenobelba (Ctenobelba).")
   ;
 
   /**

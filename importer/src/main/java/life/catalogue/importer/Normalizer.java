@@ -280,12 +280,15 @@ public class Normalizer implements Callable<Boolean> {
       @Override
       public void end(NameUsageData data, TreeWalker.WalkerContext ctxt) {}
     };
+    // the genus comes after the code, a decided code interprets the name again from its verbatim record
+    final var genusAssigner = new InfragenericGenusAssigner(store);
     if (codeAssigner == null) {
-      TreeWalker.walkTree(store, validator);
+      TreeWalker.walkTree(store, genusAssigner, validator);
     } else {
-      TreeWalker.walkTree(store, codeAssigner, validator);
+      TreeWalker.walkTree(store, codeAssigner, genusAssigner, validator);
       codeAssigner.logStats();
     }
+    genusAssigner.logStats();
 
     LOG.info("Validate bare names");
     store.names().allBareNames().forEach(nn -> {

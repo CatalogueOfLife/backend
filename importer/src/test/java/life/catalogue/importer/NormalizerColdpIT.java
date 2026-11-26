@@ -24,6 +24,8 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
+
 import org.junit.Ignore;
 import org.junit.jupiter.api.Disabled;
 import org.junit.Test;
@@ -716,6 +718,39 @@ public class NormalizerColdpIT extends NormalizerITBase {
     assertRelation("eup2", NomRelType.LATER_HOMONYM, "eup");
     assertRelation("neq", NomRelType.HOMOTYPIC, "neqa", Issue.NAME_RELATION_REDUNDANT);
     assertRelation("neqa", NomRelType.REPLACEMENT_NAME, "neq");
+  }
+
+  /**
+   * https://github.com/CatalogueOfLife/checklistbank/issues/1763
+   */
+  @Test
+  public void infragenericGenus() throws Exception {
+    normalize(50);
+    // ITIS style uninomial
+    assertInfrageneric("sg1", "Ctenobelba", "Ctenobelba (Ctenobelba)", true);
+    // bare scientific name
+    assertInfrageneric("sg2", "Ctenobelba", "Ctenobelba (Aokibelba)", true);
+    // botanical section
+    assertInfrageneric("sec", "Vicia", "Vicia sect. Cracca", true);
+    assertEquals(Rank.SECTION_BOTANY, nameByID("sec").getName().getRank());
+    // synonyms keep what they have
+    assertInfrageneric("syn", null, "Oribella", false);
+    // no genus in the classification
+    assertInfrageneric("ifa", null, "Ifasina", false);
+    // a given genus is never replaced, but flagged if it is not the parent genus
+    assertInfrageneric("mis", "Cicindela", "Cicindela (Cicindelina)", false);
+    assertTrue(vByUsageAndNameID("mis").contains(Issue.PARENT_NAME_MISMATCH));
+    assertInfrageneric("ok", "Cylindera", "Cylindera (Cylindera)", false);
+    for (String id : List.of("sg1", "sg2", "sec", "ok")) {
+      assertFalse(id, vByUsageAndNameID(id).contains(Issue.PARENT_NAME_MISMATCH));
+    }
+  }
+
+  private void assertInfrageneric(String id, @Nullable String genus, String scientificName, boolean fromClassification) {
+    Name n = nameByID(id).getName();
+    assertEquals(id, genus, n.getGenus());
+    assertEquals(id, scientificName, n.getScientificName());
+    assertEquals(id, fromClassification, vByUsageAndNameID(id).contains(Issue.GENUS_FROM_CLASSIFICATION));
   }
 
   private void assertRelation(String nameID, NomRelType type, String relatedID, Issue... expected) {

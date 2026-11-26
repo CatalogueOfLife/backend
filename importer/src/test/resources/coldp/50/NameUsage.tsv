@@ -1,0 +1,15 @@
+ID	parentID	status	rank	scientificName	uninomial	genericName	infragenericEpithet	authorship	code
+an		accepted	kingdom	Animalia	Animalia				zoological
+orib	an	accepted	family	Ctenobelbidae	Ctenobelbidae			Grandjean, 1965	zoological
+cten	orib	accepted	genus	Ctenobelba	Ctenobelba			Balogh, 1943	zoological
+sg1	cten	accepted	subgenus	Ctenobelba	Ctenobelba			Balogh, 1943	zoological
+sg2	cten	accepted	subgenus	Aokibelba				Ohkubo, 1984	zoological
+syn	sg1	synonym	subgenus	Oribella				Smith, 1900	zoological
+cara	an	accepted	tribe	Cicindelini	Cicindelini			Latreille, 1802	zoological
+ifa	cara	accepted	subgenus	Ifasina				Jeannel, 1946	zoological
+cyl	cara	accepted	genus	Cylindera	Cylindera			Westwood, 1831	zoological
+mis	cyl	accepted	subgenus	Cicindela (Cicindelina)		Cicindela	Cicindelina	Rivalier, 1954	zoological
+ok	cyl	accepted	subgenus	Cylindera (Cylindera)		Cylindera	Cylindera	Westwood, 1831	zoological
+pl		accepted	kingdom	Plantae	Plantae				botanical
+vic	pl	accepted	genus	Vicia	Vicia			L.	botanical
+sec	vic	accepted	section	Cracca				Dumort.	botanical
