@@ -33,6 +33,27 @@ public class CountryParserTest extends ParserTestBase<Country> {
     assertParse(Country.GUATEMALA, "Guatemala");
     assertParse(Country.EL_SALVADOR, "El Salvador");
     assertParse(Country.COSTA_RICA, "Costa Rica");
+    // names the enum used before following GBIF's titles, still common in data
+    assertParse(Country.UNITED_KINGDOM, "United Kingdom");
+    assertParse(Country.CZECH_REPUBLIC, "Czech Republic");
+    assertParse(Country.CONGO, "Congo, Republic of the");
+    assertParse(Country.CONGO, "Republic of the Congo");
+    assertParse(Country.CAPE_VERDE, "Cape Verde");
+    assertParse(Country.TAIWAN, "Taiwan");
+    assertParse(Country.PALESTINIAN_TERRITORY, "Palestine, State of");
+    assertParse(Country.UNITED_KINGDOM, "United Kingdom of Great Britain and Northern Ireland");
+    assertParse(Country.CZECH_REPUBLIC, "Czechia");
+    assertParse(Country.TAIWAN, "Chinese Taipei");
+    assertParse(Country.NAURU, "Nauru");
+    assertParse(Country.NAURU, "Naoero");
+    // comma or brackets, straight or curly apostrophes
+    assertParse(Country.TANZANIA, "Tanzania, United Republic of");
+    assertParse(Country.TANZANIA, "Tanzania (United Republic of)");
+    assertParse(Country.MOLDOVA, "Moldova, Republic of");
+    assertParse(Country.NETHERLANDS, "Netherlands");
+    assertParse(Country.NETHERLANDS, "Netherlands (Kingdom of the)");
+    assertParse(Country.CÔTE_DIVOIRE, "Côte d’Ivoire");
+    assertParse(Country.KOREA_NORTH, "Korea, Democratic People’s Republic of");
     // user defined codes
     assertParse(Country.INTERNATIONAL_WATERS, "xz");
 

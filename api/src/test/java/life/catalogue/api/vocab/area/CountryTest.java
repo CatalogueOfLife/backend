@@ -121,7 +121,7 @@ public class CountryTest {
       assertNotNull(l.getName());
       assertTrue(l.getName().length() > 2);
     }
-    assertEquals("United Kingdom", Country.UNITED_KINGDOM.getName());
+    assertEquals("United Kingdom of Great Britain and Northern Ireland", Country.UNITED_KINGDOM.getName());
     assertEquals("Germany", Country.GERMANY.getName());
   }
   
@@ -146,14 +146,19 @@ public class CountryTest {
    * Compares the Country enum against the Debian iso-codes ISO 3166-1 JSON,
    * which mirrors the official ISO list. Fails if codes do not match 1:1
    * (modulo deliberately user-assigned codes not in ISO, e.g. Kosovo), if
-   * alpha-3 / numeric codes diverge, or if the number of name differences
-   * grows beyond the currently accepted set.
+   * alpha-3 / numeric codes diverge, or if a name differs from ISO's other than
+   * for the codes named differently on purpose.
    */
   @Test
   public void testIsoCodes3166_1() throws Exception {
     // codes that are intentionally in the enum but not in official ISO 3166-1
     Set<String> nonIsoEnumCodes = Set.of("XK"); // Kosovo (user-assigned code)
-    int expectedNameDiffs = 8;
+    // Codes the enum names differently from this list on purpose. The enum takes ISO's short names as the
+    // ISO Online Browsing Platform has them, without articles such as "(the)" and with brackets instead of a
+    // comma, and Chinese Taipei for TW as GBIF does. The Debian list keeps the comma style, and ISO's renames
+    // such as Naoero (NR) or Netherlands (Kingdom of the) reach it late.
+    Set<String> deliberateNameDiffs = Set.of("BO", "CD", "FM", "GB", "IR", "KP", "KR", "MD", "NL", "NR", "PS", "TW",
+        "TZ", "US", "VA", "VE", "VG", "VI");
 
     URI url = URI.create("https://salsa.debian.org/iso-codes-team/iso-codes/-/raw/main/data/iso_3166-1.json");
     JsonNode root;
@@ -244,9 +249,9 @@ public class CountryTest {
     assertEquals("codes in enum but not in ISO: " + missingInIso, Set.of(), missingInIso);
     assertEquals("alpha-3 mismatches: " + alpha3Diffs, 0, alpha3Diffs.size());
     assertEquals("numeric mismatches: " + numericDiffs, 0, numericDiffs.size());
-    assertTrue("name differences grew from " + expectedNameDiffs + " to " + nameDiffs.size()
-            + " — new diffs: " + nameDiffs,
-        nameDiffs.size() <= expectedNameDiffs);
+    Map<String, String> newNameDiffs = new TreeMap<>(nameDiffs);
+    newNameDiffs.keySet().removeAll(deliberateNameDiffs);
+    assertEquals("names differing from ISO: " + newNameDiffs, Map.of(), newNameDiffs);
   }
 
   @Test

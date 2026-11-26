@@ -186,7 +186,7 @@ public enum Country implements Area {
   /**
    * Bolivia, Plurinational State of.
    */
-  BOLIVIA("BO", "BOL", 68, "Bolivia, Plurinational State of", Continent.SOUTH_AMERICA),
+  BOLIVIA("BO", "BOL", 68, "Bolivia (Plurinational State of)", Continent.SOUTH_AMERICA),
   
   /**
    * Bonaire, Sint Eustatius and Saba.
@@ -256,7 +256,7 @@ public enum Country implements Area {
   /**
    * Cape Verde.
    */
-  CAPE_VERDE("CV", "CPV", 132, "Cape Verde", Continent.AFRICA),
+  CAPE_VERDE("CV", "CPV", 132, "Cabo Verde", Continent.AFRICA),
   
   /**
    * Cayman Islands.
@@ -304,14 +304,14 @@ public enum Country implements Area {
   COMOROS("KM", "COM", 174, "Comoros", Continent.AFRICA),
   
   /**
-   * Congo, the Democratic Republic of the.
+   * Congo (Democratic Republic of the).
    */
-  CONGO_DEMOCRATIC_REPUBLIC("CD", "COD", 180, "Congo, Democratic Republic of the", Continent.AFRICA),
+  CONGO_DEMOCRATIC_REPUBLIC("CD", "COD", 180, "Congo (Democratic Republic of the)", Continent.AFRICA),
   
   /**
    * Congo.
    */
-  CONGO("CG", "COG", 178, "Congo, Republic of the", Continent.AFRICA),
+  CONGO("CG", "COG", 178, "Congo", Continent.AFRICA),
   
   /**
    * Cook Islands.
@@ -349,9 +349,9 @@ public enum Country implements Area {
   CYPRUS("CY", "CYP", 196, "Cyprus", Continent.EUROPE),
   
   /**
-   * Czech Republic.
+   * Czechia.
    */
-  CZECH_REPUBLIC("CZ", "CZE", 203, "Czech Republic", Continent.EUROPE),
+  CZECH_REPUBLIC("CZ", "CZE", 203, "Czechia", Continent.EUROPE),
   
   /**
    * Denmark.
@@ -576,7 +576,7 @@ public enum Country implements Area {
   /**
    * Iran, Islamic Republic of.
    */
-  IRAN("IR", "IRN", 364, "Iran, Islamic Republic of", Continent.ASIA),
+  IRAN("IR", "IRN", 364, "Iran (Islamic Republic of)", Continent.ASIA),
   
   /**
    * Iraq.
@@ -639,14 +639,14 @@ public enum Country implements Area {
   KIRIBATI("KI", "KIR", 296, "Kiribati", Continent.OCEANIA),
   
   /**
-   * Korea, Democratic People's Republic of.
+   * Korea (Democratic People's Republic of).
    */
-  KOREA_NORTH("KP", "PRK", 408, "Korea, Democratic People's Republic of", Continent.ASIA),
+  KOREA_NORTH("KP", "PRK", 408, "Korea (Democratic People's Republic of)", Continent.ASIA),
   
   /**
    * Korea, Republic of.
    */
-  KOREA_SOUTH("KR", "KOR", 410, "Korea, Republic of", Continent.ASIA),
+  KOREA_SOUTH("KR", "KOR", 410, "Korea (Republic of)", Continent.ASIA),
   
   /**
    * Kosovo.
@@ -784,12 +784,12 @@ public enum Country implements Area {
   /**
    * Micronesia, Federated States of.
    */
-  MICRONESIA("FM", "FSM", 583, "Micronesia, Federated States of", Continent.OCEANIA),
+  MICRONESIA("FM", "FSM", 583, "Micronesia (Federated States of)", Continent.OCEANIA),
   
   /**
-   * Moldova, Republic of.
+   * Moldova (Republic of).
    */
-  MOLDOVA("MD", "MDA", 498, "Moldova, Republic of", Continent.EUROPE),
+  MOLDOVA("MD", "MDA", 498, "Moldova (Republic of)", Continent.EUROPE),
   
   /**
    * Monaco.
@@ -832,9 +832,9 @@ public enum Country implements Area {
   NAMIBIA("NA", "NAM", 516, "Namibia", Continent.AFRICA),
   
   /**
-   * Nauru.
+   * Naoero.
    */
-  NAURU("NR", "NRU", 520, "Nauru", Continent.OCEANIA),
+  NAURU("NR", "NRU", 520, "Naoero", Continent.OCEANIA),
   
   /**
    * Nepal.
@@ -842,9 +842,9 @@ public enum Country implements Area {
   NEPAL("NP", "NPL", 524, "Nepal", Continent.ASIA),
   
   /**
-   * Netherlands.
+   * Netherlands (Kingdom of the).
    */
-  NETHERLANDS("NL", "NLD", 528, "Netherlands", Continent.EUROPE),
+  NETHERLANDS("NL", "NLD", 528, "Netherlands (Kingdom of the)", Continent.EUROPE),
   
   /**
    * New Caledonia.
@@ -907,9 +907,9 @@ public enum Country implements Area {
   PALAU("PW", "PLW", 585, "Palau", Continent.OCEANIA),
   
   /**
-   * Palestine, State Of.
+   * Palestine, State of.
    */
-  PALESTINIAN_TERRITORY("PS", "PSE", 275, "Palestine, State Of", Continent.ASIA),
+  PALESTINIAN_TERRITORY("PS", "PSE", 275, "Palestine (State of)", Continent.ASIA),
   
   /**
    * Panama.
@@ -1149,7 +1149,7 @@ public enum Country implements Area {
   /**
    * Taiwan.
    */
-  TAIWAN("TW", "TWN", 158, "Taiwan", Continent.ASIA),
+  TAIWAN("TW", "TWN", 158, "Chinese Taipei", Continent.ASIA),
   
   /**
    * Tajikistan.
@@ -1157,9 +1157,9 @@ public enum Country implements Area {
   TAJIKISTAN("TJ", "TJK", 762, "Tajikistan", Continent.EUROPE),
   
   /**
-   * Tanzania, United Republic of.
+   * Tanzania (United Republic of).
    */
-  TANZANIA("TZ", "TZA", 834, "Tanzania, United Republic of", Continent.AFRICA),
+  TANZANIA("TZ", "TZA", 834, "Tanzania (United Republic of)", Continent.AFRICA),
   
   /**
    * Thailand.
@@ -1234,7 +1234,7 @@ public enum Country implements Area {
   /**
    * United Kingdom.
    */
-  UNITED_KINGDOM("GB", "GBR", 826, "United Kingdom", Continent.EUROPE),
+  UNITED_KINGDOM("GB", "GBR", 826, "United Kingdom of Great Britain and Northern Ireland", Continent.EUROPE),
   
   /**
    * United States.
@@ -1264,7 +1264,7 @@ public enum Country implements Area {
   /**
    * Venezuela, Bolivarian Republic of.
    */
-  VENEZUELA("VE", "VEN", 862, "Venezuela, Bolivarian Republic of", Continent.SOUTH_AMERICA),
+  VENEZUELA("VE", "VEN", 862, "Venezuela (Bolivarian Republic of)", Continent.SOUTH_AMERICA),
   
   /**
    * Viet Nam.
@@ -1274,12 +1274,12 @@ public enum Country implements Area {
   /**
    * Virgin Islands, British.
    */
-  VIRGIN_ISLANDS_BRITISH("VG", "VGB", 92, "Virgin Islands, British", Continent.SOUTH_AMERICA),
+  VIRGIN_ISLANDS_BRITISH("VG", "VGB", 92, "Virgin Islands (British)", Continent.SOUTH_AMERICA),
   
   /**
    * Virgin Islands, U.S..
    */
-  VIRGIN_ISLANDS("VI", "VIR", 850, "Virgin Islands, U.S.", Continent.SOUTH_AMERICA),
+  VIRGIN_ISLANDS("VI", "VIR", 850, "Virgin Islands (U.S.)", Continent.SOUTH_AMERICA),
   
   /**
    * Wallis and Futuna.
