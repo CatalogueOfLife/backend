@@ -26,8 +26,12 @@ import org.slf4j.LoggerFactory;
  */
 public class SectorDeleteFull extends SectorRunnable {
   private static final Logger LOG = LoggerFactory.getLogger(SectorDeleteFull.class);
+  // sectors deleted so far
   private final Set<Integer> visitedSectors = new HashSet<>();
-  
+  // sectors whose children are being or have been deleted. A sector targeting one of its own usages is its own child,
+  // and two sectors can target each other's usages, so a sector is entered before its children are listed.
+  private final Set<Integer> enteredSectors = new HashSet<>();
+
   SectorDeleteFull(DSID<Integer> sectorKey, SqlSessionFactory factory, NameUsageIndexService indexService, EventBroker bus,
                    SectorDao dao, SectorImportDao sid, @Nullable SyncCounter counter, int user) throws IllegalArgumentException {
     super(sectorKey, false, factory, indexService, dao, sid, bus, counter, false, user);
@@ -42,6 +46,7 @@ public class SectorDeleteFull extends SectorRunnable {
   void doWork() throws Exception {
     setStep(ImportState.DELETING);
     // do a recursive delete to make sure we have no more children
+    enteredSectors.add(sectorKey.getId());
     for (Sector cs : childSectors) {
       deleteSectorRecursively(cs);
     }
@@ -50,7 +55,11 @@ public class SectorDeleteFull extends SectorRunnable {
   }
 
   private void deleteSectorRecursively(final DSID<Integer> sectorKey) {
-    if (!visitedSectors.contains(sectorKey.getId())) {
+    if (!enteredSectors.add(sectorKey.getId())) {
+      if (!visitedSectors.contains(sectorKey.getId())) {
+        LOG.warn("Sector {} is nested within itself, it targets a usage it or one of its child sectors synced", sectorKey);
+      }
+    } else {
       Set<Integer> childSectors;
       try (SqlSession session = factory.openSession(true)) {
         SectorMapper sm = session.getMapper(SectorMapper.class);

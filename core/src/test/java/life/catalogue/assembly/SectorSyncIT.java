@@ -747,6 +747,50 @@ public class SectorSyncIT extends SectorSyncTestBase {
   }
 
   /**
+   * A sector whose target is one of its own usages is its own child sector.
+   * The recursive deletion used to call itself forever until the stack overflowed - which on prod corrupted a pooled
+   * connection and left the job hanging for two days (project 315654, sector 4).
+   */
+  @Test(timeout = 300_000)
+  public void testDeletionFullSelfTarget() throws Exception {
+    final int d2key = dataRule.mapKey(DataFormat.ACEF, 6);
+    final int d3key = dataRule.mapKey(DataFormat.ACEF, 11);
+
+    NameUsageBase src = getByName(d2key, Rank.FAMILY, "Theridiidae");
+    NameUsageBase trg = getByName(Datasets.COL, Rank.CLASS, "Insecta");
+    final DSID<Integer> s6 = createSector(Sector.Mode.ATTACH, src, trg);
+
+    src = getByName(d3key, Rank.GENUS, "Dectus");
+    final DSID<Integer> s11 = createSector(Sector.Mode.ATTACH, src.getDatasetKey(), simple(src),
+      SimpleNameLink.of("Theridiidae", Rank.FAMILY)
+    );
+
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      SectorMapper sm = session.getMapper(SectorMapper.class);
+      sync(sm.get(s6));
+
+      // both sectors now target the Theridiidae that s6 itself synced
+      NameUsageBase ther = getByName(Datasets.COL, Rank.FAMILY, "Theridiidae");
+      assertEquals(s6.getId(), ther.getSectorKey());
+      Sector s = sm.get(s11);
+      s.getTarget().setId(ther.getId());
+      sm.update(s);
+      sync(s);
+
+      s = sm.get(s6);
+      s.getTarget().setId(ther.getId());
+      sm.update(s);
+
+      SectorDeleteFull sd = SyncFactoryRule.getFactory().deleteFull(sm.get(s6), null, TestDataRule.TEST_USER.getKey());
+      sd.run();
+      assertEquals(JobStatus.FINISHED, sd.getStatus());
+      assertNull(sm.get(s6));
+      assertNull(sm.get(s11));
+      assertTree("cat5_6_11_delete_full_5_6.txt");
+    }
+  }
+
+  /**
    * Deletion of nested sectors only removing species
    */
   @Test
