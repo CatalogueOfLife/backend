@@ -30,8 +30,8 @@
     ${os.detected.classifier} is not set in a consumer's build.
   -->
   <properties>
-    <name-parser.version>6.0.2-SNAPSHOT</name-parser.version>
-    <name-parser-rust.version>0.5.1-SNAPSHOT</name-parser-rust.version>
+    <name-parser.version>6.0.2</name-parser.version>
+    <name-parser-rust.version>0.5.1</name-parser-rust.version>
   </properties>
 
   <!-- inherited by the root pom and so by every module -->
