@@ -117,9 +117,9 @@ public class SectorSync extends SectorRunnable {
    */
   public static boolean rematchSectorTarget(Sector s, int targetDatasetKey, SqlSession session) {
     if (s.getTarget() != null) {
-      // try to match by name
+      // try to match by name, never to a usage of the sector itself
       MatchingDao mdao = new MatchingDao(session);
-      MatchingResult match = mdao.matchDataset(s.getTarget(), targetDatasetKey);
+      MatchingResult match = mdao.matchDataset(s.getTarget(), targetDatasetKey, s.getId());
       final String oldID = s.getTarget().getId();
       if (match.isEmpty()) {
         s.getTarget().setId(null);

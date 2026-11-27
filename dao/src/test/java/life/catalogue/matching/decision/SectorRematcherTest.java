@@ -31,6 +31,7 @@ import jakarta.validation.Validator;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 public class SectorRematcherTest {
 
@@ -107,6 +108,47 @@ public class SectorRematcherTest {
       Sector s2c = sm.get(s2);
       assertEquals("root-2", s2c.getSubject().getId());
       assertEquals("t5", s2c.getTarget().getId());
+    }
+  }
+
+  /**
+   * A target is never matched to a usage the sector synced itself, neither by name nor by keeping the id it links to:
+   * the sector would be its own child sector, project 315654 sector 4.
+   */
+  @Test
+  public void targetNotInOwnSector() throws Exception {
+    MybatisTestUtils.populateDraftTree(importRule.getSqlSession());
+    final int datasetKey = 11;
+
+    DSID<Integer> s1 = createSector(Sector.Mode.ATTACH, datasetKey,
+      SimpleNameLink.of("Malus sylvestris", Rank.SPECIES),
+      SimpleNameLink.of("t4", "Coleoptera", Rank.ORDER)
+    );
+    DSID<Integer> s2 = createSector(Sector.Mode.ATTACH, datasetKey,
+      SimpleNameLink.of("Larus fuscus", Rank.SPECIES),
+      SimpleNameLink.of("Lepidoptera", Rank.ORDER)
+    );
+    // Coleoptera was synced by s1 itself
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true);
+         var st = session.getConnection().createStatement()
+    ) {
+      st.execute("UPDATE name_usage SET sector_key=" + s1.getId() + " WHERE dataset_key=" + Datasets.COL + " AND id='t4'");
+    }
+
+    SectorRematchRequest req = new SectorRematchRequest(Datasets.COL, false);
+    req.setTarget(true);
+    SectorRematcher.match(dao, req, Users.TESTER);
+
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      SectorMapper sm = session.getMapper(SectorMapper.class);
+      assertNull(sm.get(s1).getTarget().getId());
+      assertEquals("t5", sm.get(s2).getTarget().getId());
+
+      var m = new MatchingDao(session).matchDataset(SimpleNameLink.of("Coleoptera", Rank.ORDER), Datasets.COL, s1.getId());
+      assertTrue(m.isEmpty());
+      assertEquals(1, m.getIgnored().size());
+      m = new MatchingDao(session).matchDataset(SimpleNameLink.of("Coleoptera", Rank.ORDER), Datasets.COL, s2.getId());
+      assertEquals("t4", m.getMatches().getFirst().getId());
     }
   }
 

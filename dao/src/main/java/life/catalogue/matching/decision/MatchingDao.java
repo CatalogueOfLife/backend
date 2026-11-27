@@ -63,11 +63,25 @@ public class MatchingDao {
    * @param datasetKey
    */
   public MatchingResult matchDataset(SimpleName name, int datasetKey) {
+    return matchDataset(name, datasetKey, null);
+  }
+
+  /**
+   * Like {@link #matchDataset(SimpleName, int)}, but the usages of one sector are never a match.
+   * A sector target must not lie inside the sector itself: the sector would be its own child sector, its next sync
+   * would delete its own target and a full deletion of it recursed forever (project 315654, sector 4).
+   * @param excludedSectorKey the sector whose usages are ignored, usually the sector whose target is matched
+   */
+  public MatchingResult matchDataset(SimpleName name, int datasetKey, @Nullable Integer excludedSectorKey) {
     var result = new MatchingResult(name);
     final Name authorship = parseAuthorship(name.getAuthorship());
     final List<NameUsageBase> equal = new ArrayList<>();
     // https://github.com/Sp2000/colplus-backend/issues/283
     for (NameUsageBase t : uMapper.listByName(datasetKey, name.getName(), name.getRank(), new Page(0,1000))) {
+      if (excludedSectorKey != null && excludedSectorKey.equals(t.getSectorKey())) {
+        result.ignore(t, "Usage of the sector itself");
+        continue;
+      }
       final Equality authEq = compareAuthorship(name.getAuthorship(), authorship, t.getName());
       if (authEq.isDifferent()) {
         result.ignore(t, "Authorship differs");

@@ -50,7 +50,7 @@ public class SectorRematcher extends RematcherBase<Sector, SectorRematchRequest,
       LOG.debug("Match target {} of sector {} in project {}", obj.getTarget(), obj.getId(), projectKey);
       // we dont want to let the parent break a target - thats mostly useful for editorial decision
       obj.getTarget().setParent(null);
-      NameUsage u = matchTargetUniquely(obj, obj.getTarget());
+      NameUsage u = matchTargetUniquely(obj, obj.getTarget(), obj.getId());
       obj.getTarget().setId(null);
       if (u != null) {
         obj.getTarget().setId(u.getId());

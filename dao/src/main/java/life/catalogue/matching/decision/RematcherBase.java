@@ -13,6 +13,8 @@ import life.catalogue.db.mapper.NameUsageMapper;
 
 import java.util.Objects;
 
+import javax.annotation.Nullable;
+
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
@@ -142,11 +144,19 @@ public abstract class RematcherBase<
   }
 
   NameUsage matchSubjectUniquely(int datasetKey, DatasetScopedEntity<Integer> obj, SimpleName sn, String originalId){
-    return matchUniquely(datasetKey, obj, sn, originalId);
+    return matchUniquely(datasetKey, obj, sn, originalId, null);
   }
 
   NameUsage matchTargetUniquely(DatasetScopedEntity<Integer> obj, SimpleName sn){
-    return matchUniquely(projectKey, obj, sn, null);
+    return matchUniquely(projectKey, obj, sn, null, null);
+  }
+
+  /**
+   * Matches a target, never to a usage of the given sector, which is the sector whose target this is:
+   * a target inside its own sector makes the sector its own child.
+   */
+  NameUsage matchTargetUniquely(DatasetScopedEntity<Integer> obj, SimpleName sn, int excludedSectorKey){
+    return matchUniquely(projectKey, obj, sn, null, excludedSectorKey);
   }
 
   /**
@@ -159,18 +169,22 @@ public abstract class RematcherBase<
    * @param obj the object (sector,decision) containing the SimpleName sn
    * @param sn the name (sector,decision) to match
    * @param datasetKey the dataset to match the names against
+   * @param excludedSectorKey a sector whose usages are never a match, also not the one the name links to already
    * @return the unique match or null
    */
-  private NameUsage matchUniquely(int datasetKey, DatasetScopedEntity<Integer> obj, SimpleName sn, String originalId){
+  private NameUsage matchUniquely(int datasetKey, DatasetScopedEntity<Integer> obj, SimpleName sn, String originalId,
+                                  @Nullable Integer excludedSectorKey){
     if (sn.getId() != null) {
       var u = session.getMapper(NameUsageMapper.class).get(DSID.of(datasetKey, sn.getId()));
-      if (u != null && u.getName().getScientificName().equalsIgnoreCase(sn.getName())
+      if (u != null && excludedSectorKey != null && excludedSectorKey.equals(u.getSectorKey())) {
+        LOG.warn("{} {} links to usage {} of sector {} itself, rematching it", obj.getClass().getSimpleName(), obj.getKey(), sn, excludedSectorKey);
+      } else if (u != null && u.getName().getScientificName().equalsIgnoreCase(sn.getName())
           && (sn.getRank() == null || sn.getRank() == u.getRank())) {
         LOG.debug("{} {} still links to usage {} in dataset {}", obj.getClass().getSimpleName(), obj.getKey(), sn, datasetKey);
         return u;
       }
     }
-    var result = mdao.matchDataset(sn, datasetKey);
+    var result = mdao.matchDataset(sn, datasetKey, excludedSectorKey);
     LOG.info("Match {} {} from project {} to dataset {}: {}", obj.getClass().getSimpleName(), obj.getKey(), projectKey, datasetKey, result);
 
     if (result.isEmpty()) {
